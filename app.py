@@ -6037,10 +6037,7 @@ def api_unchecked_products_count():
 
         for product in products:
             is_checked = product.get('isChecked', False)
-            print(
-                f"🔍 DEBUG: Product {product.get(
-                        'name',
-                        'Unknown')}: isChecked = {is_checked}")
+            print(f"🔍 DEBUG: Product {product.get('name', 'Unknown')}: isChecked = {is_checked}")
 
             if is_checked:
                 checked_products += 1
