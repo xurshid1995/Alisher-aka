@@ -1696,7 +1696,9 @@ function restoreCheckedProductsTable(checkedProductsData) {
     // Batch insert uchun fragment ishlatish (tezroq)
     const fragment = document.createDocumentFragment();
     
-    checkedProductsData.forEach((product, index) => {
+    // Mahsulotlarni teskari tartibda qo'shish (yangilari tepada bo'lishi uchun)
+    for (let i = checkedProductsData.length - 1; i >= 0; i--) {
+        const product = checkedProductsData[i];
         const row = document.createElement('tr');
         row.style.backgroundColor = '#ffffff';
         
@@ -1767,7 +1769,7 @@ function restoreCheckedProductsTable(checkedProductsData) {
             </td>
         `;
         fragment.appendChild(row);
-    });
+    }
     
     tbody.appendChild(fragment);
     
