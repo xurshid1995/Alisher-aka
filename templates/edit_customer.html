@@ -414,7 +414,7 @@
 
         // Telefon raqamini validatsiya qilish
         const phone = document.getElementById('customerPhone').value.trim();
-        if (phone && phone.length < 19) { // +998(99) 406-47-49 = 19 belgidan
+        if (phone && phone !== '' && phone.length !== 19) { // +998(99) 406-47-49 = aynan 19 belgi
             alert('❌ Telefon raqamini to\'liq formatda kiriting: +998(99) 406-47-49');
             updateBtn.innerHTML = originalText;
             updateBtn.disabled = false;

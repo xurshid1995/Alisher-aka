@@ -277,7 +277,7 @@
         
         // Telefon raqamini validatsiya qilish
         const phone = formData.get('phone');
-        if (phone && phone.length < 19) { // +998(99) 406-47-49 = 19 belgi
+        if (phone && phone.trim() !== '' && phone.length !== 19) { // +998(99) 406-47-49 = aynan 19 belgi
             alert('❌ Telefon raqamini to\'liq formatda kiriting: +998(99) 406-47-49');
             return;
         }
