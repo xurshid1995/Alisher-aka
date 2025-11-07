@@ -766,34 +766,44 @@
             // Savdo qilish uchun ruxsat etilgan joylashuvlarni to'g'ri olish
             userData.allowed_locations = [];
             
-            // Barcha belgilangan savdo joylashuvlarni olish
+            // Barcha belgilangan savdo joylashuvlarni olish (type bilan)
             const checkedSalesLocations = document.querySelectorAll('#salesLocationsList input[type="checkbox"]:checked');
             checkedSalesLocations.forEach(checkbox => {
                 const locationId = parseInt(checkbox.value);
-                if (locationId && !userData.allowed_locations.includes(locationId)) {
-                    userData.allowed_locations.push(locationId);
+                const locationType = checkbox.getAttribute('data-type'); // 'store' yoki 'warehouse'
+                if (locationId && locationType) {
+                    userData.allowed_locations.push({
+                        id: locationId,
+                        type: locationType
+                    });
                 }
             });
             
-            // Transfer joylashuvlarni ham qo'shish (lekin savdo ruxsatlariga qo'shmaslik)
+            // Transfer joylashuvlarni ham qo'shish (type bilan)
             userData.transfer_locations = [];
             const checkedTransferLocations = document.querySelectorAll('#transferLocationsList input[type="checkbox"]:checked');
             checkedTransferLocations.forEach(checkbox => {
                 const locationId = parseInt(checkbox.value);
-                if (locationId) {
-                    userData.transfer_locations.push(locationId);
-                    // XATO TUZATILDI: Transfer joylashuvlarni savdo ruxsatlariga qo'shmaslik
-                    // Transfer va savdo huquqlari alohida bo'lishi kerak
+                const locationType = checkbox.getAttribute('data-type');
+                if (locationId && locationType) {
+                    userData.transfer_locations.push({
+                        id: locationId,
+                        type: locationType
+                    });
                 }
             });
             
-            // Qoldiqni tekshirish joylashuvlarini qo'shish
+            // Qoldiqni tekshirish joylashuvlarini qo'shish (type bilan)
             userData.stock_check_locations = [];
             const checkedStockCheckLocations = document.querySelectorAll('#stockCheckLocationsList input[type="checkbox"]:checked');
             checkedStockCheckLocations.forEach(checkbox => {
                 const locationId = parseInt(checkbox.value);
-                if (locationId) {
-                    userData.stock_check_locations.push(locationId);
+                const locationType = checkbox.getAttribute('data-type');
+                if (locationId && locationType) {
+                    userData.stock_check_locations.push({
+                        id: locationId,
+                        type: locationType
+                    });
                 }
             });
             
