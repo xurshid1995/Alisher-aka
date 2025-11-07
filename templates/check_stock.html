@@ -769,13 +769,48 @@ function saveProductChanges() {
     const formData = new FormData();
     formData.append('quantity', newQuantity);
     
+    console.log(`   🚀 1. BIRINCHI SO'ROV: /edit_*_stock (ma'lumot olish)`);
+    
     fetch(apiEndpoint, {
         method: 'POST',
         body: formData
     })
     .then(response => response.text())
     .then(html => {
-        console.log(`   ✅ Server javob berdi`);
+        console.log(`   ✅ 1. Ma'lumot olindi`);
+        
+        // YANGI: Stokni darhol yangilash (ikkinchi so'rov)
+        console.log(`   🚀 2. IKKINCHI SO'ROV: /api/update_*_stock (stok yangilash)`);
+        
+        let updateEndpoint;
+        if (type === 'store') {
+            updateEndpoint = `/api/update_store_stock/${locationId}/${productId}`;
+        } else {
+            updateEndpoint = `/api/update_warehouse_stock/${locationId}/${productId}`;
+        }
+        
+        console.log(`      └─ Endpoint: ${updateEndpoint}`);
+        console.log(`      └─ Yangi miqdor: ${newQuantity}`);
+        
+        const updateFormData = new FormData();
+        updateFormData.append('quantity', newQuantity);
+        
+        return fetch(updateEndpoint, {
+            method: 'POST',
+            body: updateFormData
+        });
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`Stok yangilashda xatolik: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log(`   ✅ 2. STOK YANGILANDI!`);
+        console.log(`      └─ Eski: ${data.old_quantity}`);
+        console.log(`      └─ Yangi: ${data.new_quantity}`);
+        console.log(`      └─ Message: ${data.message}`);
         
         // Modal oynani darhol yopish (tez javob uchun)
         closeProductModal();
@@ -813,7 +848,7 @@ function saveProductChanges() {
         // AutoSave darhol chaqirish (kechikishsiz)
         console.log(`   🔄 AutoSave chaqirilmoqda...`);
         autoSave();
-        console.log(`========== SAQLASH JARAYONI TUGADI ==========\n`);
+        console.log(`========== SAQLASH JARAYONI TUGADI (STOK YANGILANDI!) ==========\n`);
     })
     .catch(error => {
         console.error('❌ Saqlashda xatolik:', error);
@@ -825,9 +860,6 @@ function saveProductChanges() {
         saveButton.disabled = false;
     });
 }
-
-// Modal tashqarisiga bosilganda yopish
-document.addEventListener('click', function(e) {
     const modal = document.getElementById('productModal');
     if (e.target === modal) {
         closeProductModal();
@@ -1745,6 +1777,9 @@ function restoreCheckedProductsTable(checkedProductsData) {
 
 // Tekshiruv tugatilganda barcha tekshirilgan mahsulotlarni stokda yangilash
 function finalizeFinalStockUpdates(selectedLocation, callback) {
+    console.log(`\n🏁 ========== TEKSHIRUV TUGATISH VA STOK YANGILASH ==========`);
+    console.log(`   📍 Joylashuv: ${selectedLocation}`);
+    
     const statisticsTableBody = document.getElementById('statisticsTableBody');
     if (!statisticsTableBody) {
         console.error('❌ statisticsTableBody topilmadi');
@@ -1752,6 +1787,7 @@ function finalizeFinalStockUpdates(selectedLocation, callback) {
     }
     
     if (statisticsTableBody.children.length === 0) {
+        console.log(`   ℹ️ Tekshirilgan mahsulotlar yo'q`);
         // Callback chaqirish (bo'sh bo'lsa ham)
         if (callback && typeof callback === 'function') {
             callback();
@@ -1760,6 +1796,7 @@ function finalizeFinalStockUpdates(selectedLocation, callback) {
     }
     
     const [type, locationId] = selectedLocation.split('_');
+    console.log(`   🔧 Type: ${type}, Location ID: ${locationId}`);
 
     
     let updateCount = 0;
@@ -1784,15 +1821,19 @@ function finalizeFinalStockUpdates(selectedLocation, callback) {
                 originalQuantity: originalQuantity
             };
             
-
+            console.log(`   📦 Mahsulot ${totalProducts + 1}: ${productName.trim()}`);
+            console.log(`      └─ ID: ${productId}`);
+            console.log(`      └─ Yangi miqdor: ${quantity}`);
+            console.log(`      └─ Asl miqdor: ${originalQuantity}`);
             
             checkedProducts.push(productData);
             totalProducts++;
         } else {
-
+            console.warn(`   ⚠️ Qator ${i}: Ma'lumot to'liq emas`);
         }
     }
     
+    console.log(`\n   📊 JAMI: ${checkedProducts.length} ta mahsulot yangilanadi`);
 
     
     if (checkedProducts.length === 0) {
