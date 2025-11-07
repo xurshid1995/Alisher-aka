@@ -2,8 +2,8 @@
 import multiprocessing
 import os
 
-# Server socket
-bind = os.getenv('BIND', '0.0.0.0:8000')
+# Server socket - faqat localhost (xavfsizlik uchun)
+bind = os.getenv('BIND', '127.0.0.1:8000')
 backlog = 2048
 
 # Worker processes
