@@ -96,7 +96,7 @@ body {
     display: flex;
     align-items: center;
     padding: 12px 20px;
-    color: #bdc3c7;
+    color: #ffffff;
     text-decoration: none;
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     border-left: 3px solid transparent;
