@@ -368,7 +368,7 @@
         border: 2px solid #667eea;
         border-top: none;
         border-radius: 0 0 8px 8px;
-        max-height: 200px;
+        max-height: 400px; /* Ko'proq natijalarni ko'rsatish uchun */
         overflow-y: auto;
         z-index: 1000;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -2803,8 +2803,8 @@
             (customer.email && customer.email && customer.email.toLowerCase().includes(searchTerm))
         );
         
-        // Keyboard navigation uchun saqlash
-        filteredCustomersForNav = filteredCustomers.slice(0, 5);
+        // Keyboard navigation uchun barcha natijalarni saqlash
+        filteredCustomersForNav = filteredCustomers; // Barcha mijozlarni ko'rsatish
         
         displayCustomerDropdown(filteredCustomers, currentTabId);
     }
@@ -2823,7 +2823,7 @@
         }
 
         let dropdownHtml = '';
-        customers.slice(0, 5).forEach((customer, index) => { // Faqat 5 ta mijoz ko'rsatish
+        customers.forEach((customer, index) => { // Barcha mijozlarni ko'rsatish
             dropdownHtml += `
                 <div class="dropdown-item" data-customer-id="${customer.id}" onclick="selectCustomer(${customer.id}, '${currentTabId}')">
                     <strong>${customer.name}</strong><br>
@@ -3206,8 +3206,8 @@
                     }
                 });
                 
-                // Keyboard navigation uchun saqlash
-                filteredProductsForNav = products.slice(0, 5);
+                // Keyboard navigation uchun barcha natijalarni saqlash
+                filteredProductsForNav = products; // Barcha mahsulotlarni ko'rsatish
                 
                 displayProductDropdown(products, currentTabId);
             })
@@ -3233,7 +3233,7 @@
         }
 
         let dropdownHtml = '';
-        products.slice(0, 5).forEach((product, index) => { // Faqat 5 ta mahsulot ko'rsatish
+        products.forEach((product, index) => { // Barcha mahsulotlarni ko'rsatish
             const availableQty = product.available_quantity || product.total_stock || 0;
             const quantityText = product.location_type === 'warehouse' ? `Omborda: ${availableQty}` : `${availableQty}`;
             const uzsPrice = Math.round((product.price || 0) * USD_TO_UZS_RATE);
