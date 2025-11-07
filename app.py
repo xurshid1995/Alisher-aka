@@ -692,14 +692,10 @@ class SaleItem(db.Model):
         location_name = 'Noma\'lum'
         if self.source_type == 'warehouse' and self.source_id:
             warehouse = Warehouse.query.get(self.source_id)
-            location_name = f"Ombor: {
-                warehouse.name}" if warehouse else f"Ombor (ID: {
-                self.source_id})"
+            location_name = f"Ombor: {warehouse.name}" if warehouse else f"Ombor (ID: {self.source_id})"
         elif self.source_type == 'store' and self.source_id:
             store = Store.query.get(self.source_id)
-            location_name = f"Dokon: {
-                store.name}" if store else f"Dokon (ID: {
-                self.source_id})"
+            location_name = f"Dokon: {store.name}" if store else f"Dokon (ID: {self.source_id})"
 
         return {
             'id': self.id,
@@ -5024,8 +5020,7 @@ def update_sale(sale_id):
                 new_quantities[key] = new_quantities.get(key, 0) + quantity
 
                 # Yangi SaleItem yaratish
-                source_name = f"{
-                    'Ombor' if location_type == 'warehouse' else 'Do\'kon'} (ID: {location_id})"
+                source_name = f"{'Ombor' if location_type == 'warehouse' else 'Do\'kon'} (ID: {location_id})"
                 sale_item = SaleItem(
                     sale_id=sale.id,
                     product_id=product.id,
