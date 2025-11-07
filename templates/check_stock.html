@@ -1407,51 +1407,73 @@ async function restorePageState() {
     console.log(`\n🔄 [${timestamp}] ========== HOLAT TIKLASH BOSHLANDI ==========`);
     
     let pageState = null;
+    let fromLocalStorage = false;
     
-    // Avval server-dan yuklab ko'rish
-    const serverStartTime = performance.now();
-    try {
-        console.log(`   🌐 Server'dan yuklanmoqda...`);
-        pageState = await loadFromServer();
-        const serverEndTime = performance.now();
-        const serverDuration = (serverEndTime - serverStartTime).toFixed(2);
-        
-        if (pageState) {
-            console.log(`   ✅ Server'dan yuklandi (${serverDuration}ms)`);
-        } else {
-            console.log(`   ℹ️ Server'da ma'lumot yo'q (${serverDuration}ms)`);
-        }
-    } catch (error) {
-        const serverEndTime = performance.now();
-        const serverDuration = (serverEndTime - serverStartTime).toFixed(2);
-        console.warn(`   ⚠️ Server-dan yuklashda xatolik (${serverDuration}ms):`, error);
-    }
+    // OPTIMIZATSIYA: Avval localStorage'dan tez yuklash (10-50ms)
+    const localStartTime = performance.now();
+    console.log(`   ⚡ localStorage'dan tez yuklash (PRIMARY)...`);
     
-    // Agar server-da yo'q bo'lsa, localStorage-dan olish
-    if (!pageState) {
-        const localStartTime = performance.now();
-        console.log(`   💾 localStorage'dan yuklanmoqda...`);
-        
-        const savedState = localStorage.getItem('stockCheckState');
-        if (!savedState) {
-            const localEndTime = performance.now();
-            const localDuration = (localEndTime - localStartTime).toFixed(2);
-            console.log(`   ℹ️ localStorage'da ma'lumot yo'q (${localDuration}ms)`);
-            console.log(`========== TIKLASH TUGADI (${(performance.now() - startTime).toFixed(2)}ms) ==========\n`);
-            return;
-        }
-        
+    const savedState = localStorage.getItem('stockCheckState');
+    if (savedState) {
         try {
             pageState = JSON.parse(savedState);
             const localEndTime = performance.now();
             const localDuration = (localEndTime - localStartTime).toFixed(2);
             const dataSize = (savedState.length / 1024).toFixed(2);
-            console.log(`   ✅ localStorage'dan yuklandi (${localDuration}ms, ${dataSize} KB)`);
+            console.log(`   ✅ localStorage'dan yuklandi (${localDuration}ms, ${dataSize} KB) - FAST!`);
+            fromLocalStorage = true;
         } catch (error) {
-            console.error('❌ localStorage-dan yuklashda xatolik:', error);
+            console.error(`   ❌ localStorage parse xatolik:`, error);
+        }
+    } else {
+        console.log(`   ℹ️ localStorage'da ma'lumot yo'q`);
+    }
+    
+    // Server'dan background'da yangilash (sync uchun)
+    if (pageState && fromLocalStorage) {
+        console.log(`   🔄 Server'dan background sync boshlandi...`);
+        // Background'da server'dan yuklash (await qilmasdan)
+        loadFromServer().then(serverState => {
+            if (serverState) {
+                const serverTimestamp = new Date().toLocaleTimeString('uz-UZ', { hour: '2-digit', minute: '2-digit', second: '2-digit', fractionalSecondDigits: 3 });
+                console.log(`   🌐 [${serverTimestamp}] Background sync tugadi - server ma'lumoti yangilandi`);
+                
+                // Agar server ma'lumoti boshqa bo'lsa, hohlasangiz yangilashingiz mumkin
+                // Hozircha localStorage ustunlik qiladi (tezlik uchun)
+            }
+        }).catch(error => {
+            console.warn(`   ⚠️ Background server sync xatolik:`, error);
+        });
+    } else {
+        // Agar localStorage'da yo'q bo'lsa, server'dan yuklash (FALLBACK)
+        const serverStartTime = performance.now();
+        try {
+            console.log(`   🌐 Server'dan yuklanmoqda (FALLBACK)...`);
+            pageState = await loadFromServer();
+            const serverEndTime = performance.now();
+            const serverDuration = (serverEndTime - serverStartTime).toFixed(2);
+            
+            if (pageState) {
+                console.log(`   ✅ Server'dan yuklandi (${serverDuration}ms)`);
+            } else {
+                console.log(`   ℹ️ Server'da ma'lumot yo'q (${serverDuration}ms)`);
+                console.log(`========== TIKLASH TUGADI (${(performance.now() - startTime).toFixed(2)}ms) ==========\n`);
+                return;
+            }
+        } catch (error) {
+            const serverEndTime = performance.now();
+            const serverDuration = (serverEndTime - serverStartTime).toFixed(2);
+            console.warn(`   ⚠️ Server-dan yuklashda xatolik (${serverDuration}ms):`, error);
             console.log(`========== TIKLASH XATOLIK BILAN TUGADI (${(performance.now() - startTime).toFixed(2)}ms) ==========\n`);
             return;
         }
+    }
+    
+    // Agar hech qaysi joyda ma'lumot bo'lmasa
+    if (!pageState) {
+        console.log(`   ℹ️ Hech qayerda ma'lumot topilmadi`);
+        console.log(`========== TIKLASH TUGADI (${(performance.now() - startTime).toFixed(2)}ms) ==========\n`);
+        return;
     }
     
     try {
