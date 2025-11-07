@@ -630,10 +630,8 @@ function filterStatistics() {
 function modalQuantityInputHandler(event) {
     const inputValue = event.target.value;
     
-    // Auto-save (input o'zgarishi bilan)
-    setTimeout(() => {
-        autoSave();
-    }, 500); // 500ms kechikish bilan (tez-tez saqlashdan qochish uchun)
+    // Auto-save (input o'zgarishi bilan darhol)
+    autoSave(); // Darhol saqlash (kechikish yo'q)
 }
 
 // Modal oynani ochish
@@ -798,8 +796,8 @@ function saveProductChanges() {
             }
         }, 10);
         
-        // AutoSave ni kamroq chaqirish
-        setTimeout(() => autoSave(), 1000);
+        // AutoSave darhol chaqirish (kechikishsiz)
+        autoSave();
     })
     .catch(error => {
         console.error('Saqlashda xatolik:', error);
@@ -1053,19 +1051,19 @@ function savePageState() {
 // Debounce timer
 let saveTimeout = null;
 
-// Avtomatik saqlash funksiyasi (debounced)
+// Avtomatik saqlash funksiyasi (debounced) - jadvalda o'zgarish bo'lganda darhol saqlash
 function autoSave() {
     // Oldingi timer ni bekor qilish
     if (saveTimeout) {
         clearTimeout(saveTimeout);
     }
     
-    // 2 soniya kutish (debounce)
+    // Darhol saqlash (0ms - no delay)
     saveTimeout = setTimeout(() => {
         savePageState();
         // Real-time statistikani yangilash
         updateCheckedProductCount();
-    }, 2000);
+    }, 0);
 }
 
 // Darhol saqlash funksiyasi (important actions uchun)
