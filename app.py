@@ -3012,7 +3012,7 @@ def update_warehouse_stock_quantity(warehouse_id, product_id):
 
 # Qoldiq tekshirish sessionini boshlash
 @app.route('/api/start-stock-check', methods=['POST'])
-@login_required
+@role_required('admin', 'kassir', 'sotuvchi')
 def start_stock_check():
     """Qoldiq tekshirish sessionini boshlash"""
     try:
@@ -3072,7 +3072,7 @@ def start_stock_check():
 
 # Aktiv sessionlarni olish
 @app.route('/api/get-active-sessions', methods=['GET'])
-@login_required
+@role_required('admin', 'kassir', 'sotuvchi')
 def get_active_sessions():
     """Barcha aktiv qoldiq tekshirish sessionlarini olish"""
     try:
@@ -3112,7 +3112,7 @@ def get_active_sessions():
 
 # Sessionni yangilash (heartbeat)
 @app.route('/api/update-stock-check-session', methods=['POST'])
-@login_required
+@role_required('admin', 'kassir', 'sotuvchi')
 def update_stock_check_session():
     """Session'ni aktiv deb belgilash (heartbeat)"""
     try:
@@ -3144,7 +3144,7 @@ def update_stock_check_session():
 
 # Sessionni tugatish
 @app.route('/api/end-stock-check', methods=['POST'])
-@login_required
+@role_required('admin', 'kassir', 'sotuvchi')
 def end_stock_check():
     """Qoldiq tekshirish sessionini tugatish"""
     try:
