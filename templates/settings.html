@@ -1,0 +1,299 @@
+{% extends "base.html" %}
+
+{% block title %}Sozlamalar - DOKON{% endblock %}
+
+{% block extra_css %}
+<style>
+        .settings-container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .setting-group {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+        }
+        
+        .setting-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        .setting-description {
+            color: #666;
+            margin-bottom: 15px;
+        }
+        
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            width: 60px;
+            height: 30px;
+            background: #ccc;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .toggle-switch.active {
+            background: #007bff;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 24px;
+            height: 24px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s;
+        }
+        
+        .toggle-switch.active .toggle-slider {
+            transform: translateX(30px);
+        }
+        
+        .toggle-label {
+            font-weight: 500;
+        }
+        
+        .save-button {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+        
+        .save-button:hover {
+            background: #218838;
+        }
+        
+        .role-restriction {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 10px;
+            border-radius: 4px;
+            color: #856404;
+            margin-top: 10px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}    <div class="settings-container">
+        <h1>Tizim Sozlamalari</h1>
+        
+        <!-- Qoldiq tekshirish sahifasi sozlamasi -->
+        <div class="setting-group">
+            <div class="setting-title">Qoldiq Tekshirish Sahifasi</div>
+            <div class="setting-description">
+                Sotuvchi roli uchun qoldiq tekshirish sahifasini ko'rsatish yoki yashirish
+            </div>
+            
+            <div class="toggle-container">
+                <div class="toggle-switch" id="stockToggle" onclick="toggleSetting('stock_check_visible')">
+                    <div class="toggle-slider"></div>
+                </div>
+                <span class="toggle-label" id="stockLabel">Yashirilgan</span>
+            </div>
+            
+            <div class="role-restriction">
+                <strong>Eslatma:</strong> Bu sozlama faqat sotuvchi roli uchun qo'llaniladi. 
+                Admin va Manager rollari doimo barcha sahifalarni ko'ra oladi.
+            </div>
+        </div>
+        
+        <!-- Currency sozlamalari -->
+        <div class="setting-group">
+            <div class="setting-title">Valyuta Sozlamalari</div>
+            <div class="setting-description">
+                Valyuta kursi avtomatik yangilanishini boshqarish
+            </div>
+            
+            <div class="toggle-container">
+                <div class="toggle-switch" id="currencyToggle" onclick="toggleSetting('auto_currency_update')">
+                    <div class="toggle-slider"></div>
+                </div>
+                <span class="toggle-label" id="currencyLabel">O'chiq</span>
+            </div>
+        </div>
+        
+        <!-- Backup sozlamalari -->
+        <div class="setting-group">
+            <div class="setting-title">Avtomatik Backup</div>
+            <div class="setting-description">
+                Ma'lumotlar bazasining avtomatik zaxira nusxasini yaratish
+            </div>
+            
+            <div class="toggle-container">
+                <div class="toggle-switch" id="backupToggle" onclick="toggleSetting('auto_backup')">
+                    <div class="toggle-slider"></div>
+                </div>
+                <span class="toggle-label" id="backupLabel">O'chiq</span>
+            </div>
+        </div>
+        
+        <button class="save-button" onclick="saveSettings()">Sozlamalarni Saqlash</button>
+    </div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+        // Currency va logout funksiyalari
+        async function editCurrency() {
+            const rate = prompt('Yangi valyuta kursini kiriting (1 USD = ? UZS):');
+            if (rate && !isNaN(rate) && parseFloat(rate) > 0) {
+                try {
+                    const response = await fetch('/api/currency-rate', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ rate: parseFloat(rate) })
+                    });
+                    if (response.ok) {
+                        loadCurrencyRate();
+                        alert('Valyuta kursi yangilandi!');
+                    }
+                } catch (error) {
+                    console.error('Valyuta kursini yangilashda xato:', error);
+                }
+            }
+        }
+
+        function logout() {
+            if (confirm('Tizimdan chiqishni xohlaysizmi?')) {
+                window.location.href = '/logout';
+            }
+        }
+
+        async function loadCurrencyRate() {
+            try {
+                const response = await fetch('/api/currency-rate');
+                if (response.ok) {
+                    const data = await response.json();
+                    document.querySelector('.currency-rate').textContent = `💵 1 USD = ${data.rate} UZS`;
+                }
+            } catch (error) {
+                console.error('Valyuta kursini yuklashda xato:', error);
+            }
+        }
+
+        // Sahifa yuklanganda valyuta kursini yuklash
+        window.addEventListener('load', function() {
+            loadCurrencyRate();
+            loadSettings(); // Sozlamalarni ham yuklash
+        });
+
+        // Sozlamalar obyekti
+        let settings = {
+            stock_check_visible: false,
+            auto_currency_update: false,
+            auto_backup: false
+        };
+
+        // Sozlamalarni serverdan olish
+        async function loadSettings() {
+            console.log('🔄 Sozlamalarni yuklash boshlandi...');
+            try {
+                const response = await fetch('/api/settings');
+                console.log('📡 API javob:', response.status, response.statusText);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('📊 Olingan sozlamalar:', data);
+                    settings = { ...settings, ...data };
+                    updateUI();
+                    console.log('✅ Sozlamalar muvaffaqiyatli yuklandi');
+                } else {
+                    console.error('❌ API xatolik:', response.status, response.statusText);
+                    // Standart sozlamalarni ishlatish
+                    updateUI();
+                }
+            } catch (error) {
+                console.error('🚨 Sozlamalarni yuklashda xato:', error);
+                updateUI();
+            }
+        }
+
+        // UI ni yangilash
+        function updateUI() {
+            // Stock toggle
+            const stockToggle = document.getElementById('stockToggle');
+            const stockLabel = document.getElementById('stockLabel');
+            if (settings.stock_check_visible) {
+                stockToggle.classList.add('active');
+                stockLabel.textContent = 'Ko\'rsatilgan';
+            } else {
+                stockToggle.classList.remove('active');
+                stockLabel.textContent = 'Yashirilgan';
+            }
+
+            // Currency toggle
+            const currencyToggle = document.getElementById('currencyToggle');
+            const currencyLabel = document.getElementById('currencyLabel');
+            if (settings.auto_currency_update) {
+                currencyToggle.classList.add('active');
+                currencyLabel.textContent = 'Yoqilgan';
+            } else {
+                currencyToggle.classList.remove('active');
+                currencyLabel.textContent = 'O\'chiq';
+            }
+
+            // Backup toggle
+            const backupToggle = document.getElementById('backupToggle');
+            const backupLabel = document.getElementById('backupLabel');
+            if (settings.auto_backup) {
+                backupToggle.classList.add('active');
+                backupLabel.textContent = 'Yoqilgan';
+            } else {
+                backupToggle.classList.remove('active');
+                backupLabel.textContent = 'O\'chiq';
+            }
+        }
+
+        // Toggle funksiyasi
+        function toggleSetting(settingName) {
+            settings[settingName] = !settings[settingName];
+            updateUI();
+        }
+
+        // Sozlamalarni saqlash
+        async function saveSettings() {
+            try {
+                const response = await fetch('/api/settings', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(settings)
+                });
+
+                if (response.ok) {
+                    alert('Sozlamalar muvaffaqiyatli saqlandi!');
+                } else {
+                    alert('Sozlamalarni saqlashda xato yuz berdi!');
+                }
+            } catch (error) {
+                console.error('Sozlamalarni saqlashda xato:', error);
+                alert('Sozlamalarni saqlashda xato yuz berdi!');
+            }
+        }
+</script>
+{% endblock %}

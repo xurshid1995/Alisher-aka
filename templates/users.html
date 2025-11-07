@@ -1,0 +1,499 @@
+{% extends "base_with_sidebar.html" %}
+
+{% block title %}Foydalanuvchilar - Sayt 2025{% endblock %}
+
+{% block extra_css %}
+<style>
+    .users-container { 
+        padding: 2rem; 
+        background: #f8f9fa; 
+        min-height: auto; 
+    }
+    
+    .page-header { 
+        padding: 2rem; 
+        margin-bottom: 2rem; 
+        text-align: left; 
+    }
+    
+    .controls-section { 
+        background: white; 
+        padding: 1rem; 
+        border-radius: 12px; 
+        margin-bottom: 1.5rem; 
+        display:flex; 
+        gap:0.5rem; 
+        align-items:center; 
+    }
+    
+    .users-table-container {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .users-table { 
+        width:100%; 
+        min-width: 900px; /* Foydalanuvchilar jadvali uchun minimal kenglik */
+        border-collapse: collapse; 
+    }
+    
+    .users-table th, .users-table td { 
+        padding: 0.75rem 0.5rem; 
+        border-bottom:1px solid #eee; 
+        text-align:left;
+        font-size: 0.9rem;
+    }
+    
+    .users-table th {
+        background: #667eea;
+        color: white;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+    
+    .users-table td {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 120px;
+    }
+    
+    .actions { 
+        min-width: 80px;
+    }
+    
+    .actions button { 
+        margin-right:0.3rem;
+        padding: 0.3rem 0.5rem;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        background: #f8f9fa;
+        transition: all 0.2s;
+    }
+    
+    .actions button:hover {
+        transform: scale(1.05);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    
+    .btn-add { 
+        background:#28a745; 
+        color:white; 
+        padding:0.4rem 0.6rem; 
+        border-radius:6px; 
+    }
+    
+    /* Mobile responsive design - Card layout */
+    .mobile-users-cards {
+        display: none;
+    }
+    
+    .mobile-user-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        border-left: 4px solid #667eea;
+    }
+    
+    .mobile-user-card .user-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .mobile-user-card .user-name {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #333;
+    }
+    
+    .mobile-user-card .user-role {
+        background: #667eea;
+        color: white;
+        padding: 0.2rem 0.5rem;
+        border-radius: 15px;
+        font-size: 0.8rem;
+    }
+    
+    .mobile-user-card .user-info {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .mobile-user-card .info-item {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .mobile-user-card .info-label {
+        font-size: 0.8rem;
+        color: #666;
+        margin-bottom: 0.2rem;
+    }
+    
+    .mobile-user-card .info-value {
+        font-size: 0.9rem;
+        color: #333;
+        word-break: break-word;
+    }
+    
+    .mobile-user-card .user-actions {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: flex-end;
+        margin-top: 0.5rem;
+        padding-top: 0.5rem;
+        border-top: 1px solid #eee;
+    }
+    
+    .mobile-user-card .btn-edit {
+        background: #ffc107;
+        color: #333;
+        border: none;
+        padding: 0.4rem 0.8rem;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .mobile-user-card .btn-toggle {
+        background: #28a745;
+        color: white;
+        border: none;
+        padding: 0.4rem 0.8rem;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .mobile-user-card .btn-delete {
+        background: #dc3545;
+        color: white;
+        border: none;
+        padding: 0.4rem 0.8rem;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .mobile-user-card .btn-edit:hover {
+        background: #e0a800;
+        transform: translateY(-1px);
+    }
+    
+    .mobile-user-card .btn-delete:hover {
+        background: #c82333;
+        transform: translateY(-1px);
+    }
+    
+    /* Tablet optimizatsiya */
+    @media (max-width: 1024px) {
+        .users-table th, .users-table td {
+            padding: 0.5rem 0.3rem;
+            font-size: 0.8rem;
+        }
+        
+        .users-table td {
+            max-width: 100px;
+        }
+    }
+    
+    /* Desktop kichik ekranlar uchun horizontal scroll */
+    @media (min-width: 769px) and (max-width: 1400px) {
+        .users-table-container {
+            border: 1px solid #dee2e6;
+        }
+        
+        .users-table {
+            min-width: 1100px; /* Desktop uchun kengrok minimal kenglik */
+        }
+        
+        /* Scroll indicator */
+        .users-table-container::before {
+            content: "💡 Foydalanuvchilar jadvalida ko'proq ma'lumot uchun gorizontal scroll qiling ← →";
+            display: block;
+            text-align: center;
+            font-size: 11px;
+            color: #495057;
+            padding: 6px;
+            background: linear-gradient(90deg, #e3f2fd 0%, #f3e5f5 50%, #e8f5e8 100%);
+            border-bottom: 1px solid #dee2e6;
+            font-weight: 500;
+            animation: scrollHint 2s ease-in-out infinite;
+        }
+    }
+    
+    @keyframes scrollHint {
+        0%, 100% { opacity: 0.7; }
+        50% { opacity: 1; }
+    }
+    
+    /* Mobile layout */
+    @media (max-width: 768px) {
+        .users-container {
+            padding: 1rem;
+        }
+        
+        .users-table-container {
+            display: none;
+        }
+        
+        .mobile-users-cards {
+            display: block;
+        }
+        
+        .controls-section {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 1rem;
+        }
+        
+        .controls-section h1 {
+            text-align: center;
+            margin: 0;
+        }
+    }
+    
+    /* Ultra small screens */
+    @media (max-width: 480px) {
+        .users-container {
+            padding: 0.5rem;
+        }
+        
+        .mobile-user-card .user-info {
+            grid-template-columns: 1fr;
+        }
+        
+        .mobile-user-card .user-actions {
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="users-container">
+    <div class="controls-section">
+        <h1>👤 Foydalanuvchilar</h1>
+        <div style="margin-left:auto">
+            <a href="/add-user" class="btn-add" style="text-decoration: none; display: inline-block;">➕ Yangi foydalanuvchi</a>
+        </div>
+    </div>
+
+    <div id="loadingState">Mijozlar yuklanmoqda...</div>
+    <div id="emptyState" style="display:none"> <h3>📭 Foydalanuvchilar topilmadi</h3> </div>
+
+    <div class="table-responsive">
+        <div class="users-table-container">
+        <table class="users-table" id="usersTable" style="display:none">
+            <thead>
+                <tr>
+                    <th>Do'kon</th>
+                    <th>Login</th>
+                    <th>Ism</th>
+                    <th>Email</th>
+                    <th>Telefon</th>
+                    <th>Rol</th>
+                    <th>Status</th>
+                    <th>Qo'shilgan</th>
+                    <th>Harakatlar</th>
+                </tr>
+            </thead>
+            <tbody id="usersTableBody"></tbody>
+        </table>
+        </div>
+    </div>
+
+    <!-- Mobile cards layout -->
+    <div class="mobile-users-cards" id="mobileUsersCards">
+        <!-- Mobile cards will be populated here -->
+    </div>
+
+</div>
+
+<script>
+    let allUsers = [];
+    let editingUserId = null;
+
+    document.addEventListener('DOMContentLoaded', function() {
+        loadUsers();
+    });
+
+
+
+    async function loadUsers() {
+        try {
+            const res = await fetch('/api/users');
+            const data = await res.json();
+            allUsers = data;
+            displayUsers();
+        } catch (e) { console.error('Users load error', e); showError('Foydalanuvchilarni yuklashda xatolik'); }
+    }
+
+    function displayUsers() {
+        const loadingState = document.getElementById('loadingState');
+        const emptyState = document.getElementById('emptyState');
+        const table = document.getElementById('usersTable');
+        const tbody = document.getElementById('usersTableBody');
+        const mobileCards = document.getElementById('mobileUsersCards');
+        
+        loadingState.style.display = 'none';
+        
+        if (allUsers.length === 0) { 
+            emptyState.style.display='block'; 
+            table.style.display='none'; 
+            mobileCards.innerHTML = '';
+            return; 
+        }
+        
+        emptyState.style.display='none'; 
+        table.style.display='table';
+        
+        // Desktop table HTML
+        let tableHtml='';
+        // Mobile cards HTML
+        let cardsHtml='';
+        
+        allUsers.forEach(u => {
+            const created = new Date(u.created_at).toLocaleDateString('uz-UZ');
+            const storeName = u.store_name || 'Barcha dokonlar';
+            const isActiveTxt = u.is_active ? 'Faol' : 'Faol emas';
+            const isActiveIcon = u.is_active ? '✅ Faol' : '❌ Faol emas';
+            const safeName = u.full_name.replace(/'/g, '');
+            
+            // Desktop table row
+            tableHtml += `<tr>
+                <td title="${storeName}">${storeName}</td>
+                <td title="${u.username}">${u.username}</td>
+                <td title="${u.full_name}">${u.full_name}</td>
+                <td title="${u.email || '-'}">${u.email || '-'}</td>
+                <td title="${u.phone || '-'}">${u.phone || '-'}</td>
+                <td title="${u.role_display || u.role}">${u.role_display || u.role}</td>
+                <td title="${isActiveTxt}">${isActiveIcon}</td>
+                <td title="${created}">${created}</td>
+                <td class="actions">
+                    <button onclick="editUser(${u.id})" title="Tahrirlash">✏️</button>
+                    <button onclick="toggleUserStatus(${u.id}, '${safeName}', ${u.is_active})" 
+                            title="${u.is_active ? 'Faol emas qilish' : 'Faol qilish'}">
+                        ${u.is_active ? '❌' : '✅'}
+                    </button>
+                    <button onclick="confirmDeleteUser(${u.id}, '${safeName}')" title="Ochirish">🗑️</button>
+                </td>
+            </tr>`;
+            
+            // Mobile card
+            cardsHtml += `
+                <div class="mobile-user-card">
+                    <div class="user-header">
+                        <div class="user-name">${u.full_name}</div>
+                        <div class="user-role">${u.role_display || u.role}</div>
+                    </div>
+                    <div class="user-info">
+                        <div class="info-item">
+                            <div class="info-label">🏪 Dokon</div>
+                            <div class="info-value">${storeName}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">👤 Login</div>
+                            <div class="info-value">${u.username}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">📧 Email</div>
+                            <div class="info-value">${u.email || '-'}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">📞 Telefon</div>
+                            <div class="info-value">${u.phone || '-'}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">📅 Qoshilgan</div>
+                            <div class="info-value">${created}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">🔄 Status</div>
+                            <div class="info-value">${isActiveIcon}</div>
+                        </div>
+                    </div>
+                    <div class="user-actions">
+                        <button onclick="editUser(${u.id})" class="btn-edit">✏️ Tahrirlash</button>
+                        <button onclick="toggleUserStatus(${u.id}, '${safeName}', ${u.is_active})" 
+                                class="btn-toggle">
+                            ${u.is_active ? '❌ Faol emas qilish' : '✅ Faol qilish'}
+                        </button>
+                        <button onclick="confirmDeleteUser(${u.id}, '${safeName}')" class="btn-delete">🗑️ Ochirish</button>
+                    </div>
+                </div>
+            `;
+        });
+        
+        tbody.innerHTML = tableHtml;
+        mobileCards.innerHTML = cardsHtml;
+    }
+
+
+
+    function editUser(id) {
+        // Edit sahifasiga yo'naltirish (keyinchalik yaratamiz)
+        window.location.href = `/edit-user/${id}`;
+    }
+
+    function confirmDeleteUser(id, name) {
+        if (confirm(`Haqiqatan ham "${name}" foydalanuvchisini ochirmoqchimisiz?`)) deleteUser(id);
+    }
+
+    async function deleteUser(id) {
+        try {
+            const res = await fetch(`/api/users/${id}`, { method: 'DELETE' });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Xato');
+            loadUsers();
+            alert(data.message || 'Ochirildi');
+        } catch (e) { alert('Xatolik: ' + e.message); }
+    }
+
+    async function toggleUserStatus(id, name, isActive) {
+        const action = isActive ? 'faol emas qilish' : 'faol qilish';
+        const actionText = isActive ? 'faol emas qilinadi' : 'faol qilinadi';
+        
+        if (!confirm(`Haqiqatan ham "${name}" foydalanuvchisini ${actionText}?`)) {
+            return;
+        }
+        
+        try {
+            const res = await fetch(`/api/users/${id}/toggle-status`, { 
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            const data = await res.json();
+            
+            if (!res.ok) throw new Error(data.error || 'Xato');
+            
+            loadUsers(); // Sahifani yangilash
+            alert(data.message || `Foydalanuvchi ${action}di`);
+        } catch (e) { 
+            alert('Xatolik: ' + e.message); 
+        }
+    }
+
+    function showError(msg) { document.getElementById('loadingState').innerHTML = `<h3 style="color:#e74c3c">❌ ${msg}</h3>`; }
+</script>
+
+{% endblock %}

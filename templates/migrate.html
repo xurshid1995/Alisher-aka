@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Database Migration Tool</title>
+</head>
+<body>
+    <h1>Database Migration</h1>
+    <button onclick="addCurrencyColumn()">Add Currency Rate Column</button>
+    <div id="result"></div>
+    
+    <script>
+    async function addCurrencyColumn() {
+        try {
+            const response = await fetch('/api/add-currency-column', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'}
+            });
+            const data = await response.json();
+            document.getElementById('result').innerHTML = JSON.stringify(data, null, 2);
+        } catch (error) {
+            document.getElementById('result').innerHTML = 'Error: ' + error.message;
+        }
+    }
+    </script>
+</body>
+</html>

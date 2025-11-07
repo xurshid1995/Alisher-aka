@@ -1,0 +1,619 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block extra_css %}
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Charts Section -->
+    <div class="row">
+        <div class="col-md-10 col-lg-8 mx-auto">
+            <div class="card">
+                <div class="card-header text-center">
+                    <h2>📊 Savdo Dinamikasi</h2>
+                    
+                    <!-- Joylashuv filtri -->
+                    <div class="mt-3" id="locationButtons">
+                        <button class="btn btn-sm me-2 mb-2 location-btn active" data-location="" onclick="selectLocation(this, '')">
+                            🏢 Barchasi
+                        </button>
+                    </div>
+                    
+                    <!-- Vaqt filtri va Statistika bir qatorda -->
+                    <div class="mt-2" id="timeFiltersAndStats">
+                        <div class="row align-items-center">
+                            <!-- Vaqt filtri tugmalari -->
+                            <div class="col-lg-6 text-center text-lg-start mb-2">
+                                <div id="timeFilters">
+                                    <button class="btn btn-sm me-2 mb-2 time-btn active" data-period="today" onclick="selectTimePeriod(this, 'today')">
+                                        📅 Bugun
+                                    </button>
+                                    <button class="btn btn-sm me-2 mb-2 time-btn" data-period="week" onclick="selectTimePeriod(this, 'week')">
+                                        📊 Bu hafta
+                                    </button>
+                                    <button class="btn btn-sm me-2 mb-2 time-btn" data-period="month" onclick="selectTimePeriod(this, 'month')">
+                                        📈 Bu oy
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Statistika -->
+                            <div class="col-lg-6">
+                                <div class="stats-horizontal" id="statsRow">
+                                    <div class="stat-item">
+                                        <span class="stat-label-inline">📊 Savdo</span>
+                                        <span class="stat-number-inline" id="totalSales">0</span>
+                                    </div>
+                                    <div class="stat-separator">|</div>
+                                    <div class="stat-item">
+                                        <span class="stat-label-inline">💰 Summa</span>
+                                        <span class="stat-number-inline" id="totalAmount">0$</span>
+                                    </div>
+                                    {% if session.role != 'sotuvchi' %}
+                                    <div class="stat-separator">|</div>
+                                    <div class="stat-item">
+                                        <span class="stat-label-inline">💵 Foyda</span>
+                                        <span class="stat-number-inline" id="totalProfit">0$</span>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body" style="height: 400px;">
+                    <canvas id="salesChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.page-header {
+    text-align: center;
+    margin-bottom: 1rem;
+    padding: 1rem 0;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 6px;
+}
+
+.page-header h2 {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.page-header p {
+    margin: 0;
+    opacity: 0.9;
+}
+
+/* Eski CSS qoidalar olib tashlandi */
+
+#locationButtons {
+    max-height: 120px;
+    overflow-y: auto;
+    padding: 0.5rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+#locationButtons::-webkit-scrollbar {
+    width: 6px;
+}
+
+#locationButtons::-webkit-scrollbar-track {
+    background: #e9ecef;
+    border-radius: 3px;
+}
+
+#locationButtons::-webkit-scrollbar-thumb {
+    background: #6c757d;
+    border-radius: 3px;
+}
+
+#locationButtons::-webkit-scrollbar-thumb:hover {
+    background: #495057;
+}
+
+/* Tugmalar - Bosilmagan holat - OZGINA KATTAROQ */
+.location-btn {
+    background: none !important;
+    background-color: transparent !important;
+    border: 1px solid #007bff !important;
+    color: black !important;
+    box-shadow: none !important;
+    transition: all 0.3s ease;
+    font-weight: 450;
+    font-size: 14px !important;
+    padding: 6px 12px !important;
+    border-radius: 5px;
+}
+
+/* Tugma bosilganda - KO'K rang, soya yo'q - KICHIKROQ */
+.location-btn.active {
+    background-color: #007bff !important;
+    border: 1px solid #007bff !important;
+    color: white !important;
+    box-shadow: none !important;
+    transform: scale(1.02) !important;
+}
+
+/* Hover effect - soya yo'q */
+.location-btn:hover:not(.active) {
+    background-color: rgba(0, 123, 255, 0.1) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: none !important;
+}
+
+/* Vaqt filtri tugmalari */
+.time-btn {
+    background: none !important;
+    background-color: transparent !important;
+    border: 1px solid #28a745 !important;
+    color: #28a745 !important;
+    box-shadow: none !important;
+    transition: all 0.3s ease;
+    font-weight: 450;
+    font-size: 14px !important;
+    padding: 6px 12px !important;
+    border-radius: 5px;
+}
+
+/* Vaqt filtri - bosilgan holat */
+.time-btn.active {
+    background-color: #28a745 !important;
+    border: 1px solid #28a745 !important;
+    color: white !important;
+    box-shadow: none !important;
+    transform: scale(1.02) !important;
+}
+
+/* Vaqt filtri hover */
+.time-btn:hover:not(.active) {
+    background-color: rgba(40, 167, 69, 0.1) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: none !important;
+}
+
+/* Statistika kartalari */
+.stat-card {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 8px;
+    padding: 15px 10px;
+    margin: 0 5px;
+    border: 1px solid #dee2e6;
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.stat-number {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: #28a745;
+    margin-bottom: 5px;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: #6c757d;
+    font-weight: 500;
+}
+
+/* Inline statistika kartalari (bir qatorda) */
+.stat-card-inline {
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 6px;
+    padding: 8px 5px;
+    margin: 0 2px;
+    border: 1px solid #e9ecef;
+    transition: all 0.2s ease;
+    text-align: center;
+}
+
+.stat-card-inline:hover {
+    background: rgba(255, 255, 255, 0.95);
+    border-color: #28a745;
+}
+
+.stat-number-small {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #28a745;
+    margin-bottom: 2px;
+    line-height: 1.2;
+}
+
+.stat-label-small {
+    font-size: 0.75rem;
+    color: #6c757d;
+    font-weight: 500;
+    line-height: 1.2;
+}
+
+/* Gorizontal statistika (bir qatorda) */
+.stats-horizontal {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+    padding: 8px 0;
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.stat-number-inline {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #28a745;
+}
+
+.stat-label-inline {
+    font-size: 0.9rem;
+    color: #6c757d;
+    font-weight: 500;
+}
+
+.stat-separator {
+    color: #dee2e6;
+    font-weight: 300;
+    font-size: 1.2rem;
+}
+
+@media (max-width: 576px) {
+    .stats-horizontal {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .stat-separator {
+        display: none;
+    }
+    
+    .stat-item {
+        justify-content: center;
+    }
+}
+
+@media (max-width: 768px) {
+    .stat-card {
+        margin-bottom: 10px;
+    }
+    
+    .stat-number {
+        font-size: 1.5rem;
+    }
+}
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- Cache buster: v2.0 -->
+<script>
+let salesChart;
+let currentSalesData = null;
+const userRole = '{{ session.role }}';
+
+document.addEventListener('DOMContentLoaded', function() {
+    loadLocations();
+    loadSalesChart();
+});
+
+async function loadLocations() {
+    try {
+        const response = await fetch('/api/stores-warehouses');
+        const data = await response.json();
+        
+        const buttonsContainer = document.getElementById('locationButtons');
+        
+        // "Barchasi" tugmasi CSS orqali boshqariladi
+        
+        const locations = data.locations || [];
+        
+        locations.forEach((location) => {
+            const button = document.createElement('button');
+            button.className = 'btn btn-sm me-2 mb-2 location-btn';
+            button.setAttribute('data-location', location.id);
+            button.onclick = () => selectLocation(button, location.id);
+            
+            // Tugma stili CSS orqali boshqariladi
+            
+            const icon = location.type === 'store' ? '🏪' : '🏭';
+            button.innerHTML = `${icon} ${location.name}`;
+            
+            buttonsContainer.appendChild(button);
+        });
+    } catch (error) {
+        console.error('Joylashuvlarni yuklashda xatolik:', error);
+    }
+}
+
+function selectLocation(clickedButton, locationId) {
+    document.querySelectorAll('.location-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    clickedButton.classList.add('active');
+    
+    // Aktiv vaqt filtrini ham yuboramiz
+    const activePeriod = document.querySelector('.time-btn.active')?.getAttribute('data-period') || 'today';
+    loadSalesChart(locationId, activePeriod);
+}
+
+function selectTimePeriod(clickedButton, period) {
+    document.querySelectorAll('.time-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    clickedButton.classList.add('active');
+    
+    console.log('Tanlangan vaqt:', period);
+    
+    // Aktiv joylashuvni topamiz va period bilan birga yuboramiz
+    const activeLocation = document.querySelector('.location-btn.active')?.getAttribute('data-location') || '';
+    loadSalesChart(activeLocation, period);
+}
+
+async function loadSalesChart(locationId = null, period = null) {
+    try {
+        const params = new URLSearchParams();
+        if (locationId) params.append('location_id', locationId);
+        
+        // Agar period berilmasa, aktiv period tugmasidan olamiz
+        if (!period) {
+            const activePeriodBtn = document.querySelector('.time-btn.active');
+            period = activePeriodBtn ? activePeriodBtn.getAttribute('data-period') : 'today';
+        }
+        params.append('period', period);
+        
+        const response = await fetch(`/api/sales-chart?${params}`);
+        const data = await response.json();
+        
+        // Debug uchun API javobini ko'ramiz
+        console.log('🔍 API parametrlari:', params.toString());
+        console.log('📊 API javobi:', data);
+        
+        currentSalesData = data;
+        
+        // Statistikalarni yangilash
+        updateStatistics(data);
+        
+        const ctx = document.getElementById('salesChart').getContext('2d');
+        
+        if (salesChart) {
+            salesChart.destroy();
+        }
+        
+        const selectedLocationName = locationId ? 
+            document.querySelector(`.location-btn[data-location="${locationId}"]`)?.textContent.trim() || 'Tanlangan joylashuv' :
+            'Barcha joylashuvlar';
+        
+        salesChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: data.labels || [],
+                datasets: [
+                    {
+                        label: 'Savdo summasi ($)',
+                        data: data.amounts || [],
+                        backgroundColor: 'rgba(40, 167, 69, 0.8)',
+                        borderColor: '#28a745',
+                        borderWidth: 1,
+                        borderRadius: 4,
+                        borderSkipped: false,
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: `📊 ${selectedLocationName}`,
+                        font: {
+                            size: 14,
+                            weight: 'bold'
+                        },
+                        color: '#495057'
+                    },
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        backgroundColor: 'rgba(0, 0, 0, 0.9)',
+                        titleColor: 'white',
+                        bodyColor: 'white',
+                        borderColor: 'rgba(102, 126, 234, 0.8)',
+                        borderWidth: 1,
+                        titleAlign: 'left',
+                        bodyAlign: 'left',
+                        titleFont: {
+                            size: 12,
+                            weight: 'bold'
+                        },
+                        bodyFont: {
+                            size: 11
+                        },
+                        padding: 8,
+                        cornerRadius: 4,
+                        displayColors: false,
+                        callbacks: {
+                            title: function(context) {
+                                const label = context[0].label;
+                                const today = new Date();
+                                const year = today.getFullYear();
+                                return `${label}.${year}`;
+                            },
+                            beforeBody: function() {
+                                return '';  // Bo'sh qator qo'shish
+                            },
+                            label: function(context) {
+                                const dataIndex = context.dataIndex;
+                                
+                                // Debug ma'lumotlari
+                                console.log('Tooltip debug:', {
+                                    dataIndex: dataIndex,
+                                    currentSalesData: currentSalesData,
+                                    values: currentSalesData?.values,
+                                    parsed: context.parsed
+                                });
+                                
+                                const savdoSoni = currentSalesData && currentSalesData.values ? currentSalesData.values[dataIndex] : 0;
+                                const savdoSummasi = context.parsed.y;
+                                const savdoFoydasi = currentSalesData && currentSalesData.profits ? currentSalesData.profits[dataIndex] : 0;
+                                
+                                const formattedAmount = Math.floor(savdoSummasi).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+                                const formattedProfit = Math.floor(savdoFoydasi).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+                                
+                                const tooltipLines = [
+                                    `📊 Savdo soni: ${savdoSoni}`,
+                                    `💰 Savdo summasi: ${formattedAmount} $`
+                                ];
+                                
+                                // Faqat sotuvchi emas bo'lsa foydani ko'rsatish
+                                if (userRole !== 'sotuvchi') {
+                                    tooltipLines.push(`💵 Foyda: ${formattedProfit} $`);
+                                }
+                                
+                                return tooltipLines;
+                            }
+                        }
+                    }
+                },
+                interaction: {
+                    mode: 'nearest',
+                    axis: 'x',
+                    intersect: false
+                },
+                scales: {
+                    y: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        beginAtZero: true,
+                        title: {
+                            display: false
+                        },
+                        ticks: {
+                            font: {
+                                size: 11
+                            },
+                            callback: function(value, index, values) {
+                                return '$' + value.toLocaleString();
+                            }
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            font: {
+                                size: 12
+                            },
+                            color: '#6c757d',
+                            callback: function(value, index, values) {
+                                const label = this.getLabelForValue(value);
+                                if (!label) return '';
+                                
+                                // Bugun filtiri faolmi?
+                                const activePeriod = document.querySelector('.time-btn.active')?.getAttribute('data-period');
+                                
+                                if (activePeriod === 'today') {
+                                    // Soat formatini ko'rsatish: "14:00"
+                                    return label; // API dan "14:00" formatida keladi
+                                } else {
+                                    // "10-18" formatini "10\noktyabr\n2025" ga aylantirish
+                                    const [month, day] = label.split('-');
+                                    const oyNomi = [
+                                        '', 'yanvar', 'fevral', 'mart', 'aprel', 'may', 'iyun',
+                                        'iyul', 'avgust', 'sentyabr', 'oktyabr', 'noyabr', 'dekabr'
+                                    ];
+                                    
+                                    const oyIndex = parseInt(month);
+                                    const kun = parseInt(day);
+                                    
+                                    return [kun.toString(), oyNomi[oyIndex] || '', '2025'];
+                                }
+                            },
+                            maxRotation: 0,
+                            minRotation: 0
+                        },
+                        title: {
+                            display: true,
+                            text: period === 'today' ? 'Soatlar' : 'Sanalar',
+                            color: '#6c757d',
+                            font: {
+                                size: 12
+                            }
+                        }
+                    }
+                },
+                elements: {
+                    bar: {
+                        borderWidth: 1,
+                        borderRadius: 4,
+                        borderSkipped: false
+                    }
+                }
+            }
+        });
+    } catch (error) {
+        console.error('Savdo grafigi yuklashda xatolik:', error);
+    }
+}
+
+// Statistikalarni yangilash funksiyasi
+function updateStatistics(data) {
+    if (!data || !data.values || !data.amounts || !data.profits) {
+        // Ma'lumot yo'q bo'lsa, 0 ko'rsatamiz
+        document.getElementById('totalSales').textContent = '0';
+        document.getElementById('totalAmount').textContent = '$0';
+        document.getElementById('totalProfit').textContent = '$0';
+        return;
+    }
+    
+    // Jami savdo soni
+    const totalSales = data.values.reduce((sum, value) => sum + value, 0);
+    
+    // Jami savdo summasi  
+    const totalAmount = data.amounts.reduce((sum, amount) => sum + amount, 0);
+    
+    // Jami foyda
+    const totalProfit = data.profits.reduce((sum, profit) => sum + profit, 0);
+    
+    // Formatlash va ko'rsatish
+    document.getElementById('totalSales').textContent = totalSales.toLocaleString();
+    document.getElementById('totalAmount').textContent = Math.floor(totalAmount).toLocaleString() + '$';
+    
+    // Foyda faqat sotuvchi bo'lmasa yangilanadi
+    if (userRole !== 'sotuvchi') {
+        document.getElementById('totalProfit').textContent = Math.floor(totalProfit).toLocaleString() + '$';
+    }
+    
+    console.log('📈 Statistikalar yangilandi:', {
+        totalSales: totalSales,
+        totalAmount: totalAmount, 
+        totalProfit: totalProfit
+    });
+}
+</script>
+{% endblock %}

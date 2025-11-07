@@ -1,0 +1,709 @@
+{% extends "base_with_sidebar.html" %}
+
+{% block title %}Mijozlar - Sayt 2025{% endblock %}
+
+{% block extra_css %}
+<style>
+    .customers-container {
+        padding: 1rem;
+        background: #f8f9fa;
+        min-height: auto;
+    }
+
+    .page-header {
+        padding: 2rem;
+        margin-bottom: 2rem;
+        text-align: left;
+    }
+
+    .page-header h1 {
+        margin: 0;
+        font-size: 2.5rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 1rem;
+        color: #333;
+    }
+
+    .page-header p {
+        margin: 0.5rem 0 0 0;
+        font-size: 1.1rem;
+        color: #666;
+    }
+
+    .controls-section {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        display: flex !important;
+        align-items: center !important;
+        flex-wrap: nowrap !important;
+        gap: 0.3rem;
+        justify-content: space-between !important;
+        min-height: 80px;
+        overflow: visible;
+    }
+
+    .search-box {
+        flex: 1 1 250px !important;
+        max-width: 350px !important;
+        min-width: 200px !important;
+        position: relative;
+    }
+
+    .search-box input {
+        width: 100%;
+        padding: 0.75rem 1rem 0.75rem 2.5rem;
+        border: 2px solid #e9ecef;
+        border-radius: 25px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .search-box input:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        outline: none;
+    }
+
+    .search-box .search-icon {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #6c757d;
+        font-size: 1rem;
+    }
+
+    .add-customer-btn {
+        background: #28a745;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+        display: flex !important;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(40, 167, 69, 0.2);
+        white-space: nowrap !important;
+        border: 2px solid #28a745;
+        min-width: 140px !important;
+        max-width: 160px !important;
+        justify-content: center;
+        flex: 0 0 auto !important;
+        flex-shrink: 0 !important;
+    }
+
+    .add-customer-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+        text-decoration: none;
+        color: white;
+        background: #218838;
+        border-color: #218838;
+    }
+
+    .add-customer-btn span {
+        font-size: 1rem;
+    }
+
+    /* Inline filtrlari */
+    .inline-filters {
+        display: flex !important;
+        align-items: center !important;
+        gap: 0.2rem;
+        flex: 1 1 auto !important;
+        justify-content: flex-start !important;
+        min-width: 0 !important;
+        flex-wrap: nowrap !important;
+    }
+
+    .store-filter-buttons {
+        display: flex !important;
+        gap: 0.6rem;
+        flex-wrap: nowrap !important;
+        align-items: center;
+        justify-content: flex-start;
+        min-width: 0;
+        overflow-x: auto;
+        overflow-y: hidden;
+        max-width: 100%;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+
+    .store-filter-buttons::-webkit-scrollbar {
+        display: none;
+    }
+
+    .store-filter-btn {
+        padding: 0.6rem 1rem;
+        border: 2px solid #e9ecef;
+        border-radius: 20px;
+        background: white;
+        color: #495057;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        white-space: nowrap;
+        flex-shrink: 0;
+        min-width: fit-content;
+        white-space: nowrap;
+    }
+
+    .store-filter-btn:hover {
+        border-color: #667eea;
+        color: #667eea;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+    }
+
+    .store-filter-btn.active {
+        background: #667eea;
+        color: white;
+        border-color: #667eea;
+    }
+
+    .store-filter-btn.active:hover {
+        background: #5a6fd8;
+        border-color: #5a6fd8;
+    }
+
+    .customers-table-container {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .table-info {
+        padding: 1rem 1.5rem;
+        background: #f8f9fa;
+        border-bottom: 1px solid #dee2e6;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .customers-table {
+        width: 100%;
+        min-width: 800px; /* Mijozlar jadvali uchun minimal kenglik */
+        border-collapse: collapse;
+    }
+
+    .customers-table th {
+        background: #667eea;
+        color: white;
+        padding: 1rem;
+        text-align: left;
+        font-weight: 600;
+        border-bottom: 2px solid #5a67d8;
+    }
+
+    .customers-table td {
+        padding: 0.875rem 1rem;
+        border-bottom: 1px solid #e9ecef;
+        vertical-align: middle;
+    }
+
+    .customers-table tr:hover {
+        background-color: #f8f9fa;
+    }
+
+    .emoji {
+        font-size: 1.1em;
+        margin-right: 0.5rem;
+    }
+
+    .store-name {
+        font-weight: 600;
+        color: #667eea;
+    }
+
+    .customer-name {
+        font-weight: 600;
+        color: #333;
+    }
+
+    .customer-phone {
+        font-family: inherit;
+        color: #495057;
+    }
+
+    .customer-email {
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+
+    .actions {
+        display: flex;
+        gap: 0.3rem;
+        align-items: center;
+        justify-content: center;
+        min-width: 260px;
+    }
+
+    .btn-view, .btn-edit, .btn-delete {
+        padding: 0.5rem 0.75rem;
+        border-radius: 6px;
+        text-decoration: none;
+        font-size: 0.8rem;
+        font-weight: 500;
+        border: 1px solid;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.25rem;
+        min-width: 80px;
+        max-width: 80px;
+        width: 80px;
+        text-align: center;
+        white-space: nowrap;
+    }
+
+    .btn-view {
+        background: #1976d2;
+        color: white;
+        border-color: #1565c0;
+    }
+
+    .btn-view:hover {
+        background: #1565c0;
+        color: white;
+        text-decoration: none;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(21, 101, 192, 0.3);
+    }
+
+    .btn-edit {
+        background: #f57c00;
+        color: white;
+        border-color: #ef6c00;
+    }
+
+    .btn-edit:hover {
+        background: #ef6c00;
+        color: white;
+        text-decoration: none;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(239, 108, 0, 0.3);
+    }
+
+    .btn-delete {
+        background: #d32f2f;
+        color: white;
+        border-color: #c62828;
+    }
+
+    .btn-delete:hover {
+        background: #c62828;
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(198, 40, 40, 0.3);
+    }
+
+    .loading-state, .empty-state {
+        text-align: center;
+        padding: 3rem 2rem;
+        color: #6c757d;
+    }
+
+    .loading-state h3, .empty-state h3 {
+        color: #6c757d;
+        margin-bottom: 1rem;
+    }
+
+    .empty-state p {
+        color: #6c757d;
+    }
+
+    /* Responsive - soddalashtirilgan */
+    @media (max-width: 500px) {
+        .controls-section {
+            flex-wrap: wrap;
+            padding: 1rem;
+        }
+        
+        .search-box, 
+        .inline-filters, 
+        .add-customer-btn {
+            flex-basis: 100%;
+        }
+        
+        .customers-table {
+            font-size: 0.9rem;
+        }
+        
+        .actions {
+            flex-direction: column;
+            gap: 0.3rem;
+        }
+    }
+    
+    /* Desktop kichik ekranlar uchun horizontal scroll */
+    @media (min-width: 769px) and (max-width: 1400px) {
+        .customers-table-container {
+            border: 1px solid #dee2e6;
+        }
+        
+        .customers-table {
+            min-width: 1000px; /* Desktop uchun kengrok minimal kenglik */
+        }
+        
+        /* Scroll indicator */
+        .customers-table-container::before {
+            content: "💡 Mijozlar jadvalida ko'proq ma'lumot uchun gorizontal scroll qiling ← →";
+            display: block;
+            text-align: center;
+            font-size: 11px;
+            color: #495057;
+            padding: 6px;
+            background: linear-gradient(90deg, #e3f2fd 0%, #f3e5f5 50%, #e8f5e8 100%);
+            border-bottom: 1px solid #dee2e6;
+            font-weight: 500;
+        }
+    }
+    
+    /* 480px dan kichik ekranlar uchun */
+    @media (max-width: 480px) {
+        .customers-container {
+            padding: 0.5rem;
+        }
+        
+        .page-header {
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .page-header h1 {
+            font-size: 1.8rem;
+        }
+        
+        .customers-table {
+            min-width: 600px; /* Mobile uchun minimal kenglik */
+            font-size: 0.8rem;
+        }
+        
+        .customers-table th,
+        .customers-table td {
+            padding: 0.5rem 0.3rem;
+            white-space: nowrap;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="customers-container">
+    <!-- Sahifa sarlavhasi -->
+    <div class="page-header">
+        <h1>
+            <span>👥</span>
+            Mijozlar Boshqaruvi
+        </h1>
+    </div>
+
+    <!-- Boshqaruv paneli -->
+    <div class="controls-section">
+        <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="customerSearch" placeholder="Mijozlarni qidirish..." oninput="searchCustomers()">
+        </div>
+        
+        <div class="inline-filters">
+            <div class="store-filter-buttons">
+                <button class="store-filter-btn active" onclick="filterByStore('')" id="allStoresBtn">
+                    📊 Hammasi
+                </button>
+                <div id="storeFilterButtons">
+                    <!-- Dokon tugmalari bu yerga yuklanadi -->
+                </div>
+            </div>
+        </div>
+        
+        <a href="/add-customer" class="add-customer-btn">
+            <span>➕</span>
+            Mijoz qo'shish
+        </a>
+    </div>
+
+    <!-- Jadval container -->
+    <div class="table-responsive">
+        <div class="customers-table-container">
+        <!-- Ma'lumot ko'rsatuvchisi -->
+        <div class="table-info">
+            <span id="resultsInfo">Mijozlar yuklanmoqda...</span>
+        </div>
+
+        <!-- Loading holati -->
+        <div id="loadingState" class="loading-state">
+            <h3>⏳ Yuklanmoqda...</h3>
+            <p>Mijozlar ma'lumotlari yuklanmoqda, biroz kuting.</p>
+        </div>
+
+        <!-- Bo'sh holat -->
+        <div id="emptyState" class="empty-state" style="display: none;">
+            <h3>📭 Mijozlar topilmadi</h3>
+            <p>Hech qanday mijoz ma'lumoti mavjud emas yoki filter shartlariga mos mijoz yo'q.</p>
+        </div>
+
+        <!-- Mijozlar jadvali -->
+        <table class="customers-table" id="customersTable" style="display: none;">
+            <thead>
+                <tr>
+                    <th><span class="emoji">🏪</span>Dokon</th>
+                    <th><span class="emoji">👤</span>Mijoz nomi</th>
+                    <th><span class="emoji">📞</span>Telefon</th>
+                    <th><span class="emoji">📧</span>Email</th>
+                    <th><span class="emoji">📍</span>Manzil</th>
+                    <th><span class="emoji">📅</span>Qo'shilgan sana</th>
+                    <th><span class="emoji">⚙️</span>Amallar</th>
+                </tr>
+            </thead>
+            <tbody id="customersTableBody">
+                <!-- Mijozlar ma'lumotlari bu yerga yuklanadi -->
+            </tbody>
+        </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Server'dan user role ma'lumoti
+    const userRole = '{{ user_role }}';
+    console.log('User role:', userRole);
+    
+    let allCustomers = [];
+    let filteredCustomers = [];
+    let allStores = [];
+
+    // Sahifa yuklanganda mijozlar va dokonlarni olish
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Sahifa yuklandi, ma\'lumotlarni yuklaydi...');
+        loadCustomers();
+        loadStores();
+    });
+
+    // Mijozlarni yuklash
+    async function loadCustomers() {
+        try {
+            console.log('Mijozlarni yuklayapti...');
+            const response = await fetch('/api/customers');
+            const data = await response.json();
+            console.log('Mijozlar yuklandi:', data.length, 'ta mijoz');
+            allCustomers = data;
+            filteredCustomers = [...allCustomers];
+            displayCustomers();
+            
+            // Dokonlar filtri yangilash (agar dokonlar allaqachon yuklangan bo'lsa)
+            if (allStores.length > 0) {
+                populateStoreFilter();
+            }
+        } catch (error) {
+            console.error('Mijozlarni yuklashda xatolik:', error);
+            showError('Mijozlarni yuklashda xatolik yuz berdi');
+        }
+    }
+
+    // Mijozlarni ko'rsatish
+    function displayCustomers() {
+        const loadingState = document.getElementById('loadingState');
+        const emptyState = document.getElementById('emptyState');
+        const customersTable = document.getElementById('customersTable');
+        const tableBody = document.getElementById('customersTableBody');
+
+        loadingState.style.display = 'none';
+
+        if (filteredCustomers.length === 0) {
+            emptyState.style.display = 'block';
+            customersTable.style.display = 'none';
+        } else {
+            emptyState.style.display = 'none';
+            customersTable.style.display = 'table';
+
+            // Jadval ma'lumotlarini yaratish
+            let tableHtml = '';
+            filteredCustomers.forEach(customer => {
+                const createdDate = new Date(customer.created_at).toLocaleDateString('uz-UZ');
+                
+                tableHtml += `
+                    <tr>
+                        <td class="store-name">${customer.store_name || 'Umumiy'}</td>
+                        <td class="customer-name">${customer.name || 'Noma\'lum'}</td>
+                        <td class="customer-phone">${customer.phone || '-'}</td>
+                        <td class="customer-email">${customer.email || '-'}</td>
+                        <td>${customer.address || '-'}</td>
+                        <td>${createdDate}</td>
+                        <td class="actions">
+                            <button onclick="viewCustomer(${customer.id})" class="btn-view">👁️ Ko'rish</button>
+                            ${userRole === 'admin' ? `<a href="/edit-customer/${customer.id}" class="btn-edit">✏️ Tahrirlash</a>` : ''}
+                            ${userRole === 'admin' ? `<button onclick="deleteCustomer(${customer.id}, '${customer.name}')" class="btn-delete">🗑️ O'chirish</button>` : ''}
+                        </td>
+                    </tr>
+                `;
+            });
+
+            tableBody.innerHTML = tableHtml;
+            document.getElementById('resultsInfo').textContent = 
+                `${filteredCustomers.length} ta mijoz ko'rsatilmoqda`;
+        }
+    }
+
+    // Mijozlarni qidirish va filtrash
+    function searchCustomers() {
+        applyFilters();
+    }
+
+    let currentStoreFilter = '';
+
+    // Dokon bo'yicha filtrash
+    function filterByStore(storeId) {
+        console.log('Dokon filtri bosildi:', storeId);
+        currentStoreFilter = storeId || '';
+        
+        // Tugma active holatini yangilash
+        document.querySelectorAll('.store-filter-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        
+        if (!storeId) {
+            const allBtn = document.getElementById('allStoresBtn');
+            if (allBtn) {
+                allBtn.classList.add('active');
+            }
+        } else {
+            const targetBtn = document.querySelector(`[data-store-id="${storeId}"]`);
+            if (targetBtn) {
+                targetBtn.classList.add('active');
+            }
+        }
+        
+        applyFilters();
+    }
+
+    // Barcha filtrlarni qo'llash
+    function applyFilters() {
+        const searchTerm = document.getElementById('customerSearch').value.toLowerCase().trim();
+        
+        filteredCustomers = allCustomers.filter(customer => {
+            // Qidiruv filtri
+            const matchesSearch = !searchTerm || 
+                (customer.name && customer.name.toLowerCase().includes(searchTerm)) ||
+                (customer.phone && customer.phone.toLowerCase().includes(searchTerm)) ||
+                (customer.email && customer.email.toLowerCase().includes(searchTerm)) ||
+                (customer.address && customer.address.toLowerCase().includes(searchTerm));
+            
+            // Dokon filtri
+            const matchesStore = !currentStoreFilter || 
+                (customer.store_id && customer.store_id.toString() === currentStoreFilter);
+            
+            return matchesSearch && matchesStore;
+        });
+        
+        displayCustomers();
+    }
+
+    // Dokonlarni yuklash
+    async function loadStores() {
+        try {
+            console.log('Dokonlarni yuklayapti...');
+            const response = await fetch('/api/stores');
+            const data = await response.json();
+            console.log('Dokonlar yuklandi:', data.length, 'ta dokon');
+            allStores = data;
+            populateStoreFilter();
+        } catch (error) {
+            console.error('Dokonlarni yuklashda xatolik:', error);
+        }
+    }
+
+    // Dokon filtr tugmalarini yaratish
+    function populateStoreFilter() {
+        const storeButtonsContainer = document.getElementById('storeFilterButtons');
+        
+        // Faqat mijozlarga tegishli dokonlarni ko'rsatish
+        const usedStores = [...new Set(allCustomers
+            .filter(customer => customer.store_id)
+            .map(customer => customer.store_id))];
+        
+        const relevantStores = allStores.filter(store => usedStores.includes(store.id));
+        
+        // Container ni tozalash
+        storeButtonsContainer.innerHTML = '';
+        
+        relevantStores.forEach(store => {
+            const button = document.createElement('button');
+            button.className = 'store-filter-btn';
+            button.setAttribute('data-store-id', store.id.toString());
+            button.onclick = () => filterByStore(store.id.toString());
+            button.innerHTML = `🏪 ${store.name}`;
+            storeButtonsContainer.appendChild(button);
+        });
+    }
+
+    // Mijoz ma'lumotlarini ko'rish
+    function viewCustomer(customerId) {
+        window.location.href = `/customer/${customerId}`;
+    }
+
+    // Mijozni tahrirlash
+    function editCustomer(customerId) {
+        window.location.href = `/edit-customer?id=${customerId}`;
+    }
+
+    // Mijozni o'chirish
+    function deleteCustomer(customerId, customerName) {
+        // Faqat admin o'chira oladi
+        if (userRole !== 'admin') {
+            alert('⚠️ Mijozni o\'chirish uchun admin huquqi kerak!');
+            return;
+        }
+        
+        if (confirm(`Haqiqatan ham "${customerName}" mijozini o'chirmoqchimisiz?\n\nDiqqat: Bu amal qaytarib bo'lmaydi!`)) {
+            fetch(`/api/customers/${customerId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.json().then(data => {
+                        alert(data.message || 'Mijoz muvaffaqiyatli o\'chirildi!');
+                        loadCustomers(); // Ro'yxatni yangilash
+                    });
+                } else {
+                    alert('Xatolik yuz berdi! Mijozni o\'chirib bo\'lmadi.');
+                }
+            })
+            .catch(error => {
+                console.error('Xatolik:', error);
+                alert('Aloqa xatosi! Qaytadan urinib ko\'ring.');
+            });
+        }
+    }
+
+    // Xatolikni ko'rsatish
+    function showError(message) {
+        const loadingState = document.getElementById('loadingState');
+        loadingState.innerHTML = `
+            <h3 style="color: #e74c3c;">❌ Xatolik</h3>
+            <p>${message}</p>
+        `;
+    }
+</script>
+{% endblock %}

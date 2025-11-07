@@ -1,0 +1,1396 @@
+{% extends "base_with_sidebar.html" %}
+
+{% block title %}Foydalanuvchini Tahrirlash - Sayt 2025{% endblock %}
+
+{% block extra_css %}
+<style>
+    .add-user-container {
+        padding: 1rem 2rem;
+        background: #f8f9fa;
+        min-height: auto;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .page-header {
+        padding: 2rem;
+        margin-bottom: 2rem;
+        text-align: left;
+    }
+
+    .page-header h1 {
+        margin: 0;
+        font-size: 2.5rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 1rem;
+        color: #333;
+    }
+
+    .page-header p {
+        margin: 0.5rem 0 0 0;
+        font-size: 1.1rem;
+        color: #666;
+    }
+
+    .form-layout {
+        display: flex;
+        gap: 2rem;
+        align-items: flex-start;
+        width: 100%;
+        max-width: none;
+        margin: 0;
+    }
+
+    .form-section {
+        flex: 1;
+        min-width: 0;
+        background: white;
+        padding: 2rem;
+        border-radius: 12px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .info-section {
+        flex: 1;
+        min-width: 0;
+        background: white;
+        padding: 2rem;
+        border-radius: 12px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .info-section h3 {
+        color: #333;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .info-item {
+        margin-bottom: 1.5rem;
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 8px;
+        border-left: 4px solid #007bff;
+    }
+
+    .info-item h4 {
+        margin: 0 0 0.5rem 0;
+        color: #333;
+        font-size: 1rem;
+    }
+
+    .info-item p {
+        margin: 0;
+        color: #666;
+        font-size: 0.9rem;
+    }
+
+    @media (max-width: 768px) {
+        .form-layout {
+            flex-direction: column;
+        }
+        .form-row {
+            flex-direction: column;
+        }
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: #333;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: border-color 0.3s;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+        outline: none;
+        border-color: #007bff;
+        box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+    }
+
+    .form-group.checkbox {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .form-group.checkbox input {
+        width: auto;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: flex-end;
+        margin-top: 2rem;
+    }
+
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 8px;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .btn-primary {
+        background: #007bff;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: #0056b3;
+    }
+
+    .btn-secondary {
+        background: #6c757d;
+        color: white;
+    }
+
+    /* Huquqlar boshqaruvi stillari */
+    .permissions-control {
+        margin-top: 1rem;
+    }
+
+    .permission-group {
+        margin-bottom: 1.5rem;
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 8px;
+        border-left: 4px solid #007bff;
+    }
+
+    .permission-group h4 {
+        margin: 0 0 0.75rem 0;
+        font-size: 1rem;
+        color: #495057;
+    }
+
+    .permission-item {
+        display: flex;
+        align-items: center;
+        margin: 0.5rem 0;
+        cursor: pointer;
+        padding: 0.25rem 0;
+    }
+
+    .permission-item input[type="checkbox"] {
+        margin-right: 0.5rem;
+        transform: scale(1.1);
+    }
+
+    .permission-item span {
+        font-size: 0.9rem;
+        color: #495057;
+    }
+
+    .permission-controls {
+        margin-bottom: 1rem;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    .permission-controls .permission-item span {
+        color: #007bff;
+        font-weight: 600;
+    }
+
+    .admin-note {
+        padding: 1rem;
+        background: #e7f3ff;
+        border-radius: 8px;
+        border-left: 4px solid #007bff;
+        color: #0056b3;
+        font-size: 0.95rem;
+    }
+
+    .btn-secondary:hover {
+        background: #545b62;
+    }
+
+    .required {
+        color: #e74c3c;
+    }
+
+    .error-message {
+        color: #e74c3c;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+        display: none;
+    }
+
+    .success-message {
+        background: #d4edda;
+        color: #155724;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        display: none;
+    }
+
+    .loading {
+        opacity: 0.6;
+        pointer-events: none;
+    }
+
+    .form-row {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .form-row .form-group {
+        flex: 1;
+    }
+    
+    /* Parol input styling */
+    .password-input-container {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+    
+    .password-input-container input {
+        background-color: white !important;
+        border: 1px solid #ddd;
+        padding-right: 40px;
+    }
+    
+    .password-toggle {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 18px;
+        color: #666;
+        padding: 5px;
+        border-radius: 3px;
+        transition: background-color 0.2s ease;
+    }
+    
+    .password-toggle:hover {
+        background-color: #f0f0f0;
+        color: #333;
+    }
+    
+    .password-toggle:focus {
+        outline: 2px solid #007bff;
+        outline-offset: 2px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="add-user-container">
+    <div class="page-header" style="padding: 0.25rem 2rem; margin-bottom: 0.25rem; text-align: right;">
+        <h1 style="margin: 0; font-size: 2rem;">✏️ Foydalanuvchini Tahrirlash</h1>
+    </div>
+
+    <!-- Loading holati -->
+    <div id="loadingState" class="loading-state" style="text-align: center; padding: 3rem; color: #7f8c8d;">
+        <h3>⏳ Foydalanuvchi ma'lumotlari yuklanmoqda...</h3>
+    </div>
+
+    <!-- Xatolik holati -->
+    <div id="errorState" class="error-state" style="display: none; background: #f8d7da; color: #721c24; padding: 1rem; border-radius: 8px; margin-bottom: 2rem; border: 1px solid #f5c6cb; text-align: center;">
+        <h4>❌ Xatolik yuz berdi</h4>
+        <p id="errorMessage"></p>
+    </div>
+
+    <div id="editFormContainer" class="form-layout" style="display: none;">
+        <!-- Form qismi -->
+        <div class="form-section">
+            <h3 style="margin: 0 0 1.5rem 0; color: #333; font-size: 1.25rem; border-bottom: 2px solid #007bff; padding-bottom: 0.5rem;">
+                📝 Foydalanuvchi ma'lumotlari
+            </h3>
+            
+            <div class="success-message" id="successMessage"></div>
+            
+            <form id="addUserForm">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="last_name">Familya <span class="required">*</span></label>
+                    <input type="text" id="last_name" name="last_name" required placeholder="Karimov">
+                    <div class="error-message" id="lastNameError"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="first_name">Ism <span class="required">*</span></label>
+                    <input type="text" id="first_name" name="first_name" required placeholder="Aziz">
+                    <div class="error-message" id="firstNameError"></div>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="email">Email <span class="required">*</span></label>
+                    <input type="email" id="email" name="email" required placeholder="aziz@sayt2025.uz">
+                    <div class="error-message" id="emailError"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="phone">Telefon raqami</label>
+                    <input type="tel" id="phone" name="phone" placeholder="+998901234567">
+                    <div class="error-message" id="phoneError"></div>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="username">Login (Username) <span class="required">*</span></label>
+                    <input type="text" id="username" name="username" required placeholder="akarimov">
+                    <div class="error-message" id="usernameError"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Yangi parol (ixtiyoriy)</label>
+                    <div class="password-input-container" style="position: relative;">
+                        <input type="password" id="password" name="password" placeholder="Parolni o'zgartirish uchun kiriting" style="padding-right: 40px; background-color: white !important; border: 1px solid #ddd;">
+                        <button type="button" class="password-toggle" onclick="togglePasswordVisibility('password')" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 18px; color: #666;">👁️</button>
+                    </div>
+                    <div class="error-message" id="passwordError"></div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="role">Rol <span class="required">*</span></label>
+                <select id="role" name="role" required>
+                    <option value="sotuvchi">Sotuvchi</option>
+                    <option value="admin">Admin</option>
+                </select>
+            </div>
+
+
+
+            <div class="form-group checkbox">
+                <input type="checkbox" id="is_active" name="is_active" checked>
+                <label for="is_active">Faol foydalanuvchi</label>
+            </div>
+
+            <div class="form-actions">
+                <button type="button" class="btn btn-secondary" onclick="goBack()">
+                    ← Orqaga
+                </button>
+                <button type="button" class="btn" onclick="deleteCurrentUser()" style="background: #dc3545; color: white;">
+                    🗑️ O'chirish
+                </button>
+                <button type="submit" class="btn btn-primary" id="submitBtn">
+                    💾 Saqlash
+                </button>
+            </div>
+        </form>
+        </div>
+
+        <!-- Sotuvchi huquqlari boshqaruvi -->
+        <div class="info-section">
+            <h3>⚙️ Sotuvchi huquqlari</h3>
+            
+            <div class="permissions-control" id="sellerPermissions" style="display: none;">
+                
+                <!-- 1. Savdo qilish huquqi -->
+                <div class="permission-group">
+                    <h4>🛍️ Savdo qilish</h4>
+                    <div class="permission-info">
+                        <p style="color: #666; font-size: 0.9rem; margin-bottom: 1rem;">
+                            Foydalanuvchi qaysi joylashuv(lar)da savdo qilishi mumkin
+                        </p>
+                    </div>
+                    
+                    <label class="permission-item">
+                        <input type="checkbox" name="can_sell" id="canSell" onchange="toggleSalesLocations()">
+                        <span><strong>Savdo qilish ruxsati</strong></span>
+                    </label>
+                    
+                    <div class="location-selection" id="salesLocations" style="margin-left: 20px; margin-top: 10px; display: none;">
+                        <h5>📍 Savdo qilish uchun ruxsat etilgan joylashuvlar:</h5>
+                        <div style="margin-bottom: 10px;">
+                            <label class="permission-item">
+                                <input type="checkbox" id="selectAllSalesLocations" onchange="toggleAllSalesLocations()">
+                                <span><strong>Barcha joylashuvlar</strong></span>
+                            </label>
+                        </div>
+                        <div id="salesLocationsList">
+                            <!-- Bu yerda do'konlar va omborlar dinamik yuklanadi -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Transfer qilish huquqi -->
+                <div class="permission-group">
+                    <h4>🔄 Transfer qilish</h4>
+                    <div class="permission-info">
+                        <p style="color: #666; font-size: 0.9rem; margin-bottom: 1rem;">
+                            Foydalanuvchi qaysi joylashuv(lar)dan mahsulot transfer qilishi mumkin
+                        </p>
+                    </div>
+                    
+                    <label class="permission-item">
+                        <input type="checkbox" name="can_transfer" id="canTransfer" onchange="toggleTransferLocations()">
+                        <span><strong>Transfer qilish ruxsati</strong></span>
+                    </label>
+                    
+                    <div class="location-selection" id="transferLocations" style="margin-left: 20px; margin-top: 10px; display: none;">
+                        <h5>📍 Transfer qilish uchun ruxsat etilgan joylashuvlar:</h5>
+                        <div style="margin-bottom: 10px;">
+                            <label class="permission-item">
+                                <input type="checkbox" id="selectAllTransferLocations" onchange="toggleAllTransferLocations()">
+                                <span><strong>Barcha joylashuvlar</strong></span>
+                            </label>
+                        </div>
+                        <div id="transferLocationsList">
+                            <!-- Bu yerda do'konlar va omborlar dinamik yuklanadi -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. Qoldiqni tekshirish huquqi -->
+                <div class="permission-group">
+                    <h4>📊 Qoldiqni tekshirish</h4>
+                    <div class="permission-info">
+                        <p style="color: #666; font-size: 0.9rem; margin-bottom: 1rem;">
+                            Foydalanuvchi qoldiqni tekshirish sahifasiga kirib, inventarizatsiya qila oladi
+                        </p>
+                    </div>
+                    
+                    <label class="permission-item">
+                        <input type="checkbox" name="can_stock_check" id="canStockCheck" onchange="toggleStockCheckLocations()">
+                        <span><strong>Qoldiqni tekshirish ruxsati</strong></span>
+                    </label>
+                    
+                    <div class="location-selection" id="stockCheckLocations" style="margin-left: 20px; margin-top: 10px; display: none;">
+                        <h5>📍 Qoldiqni tekshirish uchun ruxsat etilgan joylashuvlar:</h5>
+                        <div style="margin-bottom: 10px;">
+                            <label class="permission-item">
+                                <input type="checkbox" id="selectAllStockCheckLocations" onchange="toggleAllStockCheckLocations()">
+                                <span><strong>Barcha joylashuvlar</strong></span>
+                            </label>
+                        </div>
+                        <div id="stockCheckLocationsList">
+                            <!-- Bu yerda do'konlar va omborlar dinamik yuklanadi -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. Asosiy dokon/ombor -->
+                <div class="permission-group">
+                    <h4>🏪 Asosiy joylashuv</h4>
+                    <div class="permission-info">
+                        <p style="color: #666; font-size: 0.9rem; margin-bottom: 1rem;">
+                            Foydalanuvchining asosiy ishi joylashuvi (avtomatik tanlash uchun)
+                        </p>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="primaryLocation">Asosiy dokon/ombor:</label>
+                        <select id="primaryLocation" name="primary_location">
+                            <option value="">-- Tanlang --</option>
+                        </select>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="admin-note" id="adminNote" style="display: none;">
+                <p><strong>Admin huquqlari:</strong> Barcha imkoniyatlarga ega</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let allStores = [];
+    let allWarehouses = [];
+    let currentUser = null;
+    let userId = null;
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // URL dan user ID sini olish
+        const urlParts = window.location.pathname.split('/');
+        userId = urlParts[urlParts.length - 1];
+        
+        if (userId && !isNaN(userId)) {
+            loadUser();
+            loadStoresAndWarehouses();
+        } else {
+            showError('Foydalanuvchi ID si topilmadi');
+        }
+
+        // Rol o'zgarishini kuzatish
+        const roleSelect = document.getElementById('role');
+        roleSelect.addEventListener('change', togglePermissions);
+
+        // Form yuborish
+        document.getElementById('addUserForm').addEventListener('submit', handleFormSubmit);
+    });
+
+    // Foydalanuvchi ma'lumotlarini yuklash
+    function loadUser() {
+        fetch(`/api/users/${userId}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Foydalanuvchi topilmadi');
+                }
+                return response.json();
+            })
+            .then(user => {
+                currentUser = user;
+                populateForm(user);
+                document.getElementById('loadingState').style.display = 'none';
+                document.getElementById('editFormContainer').style.display = 'flex';
+            })
+            .catch(error => {
+                console.error('Error loading user:', error);
+                showError(error.message);
+            });
+    }
+
+    // Formani to'ldirish
+    function populateForm(user) {
+        console.log('🔄 populateForm called with user:', user);
+        document.getElementById('first_name').value = user.first_name || '';
+        document.getElementById('last_name').value = user.last_name || '';
+        document.getElementById('username').value = user.username || '';
+        document.getElementById('email').value = user.email || '';
+        document.getElementById('phone').value = user.phone || '';
+        document.getElementById('role').value = user.role || '';
+        document.getElementById('is_active').checked = user.is_active;
+        
+        // Huquqlarni to'ldirish (agar mavjud bo'lsa)
+        if (user.permissions) {
+            console.log('🔄 User has permissions, calling populatePermissions');
+            populatePermissions(user.permissions);
+        } else {
+            console.log('⚠️ User has no permissions');
+        }
+        
+        // Rol bo'yicha huquqlarni ko'rsatish
+        togglePermissions();
+    }
+
+    // Huquqlarni formaga to'ldirish
+    function populatePermissions(permissions) {
+        console.log('🔄 populatePermissions called with:', permissions);
+        console.log('🔄 currentUser:', currentUser);
+        
+        // Savdo qilish huquqi
+        if (permissions.can_sell) {
+            console.log('✅ Setting can_sell to true');
+            document.getElementById('canSell').checked = true;
+            toggleSalesLocations();
+            
+            // Savdo joylashuvlarini belgilash (currentUser.allowed_locations dan)
+            if (currentUser.allowed_locations && Array.isArray(currentUser.allowed_locations)) {
+                console.log('🔄 Setting sales locations from allowed_locations:', currentUser.allowed_locations);
+                currentUser.allowed_locations.forEach(locationId => {
+                    // Store yoki warehouse ekanligini aniqlash
+                    const storeCheckbox = document.querySelector(`#salesLocationsList input[value="${locationId}"][data-type="store"]`);
+                    const warehouseCheckbox = document.querySelector(`#salesLocationsList input[value="${locationId}"][data-type="warehouse"]`);
+                    
+                    if (storeCheckbox) {
+                        storeCheckbox.checked = true;
+                        console.log('✅ Sales store location checked:', locationId);
+                    } else if (warehouseCheckbox) {
+                        warehouseCheckbox.checked = true;
+                        console.log('✅ Sales warehouse location checked:', locationId);
+                    } else {
+                        console.log('❌ Sales location checkbox not found:', locationId);
+                    }
+                });
+            }
+        }
+        
+        // Transfer qilish huquqi
+        if (permissions.can_transfer) {
+            console.log('✅ Setting can_transfer to true');
+            document.getElementById('canTransfer').checked = true;
+            toggleTransferLocations();
+            
+            // Transfer joylashuvlarini belgilash
+            if (currentUser.transfer_locations && Array.isArray(currentUser.transfer_locations)) {
+                console.log('🔄 Setting transfer locations:', currentUser.transfer_locations);
+                currentUser.transfer_locations.forEach(locationId => {
+                    // Store yoki warehouse ekanligini aniqlash
+                    const storeCheckbox = document.querySelector(`#transferLocationsList input[value="${locationId}"][data-type="store"]`);
+                    const warehouseCheckbox = document.querySelector(`#transferLocationsList input[value="${locationId}"][data-type="warehouse"]`);
+                    
+                    if (storeCheckbox) {
+                        storeCheckbox.checked = true;
+                        console.log('✅ Transfer store location checked:', locationId);
+                    } else if (warehouseCheckbox) {
+                        warehouseCheckbox.checked = true;
+                        console.log('✅ Transfer warehouse location checked:', locationId);
+                    } else {
+                        console.log('❌ Transfer location checkbox not found:', locationId);
+                    }
+                });
+            } else if (currentUser.allowed_locations && Array.isArray(currentUser.allowed_locations)) {
+                // Agar transfer_locations yo'q bo'lsa, allowed_locations'ni ishlatish
+                console.log('🔄 Using allowed_locations for transfer:', currentUser.allowed_locations);
+                currentUser.allowed_locations.forEach(locationId => {
+                    const storeCheckbox = document.querySelector(`#transferLocationsList input[value="${locationId}"][data-type="store"]`);
+                    const warehouseCheckbox = document.querySelector(`#transferLocationsList input[value="${locationId}"][data-type="warehouse"]`);
+                    
+                    if (storeCheckbox) {
+                        storeCheckbox.checked = true;
+                        console.log('✅ Transfer store location checked (from allowed):', locationId);
+                    } else if (warehouseCheckbox) {
+                        warehouseCheckbox.checked = true;
+                        console.log('✅ Transfer warehouse location checked (from allowed):', locationId);
+                    }
+                });
+            }
+        }
+        
+        // Qoldiqni tekshirish huquqi
+        if (permissions.stock_check) {
+            console.log('✅ Setting stock_check to true');
+            document.getElementById('canStockCheck').checked = true;
+            toggleStockCheckLocations();
+            
+            // Stock check joylashuvlarini belgilash - allowed_locations dan olamiz
+            if (currentUser.allowed_locations && Array.isArray(currentUser.allowed_locations)) {
+                console.log('🔄 Setting stock check locations from allowed_locations:', currentUser.allowed_locations);
+                currentUser.allowed_locations.forEach(locationId => {
+                    const storeCheckbox = document.querySelector(`#stockCheckLocationsList input[value="${locationId}"][data-type="store"]`);
+                    const warehouseCheckbox = document.querySelector(`#stockCheckLocationsList input[value="${locationId}"][data-type="warehouse"]`);
+                    
+                    if (storeCheckbox) {
+                        storeCheckbox.checked = true;
+                        console.log('✅ Stock check store location checked:', locationId);
+                    } else if (warehouseCheckbox) {
+                        warehouseCheckbox.checked = true;
+                        console.log('✅ Stock check warehouse location checked:', locationId);
+                    } else {
+                        console.log('❌ Stock check location checkbox not found:', locationId);
+                    }
+                });
+            }
+        }
+    }
+
+    // Do'konlar va omborlarni yuklash
+    function loadStoresAndWarehouses() {
+        console.log('🔄 Loading stores and warehouses...');
+        fetch('/api/stores-warehouses')
+            .then(response => {
+                console.log('📡 API response status:', response.status);
+                return response.json();
+            })
+            .then(data => {
+                console.log('📦 API data received:', data);
+                allStores = data.stores || [];
+                allWarehouses = data.warehouses || [];
+                console.log('🏪 Stores loaded:', allStores.length);
+                console.log('🏭 Warehouses loaded:', allWarehouses.length);
+                populateLocationCheckboxes();
+                loadPrimaryLocations();
+            })
+            .catch(error => {
+                console.error('❌ Error loading locations:', error);
+            });
+    }
+
+    // Form yuborish
+    function handleFormSubmit(e) {
+        e.preventDefault();
+        
+        const submitBtn = document.getElementById('submitBtn');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '⏳ Yangilanmoqda...';
+        submitBtn.disabled = true;
+
+        const formData = {
+            first_name: document.getElementById('first_name').value.trim(),
+            last_name: document.getElementById('last_name').value.trim(),
+            username: document.getElementById('username').value.trim(),
+            email: document.getElementById('email').value.trim(),
+            phone: document.getElementById('phone').value.trim(),
+            role: document.getElementById('role').value,
+            is_active: document.getElementById('is_active').checked
+        };
+
+        // Parol o'zgartirilsa qo'shish
+        const newPassword = document.getElementById('password').value.trim();
+        if (newPassword) {
+            formData.password = newPassword;
+        }
+
+        // Asosiy joylashuvni qo'shish
+        const primaryLocationSelect = document.getElementById('primaryLocation');
+        if (primaryLocationSelect && primaryLocationSelect.value) {
+            const [locationType, locationId] = primaryLocationSelect.value.split('_');
+            // Hozircha faqat store_id ishlatamiz, warehouse uchun ham store_id ga saqlaymiz
+            formData.store_id = parseInt(locationId);
+            console.log('🏪 Primary location set:', primaryLocationSelect.value, 'Type:', locationType, 'ID:', locationId);
+        }
+
+        // Sotuvchi huquqlarini yig'ish
+        if (document.getElementById('role').value === 'sotuvchi') {
+            formData.permissions = {};
+            
+            // Savdo qilish huquqi
+            const canSell = document.getElementById('canSell').checked;
+            if (canSell) {
+                formData.permissions.can_sell = true;
+                formData.permissions.allowed_locations = [];
+                
+                const salesCheckboxes = document.querySelectorAll('#salesLocationsList input[type="checkbox"]:checked');
+                salesCheckboxes.forEach(checkbox => {
+                    formData.permissions.allowed_locations.push({
+                        id: parseInt(checkbox.value),
+                        type: checkbox.getAttribute('data-type')
+                    });
+                });
+            }
+            
+            // Transfer qilish huquqi
+            const canTransfer = document.getElementById('canTransfer').checked;
+            if (canTransfer) {
+                formData.permissions.can_transfer = true;
+                formData.permissions.transfer_locations = [];
+                
+                const transferCheckboxes = document.querySelectorAll('#transferLocationsList input[type="checkbox"]:checked');
+                transferCheckboxes.forEach(checkbox => {
+                    formData.permissions.transfer_locations.push({
+                        id: parseInt(checkbox.value),
+                        type: checkbox.getAttribute('data-type')
+                    });
+                });
+            }
+            
+            // Qoldiqni tekshirish huquqi
+            const canStockCheck = document.getElementById('canStockCheck').checked;
+            if (canStockCheck) {
+                formData.permissions.stock_check = true;
+                formData.permissions.stock_check_locations = [];
+                
+                const stockCheckCheckboxes = document.querySelectorAll('#stockCheckLocationsList input[type="checkbox"]:checked');
+                stockCheckCheckboxes.forEach(checkbox => {
+                    formData.permissions.stock_check_locations.push({
+                        id: parseInt(checkbox.value),
+                        type: checkbox.getAttribute('data-type')
+                    });
+                });
+            }
+
+            // Stock check locations'ni ID arrayiga aylantirish
+            if (formData.permissions && formData.permissions.stock_check_locations) {
+                formData.stock_check_locations = formData.permissions.stock_check_locations.map(loc => loc.id);
+                delete formData.permissions.stock_check_locations; // permissions ichidan olib tashlash
+            }
+
+            console.log('🔍 Seller permissions collected:', formData.permissions);
+            console.log('🔍 Stock check locations for server:', formData.stock_check_locations);
+        }
+
+        fetch(`/api/users/${userId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(data => {
+                    throw new Error(data.error || 'Yangilashda xatolik yuz berdi');
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            showSuccess(data.message || 'Foydalanuvchi muvaffaqiyatli yangilandi!');
+            setTimeout(() => {
+                window.location.href = '/users';
+            }, 2000);
+        })
+        .catch(error => {
+            console.error('Error updating user:', error);
+            showError('Xatolik: ' + error.message);
+        })
+        .finally(() => {
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        });
+    }
+
+    // Joriy foydalanuvchini o'chirish
+    function deleteCurrentUser() {
+        if (!currentUser) return;
+        
+        if (confirm(`Haqiqatan ham "${currentUser.first_name} ${currentUser.last_name}" foydalanuvchisini o'chirmoqchimisiz?\n\nDiqqat: Bu amal qaytarib bo'lmaydi!`)) {
+            fetch(`/api/users/${userId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.json().then(data => {
+                        alert('✅ ' + (data.message || 'Foydalanuvchi muvaffaqiyatli o\'chirildi!'));
+                        window.location.href = '/users';
+                    });
+                } else {
+                    alert('❌ Xatolik yuz berdi! Foydalanuvchini o\'chirib bo\'lmadi.');
+                }
+            })
+            .catch(error => {
+                console.error('Error deleting user:', error);
+                alert('❌ Xatolik: Foydalanuvchini o\'chirishda xatolik yuz berdi.');
+            });
+        }
+    }
+
+    // Orqaga qaytish
+    function goBack() {
+        window.location.href = '/users';
+    }
+
+    // Xatolikni ko'rsatish
+    function showError(message) {
+        const loadingState = document.getElementById('loadingState');
+        const errorState = document.getElementById('errorState');
+        const errorMessage = document.getElementById('errorMessage');
+        
+        if (loadingState) loadingState.style.display = 'none';
+        if (errorState) errorState.style.display = 'block';
+        if (errorMessage) errorMessage.textContent = message;
+        
+        // Fallback agar elementlar topilmasa
+        if (!errorState || !errorMessage) {
+            console.error('Error elements not found:', message);
+            alert('❌ ' + message);
+        }
+    }
+
+    // Huquqlarni ko'rsatish/yashirish
+    function togglePermissions() {
+        const role = document.getElementById('role').value;
+        const permissionsSection = document.getElementById('sellerPermissions');
+        
+        if (role === 'sotuvchi') {
+            if (permissionsSection) {
+                permissionsSection.style.display = 'block';
+            }
+            toggleSalesLocations();
+            toggleTransferLocations();
+        } else {
+            if (permissionsSection) {
+                permissionsSection.style.display = 'none';
+            }
+        }
+    }
+
+    // Savdo joylashuvlarini ko'rsatish/yashirish
+    function toggleSalesLocations() {
+        const canSell = document.getElementById('canSell').checked;
+        const salesLocations = document.getElementById('salesLocations');
+        const locationsList = document.getElementById('salesLocationsList');
+        
+        console.log('🔄 toggleSalesLocations called, canSell:', canSell);
+        console.log('📦 salesLocations div:', salesLocations);
+        console.log('📦 salesLocationsList div:', locationsList);
+        
+        if (canSell) {
+            salesLocations.style.display = 'block';
+            console.log('✅ Sales locations shown');
+        } else {
+            salesLocations.style.display = 'none';
+            console.log('❌ Sales locations hidden');
+            // Checkboxlarni tozalash
+            document.querySelectorAll('#salesLocationsList input[type="checkbox"]').forEach(cb => cb.checked = false);
+        }
+    }
+
+    // Transfer joylashuvlarini ko'rsatish/yashirish
+    function toggleTransferLocations() {
+        const canTransfer = document.getElementById('canTransfer').checked;
+        const transferLocations = document.getElementById('transferLocations');
+        const locationsList = document.getElementById('transferLocationsList');
+        
+        console.log('🔄 toggleTransferLocations called, canTransfer:', canTransfer);
+        console.log('📦 transferLocations div:', transferLocations);
+        console.log('📦 transferLocationsList div:', locationsList);
+        
+        if (canTransfer) {
+            transferLocations.style.display = 'block';
+            console.log('✅ Transfer locations shown');
+        } else {
+            transferLocations.style.display = 'none';
+            console.log('❌ Transfer locations hidden');
+            // Checkboxlarni tozalash
+            document.querySelectorAll('#transferLocationsList input[type="checkbox"]').forEach(cb => cb.checked = false);
+        }
+    }
+
+    // Joylashuvlar checkbox larini yaratish
+    function populateLocationCheckboxes() {
+        console.log('🔄 Populating location checkboxes...');
+        const salesLocationsList = document.getElementById('salesLocationsList');
+        const transferLocationsList = document.getElementById('transferLocationsList');
+        const stockCheckLocationsList = document.getElementById('stockCheckLocationsList');
+        
+        console.log('📍 Sales locations element:', salesLocationsList);
+        console.log('📍 Transfer locations element:', transferLocationsList);
+        console.log('📍 Stock check locations element:', stockCheckLocationsList);
+        console.log('🏪 Stores to add:', allStores.length);
+        console.log('🏭 Warehouses to add:', allWarehouses.length);
+        
+        if (!salesLocationsList || !transferLocationsList || !stockCheckLocationsList) {
+            console.error('❌ Location list elements not found!');
+            return;
+        }
+        
+        // Clear existing content
+        salesLocationsList.innerHTML = '';
+        transferLocationsList.innerHTML = '';
+        stockCheckLocationsList.innerHTML = '';
+        
+        // Do'konlar
+        allStores.forEach(store => {
+            console.log('➕ Adding store checkbox:', store.name);
+            const salesCheckbox = createLocationCheckbox(store, 'store');
+            const transferCheckbox = createLocationCheckbox(store, 'store');
+            
+            salesLocationsList.appendChild(salesCheckbox);
+            transferLocationsList.appendChild(transferCheckbox.cloneNode(true));
+            
+            // Stock check uchun ham qo'shamiz
+            const stockCheckCheckbox = createLocationCheckbox(store, 'store');
+            stockCheckLocationsList.appendChild(stockCheckCheckbox);
+        });
+        
+        // Omborlar
+        allWarehouses.forEach(warehouse => {
+            console.log('➕ Adding warehouse checkbox:', warehouse.name);
+            const salesCheckbox = createLocationCheckbox(warehouse, 'warehouse');
+            const transferCheckbox = createLocationCheckbox(warehouse, 'warehouse');
+            
+            salesLocationsList.appendChild(salesCheckbox);
+            transferLocationsList.appendChild(transferCheckbox.cloneNode(true));
+            
+            // Stock check uchun ham qo'shamiz
+            const stockCheckCheckbox = createLocationCheckbox(warehouse, 'warehouse');
+            stockCheckLocationsList.appendChild(stockCheckCheckbox);
+        });
+        
+        console.log('✅ Location checkboxes populated');
+        
+        // Agar user ma'lumotlari allaqachon yuklangan bo'lsa, permissions'ni qayta to'ldirish
+        if (currentUser && currentUser.permissions) {
+            console.log('🔄 Re-populating permissions after locations loaded');
+            populatePermissions(currentUser.permissions);
+        }
+    }
+
+    // Joylashuv checkbox yaratish
+    function createLocationCheckbox(location, type) {
+        const div = document.createElement('div');
+        div.className = 'location-item';
+        
+        const label = document.createElement('label');
+        label.className = 'checkbox-label';
+        
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.value = location.id;
+        checkbox.setAttribute('data-type', type);
+        
+        const span = document.createElement('span');
+        span.textContent = `${location.name} (${type === 'store' ? 'Do\'kon' : 'Ombor'})`;
+        
+        label.appendChild(checkbox);
+        label.appendChild(span);
+        div.appendChild(label);
+        
+        return div;
+    }
+
+    // Asosiy joylashuvlarni yuklash
+    function loadPrimaryLocations() {
+        console.log('🔄 Loading primary locations...');
+        const primaryLocationSelect = document.getElementById('primaryLocation');
+        console.log('🎯 Primary location select element:', primaryLocationSelect);
+        console.log('🏪 Available stores:', allStores.length);
+        console.log('🏭 Available warehouses:', allWarehouses.length);
+        
+        if (primaryLocationSelect && (allStores.length > 0 || allWarehouses.length > 0)) {
+            primaryLocationSelect.innerHTML = '<option value="">-- Tanlang --</option>';
+            
+            // Do'konlarni qo'shish
+            allStores.forEach(store => {
+                console.log('➕ Adding store:', store.name);
+                const option = document.createElement('option');
+                option.value = `store_${store.id}`;
+                option.textContent = `🏪 ${store.name}`;
+                primaryLocationSelect.appendChild(option);
+            });
+            
+            // Omborlarni qo'shish
+            allWarehouses.forEach(warehouse => {
+                console.log('➕ Adding warehouse:', warehouse.name);
+                const option = document.createElement('option');
+                option.value = `warehouse_${warehouse.id}`;
+                option.textContent = `🏭 ${warehouse.name}`;
+                primaryLocationSelect.appendChild(option);
+            });
+            
+            // Joriy foydalanuvchi ma'lumoti bo'yicha belgilash
+            if (currentUser && currentUser.store_id) {
+                // Store yoki warehouse ekanligini aniqlash
+                const store = allStores.find(s => s.id === currentUser.store_id);
+                const warehouse = allWarehouses.find(w => w.id === currentUser.store_id);
+                
+                if (store) {
+                    primaryLocationSelect.value = `store_${currentUser.store_id}`;
+                    console.log('✅ Primary store selected:', store.name);
+                } else if (warehouse) {
+                    primaryLocationSelect.value = `warehouse_${currentUser.store_id}`;
+                    console.log('✅ Primary warehouse selected:', warehouse.name);
+                }
+            }
+            
+            console.log('✅ Primary locations loaded:', allStores.length + allWarehouses.length, 'items');
+        } else {
+            console.log('❌ Primary location select not found or no stores/warehouses available');
+            console.log('   - Element found:', !!primaryLocationSelect);
+            console.log('   - Stores count:', allStores.length);
+            console.log('   - Warehouses count:', allWarehouses.length);
+        }
+    }
+    // Joylashuvlarni yuklash (do'konlar va omborlar) - eski
+    async function loadLocations() {
+        try {
+            const response = await fetch('/api/stores-warehouses');
+            const data = await response.json();
+            
+            const locationDiv = document.getElementById('locationPermissions');
+            locationDiv.innerHTML = '';
+            
+            if (data.success) {
+                data.locations.forEach(location => {
+                    const label = document.createElement('label');
+                    label.className = 'permission-item';
+                    label.innerHTML = `
+                        <input type="checkbox" name="location_${location.id}" value="${location.id}">
+                        <span>${location.type === 'store' ? '🏪' : '🏭'} ${location.name}</span>
+                    `;
+                    locationDiv.appendChild(label);
+                });
+            }
+        } catch (error) {
+            console.error('Joylashuvlarni yuklashda xatolik:', error);
+        }
+    }
+
+    // Barcha joylashuvlarni tanlash/bekor qilish
+    function toggleAllLocations() {
+        const selectAllCheckbox = document.getElementById('selectAllLocations');
+        const locationCheckboxes = document.querySelectorAll('#locationPermissions input[type="checkbox"]');
+        
+        locationCheckboxes.forEach(checkbox => {
+            checkbox.checked = selectAllCheckbox.checked;
+        });
+    }
+
+    // Form submit qilish
+    async function handleSubmit(e) {
+        e.preventDefault();
+        
+        // Xatolik xabarlarini tozalash
+        clearErrors();
+        
+        const formData = new FormData(e.target);
+        const userData = {
+            last_name: formData.get('last_name').trim(),
+            first_name: formData.get('first_name').trim(),
+            email: formData.get('email').trim(),
+            username: formData.get('username').trim(),
+            password: formData.get('password').trim(),
+            phone: formData.get('phone').trim(),
+            role: formData.get('role'),
+            is_active: formData.get('is_active') === 'on'
+        };
+
+        // Agar sotuvchi bo'lsa, huquqlarni ham qo'shish
+        if (userData.role === 'sotuvchi') {
+            // Huquqlarni tekshirish
+            const canSellCheckbox = document.getElementById('canSell');
+            const canTransferCheckbox = document.getElementById('canTransfer');
+            
+            userData.permissions = {
+                can_sell: canSellCheckbox ? canSellCheckbox.checked : false,
+                can_transfer: canTransferCheckbox ? canTransferCheckbox.checked : false
+            };
+            
+            // Savdo qilish uchun ruxsat etilgan joylashuvlarni to'g'ri olish
+            userData.allowed_locations = [];
+            
+            // Barcha belgilangan savdo joylashuvlarni olish
+            const checkedSalesLocations = document.querySelectorAll('#salesLocationsList input[type="checkbox"]:checked');
+            checkedSalesLocations.forEach(checkbox => {
+                const locationId = parseInt(checkbox.value);
+                if (locationId && !userData.allowed_locations.includes(locationId)) {
+                    userData.allowed_locations.push(locationId);
+                }
+            });
+            
+            // Transfer joylashuvlarni ham qo'shish (lekin savdo ruxsatlariga qo'shmaslik)
+            userData.transfer_locations = [];
+            const checkedTransferLocations = document.querySelectorAll('#transferLocationsList input[type="checkbox"]:checked');
+            checkedTransferLocations.forEach(checkbox => {
+                const locationId = parseInt(checkbox.value);
+                if (locationId) {
+                    userData.transfer_locations.push(locationId);
+                    // XATO TUZATILDI: Transfer joylashuvlarni savdo ruxsatlariga qo'shmaslik
+                    // Transfer va savdo huquqlari alohida bo'lishi kerak
+                }
+            });
+            
+            // Asosiy joylashuvni qo'shish (faqat UI uchun, huquqlarga ta'sir qilmaydi)
+            const primaryLocationSelect = document.getElementById('primaryLocation');
+            if (primaryLocationSelect.value) {
+                const [locationType, locationId] = primaryLocationSelect.value.split('_');
+                userData.store_id = locationType === 'store' ? parseInt(locationId) : null;
+                userData.primary_location = primaryLocationSelect.value; // To'liq ma'lumot
+                
+                // MUHIM: Asosiy joylashuv avtomatik huquqlarga qo'shilmaydi!
+                // Bu faqat UI/UX yaxshilash uchun ishlatiladi
+            }
+
+            console.log('🔍 Seller permissions collected:', userData.permissions);
+            console.log('🔍 Selected sales locations:', checkedSalesLocations.length);
+            console.log('🔍 Selected transfer locations:', userData.transfer_locations);
+            console.log('🔍 Combined allowed locations:', userData.allowed_locations);
+            console.log('🔍 Primary location:', userData.primary_location, 'Store ID:', userData.store_id);
+        }
+
+        // Validatsiya
+        if (!validateForm(userData)) {
+            return;
+        }
+
+        // Loading holatini ko'rsatish
+        setLoading(true);
+
+        try {
+            const response = await fetch('/api/users', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(userData)
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                showSuccess('Foydalanuvchi muvaffaqiyatli qo\'shildi!');
+                // Formni tozalash
+                document.getElementById('addUserForm').reset();
+                document.getElementById('is_active').checked = true;
+                
+                // 2 soniyadan keyin foydalanuvchilar sahifasiga o'tish
+                setTimeout(() => {
+                    window.location.href = '/users';
+                }, 2000);
+            } else {
+                showError('general', result.error || 'Xatolik yuz berdi');
+            }
+        } catch (error) {
+            console.error('Xatolik:', error);
+            showError('general', 'Aloqa xatosi yuz berdi');
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    // Form validatsiya
+    function validateForm(data) {
+        let isValid = true;
+
+        if (!data.last_name) {
+            showError('lastName', 'Familya talab qilinadi');
+            isValid = false;
+        }
+
+        if (!data.first_name) {
+            showError('firstName', 'Ism talab qilinadi');
+            isValid = false;
+        }
+
+        if (!data.email) {
+            showError('email', 'Email talab qilinadi');
+            isValid = false;
+        } else if (!isValidEmail(data.email)) {
+            showError('email', 'Email formati noto\'g\'ri');
+            isValid = false;
+        }
+
+        if (!data.username) {
+            showError('username', 'Login talab qilinadi');
+            isValid = false;
+        }
+
+        if (!data.password) {
+            showError('password', 'Parol talab qilinadi');
+            isValid = false;
+        } else if (data.password.length < 6) {
+            showError('password', 'Parol kamida 6 ta belgidan iborat bo\'lishi kerak');
+            isValid = false;
+        }
+
+        return isValid;
+    }
+
+    // Email validatsiya
+    function isValidEmail(email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    }
+
+    // Xatolik ko'rsatish
+    function showError(field, message) {
+        const errorElement = document.getElementById(field + 'Error') || 
+                           document.getElementById('generalError');
+        if (errorElement) {
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+        }
+    }
+
+    // Muvaffaqiyat xabarini ko'rsatish
+    function showSuccess(message) {
+        const successElement = document.getElementById('successMessage');
+        if (successElement) {
+            successElement.textContent = '✅ ' + message;
+            successElement.style.display = 'block';
+            
+            setTimeout(() => {
+                successElement.style.display = 'none';
+            }, 5000);
+        } else {
+            console.error('successMessage element not found');
+            alert('✅ ' + message); // Fallback
+        }
+    }
+
+    // Barcha xatoliklarni tozalash
+    function clearErrors() {
+        const errorElements = document.querySelectorAll('.error-message');
+        errorElements.forEach(element => {
+            element.style.display = 'none';
+            element.textContent = '';
+        });
+        
+        const successElement = document.getElementById('successMessage');
+        successElement.style.display = 'none';
+    }
+
+    // Loading holatini o'zgartirish
+    function setLoading(loading) {
+        const form = document.getElementById('addUserForm');
+        const submitBtn = document.getElementById('submitBtn');
+        
+        if (loading) {
+            form.classList.add('loading');
+            submitBtn.textContent = '⏳ Saqlanmoqda...';
+            submitBtn.disabled = true;
+        } else {
+            form.classList.remove('loading');
+            submitBtn.textContent = '💾 Saqlash';
+            submitBtn.disabled = false;
+        }
+    }
+
+    // Orqaga qaytish
+    function goBack() {
+        if (confirm('Kiritilgan ma\'lumotlar yo\'qoladi. Davom etasizmi?')) {
+            window.location.href = '/users';
+        }
+    }
+
+    // Barcha savdo joylashuvlarini tanlash/bekor qilish
+    function toggleAllSalesLocations() {
+        const selectAllCheckbox = document.getElementById('selectAllSalesLocations');
+        const locationCheckboxes = document.querySelectorAll('#salesLocationsList input[type="checkbox"]');
+        
+        locationCheckboxes.forEach(checkbox => {
+            checkbox.checked = selectAllCheckbox.checked;
+        });
+    }
+
+    // Barcha transfer joylashuvlarini tanlash/bekor qilish
+    function toggleAllTransferLocations() {
+        const selectAllCheckbox = document.getElementById('selectAllTransferLocations');
+        const locationCheckboxes = document.querySelectorAll('#transferLocationsList input[type="checkbox"]');
+        
+        locationCheckboxes.forEach(checkbox => {
+            checkbox.checked = selectAllCheckbox.checked;
+        });
+    }
+
+    // Qoldiqni tekshirish joylashuvlarini ko'rsatish/yashirish
+    function toggleStockCheckLocations() {
+        const canStockCheck = document.getElementById('canStockCheck');
+        const stockCheckLocations = document.getElementById('stockCheckLocations');
+        
+        if (canStockCheck.checked) {
+            stockCheckLocations.style.display = 'block';
+        } else {
+            stockCheckLocations.style.display = 'none';
+        }
+    }
+
+    // Barcha qoldiqni tekshirish joylashuvlarini tanlash/bekor qilish
+    function toggleAllStockCheckLocations() {
+        const selectAllCheckbox = document.getElementById('selectAllStockCheckLocations');
+        const locationCheckboxes = document.querySelectorAll('#stockCheckLocationsList input[type="checkbox"]');
+        
+        locationCheckboxes.forEach(checkbox => {
+            checkbox.checked = selectAllCheckbox.checked;
+        });
+    }
+
+    // Parol ko'rish/yashirish funksiyasi
+    function togglePasswordVisibility(inputId) {
+        const passwordInput = document.getElementById(inputId);
+        const toggleButton = passwordInput.nextElementSibling;
+        
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            toggleButton.textContent = '🙈'; // Yashirish ikonkasi
+            toggleButton.title = 'Parolni yashirish';
+        } else {
+            passwordInput.type = 'password';
+            toggleButton.textContent = '👁️'; // Ko'rish ikonkasi
+            toggleButton.title = 'Parolni ko\'rish';
+        }
+    }
+</script>
+{% endblock %}

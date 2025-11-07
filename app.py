@@ -1,0 +1,7111 @@
+# -*- coding: utf-8 -*-
+import bcrypt
+import json
+import logging
+import os
+import sys
+import urllib.parse
+import uuid
+from datetime import datetime, timezone
+from decimal import Decimal, getcontext
+from functools import wraps
+
+from dotenv import load_dotenv
+from flask import (Flask, render_template, request, jsonify, redirect,
+                   url_for, render_template_string, send_from_directory,
+                   session, abort)
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import text
+
+# Windows console uchun UTF-8 qo'llab-quvvatlash
+if sys.platform.startswith('win'):
+    import codecs
+    sys.stdout = codecs.getwriter('utf-8')(sys.stdout.buffer, 'replace')
+    sys.stderr = codecs.getwriter('utf-8')(sys.stderr.buffer, 'replace')
+
+# Environment variables yuklash
+load_dotenv()
+
+# Flask app yaratish
+app = Flask(__name__)
+
+# Logging konfiguratsiyasi
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
+
+# Database konfiguratsiyasi - encoding muammosini hal qilish
+
+# PostgreSQL ulanish parametrlari - .env faylidan olish
+db_params = {
+    'host': os.getenv('DB_HOST', 'localhost'),
+    'port': os.getenv('DB_PORT', '5432'),
+    'database': os.getenv('DB_NAME', 'sayt_db'),
+    'user': os.getenv('DB_USER', 'postgres'),
+    'password': os.getenv('DB_PASSWORD', 'postgres')
+}
+
+# URL-safe qilish
+safe_password = urllib.parse.quote_plus(db_params['password'])
+safe_database = urllib.parse.quote_plus(db_params['database'])
+
+# Clean URL yaratish
+base_url = f"postgresql://{db_params['user']}:{safe_password}"
+full_url = f"{base_url}@{db_params['host']}:{db_params['port']}"
+database_url = f"{full_url}/{safe_database}?client_encoding=utf8"
+
+logger.info("DATABASE_URL configured")
+app.config['SQLALCHEMY_DATABASE_URI'] = database_url
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'your-secret-key-here')
+
+# Session xavfsizligi
+app.config['SESSION_COOKIE_SECURE'] = os.getenv('FLASK_ENV') == 'production'  # HTTPS uchun
+app.config['SESSION_COOKIE_HTTPONLY'] = True  # JavaScript orqali o'qib bo'lmaydi
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'  # CSRF himoyasi
+app.config['PERMANENT_SESSION_LIFETIME'] = 3600  # 1 soat
+
+# SQLAlchemy obyektini yaratish
+db = SQLAlchemy(app)
+
+# Decimal aniqlik o'rnatish
+getcontext().prec = 10
+
+# Konstantalar
+DEFAULT_PHONE_PLACEHOLDER = os.getenv('DEFAULT_PHONE_PLACEHOLDER', 'Telefon kiritilmagan')
+
+
+# Helper functions
+def hash_password(password):
+    """Parolni hash qilish"""
+    return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+
+
+def check_password(password, hashed):
+    """Parolni tekshirish"""
+    return bcrypt.checkpw(password.encode('utf-8'), hashed.encode('utf-8'))
+
+
+# Role-based access control decorator
+def role_required(*allowed_roles):
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            # Session tekshirish
+            if 'user_id' not in session:
+                if request.path.startswith('/api/'):
+                    return jsonify({'error': 'Login required'}), 401
+                return redirect(url_for('login_page'))
+
+            user_role = session.get('role')
+            if not user_role:
+                if request.path.startswith('/api/'):
+                    return jsonify({'error': 'Login required'}), 401
+                return redirect(url_for('login_page'))
+
+            # Role tekshirish
+            if user_role not in allowed_roles:
+                if request.path.startswith('/api/'):
+                    return jsonify({'error': 'Access denied'}), 403
+                abort(403)  # Forbidden
+
+            return f(*args, **kwargs)
+        return decorated_function
+    return decorator
+
+
+def location_permission_required(
+        location_param_name,
+        location_type_param_name=None):
+    """
+    Joylashuv ruxsatini tekshiruvchi decorator
+    location_param_name: URL parametri nomi (masalan: 'store_id', 'warehouse_id')
+    location_type_param_name: Joylashuv turi parametri (masalan: 'location_type')
+    """
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            # Admin va kassir uchun cheklov yo'q
+            user_role = session.get('role')
+            if user_role in ['admin', 'kassir']:
+                return f(*args, **kwargs)
+
+            # Sotuvchi uchun joylashuv ruxsatini tekshirish
+            if user_role == 'sotuvchi':
+                user_id = session.get('user_id')
+                user = User.query.get(user_id)
+
+                if not user or not user.allowed_locations:
+                    abort(403)  # Ruxsat etilgan joylashuvlar yo'q
+
+                # URL'dan joylashuv ID'sini olish
+                location_id = kwargs.get(location_param_name)
+                if not location_id:
+                    abort(400)  # Joylashuv ID'si topilmadi
+
+                # Joylashuv ruxsat etilganligini tekshirish
+                # Eski format [{'id': 1, 'type': 'store'}, ...] va yangi format [1, 2, 3, ...] ni qo'llab-quvvatlash
+                allowed_location_ids = []
+                for loc in user.allowed_locations:
+                    if isinstance(loc, dict) and 'id' in loc:
+                        # Eski format: {'id': 1, 'type': 'store'}
+                        allowed_location_ids.append(loc['id'])
+                    elif isinstance(loc, int):
+                        # Yangi format: [1, 2, 3, ...]
+                        allowed_location_ids.append(loc)
+
+                logger.debug(f"Location permission check: location_id={location_id}, allowed={allowed_location_ids}")
+                if location_id not in allowed_location_ids:
+                    logger.warning(f"Access denied to location {location_id} for user {user_id}")
+                    abort(403)  # Bu joylashuvga ruxsat yo'q
+
+                logger.debug(f"Access granted to location {location_id}")
+
+            return f(*args, **kwargs)
+        return decorated_function
+    return decorator
+
+
+def get_current_user():
+    """Session'dan current user ni olish"""
+    user_id = session.get('user_id')
+    if user_id:
+        return User.query.get(user_id)
+    return None
+
+
+def extract_location_ids(locations, location_type):
+    """
+    Allowed_locations dan ID'larni olish - eski va yangi formatlarni qo'llab-quvvatlash
+    locations: list - allowed_locations yoki transfer_locations
+    location_type: str - 'store' yoki 'warehouse'
+    """
+    if not locations:
+        return []
+
+    # Eski format (ID'lar ro'yxati) tekshirish
+    if isinstance(locations[0], int):
+        # Eski format: [1, 2, 3] - barcha ID'larni qaytarish
+        return locations
+
+    # Yangi format: [{'id': 1, 'type': 'store'}, {'id': 2, 'type':
+    # 'warehouse'}]
+    return [loc['id'] for loc in locations if isinstance(
+        loc, dict) and loc.get('type') == location_type]
+
+
+# Model yaratish - Mahsulot jadvali
+class Product(db.Model):
+    __tablename__ = 'products'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    cost_price = db.Column(db.DECIMAL(precision=10, scale=2),
+                           nullable=False)  # Tan narxi
+    sell_price = db.Column(db.DECIMAL(precision=10, scale=2),
+                           nullable=False)  # Sotish narxi
+    min_stock = db.Column(db.Integer, default=0,
+                          nullable=False)  # Minimal qoldiq
+    created_at = db.Column(db.DateTime,
+                           default=lambda: datetime.now(timezone.utc))  # Qo'shilgan sana
+    is_checked = db.Column(
+        db.Boolean,
+        default=False,
+        nullable=False)  # Tekshirilganlik holati
+
+    # Relationships
+    warehouse_stocks = db.relationship('WarehouseStock',
+                                       cascade='all, delete-orphan')
+    store_stocks = db.relationship('StoreStock', cascade='all, delete-orphan')
+
+    # Eski price ustunini compatibility uchun property sifatida qoldiraman
+    @property
+    def price(self):
+        return self.sell_price
+
+    @price.setter
+    def price(self, value):
+        self.sell_price = value
+
+    def __repr__(self):
+        return f'<Product {self.name}: {self.price}>'
+
+    def to_dict(self):
+        # Stock ma'lumotlarini olish - warehouse_stocks va store_stocks dan
+        stocks = []
+        if self.warehouse_stocks:
+            stocks.extend([stock.to_dict() for stock in self.warehouse_stocks])
+        if self.store_stocks:
+            stocks.extend([stock.to_dict() for stock in self.store_stocks])
+
+        return {
+            'id': self.id,
+            'name': self.name,
+            'cost_price': float(self.cost_price),
+            'sell_price': float(self.sell_price),
+            'price': float(self.sell_price),  # Compatibility uchun
+            'min_stock': self.min_stock,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'stocks': stocks
+        }
+
+
+# Model yaratish - Buyurtma jadvali
+class Order(db.Model):
+    __tablename__ = 'orders'
+
+    id = db.Column(db.Integer, primary_key=True)
+    customer_name = db.Column(db.String(100), nullable=False)
+    product_name = db.Column(db.String(200), nullable=True)  # Mahsulot nomi
+    quantity = db.Column(db.Integer, default=1, nullable=False)  # Miqdori
+    cost_price = db.Column(db.DECIMAL(precision=10, scale=2),
+                           nullable=True)  # Tan narxi
+    sell_price = db.Column(db.DECIMAL(precision=10, scale=2),
+                           nullable=True)  # Sotish narxi
+    total_cost_price = db.Column(db.DECIMAL(precision=12, scale=2),
+                                 nullable=True)  # Jami tan narx
+    total_sell_price = db.Column(db.DECIMAL(precision=12, scale=2),
+                                 nullable=True)  # Jami sotish narx
+    total_amount = db.Column(db.DECIMAL(precision=12, scale=2), nullable=False)
+    order_date = db.Column(db.DateTime, default=db.func.current_timestamp())
+
+    def __repr__(self):
+        return f'<Order {self.id}: {self.total_amount}>'
+
+
+# Model yaratish - Omborlar jadvali
+class Warehouse(db.Model):
+    __tablename__ = 'warehouses'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    address = db.Column(db.String(200), nullable=False)
+    manager_name = db.Column(db.String(100), nullable=False)
+    phone = db.Column(db.String(20))
+    current_stock = db.Column(db.Integer, default=0)  # Joriy zaxira
+    created_date = db.Column(db.DateTime, default=db.func.current_timestamp())
+
+    def __repr__(self):
+        return f'<Warehouse {self.name}: {self.current_stock}>'
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'address': self.address,
+            'manager_name': self.manager_name,
+            'phone': self.phone,
+            'current_stock': self.current_stock,
+            'created_date': self.created_date.strftime('%Y-%m-%d')
+        }
+
+
+# Model yaratish - Do'konlar jadvali
+class Store(db.Model):
+    __tablename__ = 'stores'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    address = db.Column(db.String(200), nullable=False)
+    manager_name = db.Column(db.String(100), nullable=False)
+    phone = db.Column(db.String(20))
+    current_stock = db.Column(db.Integer, default=0)  # Joriy zaxira
+    created_date = db.Column(db.DateTime, default=db.func.current_timestamp())
+
+    def __repr__(self):
+        return f'<Store {self.name}: {self.current_stock}>'
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'address': self.address,
+            'manager_name': self.manager_name,
+            'phone': self.phone,
+            'current_stock': self.current_stock,
+            'created_date': self.created_date.strftime('%Y-%m-%d')
+        }
+
+
+# Model yaratish - Ombor mahsulotlari jadvali
+class WarehouseStock(db.Model):
+    __tablename__ = 'warehouse_stocks'
+
+    id = db.Column(db.Integer, primary_key=True)
+    warehouse_id = db.Column(
+        db.Integer,
+        db.ForeignKey('warehouses.id'),
+        nullable=False)
+    product_id = db.Column(
+        db.Integer,
+        db.ForeignKey('products.id'),
+        nullable=False)
+    quantity = db.Column(db.Integer, nullable=False, default=0)
+    min_stock = db.Column(db.Integer, default=10)  # Minimal zaxira
+    last_updated = db.Column(db.DateTime, default=db.func.current_timestamp())
+
+    # Relationships
+    warehouse = db.relationship('Warehouse', backref='stocks')
+    product = db.relationship('Product', overlaps="warehouse_stocks")
+
+    def __repr__(self):
+        return f'<Stock W:{
+            self.warehouse_id} P:{
+            self.product_id} Q:{
+            self.quantity}>'
+
+    @property
+    def purchase_price(self):
+        """Sotib olish narxi - product ning cost_price i bilan bir xil"""
+        return self.product.cost_price if self.product else 0
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'warehouse_id': self.warehouse_id,
+            'warehouse_name': self.warehouse.name if self.warehouse else 'Noma\'lum',
+            'product_id': self.product_id,
+            'quantity': self.quantity,
+            'min_stock': self.min_stock,
+            'last_updated': self.last_updated.strftime('%Y-%m-%d %H:%M:%S')}
+
+
+# Model yaratish - Do'kon mahsulotlari jadvali
+class StoreStock(db.Model):
+    __tablename__ = 'store_stocks'
+
+    id = db.Column(db.Integer, primary_key=True)
+    store_id = db.Column(
+        db.Integer,
+        db.ForeignKey('stores.id'),
+        nullable=False)
+    product_id = db.Column(
+        db.Integer,
+        db.ForeignKey('products.id'),
+        nullable=False)
+    quantity = db.Column(db.Integer, nullable=False, default=0)
+    min_stock = db.Column(db.Integer, default=10)  # Minimal zaxira
+    last_updated = db.Column(db.DateTime, default=db.func.current_timestamp())
+
+    # Relationships
+    store = db.relationship('Store', backref='stocks')
+    product = db.relationship('Product', overlaps="store_stocks")
+
+    def __repr__(self):
+        return f'<StoreStock S:{
+            self.store_id} P:{
+            self.product_id} Q:{
+            self.quantity}>'
+
+    @property
+    def purchase_price(self):
+        """Sotib olish narxi - product ning cost_price i bilan bir xil"""
+        return self.product.cost_price if self.product else 0
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'store_id': self.store_id,
+            'store_name': self.store.name if self.store else 'Noma\'lum',
+            'product_id': self.product_id,
+            'product_name': self.product.name if self.product else 'Noma\'lum',
+            'quantity': self.quantity,
+            'min_stock': self.min_stock,
+            'status': 'low' if self.quantity <= self.min_stock else 'normal',
+            'last_updated': self.last_updated.strftime('%Y-%m-%d %H:%M')
+        }
+
+
+# Transfer tarixi modeli
+class Transfer(db.Model):
+    __tablename__ = 'transfers'
+
+    id = db.Column(db.Integer, primary_key=True)
+    product_id = db.Column(
+        db.Integer,
+        db.ForeignKey('products.id'),
+        nullable=False)
+    from_location_type = db.Column(db.String(20),
+                                   nullable=False)  # 'store' yoki 'warehouse'
+    from_location_id = db.Column(db.Integer, nullable=False)
+    to_location_type = db.Column(db.String(20),
+                                 nullable=False)  # 'store' yoki 'warehouse'
+    to_location_id = db.Column(db.Integer, nullable=False)
+    quantity = db.Column(db.Integer, nullable=False)
+    user_name = db.Column(db.String(100), default='Admin')
+    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+
+    # Relationships
+    product = db.relationship('Product', backref='transfers')
+
+    def __repr__(self):
+        return f'<Transfer {
+            self.id}: {
+            self.product.name if self.product else "N/A"} {
+            self.quantity}>'
+
+    @property
+    def from_location_name(self):
+        """Qayerdan joylashuv nomi"""
+        if self.from_location_type == 'store':
+            store = Store.query.get(self.from_location_id)
+            return store.name if store else 'Noma\'lum do\'kon'
+        elif self.from_location_type == 'warehouse':
+            warehouse = Warehouse.query.get(self.from_location_id)
+            return warehouse.name if warehouse else 'Noma\'lum ombor'
+        return 'Noma\'lum'
+
+    @property
+    def to_location_name(self):
+        """Qayerga joylashuv nomi"""
+        if self.to_location_type == 'store':
+            store = Store.query.get(self.to_location_id)
+            return store.name if store else 'Noma\'lum do\'kon'
+        elif self.to_location_type == 'warehouse':
+            warehouse = Warehouse.query.get(self.to_location_id)
+            return warehouse.name if warehouse else 'Noma\'lum ombor'
+        return 'Noma\'lum'
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'product_id': self.product_id,
+            'product_name': self.product.name if self.product else 'Noma\'lum mahsulot',
+            'from_location_type': self.from_location_type,
+            'from_location_id': self.from_location_id,
+            'from_location_name': self.from_location_name,
+            'to_location_type': self.to_location_type,
+            'to_location_id': self.to_location_id,
+            'to_location_name': self.to_location_name,
+            'quantity': self.quantity,
+            'user_name': self.user_name,
+            'created_at': self.created_at.isoformat()}
+
+
+# Mijozlar modeli
+class Customer(db.Model):
+    __tablename__ = 'customers'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    phone = db.Column(db.String(20))
+    email = db.Column(db.String(120))
+    address = db.Column(db.Text)
+    store_id = db.Column(db.Integer, db.ForeignKey('stores.id'), nullable=True)
+    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+    updated_at = db.Column(
+        db.DateTime,
+        default=db.func.current_timestamp(),
+        onupdate=db.func.current_timestamp())
+
+    # Relationship
+    store = db.relationship('Store', backref='customers')
+
+    def __repr__(self):
+        return f'<Customer {self.id}: {self.name}>'
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'phone': self.phone,
+            'email': self.email,
+            'address': self.address,
+            'store_id': self.store_id,
+            'store_name': self.store.name if self.store else 'Umumiy',
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None}
+
+
+# Foydalanuvchilar modeli
+class User(db.Model):
+    __tablename__ = 'users'
+
+    id = db.Column(db.Integer, primary_key=True)
+    first_name = db.Column(db.String(60), nullable=False)
+    last_name = db.Column(db.String(60), nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    username = db.Column(db.String(80), unique=True, nullable=False)
+    password = db.Column(db.String(255), nullable=False)
+    phone = db.Column(db.String(20))
+    # admin, sotuvchi, kassir, ombor_xodimi
+    role = db.Column(db.String(50), nullable=False, default='sotuvchi')
+    store_id = db.Column(db.Integer, db.ForeignKey('stores.id'), nullable=True)
+    permissions = db.Column(db.JSON, default=lambda: {})  # Ruxsatlar (JSON)
+    # Ruxsat etilgan joylashuvlar
+    allowed_locations = db.Column(db.JSON, default=lambda: [])
+    # Transfer qilish uchun ruxsat etilgan joylashuvlar
+    transfer_locations = db.Column(db.JSON, default=lambda: [])
+    is_active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+    updated_at = db.Column(
+        db.DateTime,
+        default=db.func.current_timestamp(),
+        onupdate=db.func.current_timestamp())
+
+    # Relationship
+    store = db.relationship('Store', backref='users')
+
+    def __repr__(self):
+        return f'<User {self.id}: {self.username} ({self.role})>'
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'first_name': self.first_name,
+            'last_name': self.last_name,
+            'full_name': f"{self.first_name} {self.last_name}",
+            'email': self.email,
+            'username': self.username,
+            'phone': self.phone,
+            'role': self.role,
+            'role_display': self.get_role_display(),
+            'store_id': self.store_id,
+            'store_name': self.store.name if self.store else 'Barcha do\'konlar',
+            'permissions': self.permissions or {},
+            'allowed_locations': self.allowed_locations or [],
+            'transfer_locations': self.transfer_locations or [],
+            'is_active': self.is_active,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
+
+    def get_role_display(self):
+        role_names = {
+            'admin': 'Administrator',
+            'sotuvchi': 'Sotuvchi',
+            'kassir': 'Kassir',
+            'ombor_xodimi': 'Ombor xodimi',
+            'manager': 'Menejer'
+        }
+        return role_names.get(self.role, self.role)
+
+
+# Foydalanuvchi session'lari modeli - vaqtincha disabled
+# class UserSession(db.Model):
+#     __tablename__ = 'user_sessions'
+
+#     id = db.Column(db.Integer, primary_key=True)
+#     user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
+#     session_id = db.Column(db.String(255), unique=True, nullable=False)
+#     login_time = db.Column(db.DateTime, default=db.func.current_timestamp())
+#     last_activity = db.Column(db.DateTime, default=db.func.current_timestamp())
+#     ip_address = db.Column(db.String(45))
+#     user_agent = db.Column(db.Text)
+#     is_active = db.Column(db.Boolean, default=True, nullable=False)
+#     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+
+#     # Relationships
+#     user = db.relationship('User', backref='sessions')
+
+#     def __repr__(self):
+#         return f'<UserSession {self.id}: User {self.user_id} - {self.session_id[:8]}...>'
+
+#     def to_dict(self):
+#         return {
+#             'id': self.id,
+#             'user_id': self.user_id,
+#             'session_id': self.session_id,
+#             'login_time': self.login_time.isoformat() if self.login_time else None,
+#             'last_activity': self.last_activity.isoformat() if self.last_activity else None,
+#             'ip_address': self.ip_address,
+#             'user_agent': self.user_agent,
+#             'is_active': self.is_active,
+#             'created_at': self.created_at.isoformat() if self.created_at else None
+#         }
+
+
+# Sozlamalar modeli
+class Settings(db.Model):
+    __tablename__ = 'settings'
+
+    id = db.Column(db.Integer, primary_key=True)
+    key = db.Column(db.String(100), unique=True, nullable=False)
+    value = db.Column(db.Text)
+    description = db.Column(db.String(255))
+    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+    updated_at = db.Column(
+        db.DateTime,
+        default=db.func.current_timestamp(),
+        onupdate=db.func.current_timestamp())
+
+    def __repr__(self):
+        return f'<Settings {self.key}: {self.value}>'
+
+
+# Stock checking session holatini saqlash modeli
+class StockCheckSession(db.Model):
+    __tablename__ = 'stock_check_sessions'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    session_key = db.Column(db.String(100), unique=True, nullable=False)
+    location_type = db.Column(db.String(20))  # 'store', 'warehouse', 'all'
+    location_id = db.Column(db.Integer)  # Store yoki Warehouse ID
+    is_active = db.Column(db.Boolean, default=True)
+    session_data = db.Column(db.Text)  # JSON format
+    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+    updated_at = db.Column(
+        db.DateTime,
+        default=db.func.current_timestamp(),
+        onupdate=db.func.current_timestamp())
+
+    # Relationships
+    user = db.relationship('User', backref='stock_check_sessions')
+
+    def __repr__(self):
+        return f'<StockCheckSession {self.session_key} - User: {self.user_id}>'
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'session_key': self.session_key,
+            'location_type': self.location_type,
+            'location_id': self.location_id,
+            'is_active': self.is_active,
+            'session_data': self.session_data,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+        }
+
+
+# Sotish tarixi modeli
+class SaleItem(db.Model):
+    __tablename__ = 'sale_items'
+
+    id = db.Column(db.Integer, primary_key=True)
+    sale_id = db.Column(db.Integer, db.ForeignKey('sales.id'), nullable=False)
+    product_id = db.Column(
+        db.Integer,
+        db.ForeignKey('products.id'),
+        nullable=False)
+    quantity = db.Column(db.Integer, nullable=False)
+    unit_price = db.Column(db.DECIMAL(precision=10, scale=2), nullable=False)
+    total_price = db.Column(db.DECIMAL(precision=12, scale=2), nullable=False)
+    cost_price = db.Column(db.DECIMAL(precision=10, scale=2), nullable=False)
+    profit = db.Column(db.DECIMAL(precision=12, scale=2), nullable=False)
+    source_type = db.Column(db.String(20))  # 'store' yoki 'warehouse'
+    source_id = db.Column(db.Integer)  # Store yoki Warehouse ID
+    notes = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+
+    # Relationships
+    product = db.relationship('Product', backref='sale_items')
+
+    def to_dict(self):
+        # Joylashuv nomini olish
+        location_name = 'Noma\'lum'
+        if self.source_type == 'warehouse' and self.source_id:
+            warehouse = Warehouse.query.get(self.source_id)
+            location_name = f"Ombor: {
+                warehouse.name}" if warehouse else f"Ombor (ID: {
+                self.source_id})"
+        elif self.source_type == 'store' and self.source_id:
+            store = Store.query.get(self.source_id)
+            location_name = f"Dokon: {
+                store.name}" if store else f"Dokon (ID: {
+                self.source_id})"
+
+        return {
+            'id': self.id,
+            'sale_id': self.sale_id,
+            'product_id': self.product_id,
+            'product_name': self.product.name if self.product else 'Noma\'lum mahsulot',
+            'quantity': self.quantity if self.quantity is not None else 0,
+            'unit_price': float(self.unit_price) if self.unit_price is not None else 0.0,
+            'total_price': float(self.total_price) if self.total_price is not None else 0.0,
+            'cost_price': float(self.cost_price) if self.cost_price is not None else 0.0,
+            'profit': float(self.profit) if self.profit is not None else 0.0,
+            'source_type': self.source_type,
+            'source_id': self.source_id,
+            'location_name': location_name,  # To'liq joylashuv nomi
+            'notes': self.notes if self.notes else ''
+        }
+
+
+class Sale(db.Model):
+    __tablename__ = 'sales'
+
+    id = db.Column(db.Integer, primary_key=True)
+    customer_id = db.Column(
+        db.Integer,
+        db.ForeignKey('customers.id'),
+        nullable=True)
+    store_id = db.Column(
+        db.Integer,
+        db.ForeignKey('stores.id'),
+        nullable=True)
+    seller_id = db.Column(
+        db.Integer,
+        db.ForeignKey('users.id'),
+        nullable=True)
+    sale_date = db.Column(db.DateTime, default=db.func.current_timestamp())
+    total_amount = db.Column(
+        db.DECIMAL(
+            precision=12,
+            scale=2),
+        nullable=False,
+        default=0)
+    total_cost = db.Column(
+        db.DECIMAL(
+            precision=12,
+            scale=2),
+        nullable=False,
+        default=0)
+    total_profit = db.Column(
+        db.DECIMAL(
+            precision=12,
+            scale=2),
+        nullable=False,
+        default=0)
+    payment_method = db.Column(db.String(20), default='cash')
+    payment_status = db.Column(db.String(20), default='paid')
+    notes = db.Column(db.Text)
+    currency_rate = db.Column(
+        db.DECIMAL(
+            precision=15,
+            scale=4),
+        nullable=False,
+        default=12500.0000)
+    created_by = db.Column(db.String(100), default='System')
+    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+
+    # Relationships
+    customer = db.relationship('Customer', backref='sales')
+    store = db.relationship('Store', backref='sales')
+    seller = db.relationship('User', backref='sales')
+    items = db.relationship(
+        'SaleItem',
+        backref='sale',
+        cascade='all, delete-orphan')
+
+    def __repr__(self):
+        return f'<Sale {self.id}: {self.total_amount}>'
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'customer_id': self.customer_id,
+            'customer_name': self.customer.name if self.customer else '🚫 O\'chirilgan mijoz',
+            'customer_phone': self.customer.phone if self.customer and self.customer.phone else DEFAULT_PHONE_PLACEHOLDER,
+            'store_id': self.store_id,
+            'store_name': self.store.name if self.store else '🚫 O\'chirilgan do\'kon',
+            'seller_id': self.seller_id,
+            'seller_name': f"{self.seller.first_name} {self.seller.last_name}" if self.seller else 'Admin',
+            'seller_phone': self.seller.phone if self.seller and self.seller.phone else None,
+            'sale_date': self.sale_date.isoformat() if self.sale_date else None,
+            'total_amount': float(
+                self.total_amount) if self.total_amount is not None else 0.0,
+            'total_cost': float(
+                self.total_cost) if self.total_cost is not None else 0.0,
+            'total_profit': float(
+                self.total_profit) if self.total_profit is not None else 0.0,
+            'payment_method': self.payment_method if self.payment_method else 'cash',
+            'payment_status': self.payment_status if self.payment_status else 'paid',
+            'notes': self.notes if self.notes else '',
+            'currency_rate': float(
+                self.currency_rate) if self.currency_rate is not None else 12500.0,
+            'created_by': self.created_by if self.created_by else 'System',
+            'items': [
+                item.to_dict() for item in self.items] if self.items else []}
+
+
+# Valyuta kursi modeli
+class CurrencyRate(db.Model):
+    __tablename__ = 'currency_rates'
+
+    id = db.Column(db.Integer, primary_key=True)
+    from_currency = db.Column(db.String(3), nullable=False, default='USD')
+    to_currency = db.Column(db.String(3), nullable=False, default='UZS')
+    rate = db.Column(db.DECIMAL(precision=15, scale=4), nullable=False)
+    created_date = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_date = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    is_active = db.Column(db.Boolean, default=True)
+    updated_by = db.Column(db.String(100), default='system')
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'from_currency': self.from_currency,
+            'to_currency': self.to_currency,
+            'rate': float(
+                self.rate),
+            'created_date': self.created_date.isoformat() if self.created_date else None,
+            'updated_date': self.updated_date.isoformat() if self.updated_date else None,
+            'is_active': self.is_active,
+            'updated_by': self.updated_by}
+
+
+# API Test sahifasi
+@app.route('/api_test.html')
+def api_test():
+    return """<!DOCTYPE html> <html>
+<head>
+    <title>API Test</title>
+</head>
+<body>
+    <h1>Sales History API Test</h1>
+    <button onclick="testAPI()">Test API</button>
+    <pre id="result"></pre>
+
+    <script>
+        async function testAPI() {
+            try {
+                console.log('Testing API...');
+                const response = await fetch('/api/sales-history');
+                const data = await response.json();
+                console.log('API Response:', data);
+                document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                console.error('API Error:', error);
+                document.getElementById('result').textContent = 'Error: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>"""
+
+# Favicon route
+
+
+@app.route('/favicon.ico')
+def favicon():
+    return send_from_directory(
+        os.path.join(app.root_path, 'static'),
+        'favicon.ico',
+        mimetype='image/vnd.microsoft.icon'
+    )
+
+
+# Asosiy sahifa - login sahifasiga yo'naltirish
+@app.route('/')
+def index():
+    if 'user_id' in session:
+        return redirect('/dashboard')
+    return redirect('/login')
+
+# Mahsulot qo'shish sahifasi
+
+
+@app.route('/add_product', methods=['GET'])
+@role_required('admin', 'kassir')
+def add_product():
+    return render_template('add_product.html')
+
+
+@app.route('/add_product_new')
+def add_product_new():
+    return render_template('add_product.html')
+
+
+@app.route('/currency-rate')
+@role_required('admin', 'kassir', 'sotuvchi')
+def currency_rate():
+    return render_template('currency_rate.html')
+
+# API endpoint - mahsulotlar ro'yxati (faqat stock mavjud bo'lganlar)
+
+
+@app.route('/api/products')
+@role_required('admin', 'kassir', 'sotuvchi')
+def api_products():
+    """Optimized products API with pagination and location filtering support"""
+
+    # Pagination parametrlar
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 50, type=int)  # Default 50
+    per_page = min(per_page, 100)  # Maximum 100 limit
+
+    # Search parameter
+    search = request.args.get('search', '', type=str).strip()
+
+    # Location filter parameters
+    location_filter = request.args.get('location', '', type=str).strip()
+
+    # Base query with eager loading to avoid N+1 problem
+    query = Product.query.options(
+        db.joinedload(Product.warehouse_stocks),
+        db.joinedload(Product.store_stocks)
+    )
+
+    # Search filter
+    if search:
+        query = query.filter(Product.name.ilike(f'%{search}%'))
+
+    # Location filter
+    if location_filter and location_filter != 'all':
+        try:
+            location_type, location_id = location_filter.split('_')
+            location_id = int(location_id)
+
+            if location_type == 'warehouse':
+                # Filter products that have stock in specific warehouse
+                query = query.filter(
+                    Product.warehouse_stocks.any(
+                        WarehouseStock.warehouse_id == location_id
+                    )
+                )
+            elif location_type == 'store':
+                # Filter products that have stock in specific store
+                query = query.filter(
+                    Product.store_stocks.any(
+                        StoreStock.store_id == location_id
+                    )
+                )
+        except (ValueError, IndexError):
+            # Invalid location filter format, ignore
+            pass
+    else:
+        # Filter products that have stock records (any location)
+        query = query.filter(
+            db.or_(
+                Product.warehouse_stocks.any(),
+                Product.store_stocks.any()
+            )
+        )
+
+    # Get paginated results
+    paginated = query.paginate(
+        page=page,
+        per_page=per_page,
+        error_out=False
+    )
+
+    products_list = []
+    for product in paginated.items:
+        product_dict = product.to_dict()
+        products_list.append(product_dict)
+
+    # Return with pagination metadata
+    return jsonify({
+        'products': products_list,
+        'pagination': {
+            'page': page,
+            'per_page': per_page,
+            'total': paginated.total,
+            'pages': paginated.pages,
+            'has_next': paginated.has_next,
+            'has_prev': paginated.has_prev
+        },
+        'filters': {
+            'search': search,
+            'location': location_filter
+        }
+    })
+
+
+# API endpoint - dokon va omborlar ro'yxati
+@app.route('/api/locations')
+def api_locations():
+    """Savdo uchun ruxsat etilgan joylashuvlarni qaytarish (allowed_locations ishlatadi)"""
+    try:
+        logger.debug(" API Locations called", flush=True)
+        import sys
+        sys.stdout.flush()
+        # Session tekshirish
+        if 'user_id' not in session:
+            logger.error(" No user_id in session", flush=True)
+            return jsonify({'error': 'Login required'}), 401
+
+        logger.debug(f" Session user_id: {session.get('user_id')}")
+        locations = []
+
+        # Joriy foydalanuvchini olish
+        current_user = get_current_user()
+        logger.debug(f" API Locations - Current user: {current_user}")
+        if not current_user:
+            logger.error(" No current user found - returning empty locations")
+            return jsonify([])  # Bo'sh array qaytarish
+
+        print(
+            f"🔍 API Locations - User: {current_user.username}, Role: {current_user.role}")
+
+        # Foydalanuvchi huquqlarini tekshirish
+        if current_user.role == 'admin':
+            # Admin hamma joylashuvlarni ko'radi
+            allowed_store_ids = None
+            allowed_warehouse_ids = None
+        else:
+            # Oddiy foydalanuvchilar faqat allowed_locations dan ruxsat etilgan
+            # joylashuvlarni ko'radi (savdo uchun)
+            allowed_locations = current_user.allowed_locations or []
+            logger.debug(f" Raw allowed_locations: {allowed_locations}")
+
+            # Eski format (ID'lar ro'yxati) va yangi format (dict'lar ro'yxati)
+            # qo'llab-quvvatlash
+            if allowed_locations and isinstance(allowed_locations[0], int):
+                # Eski format: [1, 2, 3] - faqat ID'lar
+                logger.debug(" Using old format (ID list)")
+                allowed_store_ids = allowed_locations  # Barcha ID'larni do'kon deb hisoblash
+                allowed_warehouse_ids = allowed_locations  # Barcha ID'larni ombor deb hisoblash
+            else:
+                # Yangi format: [{'id': 1, 'type': 'store'}, {'id': 2, 'type':
+                # 'warehouse'}]
+                logger.debug(" Using new format (dict list)")
+                allowed_store_ids = [
+                    loc['id'] for loc in allowed_locations if isinstance(
+                        loc, dict) and loc.get('type') == 'store']
+                allowed_warehouse_ids = [
+                    loc['id'] for loc in allowed_locations if isinstance(
+                        loc, dict) and loc.get('type') == 'warehouse']
+
+            logger.debug(f" Allowed store IDs: {allowed_store_ids}")
+            logger.debug(f" Allowed warehouse IDs: {allowed_warehouse_ids}")
+
+        # Omborlarni qo'shish
+        if allowed_warehouse_ids is None:
+            warehouses = Warehouse.query.all()
+        else:
+            warehouses = Warehouse.query.filter(Warehouse.id.in_(
+                allowed_warehouse_ids)).all() if allowed_warehouse_ids else []
+
+        for warehouse in warehouses:
+            locations.append({
+                'type': 'warehouse',
+                'id': warehouse.id,
+                'name': warehouse.name,
+                'display': f'📦 {warehouse.name} (Ombor)'
+            })
+
+        # Do'konlarni qo'shish
+        if allowed_store_ids is None:
+            stores = Store.query.all()
+        else:
+            stores = Store.query.filter(
+                Store.id.in_(allowed_store_ids)).all() if allowed_store_ids else []
+
+        for store in stores:
+            locations.append({
+                'type': 'store',
+                'id': store.id,
+                'name': store.name,
+                'display': f'🏪 {store.name} (Do\'kon)'
+            })
+
+        logger.debug(f" Final locations count: {len(locations)}")
+        return jsonify(locations)
+
+    except Exception as e:
+        import traceback
+        logger.error(f" Error in api_locations: {str(e)}")
+        logger.error(f" Traceback: {traceback.format_exc()}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+# API endpoint - mahsulotlar sahifasi uchun barcha joylashuvlar (filterlashsiz)
+@app.route('/api/all-locations')
+@role_required('admin', 'kassir', 'sotuvchi')
+def api_all_locations():
+    """Mahsulotlar sahifasi uchun barcha joylashuvlar (filterlashsiz)"""
+    logger.debug(" All Locations API - Barcha foydalanuvchilar uchun barcha joylashuvlar")
+
+    locations = []
+
+    # Barcha omborlarni qo'shish
+    warehouses = Warehouse.query.all()
+    for warehouse in warehouses:
+        logger.debug(f" Including warehouse {warehouse.id} ({warehouse.name})")
+        locations.append({
+            'type': 'warehouse',
+            'id': warehouse.id,
+            'name': warehouse.name,
+            'display': f'📦 {warehouse.name} (Ombor)'
+        })
+
+    # Barcha do'konlarni qo'shish
+    stores = Store.query.all()
+    for store in stores:
+        logger.debug(f" Including store {store.id} ({store.name})")
+        locations.append({
+            'type': 'store',
+            'id': store.id,
+            'name': store.name,
+            'display': f'🏪 {store.name} (Do\'kon)'
+        })
+
+    logger.info(f" Total locations for products page: {len(locations)}")
+    return jsonify(locations)
+
+
+# API endpoint - joylashuv bo'yicha mahsulotlarni qidirish (OPTIMIZED)
+@app.route('/api/search-products-by-location/<location_type>/<int:location_id>')
+def api_search_products_by_location(location_type, location_id):
+    """Tanlangan joylashuv bo'yicha mahsulotlarni qidirish (lazy loading)"""
+    try:
+        search_term = request.args.get('search', '').strip()
+        limit = int(request.args.get('limit', 20))  # Maksimum 20 ta natija
+
+        products_list = []
+
+        if location_type == 'warehouse':
+            # Ombor mahsulotlarini qidirish
+            query = db.session.query(WarehouseStock, Product).join(
+                Product, WarehouseStock.product_id == Product.id
+            ).filter(WarehouseStock.warehouse_id == location_id)
+
+            if search_term:
+                query = query.filter(Product.name.ilike(f'%{search_term}%'))
+
+            stocks = query.limit(limit).all()
+
+            for stock, product in stocks:
+                if product:  # Mahsulot mavjudligini tekshirish
+                    product_dict = product.to_dict()
+                    product_dict['available_quantity'] = stock.quantity
+                    product_dict['location_type'] = 'warehouse'
+                    product_dict['location_id'] = location_id
+                    product_dict['location_name'] = stock.warehouse.name if stock.warehouse else 'Noma\'lum ombor'
+                    products_list.append(product_dict)
+
+        elif location_type == 'store':
+            # Do'kon mahsulotlarini qidirish
+            query = db.session.query(StoreStock, Product).join(
+                Product, StoreStock.product_id == Product.id
+            ).filter(StoreStock.store_id == location_id)
+
+            if search_term:
+                query = query.filter(Product.name.ilike(f'%{search_term}%'))
+
+            stocks = query.limit(limit).all()
+
+            for stock, product in stocks:
+                if product:
+                    product_dict = product.to_dict()
+                    product_dict['available_quantity'] = stock.quantity
+                    product_dict['location_type'] = 'store'
+                    product_dict['location_id'] = location_id
+                    store_name = 'Noma\'lum do\'kon'
+                    if stock.store:
+                        store_name = stock.store.name
+                    product_dict['location_name'] = store_name
+                    products_list.append(product_dict)
+
+        return jsonify({
+            'products': products_list,
+            'total': len(products_list),
+            'search_term': search_term
+        })
+
+    except Exception as e:
+        logger.error(f"Error in search products by location: {e}")
+        return jsonify({'error': 'Server xatosi'}), 500
+
+
+# API endpoint - joylashuv bo'yicha mahsulotlar (LEGACY - eski usul)
+@app.route('/api/products-by-location/<location_type>/<int:location_id>')
+def api_products_by_location(location_type, location_id):
+    """Tanlangan joylashuv bo'yicha mahsulotlar ro'yxatini qaytarish (DEPRECATED)"""
+    try:
+        products_list = []
+
+        if location_type == 'warehouse':
+            # Ombor mahsulotlari - barcha mahsulotlar (miqdori 0 bo'lsa ham)
+            warehouse_stocks = WarehouseStock.query.filter_by(
+                warehouse_id=location_id).all()
+            for stock in warehouse_stocks:
+                if stock.product:  # Mahsulot mavjudligini tekshirish
+                    product_dict = stock.product.to_dict()
+                    product_dict['available_quantity'] = stock.quantity
+                    product_dict['location_type'] = 'warehouse'
+                    product_dict['location_id'] = location_id
+                    product_dict['location_name'] = stock.warehouse.name if stock.warehouse else 'Noma\'lum ombor'
+                    products_list.append(product_dict)
+
+        elif location_type == 'store':
+            # Do'kon mahsulotlari
+            store_stocks = StoreStock.query.filter_by(
+                store_id=location_id).all()
+            for stock in store_stocks:
+                # Mahsulot mavjudligini tekshirish (miqdorga qaramay)
+                if stock.product:
+                    product_dict = stock.product.to_dict()
+                    product_dict['available_quantity'] = stock.quantity
+                    product_dict['location_type'] = 'store'
+                    product_dict['location_id'] = location_id
+                    store_name = 'Noma\'lum do\'kon'
+                    if stock.store:
+                        store_name = stock.store.name
+                    location_name = store_name
+                    product_dict['location_name'] = location_name
+                    products_list.append(product_dict)
+
+        return jsonify(products_list)
+
+    except Exception as e:
+        logger.error(f"Error in products by location: {e}")
+        return jsonify({'error': 'Server xatosi'}), 500
+
+
+# API endpoint - mahsulot nomini tekshirish
+@app.route('/api/check-product-name', methods=['POST'])
+def check_product_name():
+    try:
+        data = request.get_json()
+        name = data.get('name', '').strip()
+        exclude_id = data.get('exclude_id')
+
+        if not name:
+            return jsonify({'exists': False})
+
+        # Bir xil nomli mahsulot borligini tekshirish (exclude_id dan tashqari)
+        query = Product.query.filter(Product.name.ilike(name))
+        if exclude_id:
+            query = query.filter(Product.id != exclude_id)
+
+        existing_product = query.first()
+
+        return jsonify({'exists': existing_product is not None})
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
+
+# API endpoint - yangi mahsulot qo'shish
+
+
+@app.route('/api/products', methods=['POST'])
+def api_add_product():
+    try:
+        data = request.get_json()
+
+        # Bir nechta mahsulotlar uchun
+        if 'products' in data:
+            created_products = []
+            for product_data in data['products']:
+                cost_price = Decimal(str(product_data['costPrice']))
+                sell_price = Decimal(str(product_data['sellPrice']))
+                quantity = product_data.get('quantity', 0)
+
+                # Validatsiya
+                if sell_price < cost_price:
+                    return jsonify({'error': 'Sotish narxi tan narxidan past '
+                                    f'bo\'lishi mumkin emas! ({product_data["name"]})'}), 400
+
+                # Mahsulot yaratish yoki topish
+                existing_product = Product.query.filter_by(
+                    name=product_data['name']).first()
+                if existing_product:
+                    # Mavjud mahsulot narxlarini yangilash
+                    existing_product.cost_price = cost_price
+                    existing_product.sell_price = sell_price
+                    existing_product.min_stock = product_data.get(
+                        'minStock', existing_product.min_stock)
+                    product = existing_product
+                else:
+                    # Yangi mahsulot yaratish
+                    product = Product(
+                        name=product_data['name'],
+                        cost_price=cost_price,
+                        sell_price=sell_price,
+                        stock_quantity=0,  # Global stock 0 ga qo'yamiz
+                        min_stock=product_data.get('minStock', 0)
+                    )
+                    db.session.add(product)
+                    db.session.flush()  # ID olish uchun
+
+                # Joylashuvni aniqlash va stock qo'shish
+                location_value = product_data.get('locationValue', '')
+                if location_value.startswith('store_'):
+                    store_id = int(location_value.replace('store_', ''))
+                    store = Store.query.get(store_id)
+                    if store:
+                        # Store stock qo'shish yoki yangilash
+                        existing_stock = StoreStock.query.filter_by(
+                            store_id=store_id, product_id=product.id).first()
+                        if existing_stock:
+                            existing_stock.quantity += quantity
+                        else:
+                            store_stock = StoreStock(
+                                store_id=store_id,
+                                product_id=product.id,
+                                quantity=quantity
+                            )
+                            db.session.add(store_stock)
+
+                elif location_value.startswith('warehouse_'):
+                    warehouse_id = int(
+                        location_value.replace(
+                            'warehouse_', ''))
+                    warehouse = Warehouse.query.get(warehouse_id)
+                    if warehouse:
+                        # Warehouse stock qo'shish yoki yangilash
+                        existing_stock = WarehouseStock.query.filter_by(
+                            warehouse_id=warehouse_id, product_id=product.id).first()
+                        if existing_stock:
+                            existing_stock.quantity += quantity
+                        else:
+                            warehouse_stock = WarehouseStock(
+                                warehouse_id=warehouse_id,
+                                product_id=product.id,
+                                quantity=quantity
+                            )
+                            db.session.add(warehouse_stock)
+
+                created_products.append(product)
+
+            db.session.commit()
+            return jsonify(
+                {'success': True, 'count': len(created_products)}), 201
+
+        # Bitta mahsulot uchun (eski format)
+        else:
+            cost_price = Decimal(str(data['cost_price']))
+            sell_price = Decimal(str(data['sell_price']))
+
+            # Validatsiya
+            if sell_price < cost_price:
+                return jsonify({'error': 'Sotish narxi tan narxidan past '
+                                         'bo\'lishi mumkin emas!'}), 400
+
+            new_product = Product(
+                name=data['name'],
+                cost_price=cost_price,
+                sell_price=sell_price,
+                stock_quantity=data.get('stock_quantity', 0),
+                min_stock=data.get('min_stock', 0)
+            )
+
+            db.session.add(new_product)
+            db.session.commit()
+
+            return jsonify(new_product.to_dict()), 201
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 400
+
+
+# Batch mahsulotlar qo'shish API
+@app.route('/api/batch-products', methods=['POST'])
+def api_batch_products():
+    try:
+        data = request.get_json()
+        products = data.get('products', [])
+
+        if not products:
+            return jsonify({'error': 'Mahsulotlar ro\'yxati bo\'sh'}), 400
+
+        created_count = 0
+
+        for product_data in products:
+            # Ma'lumotlarni olish
+            location_type = product_data['location_type']
+            location_id = int(product_data['location_id'])
+            name = product_data['name']
+            quantity = float(product_data['quantity'])
+            cost_price = Decimal(str(product_data['cost_price']))
+            sell_price = Decimal(str(product_data['sell_price']))
+            min_stock = int(product_data['min_stock'])
+
+            # Mahsulot mavjudligini tekshirish
+            product = Product.query.filter_by(name=name).first()
+            if not product:
+                # Yangi mahsulot yaratish
+                product = Product(
+                    name=name,
+                    cost_price=cost_price,
+                    sell_price=sell_price,
+                    min_stock=min_stock
+                )
+                db.session.add(product)
+                db.session.flush()  # ID olish uchun
+            else:
+                # Mavjud mahsulot narxlarini yangilash
+                product.cost_price = cost_price
+                product.sell_price = sell_price
+                product.min_stock = min_stock
+
+            # Stock qo'shish
+            if location_type == 'warehouse':
+                stock = WarehouseStock.query.filter_by(
+                    warehouse_id=location_id,
+                    product_id=product.id
+                ).first()
+
+                if stock:
+                    stock.quantity += quantity
+                else:
+                    stock = WarehouseStock(
+                        warehouse_id=location_id,
+                        product_id=product.id,
+                        quantity=quantity
+                    )
+                    db.session.add(stock)
+
+            elif location_type == 'store':
+                stock = StoreStock.query.filter_by(
+                    store_id=location_id,
+                    product_id=product.id
+                ).first()
+
+                if stock:
+                    stock.quantity += quantity
+                else:
+                    stock = StoreStock(
+                        store_id=location_id,
+                        product_id=product.id,
+                        quantity=quantity
+                    )
+                    db.session.add(stock)
+
+            created_count += 1
+
+        db.session.commit()
+        return jsonify({
+            'success': True,
+            'created': created_count,
+            'message': f'{created_count} ta mahsulot muvaffaqiyatli qo\'shildi'
+        }), 201
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 400
+
+
+# Mahsulot qo'shish tarixi API
+@app.route('/api/products/history', methods=['GET'])
+def get_product_history():
+    """Qo'shilgan mahsulotlar tarixini olish"""
+    try:
+        # Oxirgi 50 ta yozuv
+        limit = int(request.args.get('limit', 50))
+
+        # Mahsulotlarni yaratilish sanasi bo'yicha tartiblab olish
+        products = Product.query.order_by(
+            Product.created_at.desc()).limit(limit).all()
+
+        history_data = []
+        for product in products:
+            # Har bir mahsulot uchun stock ma'lumotlarini olish
+            warehouse_stocks = WarehouseStock.query.filter_by(
+                product_id=product.id).all()
+            store_stocks = StoreStock.query.filter_by(
+                product_id=product.id).all()
+
+            total_quantity = 0
+            locations = []
+
+            # Ombor stocklari
+            for stock in warehouse_stocks:
+                total_quantity += float(stock.quantity)
+                locations.append({
+                    'type': 'Ombor',
+                    'name': stock.warehouse.name,
+                    'quantity': float(stock.quantity)
+                })
+
+            # Do'kon stocklari
+            for stock in store_stocks:
+                total_quantity += float(stock.quantity)
+                locations.append({
+                    'type': 'Do\'kon',
+                    'name': stock.store.name,
+                    'quantity': float(stock.quantity)
+                })
+
+            # Jami qiymat hisoblash
+            total_value = total_quantity * float(product.cost_price)
+
+            history_data.append({
+                'id': product.id,
+                'name': product.name,
+                'cost_price': float(product.cost_price),
+                'sell_price': float(product.sell_price),
+                'min_stock': product.min_stock,
+                'total_quantity': total_quantity,
+                'total_value': total_value,
+                'locations': locations,
+                'created_date': (product.created_at.isoformat()
+                                if product.created_at else None)
+            })
+
+        return jsonify({
+            'success': True,
+            'history': history_data,
+            'count': len(history_data)
+        })
+
+    except Exception as e:
+        logger.error(f" Mahsulot tarixini olishda xatolik: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'message': 'Tarixni yuklashda xatolik yuz berdi'
+        }), 500
+
+
+# Mahsulot qidirish API
+@app.route('/api/search-product/<product_name>')
+def search_product(product_name):
+    """Mahsulot nomiga qarab joylashuvlarini topish (partial search)"""
+    try:
+        logger.debug(f" Qidiruv so'rovi: '{product_name}'")
+
+        # Qisman qidiruv uchun LIKE dan foydalanish - ko'p mahsulot qaytarish
+        products = Product.query.filter(
+            Product.name.ilike(f'%{product_name}%')
+        ).all()
+
+        if not products:
+            logger.error(f" Mahsulot topilmadi: '{product_name}'")
+            return jsonify({'exists': False})
+
+        logger.info(f" Mahsulotlar topildi: {len(products)} ta")
+
+        products_data = []
+
+        for product in products:
+            logger.debug(f" Mahsulot: '{product.name}'")
+
+            locations = []
+            total_quantity = 0
+
+            # Omborlardan qidirish
+            warehouse_stocks = WarehouseStock.query.filter_by(
+                product_id=product.id
+            ).all()
+            logger.debug(f" Ombor stock'lari topildi: {len(warehouse_stocks)}")
+            for stock in warehouse_stocks:
+                print(
+                    f"   Ombor ID: {
+                        stock.warehouse_id}, Miqdor: {
+                        stock.quantity}")
+                # Miqdori nol bo'lgan omborlar ham ko'rsatiladi
+                locations.append({
+                    'type': 'warehouse',
+                    'name': stock.warehouse.name,
+                    'quantity': float(stock.quantity),
+                    'id': stock.warehouse.id
+                })
+                total_quantity += float(stock.quantity)
+
+            # Dokonlardan qidirish
+            store_stocks = StoreStock.query.filter_by(
+                product_id=product.id).all()
+            logger.debug(f" Dokon stock'lari topildi: {len(store_stocks)}")
+            for stock in store_stocks:
+                print(
+                    f"   Dokon ID: {
+                        stock.store_id}, Miqdor: {
+                        stock.quantity}")
+                # Miqdori nol bo'lgan dokonlar ham ko'rsatiladi
+                locations.append({
+                    'type': 'store',
+                    'name': stock.store.name,
+                    'quantity': float(stock.quantity),
+                    'id': stock.store.id
+                })
+                total_quantity += float(stock.quantity)
+
+            # Har bir mahsulot uchun ma'lumot
+            products_data.append({
+                'product': {
+                    'name': product.name,
+                    'cost_price': float(product.cost_price),
+                    'sell_price': float(product.sell_price),
+                    'min_stock': product.min_stock
+                },
+                'locations': locations,
+                'total_quantity': total_quantity
+            })
+
+        return jsonify({
+            'exists': True,
+            'products': products_data
+        })
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
+
+
+# Decimal hisoblash namunasi
+@app.route('/api/calculate')
+def calculate_total():
+    """Decimal hisoblash misoli - barcha mahsulotlar qiymatini hisoblash"""
+    products = Product.query.all()
+    total = Decimal('0.00')
+
+    for product in products:
+        total += product.price * product.stock_quantity
+
+    return jsonify({
+        'total_value': float(total),
+        'precision': str(total),  # Aniq qiymat
+        'currency': 'USD'
+    })
+
+
+# Yangi sahifalar uchun route'lar
+@app.route('/sales')
+def sales():
+    return render_template('sales.html')
+
+
+@app.route('/sales-history')
+def sales_history():
+    return render_template(
+        'sales-history.html',
+        page_title='Savdo tarixi',
+        icon='📊')
+
+
+@app.route('/pending-sales')
+def pending_sales():
+    return render_template(
+        'pending-sales.html',
+        page_title='Tasdiqlanmagan savdolar',
+        icon='⏳')
+
+
+@app.route('/customers')
+@role_required('admin', 'kassir', 'sotuvchi')
+def customers():
+    user_role = session.get('role', 'guest')
+    return render_template(
+        'customers.html',
+        page_title='Mijozlar',
+        icon='👥',
+        user_role=user_role)
+
+
+@app.route('/customer/<int:customer_id>')
+def customer_detail(customer_id):
+    """Mijoz tafsilotlari sahifasi"""
+    try:
+        customer = Customer.query.get_or_404(customer_id)
+        return render_template(
+            'customer_detail.html',
+            customer=customer,
+            page_title='Mijoz tafsilotlari',
+            icon='👤')
+    except Exception as e:
+        app.logger.error(f"Error loading customer details: {str(e)}")
+        return "Mijoz ma'lumotlari yuklanmadi", 500
+
+
+@app.route('/add-customer', methods=['GET', 'POST'])
+def add_customer():
+    """Mijoz qo'shish sahifasi"""
+    if request.method == 'POST':
+        try:
+            name = request.form.get('name')
+            phone = request.form.get('phone')
+            email = request.form.get('email')
+            address = request.form.get('address')
+            store_id = request.form.get('store_id')
+
+            # Validatsiya
+            if not name:
+                return jsonify({'error': 'Mijoz nomi kiritilishi shart'}), 400
+
+            # Store ID ni integer ga aylantirish
+            if store_id and store_id != '':
+                try:
+                    store_id = int(store_id)
+                except ValueError:
+                    store_id = None
+            else:
+                store_id = None
+
+            # Yangi mijozni yaratish
+            new_customer = Customer(
+                name=name,
+                phone=phone,
+                email=email,
+                address=address,
+                store_id=store_id,
+                created_at=datetime.utcnow()
+            )
+
+            db.session.add(new_customer)
+            db.session.commit()
+
+            return redirect(url_for('customers'))
+
+        except Exception as e:
+            db.session.rollback()
+            app.logger.error(f"Error adding customer: {str(e)}")
+            return jsonify(
+                {'error': 'Mijoz qo\'shishda xatolik yuz berdi'}), 500
+
+    # GET so'rovi uchun - forma ko'rsatish
+    stores = Store.query.all()
+    return render_template(
+        'add_customer.html',
+        stores=stores,
+        page_title='Mijoz qo\'shish',
+        icon='👥')
+
+
+@app.route('/products')
+def products_list():
+    return render_template('products.html')
+
+
+@app.route('/transfer')
+@role_required('admin', 'kassir', 'sotuvchi')
+def transfer():
+    return render_template('transfer.html')
+
+
+@app.route('/check_stock')
+@role_required('admin', 'kassir', 'sotuvchi')
+def check_stock():
+    """Qoldiqni tekshirish sahifasi"""
+    current_user = get_current_user()
+    if not current_user:
+        return redirect(url_for('login'))
+
+    # Admin uchun avtomatik ruxsat
+    if current_user.role != 'admin':
+        # Stock check huquqini tekshirish
+        permissions = current_user.permissions or {}
+        if not permissions.get('stock_check', False):
+            logger.error(f" User {current_user.username} (role: {current_user.role}) tried to access stock check without permission")
+            logger.debug(f" User permissions: {permissions}")
+            # Temporary: Kassir va eski sotuvchilarga ham ruxsat berish (migration uchun)
+            if current_user.role == 'kassir':
+                logger.info(f" Allowing kassir {current_user.username} temporary access to stock check")
+            else:
+                abort(403)  # Qoldiqni tekshirish huquqi yo'q
+
+        # Sotuvchi uchun qo'shimcha sozlamani tekshirish
+        if current_user.role == 'sotuvchi':
+            setting = Settings.query.filter_by(key='stock_check_visible').first()
+            if setting and setting.value.lower() == 'false':
+                abort(403)  # Sahifa yashirilgan
+
+    return render_template('check_stock.html')
+
+
+@app.route('/history_details')
+def history_details():
+    """Tekshiruv tarixi tafsilotlari sahifasi"""
+    return render_template('history_details.html')
+
+
+@app.route('/stores')
+@role_required('admin', 'kassir')
+def stores():
+    stores_list = Store.query.all()
+    return render_template('stores.html', stores=stores_list)
+
+
+@app.route('/debug-stores')
+def debug_stores():
+    """Debug sahifasi - dokonlar o'chirish test uchun (faqat development)"""
+    if not app.debug:
+        abort(404)  # Production'da ko'rsatmaslik
+    return render_template('debug_stores.html')
+
+
+@app.route('/add_store', methods=['GET', 'POST'])
+def add_store():
+    if request.method == 'POST':
+        try:
+            name = request.form['name']
+            address = request.form['address']
+            manager_name = request.form['manager_name']
+            phone = request.form.get('phone', '')
+
+            new_store = Store(
+                name=name,
+                address=address,
+                manager_name=manager_name,
+                phone=phone
+            )
+
+            db.session.add(new_store)
+            db.session.commit()
+
+            return redirect(url_for('stores'))
+
+        except Exception as e:
+            db.session.rollback()
+            return f"Xatolik: {str(e)}", 400
+
+    return render_template('add_store.html')
+
+
+@app.route('/store/<int:store_id>')
+def store_detail(store_id):
+    """Optimized store detail view - loads only basic info, stock data loaded via AJAX"""
+    store = Store.query.get_or_404(store_id)
+
+    # Faqat asosiy statistikani hisoblash (tezkor query)
+    from sqlalchemy import func, case
+
+    try:
+        # Aggregated statistics - much faster than loading all records
+        stats = db.session.query(
+            func.count(StoreStock.id).label('total_products'),
+            func.sum(StoreStock.quantity).label('total_quantity'),
+            func.sum(StoreStock.quantity * Product.sell_price).label('total_value'),
+            func.sum(StoreStock.quantity * Product.cost_price).label('total_cost_value'),
+            func.sum(StoreStock.quantity * (Product.sell_price - Product.cost_price)).label('total_profit'),
+            func.sum(case((StoreStock.quantity == 0, 1), else_=0)).label('critical_stock_count')
+        ).join(Product).filter(StoreStock.store_id == store_id).first()
+
+        # Safe values
+        total_products = stats.total_products or 0
+        total_quantity = int(stats.total_quantity or 0)
+        total_value = float(stats.total_value or 0)
+        total_cost_value = float(stats.total_cost_value or 0)
+        total_profit = float(stats.total_profit or 0)
+        critical_stock_count = int(stats.critical_stock_count or 0)
+
+        # Profit percentage
+        profit_percentage = 0
+        if total_cost_value > 0:
+            profit_percentage = (total_profit / total_cost_value) * 100
+
+    except Exception as e:
+        app.logger.error(f"Error calculating store stats: {str(e)}")
+        # Fallback values
+        total_products = 0
+        total_quantity = 0
+        total_value = 0.0
+        total_cost_value = 0.0
+        total_profit = 0.0
+        profit_percentage = 0.0
+        critical_stock_count = 0
+
+    return render_template('store_detail.html',
+                           store=store,
+                           total_products=total_products,
+                           total_quantity=total_quantity,
+                           total_value=total_value,
+                           total_cost_value=total_cost_value,
+                           total_profit=total_profit,
+                           profit_percentage=profit_percentage,
+                           critical_stock_count=critical_stock_count)
+
+
+@app.route('/api/store/<int:store_id>/stock', methods=['GET'])
+def api_store_stock(store_id):
+    """Store stock API with pagination and filtering"""
+    try:
+        # Validate store exists
+        Store.query.get_or_404(store_id)
+
+        # Get query parameters
+        page = request.args.get('page', 1, type=int)
+        per_page = request.args.get('per_page', 50, type=int)
+        search = request.args.get('search', '', type=str)
+        status = request.args.get('status', '', type=str)
+
+        # Base query
+        query = StoreStock.query.filter_by(store_id=store_id)
+
+        # Search filter
+        if search:
+            query = query.join(Product).filter(Product.name.ilike(f'%{search}%'))
+
+        # Execute query with pagination
+        pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+        stocks = pagination.items
+
+        # Calculate stock info with status filtering
+        stock_info = []
+        total_value = Decimal('0.00')
+        total_cost_value = Decimal('0.00')
+        total_profit = Decimal('0.00')
+        total_quantity = 0
+        critical_stock_count = 0
+
+        for stock in stocks:
+            # Calculate unit profit
+            unit_profit = stock.product.sell_price - stock.product.cost_price
+            total_stock_value = stock.product.sell_price * stock.quantity
+            total_stock_cost_value = stock.product.cost_price * stock.quantity
+            total_stock_profit = unit_profit * stock.quantity
+
+            # Determine status
+            item_status = 'normal'
+            min_stock = stock.min_stock or 10
+
+            if stock.quantity == 0:
+                item_status = 'critical'
+                critical_stock_count += 1
+            elif stock.quantity <= min_stock:
+                item_status = 'low'
+
+            # Skip if status filter doesn't match
+            if status and item_status != status:
+                continue
+
+            # Calculate profit percentage
+            profit_percentage = 0
+            if stock.product.cost_price > 0:
+                profit_percentage = (float(unit_profit) / float(stock.product.cost_price)) * 100
+
+            stock_data = {
+                'stock': {
+                    'quantity': stock.quantity,
+                    'product': {
+                        'id': stock.product.id,
+                        'name': stock.product.name,
+                        'cost_price': float(stock.product.cost_price),
+                        'sell_price': float(stock.product.sell_price)
+                    }
+                },
+                'unit_profit': float(unit_profit),
+                'total_value': float(total_stock_value),
+                'total_cost_value': float(total_stock_cost_value),
+                'total_profit': float(total_stock_profit),
+                'profit_percentage': profit_percentage,
+                'status': item_status
+            }
+            stock_info.append(stock_data)
+
+            total_value += total_stock_value
+            total_cost_value += total_stock_cost_value
+            total_profit += total_stock_profit
+            total_quantity += stock.quantity
+
+        # If status filter is applied, filter stock_info
+        if status:
+            stock_info = [item for item in stock_info if item['status'] == status]
+
+        profit_percentage = 0
+        if total_cost_value > 0:
+            profit_percentage = (float(total_profit) / float(total_cost_value)) * 100
+
+        return jsonify({
+            'success': True,
+            'data': {
+                'stock_info': stock_info,
+                'total_products': len(stock_info),
+                'total_quantity': total_quantity,
+                'total_value': float(total_value),
+                'total_cost_value': float(total_cost_value),
+                'total_profit': float(total_profit),
+                'profit_percentage': profit_percentage,
+                'critical_stock_count': critical_stock_count
+            },
+            'pagination': {
+                'page': page,
+                'per_page': per_page,
+                'total': pagination.total,
+                'total_pages': pagination.pages,
+                'has_prev': pagination.has_prev,
+                'has_next': pagination.has_next
+            }
+        })
+
+    except Exception as e:
+        app.logger.error(f"Error fetching store stock: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+
+@app.route('/edit_store/<int:store_id>', methods=['GET', 'POST'])
+def edit_store(store_id):
+    store = Store.query.get_or_404(store_id)
+
+    if request.method == 'POST':
+        try:
+            store.name = request.form['name']
+            store.address = request.form['address']
+            store.manager_name = request.form['manager_name']
+            store.phone = request.form.get('phone', '')
+
+            db.session.commit()
+
+            return redirect(url_for('stores'))
+
+        except Exception as e:
+            db.session.rollback()
+            return f"Xatolik: {str(e)}", 400
+
+    return render_template('edit_store.html', store=store)
+
+
+@app.route('/api/store/<int:store_id>', methods=['DELETE'])
+def api_delete_store(store_id):
+    try:
+        logger.info(f" Dokon o'chirish so'rovi: Store ID: {store_id}")
+
+        # Store mavjudligini tekshirish
+        store = Store.query.get_or_404(store_id)
+        logger.info(f" Store topildi: {store.name}")
+
+        # Savdolar hisobini tekshirish
+        sales_count = Sale.query.filter_by(store_id=store_id).count()
+        if sales_count > 0:
+            logger.info(f" Bu dokonda {sales_count} ta savdo mavjud, lekin savdolar saqlanadi")
+
+        # Store ga bog'liq stocklarni o'chirish (FAQAT stock ma'lumotlari)
+        deleted_stocks = StoreStock.query.filter_by(store_id=store_id).delete()
+        logger.info(f" O'chirilgan stocklar: {deleted_stocks} ta")
+
+        # Store ni o'chirish (Savdo tarixi saqlanadi, chunki Sale jadvalida store_id saqlanadi)
+        store_name = store.name
+        db.session.delete(store)
+        db.session.commit()
+
+        message = f'Do\'kon "{store_name}" muvaffaqiyatli o\'chirildi'
+        if sales_count > 0:
+            message += f' (Savdo tarixi saqlanadi: {sales_count} ta savdo)'
+
+        logger.info(f" Store muvaffaqiyatli o'chirildi: {store_name}")
+        return jsonify({'success': True, 'message': message})
+
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f" Store o'chirish xatosi: {str(e)}")
+        return jsonify({'success': False, 'error': f'Xatolik: {str(e)}'}), 400
+
+
+@app.route('/api/warehouse/<int:warehouse_id>/stock', methods=['GET'])
+def api_warehouse_stock(warehouse_id):
+    """Warehouse stock API with pagination and filtering"""
+    try:
+        # Validate warehouse exists
+        Warehouse.query.get_or_404(warehouse_id)
+
+        # Get query parameters
+        page = request.args.get('page', 1, type=int)
+        per_page = request.args.get('per_page', 50, type=int)
+        search = request.args.get('search', '', type=str)
+        status = request.args.get('status', '', type=str)
+
+        # Base query
+        query = WarehouseStock.query.filter_by(warehouse_id=warehouse_id)
+
+        # Search filter
+        if search:
+            query = query.join(Product).filter(Product.name.ilike(f'%{search}%'))
+
+        # Execute query with pagination
+        pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+        stocks = pagination.items
+
+        # Calculate stock info with status filtering
+        stock_info = []
+        total_value = Decimal('0.00')
+        total_cost_value = Decimal('0.00')
+        total_profit = Decimal('0.00')
+        total_quantity = 0
+        critical_stock_count = 0
+
+        for stock in stocks:
+            # Calculate unit profit
+            unit_profit = stock.product.sell_price - stock.product.cost_price
+            total_stock_value = stock.product.sell_price * stock.quantity
+            total_stock_cost_value = stock.product.cost_price * stock.quantity
+            total_stock_profit = unit_profit * stock.quantity
+
+            # Determine status
+            item_status = 'normal'
+            min_stock = getattr(stock.product, 'min_stock', None) or 10
+
+            if stock.quantity == 0:
+                item_status = 'critical'
+                critical_stock_count += 1
+            elif stock.quantity <= min_stock:
+                item_status = 'low'
+
+            # Skip if status filter doesn't match
+            if status and item_status != status:
+                continue
+
+            # Calculate profit percentage
+            profit_percentage = 0
+            if stock.product.cost_price > 0:
+                profit_percentage = (float(unit_profit) / float(stock.product.cost_price)) * 100
+
+            stock_data = {
+                'stock': {
+                    'quantity': stock.quantity,
+                    'product': {
+                        'id': stock.product.id,
+                        'name': stock.product.name,
+                        'cost_price': float(stock.product.cost_price),
+                        'sell_price': float(stock.product.sell_price)
+                    }
+                },
+                'unit_profit': float(unit_profit),
+                'total_value': float(total_stock_value),
+                'total_cost_value': float(total_stock_cost_value),
+                'total_profit': float(total_stock_profit),
+                'profit_percentage': profit_percentage,
+                'status': item_status
+            }
+            stock_info.append(stock_data)
+
+            total_value += total_stock_value
+            total_cost_value += total_stock_cost_value
+            total_profit += total_stock_profit
+            total_quantity += stock.quantity
+
+        # If status filter is applied, filter stock_info
+        if status:
+            stock_info = [item for item in stock_info if item['status'] == status]
+
+        profit_percentage = 0
+        if total_cost_value > 0:
+            profit_percentage = (float(total_profit) / float(total_cost_value)) * 100
+
+        return jsonify({
+            'success': True,
+            'data': {
+                'stock_info': stock_info,
+                'total_products': len(stock_info),
+                'total_quantity': total_quantity,
+                'total_value': float(total_value),
+                'total_cost_value': float(total_cost_value),
+                'total_profit': float(total_profit),
+                'profit_percentage': profit_percentage,
+                'critical_stock_count': critical_stock_count
+            },
+            'pagination': {
+                'page': page,
+                'per_page': per_page,
+                'total': pagination.total,
+                'total_pages': pagination.pages,
+                'has_prev': pagination.has_prev,
+                'has_next': pagination.has_next
+            }
+        })
+
+    except Exception as e:
+        app.logger.error(f"Error fetching warehouse stock: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+
+@app.route('/warehouses')
+@role_required('admin', 'kassir')
+def warehouses():
+    warehouses_list = Warehouse.query.all()
+    return render_template('warehouses.html', warehouses=warehouses_list)
+
+
+@app.route('/add_warehouse', methods=['GET', 'POST'])
+def add_warehouse():
+    if request.method == 'POST':
+        try:
+            name = request.form['name']
+            address = request.form['address']
+            manager_name = request.form['manager_name']
+            phone = request.form.get('phone', '')
+
+            new_warehouse = Warehouse(
+                name=name,
+                address=address,
+                manager_name=manager_name,
+                phone=phone
+            )
+
+            db.session.add(new_warehouse)
+            db.session.commit()
+
+            return redirect(url_for('warehouses'))
+
+        except Exception as e:
+            db.session.rollback()
+            return f"Xatolik: {str(e)}", 400
+
+    return render_template('add_warehouse.html')
+
+
+@app.route('/edit_warehouse/<int:warehouse_id>', methods=['GET', 'POST'])
+def edit_warehouse(warehouse_id):
+    warehouse = Warehouse.query.get_or_404(warehouse_id)
+
+    if request.method == 'POST':
+        try:
+            warehouse.name = request.form['name']
+            warehouse.address = request.form['address']
+            warehouse.manager_name = request.form['manager_name']
+            warehouse.phone = request.form.get('phone', '')
+
+            db.session.commit()
+
+            return redirect(url_for('warehouses'))
+
+        except Exception as e:
+            db.session.rollback()
+            return f"Xatolik: {str(e)}", 400
+
+    return render_template('edit_warehouse.html', warehouse=warehouse)
+
+
+@app.route('/api/warehouses')
+@role_required('admin', 'kassir', 'sotuvchi')
+def api_warehouses():
+    try:
+        current_user = get_current_user()
+        if not current_user:
+            return jsonify({'error': 'Foydalanuvchi topilmadi'}), 401
+
+        # Debug ma'lumotlari
+        print(
+            f"🔍 Warehouses API - User: {current_user.username}, Role: {current_user.role}")
+
+        # Foydalanuvchi huquqlarini tekshirish
+        if current_user.role == 'admin':
+            # Admin hamma omborlarni ko'radi
+            warehouses_list = Warehouse.query.all()
+            print(
+                f"🔍 Admin user, returning all {
+                    len(warehouses_list)} warehouses")
+        else:
+            # Oddiy foydalanuvchilar faqat allowed_locations dan ruxsat etilgan
+            # omborlarni ko'radi (savdo uchun)
+            allowed_locations = current_user.allowed_locations or []
+            print(
+                f"🔍 User allowed locations for warehouses: {allowed_locations}")
+
+            # Helper funksiya bilan warehouse ID'larni olish
+            allowed_warehouse_ids = extract_location_ids(
+                allowed_locations, 'warehouse')
+            logger.debug(f" Allowed warehouse IDs: {allowed_warehouse_ids}")
+
+            if allowed_warehouse_ids:
+                warehouses_list = Warehouse.query.filter(
+                    Warehouse.id.in_(allowed_warehouse_ids)).all()
+                logger.debug(f" Found {len(warehouses_list)} allowed warehouses")
+            else:
+                # Ruxsat berilgan ombor bo'lmasa
+                warehouses_list = []
+                logger.debug(" No allowed warehouses for user")
+
+        result = [wh.to_dict() for wh in warehouses_list]
+        logger.debug(f" Returning {len(result)} warehouses")
+
+        return jsonify(result)
+    except Exception as e:
+        logger.error(f" Error in api_warehouses: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/stores')
+@role_required('admin', 'kassir', 'sotuvchi')
+def api_stores():
+    try:
+        current_user = get_current_user()
+        if not current_user:
+            return jsonify({'error': 'Foydalanuvchi topilmadi'}), 401
+
+        # Debug ma'lumotlari
+        print(
+            f"🔍 Stores API - User: {current_user.username}, Role: {current_user.role}")
+
+        # Foydalanuvchi huquqlarini tekshirish
+        if current_user.role == 'admin':
+            # Admin hamma do'konlarni ko'radi
+            stores_list = Store.query.all()
+            logger.debug(f" Admin user, returning all {len(stores_list)} stores")
+        else:
+            # Oddiy foydalanuvchilar faqat allowed_locations dan ruxsat etilgan
+            # do'konlarni ko'radi (savdo uchun)
+            allowed_locations = current_user.allowed_locations or []
+            logger.debug(f" User allowed locations for stores: {allowed_locations}")
+
+            # Helper funksiya bilan store ID'larni olish
+            allowed_store_ids = extract_location_ids(
+                allowed_locations, 'store')
+            logger.debug(f" Allowed store IDs: {allowed_store_ids}")
+
+            if allowed_store_ids:
+                stores_list = Store.query.filter(
+                    Store.id.in_(allowed_store_ids)).all()
+                logger.debug(f" Found {len(stores_list)} allowed stores")
+            else:
+                # Ruxsat berilgan do'kon bo'lmasa
+                stores_list = []
+                logger.debug(" No allowed stores for user")
+
+        result = [store.to_dict() for store in stores_list]
+        logger.debug(f" Returning {len(result)} stores")
+
+        return jsonify(result)
+    except Exception as e:
+        logger.error(f" Error in api_stores: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/stores-warehouses')
+# @role_required('admin', 'kassir', 'sotuvchi')  # Test uchun vaqtincha o'chirilgan
+def api_stores_warehouses():
+    try:
+        locations = []
+
+        # Test uchun admin sifatida ishlash
+        # current_user = get_current_user()
+        # if not current_user:
+        # return jsonify({'success': False, 'error': 'Foydalanuvchi
+        # topilmadi'}), 401
+
+        # Foydalanuvchi huquqlarini tekshirish
+        # if current_user.role == 'admin':
+        # Admin hamma joylashuvlarni ko'radi (test uchun)
+        allowed_store_ids = None
+        allowed_warehouse_ids = None
+        # else:
+        #     # Oddiy foydalanuvchilar faqat allowed_locations dan ruxsat etilgan joylashuvlarni ko'radi (savdo uchun)
+        #     allowed_locations = current_user.allowed_locations or []
+        #
+        #     # Helper funksiya bilan ID'larni olish (eski va yangi formatlar uchun)
+        #     allowed_store_ids = extract_location_ids(allowed_locations, 'store')
+        #     allowed_warehouse_ids = extract_location_ids(allowed_locations, 'warehouse')
+
+        # Do'konlarni qo'shish
+        if allowed_store_ids is None:
+            stores = Store.query.all()
+        else:
+            stores = Store.query.filter(
+                Store.id.in_(allowed_store_ids)).all() if allowed_store_ids else []
+
+        for store in stores:
+            locations.append({
+                'id': store.id,
+                'name': store.name,
+                'type': 'store',
+                'address': store.address,
+                'manager_name': store.manager_name,
+                'phone': store.phone
+            })
+
+        # Omborlarni qo'shish
+        if allowed_warehouse_ids is None:
+            warehouses = Warehouse.query.all()
+        else:
+            warehouses = Warehouse.query.filter(Warehouse.id.in_(
+                allowed_warehouse_ids)).all() if allowed_warehouse_ids else []
+
+        for warehouse in warehouses:
+            locations.append({
+                'id': warehouse.id,
+                'name': warehouse.name,
+                'type': 'warehouse',
+                'address': warehouse.address,
+                'manager_name': warehouse.manager_name,
+                'current_stock': warehouse.current_stock
+            })
+
+        # Stores va warehouses'ni alohida array sifatida ham qaytarish
+        stores = [loc for loc in locations if loc['type'] == 'store']
+        warehouses = [loc for loc in locations if loc['type'] == 'warehouse']
+
+        return jsonify({
+            'success': True,
+            'locations': locations,
+            'stores': stores,
+            'warehouses': warehouses
+        })
+
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+
+@app.route('/api/transfer-locations')
+@role_required('admin', 'kassir', 'sotuvchi')
+def api_transfer_locations():
+    """Transfer uchun ruxsat etilgan joylashuvlarni qaytarish"""
+    try:
+        locations = []
+
+        # Joriy foydalanuvchini olish
+        current_user = get_current_user()
+        logger.debug(f" API Transfer Locations - Current user: {current_user}")
+        if not current_user:
+            logger.error(" No current user found - returning empty locations")
+            # Bo'sh array qaytarish
+            return jsonify({'success': True, 'locations': []})
+
+        # Foydalanuvchi huquqlarini tekshirish
+        if current_user.role == 'admin':
+            # Admin hamma joylashuvlarni ko'radi
+            allowed_store_ids = None
+            allowed_warehouse_ids = None
+            logger.debug(" Admin user - showing all transfer locations")
+        else:
+            # Oddiy foydalanuvchilar faqat transfer_locations dan ruxsat
+            # etilgan joylashuvlarni ko'radi
+            transfer_locations = current_user.transfer_locations or []
+            logger.debug(f" User transfer_locations: {transfer_locations}")
+            logger.debug(f" Type of transfer_locations: {type(transfer_locations)}")
+
+            # Transfer_locations eski format (faqat ID'lar) bo'lgani uchun
+            # hamma ID'larni store va warehouse sifatida tekshiramiz
+            if transfer_locations and isinstance(transfer_locations[0], int):
+                # Eski format: barcha ID'larni har ikki tipga qo'llamiz
+                print(
+                    "🔍 Using old format for transfer_locations - checking all IDs as both stores and warehouses")
+                allowed_store_ids = transfer_locations
+                allowed_warehouse_ids = transfer_locations
+            else:
+                # Yangi format
+                allowed_store_ids = extract_location_ids(
+                    transfer_locations, 'store')
+                allowed_warehouse_ids = extract_location_ids(
+                    transfer_locations, 'warehouse')
+
+            logger.debug(f" Final store IDs for transfer: {allowed_store_ids}")
+            print(
+                f"🔍 Final warehouse IDs for transfer: {allowed_warehouse_ids}")
+
+        # Do'konlarni qo'shish
+        if allowed_store_ids is None:
+            stores = Store.query.all()
+        else:
+            stores = Store.query.filter(
+                Store.id.in_(allowed_store_ids)).all() if allowed_store_ids else []
+
+        for store in stores:
+            locations.append({
+                'id': store.id,
+                'name': store.name,
+                'type': 'store',
+                'address': store.address,
+                'manager_name': store.manager_name,
+                'phone': store.phone
+            })
+
+        # Omborlarni qo'shish
+        if allowed_warehouse_ids is None:
+            warehouses = Warehouse.query.all()
+        else:
+            warehouses = Warehouse.query.filter(Warehouse.id.in_(
+                allowed_warehouse_ids)).all() if allowed_warehouse_ids else []
+
+        for warehouse in warehouses:
+            locations.append({
+                'id': warehouse.id,
+                'name': warehouse.name,
+                'type': 'warehouse',
+                'address': warehouse.address,
+                'manager_name': warehouse.manager_name,
+                'current_stock': warehouse.current_stock
+            })
+
+        return jsonify({
+            'success': True,
+            'locations': locations
+        })
+
+    except Exception as e:
+        import traceback
+        logger.error(f" Error in api_transfer_locations: {str(e)}")
+        logger.error(f" Traceback: {traceback.format_exc()}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+
+@app.route('/api/warehouse_stats')
+def api_warehouse_stats():
+    warehouses = Warehouse.query.all()
+    total_stock = sum(wh.current_stock for wh in warehouses)
+
+    return jsonify({
+        'total_warehouses': len(warehouses),
+        'total_stock': total_stock,
+        'warehouses': [wh.to_dict() for wh in warehouses]
+    })
+
+
+@app.route('/api/warehouse/<int:warehouse_id>', methods=['DELETE'])
+def api_delete_warehouse(warehouse_id):
+    try:
+        warehouse = Warehouse.query.get_or_404(warehouse_id)
+        logger.info(f" Ombor o'chirish so'rovi: Warehouse ID: {warehouse_id}")
+        logger.info(f" Warehouse topildi: {warehouse.name}")
+
+        # Transfer tarixini tekshirish (agar kerak bo'lsa)
+        # Hozircha transfer jadvalimiz yo'q, lekin kelajakda qo'shilishi mumkin
+
+        # Ombor bilan bog'liq barcha stocklarni o'chirish (FAQAT stock ma'lumotlari)
+        deleted_stocks = WarehouseStock.query.filter_by(warehouse_id=warehouse_id).delete()
+        logger.info(f" O'chirilgan warehouse stocklar: {deleted_stocks} ta")
+
+        # Ombor nomini saqlash (log uchun)
+        warehouse_name = warehouse.name
+
+        # Omborni o'chirish
+        db.session.delete(warehouse)
+        db.session.commit()
+
+        message = f'"{warehouse_name}" ombori muvaffaqiyatli o\'chirildi'
+        if deleted_stocks > 0:
+            message += f' ({deleted_stocks} ta stock ma\'lumoti o\'chirildi)'
+
+        logger.info(f" Warehouse muvaffaqiyatli o'chirildi: {warehouse_name}")
+        return jsonify({
+            'success': True,
+            'message': message
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f" Warehouse o'chirish xatosi: {str(e)}")
+        return jsonify({
+            'success': False,
+            'message': f'Xatolik: {str(e)}'
+        }), 400
+
+
+@app.route('/users')
+@role_required('admin', 'kassir')
+def users():
+    return render_template(
+        'users.html',
+        page_title='Foydalanuvchilar',
+        icon='👤')
+
+
+@app.route('/edit-user/<int:user_id>')
+# @role_required('admin', 'kassir')  # Test uchun vaqtincha o'chirilgan
+def edit_user_page(user_id):
+    return render_template(
+        'edit_user.html',
+        page_title='Foydalanuvchini Tahrirlash',
+        icon='✏️')
+
+
+@app.route('/add-user')
+@role_required('admin', 'kassir')
+def add_user_page():
+    return render_template(
+        'add_user.html',
+        page_title='Yangi Foydalanuvchi',
+        icon='👤')
+
+
+# Database jadvallarini yaratish
+@app.before_request
+def create_tables():
+    if not hasattr(create_tables, 'created'):
+        db.create_all()
+        create_tables.created = True
+
+    # Test ombor stocklari o'chirildi - manual ravishda qo'shiladi
+
+
+@app.before_request
+def check_user_status():
+    """Har request da foydalanuvchining faol ekanligini tekshirish"""
+    try:
+        # Faqat authenticated foydalanuvchilar uchun
+        user_id = session.get('user_id')
+
+        if user_id:
+            # Static fayllar va login sahifalari uchun tekshirmaslik
+            if (request.endpoint
+                    and (request.endpoint == 'static'
+                         or request.endpoint == 'login_page'
+                         or request.endpoint == 'api_login')):
+                return
+
+            # Foydalanuvchi faol ekanligini tekshirish
+            user = User.query.get(user_id)
+
+            if not user or not user.is_active:
+                # Foydalanuvchi faol emas - logout qilish
+                username = session.get('username', 'Unknown')
+                app.logger.info(f"🚫 Faol emas foydalanuvchi avtomatik logout: {username} (ID: {user_id})")
+
+                session.clear()
+
+                # Agar AJAX request bo'lsa, JSON javob qaytarish
+                if request.is_json or request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return jsonify({
+                        'error': 'Hisobingiz faol emas. Qayta login qiling.',
+                        'redirect': '/login',
+                        'logout': True
+                    }), 401
+                else:
+                    # Oddiy request uchun login sahifasiga redirect
+                    return redirect('/login?message=account_disabled')
+
+    except Exception as e:
+        # Xato bo'lsa ham request'ni davom ettirish
+        app.logger.debug(f"User status tekshirish xatosi: {e}")
+        pass
+
+
+# Stock tahrirlash route
+@app.route('/edit_stock/<int:warehouse_id>/<int:product_id>',
+           methods=['GET', 'POST'])
+def edit_stock(warehouse_id, product_id):
+    stock = WarehouseStock.query.filter_by(
+        warehouse_id=warehouse_id,
+        product_id=product_id
+    ).first_or_404()
+
+    # Hisob-kitoblar - to'g'ri cost_price va sell_price dan
+    cost_price = stock.product.cost_price
+    sell_price = stock.product.sell_price
+    unit_profit = sell_price - cost_price  # Birlik foyda
+    total_cost = cost_price * stock.quantity
+    total_sell = sell_price * stock.quantity
+    profit_percent = (float((unit_profit / cost_price * 100))
+                      if cost_price > 0 else 0)
+
+    calculations = {
+        'cost_price': float(cost_price),
+        'sell_price': float(sell_price),
+        'unit_profit': float(unit_profit),  # Birlik foyda
+        'total_cost': float(total_cost),
+        'total_sell': float(total_sell),
+        'profit': float(unit_profit),  # Birlik foyda sifatida
+        'profit_percent': profit_percent,
+        'quantity': stock.quantity
+    }
+
+    if request.method == 'POST':
+        try:
+            # Form ma'lumotlarini olish
+            new_quantity = int(request.form['quantity'])
+            new_product_name = request.form['productName'].strip()
+            new_cost_price = float(request.form['costPrice'])
+            new_sell_price = float(request.form['sellPrice'])
+            new_min_stock = int(request.form.get('minStock', 0))
+
+            # Validatsiya
+            if new_quantity < 0:
+                return render_template(
+                    'edit_stock.html',
+                    stock=stock,
+                    calculations=calculations,
+                    error='Miqdor manfiy bo\'lishi mumkin emas')
+
+            if not new_product_name:
+                return render_template(
+                    'edit_stock.html',
+                    stock=stock,
+                    calculations=calculations,
+                    error='Mahsulot nomi bo\'sh bo\'lishi mumkin emas')
+
+            if new_cost_price < 0 or new_sell_price < 0:
+                return render_template(
+                    'edit_stock.html',
+                    stock=stock,
+                    calculations=calculations,
+                    error='Narxlar manfiy bo\'lishi mumkin emas')
+
+            # Sotish narxi tan narxidan past bo'lmasligini tekshirish
+            if new_sell_price < new_cost_price:
+                return render_template('edit_stock.html',
+                                       stock=stock,
+                                       calculations=calculations,
+                                       error='Sotish narxi tan narxidan past '
+                                             'bo\'lishi mumkin emas!')
+
+            # Mahsulot ma'lumotlarini yangilash
+            stock.product.name = new_product_name
+            stock.product.min_stock = new_min_stock
+
+            # Cost price va sell price ni alohida saqlash
+            stock.product.cost_price = Decimal(str(new_cost_price))
+            stock.product.sell_price = Decimal(str(new_sell_price))
+
+            # Stock miqdorini yangilash
+            stock.quantity = new_quantity
+
+            db.session.commit()
+
+            return redirect(url_for('warehouse_detail',
+                                    warehouse_id=warehouse_id))
+
+        except ValueError as ve:
+            return render_template('edit_stock.html',
+                                   stock=stock,
+                                   calculations=calculations,
+                                   error=f'Yaroqsiz ma\'lumot kiritildi: '
+                                   f'{str(ve)}')
+        except Exception as e:
+            db.session.rollback()
+            return render_template('edit_stock.html',
+                                   stock=stock,
+                                   calculations=calculations,
+                                   error=f'Xatolik: {str(e)}')
+
+    return render_template('edit_stock.html', stock=stock,
+                           calculations=calculations)
+
+
+@app.route('/warehouse/<int:warehouse_id>')
+def warehouse_detail(warehouse_id):
+    """Optimized warehouse detail view - loads only basic info, stock data loaded via AJAX"""
+    warehouse = Warehouse.query.get_or_404(warehouse_id)
+
+    # Faqat asosiy statistikani hisoblash (tezkor query)
+    from sqlalchemy import func, case
+
+    try:
+        # Aggregated statistics - much faster than loading all records
+        stats = db.session.query(
+            func.count(WarehouseStock.id).label('total_products'),
+            func.sum(WarehouseStock.quantity).label('total_quantity'),
+            func.sum(WarehouseStock.quantity * Product.sell_price).label('total_value'),
+            func.sum(WarehouseStock.quantity * Product.cost_price).label('total_cost_value'),
+            func.sum(WarehouseStock.quantity * (Product.sell_price - Product.cost_price)).label('total_profit'),
+            func.sum(case((WarehouseStock.quantity == 0, 1), else_=0)).label('critical_stock_count')
+        ).join(Product).filter(WarehouseStock.warehouse_id == warehouse_id).first()
+
+        # Safe values
+        total_products = stats.total_products or 0
+        total_quantity = int(stats.total_quantity or 0)
+        total_value = float(stats.total_value or 0)
+        total_cost_value = float(stats.total_cost_value or 0)
+        total_profit = float(stats.total_profit or 0)
+        critical_stock_count = int(stats.critical_stock_count or 0)
+
+        # Profit percentage
+        profit_percentage = 0
+        if total_cost_value > 0:
+            profit_percentage = (total_profit / total_cost_value) * 100
+
+    except Exception as e:
+        app.logger.error(f"Error calculating warehouse stats: {str(e)}")
+        # Fallback values
+        total_products = 0
+        total_quantity = 0
+        total_value = 0.0
+        total_cost_value = 0.0
+        total_profit = 0.0
+        profit_percentage = 0.0
+        critical_stock_count = 0
+
+    return render_template('warehouse_detail.html',
+                           warehouse=warehouse,
+                           total_products=total_products,
+                           total_quantity=total_quantity,
+                           total_value=total_value,
+                           total_cost_value=total_cost_value,
+                           total_profit=total_profit,
+                           profit_percentage=profit_percentage,
+                           critical_stock_count=critical_stock_count)
+
+
+# Store stock tahrirlash route
+@app.route('/edit_store_stock/<int:store_id>/<int:product_id>',
+           methods=['GET', 'POST'])
+@role_required('admin', 'kassir', 'sotuvchi')
+@location_permission_required('store_id')
+def edit_store_stock(store_id, product_id):
+    print(
+        f"🔍 DEBUG: edit_store_stock called with store_id={store_id}, product_id={product_id}")
+    stock = StoreStock.query.filter_by(
+        store_id=store_id,
+        product_id=product_id
+    ).first_or_404()
+    print(
+        f"🔍 DEBUG: Stock found: {
+            stock.product.name}, quantity: {
+            stock.quantity}")
+
+    # Hisob-kitoblar - to'g'ri cost_price va sell_price dan
+    cost_price = stock.product.cost_price
+    sell_price = stock.product.sell_price
+    unit_profit = sell_price - cost_price  # Birlik foyda
+    total_cost = cost_price * stock.quantity
+    total_sell = sell_price * stock.quantity
+    profit_percent = (float((unit_profit / cost_price * 100))
+                      if cost_price > 0 else 0)
+
+    calculations = {
+        'cost_price': float(cost_price),
+        'sell_price': float(sell_price),
+        'unit_profit': float(unit_profit),  # Birlik foyda
+        'total_cost': float(total_cost),
+        'total_sell': float(total_sell),
+        'profit': float(unit_profit),  # Birlik foyda sifatida
+        'profit_percent': profit_percent,
+        'quantity': stock.quantity
+    }
+
+    if request.method == 'POST':
+        try:
+            # Form ma'lumotlarini olish
+            new_quantity = int(request.form['quantity'])
+            new_product_name = request.form['productName'].strip()
+            new_cost_price = float(request.form['costPrice'])
+            new_sell_price = float(request.form['sellPrice'])
+            new_min_stock = int(request.form.get('minStock', 0))
+
+            # Validatsiya
+            if new_quantity < 0:
+                return render_template(
+                    'edit_stock.html',
+                    stock=stock,
+                    calculations=calculations,
+                    store=stock.store,
+                    error='Miqdor manfiy bo\'lishi mumkin emas')
+
+            if not new_product_name:
+                return render_template(
+                    'edit_stock.html',
+                    stock=stock,
+                    calculations=calculations,
+                    store=stock.store,
+                    error='Mahsulot nomi bo\'sh bo\'lishi mumkin emas')
+
+            if new_cost_price < 0 or new_sell_price < 0:
+                return render_template(
+                    'edit_stock.html',
+                    stock=stock,
+                    calculations=calculations,
+                    store=stock.store,
+                    error='Narxlar manfiy bo\'lishi mumkin emas')
+
+            # Sotish narxi tan narxidan past bo'lmasligini tekshirish
+            if new_sell_price < new_cost_price:
+                return render_template('edit_stock.html',
+                                       stock=stock,
+                                       calculations=calculations,
+                                       store=stock.store,
+                                       error='Sotish narxi tan narxidan past '
+                                             'bo\'lishi mumkin emas!')
+
+            # Mahsulot ma'lumotlarini yangilash
+            stock.product.name = new_product_name
+            stock.product.min_stock = new_min_stock
+
+            # Cost price va sell price ni alohida saqlash
+            stock.product.cost_price = Decimal(str(new_cost_price))
+            stock.product.sell_price = Decimal(str(new_sell_price))
+
+            # Stock miqdorini yangilash
+            stock.quantity = new_quantity
+
+            db.session.commit()
+
+            return redirect(url_for('store_detail',
+                                    store_id=store_id))
+
+        except ValueError as ve:
+            return render_template('edit_stock.html',
+                                   stock=stock,
+                                   calculations=calculations,
+                                   store=stock.store,
+                                   error=f'Yaroqsiz ma\'lumot kiritildi: '
+                                   f'{str(ve)}')
+        except Exception as e:
+            db.session.rollback()
+            return render_template('edit_stock.html',
+                                   stock=stock,
+                                   calculations=calculations,
+                                   store=stock.store,
+                                   error=f'Xatolik: {str(e)}')
+
+    logger.debug(f" DEBUG: Rendering template with stock={stock.product.name}")
+    return render_template('edit_stock.html', stock=stock,
+                           calculations=calculations, store=stock.store)
+
+
+# Faqat store stock miqdorini yangilash (stock checking uchun)
+@app.route('/api/update_store_stock/<int:store_id>/<int:product_id>',
+           methods=['POST'])
+@role_required('admin', 'kassir', 'sotuvchi')
+@location_permission_required('store_id')
+def update_store_stock_quantity(store_id, product_id):
+    try:
+        print(
+            f"🔄 API: Store stock miqdor yangilash: store_id={store_id}, product_id={product_id}")
+
+        stock = StoreStock.query.filter_by(
+            store_id=store_id,
+            product_id=product_id
+        ).first()
+
+        if not stock:
+            logger.error(" API: Stock topilmadi")
+            return jsonify({'error': 'Stock topilmadi'}), 404
+
+        # Yangi miqdorni olish
+        new_quantity = float(request.form.get('quantity', 0))
+        logger.info(f" API: Yangi miqdor: {new_quantity}")
+
+        # Validatsiya
+        if new_quantity < 0:
+            return jsonify(
+                {'error': 'Miqdor manfiy bo\'lishi mumkin emas'}), 400
+
+        # Stock miqdorini yangilash
+        old_quantity = float(stock.quantity)
+        stock.quantity = new_quantity
+        db.session.commit()
+
+        print(
+            f"✅ API: {
+                stock.product.name} stock yangilandi: {old_quantity} -> {new_quantity}")
+
+        return jsonify({
+            'success': True,
+            'message': f'{stock.product.name} miqdori yangilandi',
+            'old_quantity': old_quantity,
+            'new_quantity': new_quantity
+        }), 200
+
+    except Exception as e:
+        print(f"💥 API xatoligi: {e}")
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+# Faqat warehouse stock miqdorini yangilash (stock checking uchun)
+@app.route('/api/update_warehouse_stock/<int:warehouse_id>/<int:product_id>',
+           methods=['POST'])
+@role_required('admin', 'kassir', 'sotuvchi')
+@location_permission_required('warehouse_id')
+def update_warehouse_stock_quantity(warehouse_id, product_id):
+    try:
+        print(
+            f"🔄 API: Warehouse stock miqdor yangilash: warehouse_id={warehouse_id}, product_id={product_id}")
+
+        stock = WarehouseStock.query.filter_by(
+            warehouse_id=warehouse_id,
+            product_id=product_id
+        ).first()
+
+        if not stock:
+            logger.error(" API: Stock topilmadi")
+            return jsonify({'error': 'Stock topilmadi'}), 404
+
+        # Yangi miqdorni olish
+        new_quantity = float(request.form.get('quantity', 0))
+        logger.info(f" API: Yangi miqdor: {new_quantity}")
+
+        # Validatsiya
+        if new_quantity < 0:
+            return jsonify(
+                {'error': 'Miqdor manfiy bo\'lishi mumkin emas'}), 400
+
+        # Stock miqdorini yangilash
+        old_quantity = float(stock.quantity)
+        stock.quantity = new_quantity
+        db.session.commit()
+
+        print(
+            f"✅ API: {
+                stock.product.name} stock yangilandi: {old_quantity} -> {new_quantity}")
+
+        return jsonify({
+            'success': True,
+            'message': f'{stock.product.name} miqdori yangilandi',
+            'old_quantity': old_quantity,
+            'new_quantity': new_quantity
+        }), 200
+
+    except Exception as e:
+        print(f"💥 API xatoligi: {e}")
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+# Store stock o'chirish route
+@app.route('/api/store_stock/<int:store_id>/<int:product_id>', methods=['DELETE'])
+def delete_store_stock(store_id, product_id):
+    try:
+        print(
+            f"🟡 Store stock o'chirish so'rovi: Store ID: {store_id}, Product ID: {product_id}")
+
+        stock = StoreStock.query.filter_by(
+            store_id=store_id,
+            product_id=product_id
+        ).first()
+
+        if not stock:
+            print(
+                f"🔴 Stock topilmadi: Store ID: {store_id}, Product ID: {product_id}")
+            return jsonify({
+                'success': False,
+                'error': 'Mahsulot bu do\'konda topilmadi'
+            }), 404
+
+        product = stock.product
+        product_name = product.name
+
+        # Mahsulot boshqa joylarda mavjudligini tekshirish
+        other_store_stocks = StoreStock.query.filter(
+            StoreStock.product_id == product_id,
+            StoreStock.store_id != store_id
+        ).count()
+
+        warehouse_stocks = WarehouseStock.query.filter_by(
+            product_id=product_id
+        ).count()
+
+        total_other_locations = other_store_stocks + warehouse_stocks
+
+        # Agar mahsulot faqat shu joyda mavjud bo'lsa - butunlay o'chirish
+        if total_other_locations == 0:
+            # Avval stock ni o'chirish
+            db.session.delete(stock)
+            # Keyin productni ham o'chirish
+            db.session.delete(product)
+            db.session.commit()
+
+            return jsonify({
+                'success': True,
+                'message': f'{product_name} mahsuloti butunlay o\'chirildi (faqat bu joyda mavjud edi)',
+                'deleted_completely': True
+            })
+        else:
+            # Faqat shu joydagi stock ni o'chirish
+            db.session.delete(stock)
+            db.session.commit()
+
+            return jsonify({
+                'success': True,
+                'message': f'{product_name} bu do\'kondan o\'chirildi (boshqa joylarda hali mavjud)',
+                'deleted_completely': False,
+                'other_locations': total_other_locations
+            })
+
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f" Store stock o'chirishda xatolik: {str(e)}")
+        logger.error(f" Store ID: {store_id}, Product ID: {product_id}")
+        import traceback
+        logger.error(f" Traceback: {traceback.format_exc()}")
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'details': f'Store ID: {store_id}, Product ID: {product_id}'
+        }), 500
+
+
+# Warehouse stock o'chirish route
+@app.route('/api/warehouse_stock/<int:warehouse_id>/<int:product_id>',
+           methods=['DELETE'])
+def delete_warehouse_stock(warehouse_id, product_id):
+    try:
+        stock = WarehouseStock.query.filter_by(
+            warehouse_id=warehouse_id,
+            product_id=product_id
+        ).first_or_404()
+
+        product = stock.product
+        product_name = product.name
+
+        # Mahsulot boshqa joylarda mavjudligini tekshirish
+        other_warehouse_stocks = WarehouseStock.query.filter(
+            WarehouseStock.product_id == product_id,
+            WarehouseStock.warehouse_id != warehouse_id
+        ).count()
+
+        store_stocks = StoreStock.query.filter_by(
+            product_id=product_id
+        ).count()
+
+        total_other_locations = other_warehouse_stocks + store_stocks
+
+        # Agar mahsulot faqat shu joyda mavjud bo'lsa - butunlay o'chirish
+        if total_other_locations == 0:
+            # Avval stock ni o'chirish
+            db.session.delete(stock)
+            # Keyin productni ham o'chirish
+            db.session.delete(product)
+            db.session.commit()
+
+            return jsonify({
+                'success': True,
+                'message': f'{product_name} mahsuloti butunlay o\'chirildi (faqat bu joyda mavjud edi)',
+                'deleted_completely': True
+            })
+        else:
+            # Faqat shu joydagi stock ni o'chirish
+            db.session.delete(stock)
+            db.session.commit()
+
+            return jsonify({
+                'success': True,
+                'message': f'{product_name} bu ombordan o\'chirildi (boshqa joylarda hali mavjud)',
+                'deleted_completely': False,
+                'other_locations': total_other_locations
+            })
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+
+# Database ma'lumotlarini tekshirish uchun debug endpoint
+@app.route('/api/debug/products')
+def debug_products():
+    """Barcha mahsulotlarni ko'rish (faqat development)"""
+    if not app.debug:
+        abort(404)  # Production'da ko'rsatmaslik
+    try:
+        products = Product.query.all()
+        products_data = []
+
+        for product in products:
+            # Warehouse stock'larni topish
+            warehouse_stocks = WarehouseStock.query.filter_by(
+                product_id=product.id).all()
+            warehouse_data = []
+            for ws in warehouse_stocks:
+                warehouse = Warehouse.query.get(ws.warehouse_id)
+                if warehouse:
+                    warehouse_data.append({
+                        'warehouse_name': warehouse.name,
+                        'quantity': float(ws.quantity)
+                    })
+
+            # Store stock'larni topish
+            store_stocks = StoreStock.query.filter_by(
+                product_id=product.id).all()
+            store_data = []
+            for ss in store_stocks:
+                store = Store.query.get(ss.store_id)
+                if store:
+                    store_data.append({
+                        'store_name': store.name,
+                        'quantity': float(ss.quantity)
+                    })
+
+            products_data.append({
+                'id': product.id,
+                'name': product.name,
+                'cost_price': float(product.cost_price),
+                'sell_price': float(product.sell_price),
+                'min_stock': product.min_stock,
+                'warehouses': warehouse_data,
+                'stores': store_data
+            })
+
+        return jsonify({
+            'total_products': len(products),
+            'products': products_data
+        })
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/debug/stats')
+def debug_stats():
+    """Database statistikasi (faqat development)"""
+    if not app.debug:
+        abort(404)  # Production'da ko'rsatmaslik
+    try:
+        stats = {
+            'products_count': Product.query.count(),
+            'warehouses_count': Warehouse.query.count(),
+            'stores_count': Store.query.count(),
+            'warehouse_stocks_count': WarehouseStock.query.count(),
+            'store_stocks_count': StoreStock.query.count()
+        }
+        return jsonify(stats)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+# Yetim mahsulotlarni tozalash API
+@app.route('/api/cleanup-orphan-products', methods=['POST'])
+def cleanup_orphan_products():
+    try:
+        # Hech qayerda stock mavjud bo'lmagan mahsulotlarni topish
+        orphan_products = db.session.query(Product).filter(
+            ~Product.id.in_(
+                db.session.query(WarehouseStock.product_id).distinct()
+            ),
+            ~Product.id.in_(
+                db.session.query(StoreStock.product_id).distinct()
+            )
+        ).all()
+
+        orphan_count = len(orphan_products)
+        orphan_names = [p.name for p in orphan_products]
+
+        # Yetim mahsulotlarni o'chirish
+        for product in orphan_products:
+            db.session.delete(product)
+
+        db.session.commit()
+
+        return jsonify({
+            'success': True,
+            'message': f'{orphan_count} ta yetim mahsulot o\'chirildi',
+            'deleted_products': orphan_names,
+            'count': orphan_count
+        })
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+# Transfer uchun API endpointlar
+@app.route('/api/product/<int:product_id>/locations')
+def get_product_locations(product_id):
+    """Mahsulotning barcha joylashuv va miqdorlarini qaytarish"""
+    logger.debug(f" get_product_locations called for product_id: {product_id}")
+    try:
+        # Do'konlardagi mahsulotlar
+        store_stocks = db.session.query(
+            StoreStock.store_id,
+            Store.name,
+            StoreStock.quantity
+        ).join(Store).filter(
+            StoreStock.product_id == product_id,
+            StoreStock.quantity > 0
+        ).all()
+
+        logger.info(f" Found {len(store_stocks)} store stocks")
+
+        # Omborlardagi mahsulotlar
+        warehouse_stocks = db.session.query(
+            WarehouseStock.warehouse_id,
+            Warehouse.name,
+            WarehouseStock.quantity
+        ).join(Warehouse).filter(
+            WarehouseStock.product_id == product_id,
+            WarehouseStock.quantity > 0
+        ).all()
+
+        logger.debug(f" Found {len(warehouse_stocks)} warehouse stocks")
+
+        # Debug: har bir stock'ni alohida ko'rsatish
+        for stock in store_stocks:
+            logger.debug(f" Store Stock: store_id={stock.store_id}, name={stock.name}, quantity={stock.quantity}")
+
+        for stock in warehouse_stocks:
+            logger.debug(f" Warehouse Stock: warehouse_id={stock.warehouse_id}, name={stock.name}, quantity={stock.quantity}")
+
+        result = {
+            'stores': [
+                {
+                    'id': stock.store_id,
+                    'name': stock.name,
+                    'quantity': int(stock.quantity)
+                }
+                for stock in store_stocks
+            ],
+            'warehouses': [
+                {
+                    'id': stock.warehouse_id,
+                    'name': stock.name,
+                    'quantity': int(stock.quantity)
+                }
+                for stock in warehouse_stocks
+            ]
+        }
+
+        logger.debug(f" API response: {result}")
+        return jsonify(result)
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/transfer', methods=['POST'])
+@role_required('admin', 'kassir', 'sotuvchi')
+def process_transfers():
+    """Transferlarni amalga oshirish"""
+    print("🔄 Transfer API called")
+    try:
+        # Current user tekshirish
+        current_user = get_current_user()
+        if not current_user:
+            return jsonify({'error': 'Foydalanuvchi topilmadi'}), 401
+
+        print(
+            f"🔍 Transfer API - User: {current_user.username}, Role: {current_user.role}")
+
+        # Sotuvchi uchun transfer huquqi va joylashuv tekshirish
+        if current_user.role == 'sotuvchi':
+            # Transfer huquqi tekshirish
+            permissions = current_user.permissions or {}
+            if not permissions.get('transfer', False):
+                print(
+                    f"❌ User {
+                        current_user.username} has no transfer permission")
+                return jsonify(
+                    {'error': 'Transfer qilish huquqingiz yo\'q'}), 403
+
+            # Transfer joylashuvlari tekshirish
+            transfer_locations = current_user.transfer_locations or []
+            logger.debug(f" User transfer locations: {transfer_locations}")
+
+            if not transfer_locations:
+                print(
+                    f"❌ User {
+                        current_user.username} has no transfer locations")
+                return jsonify(
+                    {'error': 'Transfer qilish uchun ruxsat etilgan joylashuvlar yo\'q'}), 403
+
+        data = request.get_json()
+        print(f"📥 Received data: {data}")
+        transfers = data.get('transfers', [])
+        logger.debug(f" Transfers count: {len(transfers)}")
+
+        if not transfers:
+            logger.error(" No transfers provided")
+            return jsonify({'error': 'Transfer ro\'yxati bo\'sh'}), 400
+
+        for transfer in transfers:
+            logger.info(f" Processing transfer: {transfer}")
+            product_id = transfer['product_id']
+            from_location = transfer['from_location']
+            to_location = transfer['to_location']
+            quantity = int(transfer['quantity'])
+            print(
+                f"📦 Transfer: {product_id} from {from_location} to {to_location}, qty: {quantity}")
+
+            # Sotuvchi uchun from_location ruxsatini tekshirish
+            if current_user.role == 'sotuvchi':
+                from_type, from_id = from_location.split('_')
+                from_location_id = int(from_id)
+
+                transfer_locations = current_user.transfer_locations or []
+                if from_location_id not in transfer_locations:
+                    print(
+                        f"❌ User {
+                            current_user.username} cannot transfer from location {from_location_id}")
+                    return jsonify({
+                        'error': f'Bu joylashuvdan ({from_location}) transfer qilish huquqingiz yo\'q. Ruxsat etilgan joylashuvlar: {transfer_locations}'
+                    }), 403
+
+            # Transfer tarixiga saqlash
+            from_type, from_id = from_location.split('_')
+            to_type, to_id = to_location.split('_')
+
+            transfer_record = Transfer(
+                product_id=product_id,
+                from_location_type=from_type,
+                from_location_id=int(from_id),
+                to_location_type=to_type,
+                to_location_id=int(to_id),
+                quantity=quantity,
+                user_name='Admin'
+            )
+            db.session.add(transfer_record)
+
+            # From location dan miqdorni kamaytirish
+            if from_location.startswith('store_'):
+                store_id = int(from_location.replace('store_', ''))
+                store_stock = StoreStock.query.filter_by(
+                    store_id=store_id,
+                    product_id=product_id
+                ).first()
+
+                if not store_stock or store_stock.quantity < quantity:
+                    return jsonify(
+                        {'error': 'Do\'konda yetarli miqdor yo\'q'}), 400
+
+                store_stock.quantity -= quantity
+                # Miqdor 0 bo'lsa ham stockni saqlab qolamiz (o'chirmaymiz)
+
+            elif from_location.startswith('warehouse_'):
+                warehouse_id = int(from_location.replace('warehouse_', ''))
+                warehouse_stock = WarehouseStock.query.filter_by(
+                    warehouse_id=warehouse_id,
+                    product_id=product_id
+                ).first()
+
+                if not warehouse_stock or warehouse_stock.quantity < quantity:
+                    return jsonify(
+                        {'error': 'Omborda yetarli miqdor yo\'q'}), 400
+
+                warehouse_stock.quantity -= quantity
+                # Miqdor 0 bo'lsa ham stockni saqlab qolamiz (o'chirmaymiz)
+
+            # To location ga miqdorni qo'shish
+            if to_location.startswith('store_'):
+                store_id = int(to_location.replace('store_', ''))
+                store_stock = StoreStock.query.filter_by(
+                    store_id=store_id,
+                    product_id=product_id
+                ).first()
+
+                if store_stock:
+                    store_stock.quantity += quantity
+                else:
+                    # Yangi stock yaratish (StoreStock da cost_price va
+                    # sell_price yo'q)
+                    new_stock = StoreStock(
+                        store_id=store_id,
+                        product_id=product_id,
+                        quantity=quantity
+                    )
+                    db.session.add(new_stock)
+
+            elif to_location.startswith('warehouse_'):
+                warehouse_id = int(to_location.replace('warehouse_', ''))
+                warehouse_stock = WarehouseStock.query.filter_by(
+                    warehouse_id=warehouse_id,
+                    product_id=product_id
+                ).first()
+
+                if warehouse_stock:
+                    warehouse_stock.quantity += quantity
+                else:
+                    # Yangi stock yaratish (WarehouseStock da cost_price va
+                    # sell_price yo'q)
+                    new_stock = WarehouseStock(
+                        warehouse_id=warehouse_id,
+                        product_id=product_id,
+                        quantity=quantity
+                    )
+                    db.session.add(new_stock)
+
+        db.session.commit()
+        return jsonify(
+            {'message': 'Transferlar muvaffaqiyatli amalga oshirildi'})
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/transfer/history', methods=['GET'])
+@role_required('admin', 'kassir', 'sotuvchi')
+def get_transfer_history():
+    """Transfer tarixini qaytarish - faqat 40 kunlik ma'lumotlar"""
+    try:
+        from datetime import datetime, timedelta
+
+        # Avval eski ma'lumotlarni tozalash
+        cleanup_old_transfers()
+
+        # 40 kun oldini hisoblash
+        forty_days_ago = datetime.now() - timedelta(days=40)
+
+        # Faqat so'nggi 40 kun ichidagi transferlarni olish
+        transfers = Transfer.query.filter(
+            Transfer.created_at >= forty_days_ago
+        ).order_by(Transfer.created_at.desc()).all()
+
+        history_data = []
+        for transfer in transfers:
+            history_data.append(transfer.to_dict())
+
+        return jsonify(history_data)
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+def cleanup_old_transfers():
+    """40 kundan eski transferlarni o'chirish"""
+    try:
+        from datetime import datetime, timedelta
+
+        # 40 kun oldini hisoblash
+        forty_days_ago = datetime.now() - timedelta(days=40)
+
+        # Eski transferlarni topish
+        old_transfers = Transfer.query.filter(
+            Transfer.created_at < forty_days_ago
+        ).all()
+
+        # Eski transferlarni o'chirish
+        for transfer in old_transfers:
+            db.session.delete(transfer)
+
+        # O'zgarishlarni saqlash
+        db.session.commit()
+
+        logger.info(f"Tozalandi: {len(old_transfers)} ta eski transfer")
+
+    except Exception as e:
+        logger.error(f"Transfer tozalashda xatolik: {str(e)}")
+        db.session.rollback()
+
+
+@app.route('/api/transfer/cleanup', methods=['POST'])
+@role_required('admin')
+def manual_cleanup_transfers():
+    """Qo'lda eski transferlarni tozalash"""
+    try:
+        from datetime import datetime, timedelta
+
+        # 40 kun oldini hisoblash
+        forty_days_ago = datetime.now() - timedelta(days=40)
+
+        # Eski transferlarni topish
+        old_transfers = Transfer.query.filter(
+            Transfer.created_at < forty_days_ago
+        ).all()
+
+        deleted_count = len(old_transfers)
+
+        # Eski transferlarni o'chirish
+        for transfer in old_transfers:
+            db.session.delete(transfer)
+
+        # O'zgarishlarni saqlash
+        db.session.commit()
+
+        return jsonify({
+            'success': True,
+            'message': f'{deleted_count} ta eski transfer o\'chirildi',
+            'deleted_count': deleted_count
+        })
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/product/<int:product_id>', methods=['DELETE'])
+def delete_product(product_id):
+    """Mahsulotni o'chirish"""
+    try:
+        product = Product.query.get_or_404(product_id)
+
+        # Mahsulot bilan bog'liq barcha stock'larni o'chirish
+        WarehouseStock.query.filter_by(product_id=product_id).delete()
+        StoreStock.query.filter_by(product_id=product_id).delete()
+
+        # Mahsulotni o'chirish
+        db.session.delete(product)
+        db.session.commit()
+
+        return jsonify({
+            'success': True,
+            'message': 'Mahsulot muvaffaqiyatli o\'chirildi'
+        })
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+# Mijozlar API route'lari
+@app.route('/api/customers', methods=['GET'])
+@role_required('admin', 'kassir', 'sotuvchi')
+def get_customers():
+    try:
+        current_user = get_current_user()
+        if not current_user:
+            return jsonify({'error': 'Foydalanuvchi topilmadi'}), 401
+
+        # Debug ma'lumotlari
+        print(
+            f"🔍 Customers API - User: {current_user.username}, Role: {current_user.role}")
+        logger.debug(f" Allowed locations: {current_user.allowed_locations}")
+
+        # Mijozlarni joylashuv bo'yicha filterlash
+        if current_user.role == 'sotuvchi':
+            # Sotuvchi faqat o'ziga ruxsat berilgan do'konlardagi mijozlarni
+            # ko'radi
+            allowed_locations = current_user.allowed_locations or []
+            logger.debug(f" Filtering customers by locations: {allowed_locations}")
+
+            if allowed_locations:
+                # Faqat ruxsat berilgan do'konlardagi mijozlar
+                customers = Customer.query.filter(
+                    Customer.store_id.in_(allowed_locations)).all()
+                print(
+                    f"🔍 Found {
+                        len(customers)} customers in allowed locations")
+            else:
+                # Agar ruxsat berilgan joylashuv bo'lmasa, bo'sh ro'yxat
+                customers = []
+                logger.debug(" No allowed locations, returning empty customer list")
+        else:
+            # Admin barcha mijozlarni ko'radi
+            customers = Customer.query.all()
+            logger.debug(f" Admin user, returning all {len(customers)} customers")
+
+        result = [customer.to_dict() for customer in customers]
+        logger.debug(f" Returning {len(result)} customers")
+
+        return jsonify(result)
+    except Exception as e:
+        app.logger.error(f"Error fetching customers: {str(e)}")
+        logger.error(f" Error in get_customers: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/customers', methods=['POST'])
+@role_required('admin', 'kassir', 'sotuvchi')
+def api_add_customer():
+    try:
+        current_user = get_current_user()
+        if not current_user:
+            return jsonify({'error': 'Foydalanuvchi topilmadi'}), 401
+
+        data = request.get_json()
+
+        if not data or not data.get('name'):
+            return jsonify({'error': 'Mijoz nomi talab qilinadi'}), 400
+
+        # Store_id ni data'dan olish
+        store_id = data.get('store_id')
+        print(
+            f"🔍 Customer API - Received store_id: {store_id} (type: {type(store_id)})")
+        print(
+            f"🔍 Customer API - Current user: {
+                current_user.username}, role: {
+                current_user.role}")
+        print(
+            f"🔍 Customer API - User allowed_locations: {current_user.allowed_locations}")
+        if store_id:
+            # Dokon mavjudligini tekshirish
+            store = Store.query.get(store_id)
+            if not store:
+                return jsonify({'error': 'Tanlangan dokon topilmadi'}), 400
+
+            # Sotuvchi uchun ruxsat tekshirish
+            if current_user.role == 'sotuvchi':
+                allowed_locations = current_user.allowed_locations or []
+                store_id_int = int(store_id)  # String'dan integer'ga o'tkazish
+                print(
+                    f"🔍 Customer API - Checking if {store_id_int} in {allowed_locations}")
+                if store_id_int not in allowed_locations:
+                    print(
+                        f"❌ Customer API - Store {store_id_int} not in allowed locations {allowed_locations}")
+                    return jsonify(
+                        {'error': 'Bu dokonga mijoz qo\'shish uchun ruxsatingiz yo\'q'}), 403
+                else:
+                    logger.info(f" Customer API - Store {store_id_int} is allowed")
+
+        customer = Customer(
+            name=data['name'],
+            phone=data.get('phone', ''),
+            email=data.get('email', ''),
+            address=data.get('address', ''),
+            store_id=store_id
+        )
+
+        db.session.add(customer)
+        db.session.commit()
+
+        return jsonify({
+            'success': True,
+            'message': 'Mijoz muvaffaqiyatli qo\'shildi',
+            'customer': customer.to_dict()
+        }), 201
+
+    except Exception as e:
+        db.session.rollback()
+        app.logger.error(f"Error adding customer: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/customer/<int:customer_id>/orders')
+def get_customer_orders(customer_id):
+    try:
+        sales = Sale.query.filter_by(customer_id=customer_id).order_by(
+            Sale.sale_date.desc()).all()
+
+        orders_list = []
+        for sale in sales:
+            # Sale to_dict() metodini ishlatamiz
+            sale_dict = sale.to_dict()
+            orders_list.append(sale_dict)
+
+        return jsonify({
+            'success': True,
+            'orders': orders_list,
+            'total_orders': len(orders_list)
+        })
+    except Exception as e:
+        app.logger.error(f"Error getting customer orders: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/customers/<int:customer_id>', methods=['DELETE'])
+def delete_customer(customer_id):
+    try:
+        logger.info(f" Mijoz o'chirish so'rovi: Customer ID: {customer_id}")
+
+        # Customer mavjudligini tekshirish
+        customer = Customer.query.get_or_404(customer_id)
+        logger.info(f" Customer topildi: {customer.name}")
+
+        # Savdolar hisobini tekshirish
+        sales_count = Sale.query.filter_by(customer_id=customer_id).count()
+        if sales_count > 0:
+            logger.info(f" Bu mijozda {sales_count} ta savdo mavjud, lekin savdolar saqlanadi")
+
+        # Mijoz nomini saqlash
+        customer_name = customer.name
+
+        # Mijozni o'chirish (Savdo tarixi saqlanadi, chunki Sale jadvalida customer_id nullable)
+        db.session.delete(customer)
+        db.session.commit()
+
+        message = f'Mijoz "{customer_name}" muvaffaqiyatli o\'chirildi'
+        if sales_count > 0:
+            message += f' (Savdo tarixi saqlanadi: {sales_count} ta savdo)'
+
+        logger.info(f" Customer muvaffaqiyatli o'chirildi: {customer_name}")
+        return jsonify({
+            'success': True,
+            'message': message
+        })
+
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f" Customer o'chirish xatosi: {str(e)}")
+        app.logger.error(f"Error deleting customer: {str(e)}")
+        return jsonify({'error': f'Xatolik: {str(e)}'}), 500
+
+
+@app.route('/add_customer')
+def add_customer_page():
+    return render_template('add_customer.html')
+
+
+@app.route('/edit-customer/<int:customer_id>')
+def edit_customer_page(customer_id):
+    return render_template('edit_customer.html')
+
+
+@app.route('/api/customers/<int:customer_id>', methods=['PUT'])
+def update_customer(customer_id):
+    try:
+        customer = Customer.query.get_or_404(customer_id)
+        data = request.get_json()
+
+        if not data or not data.get('name'):
+            return jsonify({'error': 'Mijoz nomi talab qilinadi'}), 400
+
+        # Ma'lumotlarni yangilash
+        customer.name = data['name']
+        customer.phone = data.get('phone', '')
+        customer.email = data.get('email', '')
+        customer.address = data.get('address', '')
+
+        # Dokonni yangilash
+        store_id = data.get('store_id')
+        if store_id:
+            # Dokon mavjudligini tekshirish
+            store = Store.query.get(store_id)
+            if not store:
+                return jsonify({'error': 'Tanlangan dokon topilmadi'}), 400
+            customer.store_id = store_id
+        else:
+            customer.store_id = None
+
+        db.session.commit()
+
+        return jsonify({
+            'success': True,
+            'message': 'Mijoz ma\'lumotlari muvaffaqiyatli yangilandi',
+            'customer': customer.to_dict()
+        })
+
+    except Exception as e:
+        db.session.rollback()
+        app.logger.error(f"Error updating customer: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+
+# Foydalanuvchilar API route'lari
+@app.route('/api/users', methods=['GET'])
+@role_required('admin', 'kassir')
+def get_users():
+    try:
+        # Barcha foydalanuvchilarni olish (dokon nomi bilan birga)
+        users = User.query.all()
+
+        return jsonify([user.to_dict() for user in users])
+    except Exception as e:
+        app.logger.error(f"Error fetching users: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/users', methods=['POST'])
+@role_required('admin', 'kassir')
+def api_add_user():
+    try:
+        data = request.get_json()
+        logger.debug(f" User Creation Debug - Received data: {data}")
+
+        if not data or not data.get('username') or not data.get('first_name') or not data.get(
+                'last_name') or not data.get('email') or not data.get('password'):
+            return jsonify(
+                {'error': 'Barcha majburiy maydonlar (ism, familya, email, login, parol) to\'ldirilishi kerak'}), 400
+
+        # Username va email unikalligini tekshirish
+        existing_user = User.query.filter(
+            ((User.username == data['username'])
+             | (User.email == data.get('email', '')))
+        ).first()
+
+        if existing_user:
+            return jsonify(
+                {'error': 'Bu foydalanuvchi nomi yoki email allaqachon mavjud'}), 400
+
+        # Store_id ni data'dan olish
+        store_id = data.get('store_id')
+        if store_id:
+            # Dokon mavjudligini tekshirish
+            store = Store.query.get(store_id)
+            if not store:
+                return jsonify({'error': 'Tanlangan dokon topilmadi'}), 400
+
+        permissions = data.get('permissions', {})
+        allowed_locations = data.get('allowed_locations', [])
+        transfer_locations = data.get('transfer_locations', [])
+        stock_check_locations = data.get('stock_check_locations', [])
+
+        # Stock check locations'ni allowed_locations'ga qo'shish
+        if stock_check_locations:
+            for loc in stock_check_locations:
+                if loc not in allowed_locations:
+                    allowed_locations.append(loc)
+
+        logger.debug(f" Permissions: {permissions}")
+        logger.debug(f" Stock check locations: {stock_check_locations}")
+        logger.debug(f" Allowed locations (after adding stock check): {allowed_locations}")
+        logger.debug(f" Transfer locations: {transfer_locations}")
+        print(
+            f"🔍 Primary store_id: {store_id} (UI uchun, huquqlarga ta'sir qilmaydi)")
+
+        # Yangi foydalanuvchi yaratish
+        new_user = User(
+            first_name=data['first_name'],
+            last_name=data['last_name'],
+            email=data['email'],
+            username=data['username'],
+            password=hash_password(data['password']),  # Hash qilingan parol
+            phone=data.get('phone', ''),
+            role=data.get('role', 'sotuvchi'),
+            store_id=store_id,
+            permissions=permissions,
+            allowed_locations=allowed_locations,
+            transfer_locations=transfer_locations,
+            is_active=data.get('is_active', True)
+        )
+
+        db.session.add(new_user)
+        db.session.commit()
+
+        logger.debug(f" User created successfully: {new_user.username}")
+        logger.debug(f" Final permissions: {new_user.permissions}")
+        logger.debug(f" Final allowed_locations: {new_user.allowed_locations}")
+
+        return jsonify({
+            'success': True,
+            'message': 'Foydalanuvchi muvaffaqiyatli qo\'shildi',
+            'user': new_user.to_dict()
+        }), 201
+
+    except Exception as e:
+        db.session.rollback()
+        app.logger.error(f"Error adding user: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/users/<int:user_id>', methods=['DELETE'])
+@role_required('admin')
+def delete_user(user_id):
+    try:
+        user = User.query.get_or_404(user_id)
+
+        db.session.delete(user)
+        db.session.commit()
+
+        return jsonify({
+            'success': True,
+            'message': 'Foydalanuvchi muvaffaqiyatli o\'chirildi'
+        })
+
+    except Exception as e:
+        db.session.rollback()
+        app.logger.error(f"Error deleting user: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/users/<int:user_id>/toggle-status', methods=['PATCH'])
+@role_required('admin')
+def toggle_user_status(user_id):
+    """Foydalanuvchini faol/faol emas qilish"""
+    try:
+        user = User.query.get_or_404(user_id)
+
+        # O'zini o'zi faol emas qilishga ruxsat bermaydi
+        if user_id == session.get('user_id'):
+            return jsonify({
+                'error': 'O\'zingizni faol emas qila olmaysiz'
+            }), 400
+
+        # Status ni o'zgartirish
+        user.is_active = not user.is_active
+
+        # Faol emas qilingan foydalanuvchi keyingi request da avtomatik logout bo'ladi
+
+        db.session.commit()
+
+        status_text = "faol" if user.is_active else "faol emas"
+
+        app.logger.info(f"🔄 User status o'zgartirildi: {user.username} -> {status_text}")
+
+        return jsonify({
+            'success': True,
+            'message': f'Foydalanuvchi {status_text} qilindi',
+            'is_active': user.is_active
+        })
+
+    except Exception as e:
+        db.session.rollback()
+        app.logger.error(f"Error toggling user status: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/users/<int:user_id>', methods=['GET'])
+# @role_required('admin', 'kassir')  # Test uchun vaqtincha o'chirilgan
+def get_user(user_id):
+    try:
+        user = User.query.get_or_404(user_id)
+
+        return jsonify({
+            'id': user.id,
+            'username': user.username,
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+            'full_name': f"{user.first_name} {user.last_name}",
+            'email': user.email,
+            'phone': user.phone,
+            'role': user.role,
+            'store_id': user.store_id,
+            'is_active': user.is_active,
+            'permissions': user.permissions,
+            'allowed_locations': user.allowed_locations,
+            'transfer_locations': user.transfer_locations,
+            'created_at': user.created_at.isoformat() if user.created_at else None
+        })
+
+    except Exception as e:
+        app.logger.error(f"Error getting user: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/users/<int:user_id>', methods=['PUT'])
+@role_required('admin', 'kassir')
+def update_user(user_id):
+    try:
+        user = User.query.get_or_404(user_id)
+        data = request.get_json()
+
+        if not data or not data.get('first_name') or not data.get('last_name'):
+            return jsonify({'error': 'Ism va familya talab qilinadi'}), 400
+
+        # Username va email unikalligini tekshirish (o'zi bundan mustasno)
+        if data.get('username'):
+            existing_user = User.query.filter(
+                (User.username == data.get('username')) & (User.id != user_id)
+            ).first()
+
+            if existing_user:
+                return jsonify({'error': 'Bu username allaqachon mavjud'}), 400
+
+        if data.get('email'):
+            existing_user = User.query.filter(
+                (User.email == data.get('email')) & (User.id != user_id)
+            ).first()
+
+            if existing_user:
+                return jsonify({'error': 'Bu email allaqachon mavjud'}), 400
+
+        # Ma'lumotlarni yangilash
+        user.first_name = data['first_name']
+        user.last_name = data['last_name']
+        if data.get('username'):
+            user.username = data['username']
+        user.email = data.get('email', '')
+        user.phone = data.get('phone', '')
+        user.role = data.get('role', 'sotuvchi')
+        user.is_active = data.get('is_active', True)
+
+        # Parol o'zgartirish (agar berilsa)
+        if data.get('password'):
+            user.password = hash_password(data['password'])
+
+        # Huquqlarni yangilash
+        permissions = data.get('permissions', {})
+        allowed_locations = data.get('allowed_locations', [])
+        transfer_locations = data.get('transfer_locations', [])
+        stock_check_locations = data.get('stock_check_locations', [])
+
+        # Stock check locations'ni allowed_locations'ga qo'shish
+        if stock_check_locations:
+            for loc in stock_check_locations:
+                if loc not in allowed_locations:
+                    allowed_locations.append(loc)
+
+        if permissions:
+            logger.debug(f" Updating permissions: {permissions}")
+            user.permissions = permissions
+
+            # Allowed locations ni saqlash
+            user.allowed_locations = allowed_locations
+            logger.debug(f" Allowed locations (including stock check): {allowed_locations}")
+            logger.debug(f" Stock check locations: {stock_check_locations}")
+
+            # Transfer locations ni saqlash
+            user.transfer_locations = transfer_locations
+            logger.debug(f" Transfer locations: {transfer_locations}")
+
+        # Asosiy joylashuvni yangilash (store_id faqat)
+        store_id = data.get('store_id')
+        if store_id:
+            # Dokon yoki ombor ID sini tekshirish
+            store = Store.query.get(store_id)
+            warehouse = Warehouse.query.get(store_id)
+
+            if not store and not warehouse:
+                return jsonify({'error': 'Tanlangan joylashuv topilmadi'}), 400
+
+            user.store_id = store_id
+            if store:
+                logger.error(f" Primary store set: {store_id} ({store.name})")
+            else:
+                print(
+                    f"🏭 Primary warehouse set: {store_id} ({
+                        warehouse.name})")
+        else:
+            user.store_id = None
+            print("🚫 No primary location set")
+
+        db.session.commit()
+
+        return jsonify({
+            'success': True,
+            'message': 'Foydalanuvchi ma\'lumotlari muvaffaqiyatli yangilandi',
+            'user': user.to_dict()
+        })
+
+    except Exception as e:
+        db.session.rollback()
+        app.logger.error(f"Error updating user: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+
+# Sales History API endpoint
+@app.route('/api/sales-history', methods=['GET'])
+@role_required('admin', 'kassir', 'sotuvchi')
+def api_sales_history():
+    """Sales history with filtering and statistics"""
+    try:
+        current_user = get_current_user()
+        if not current_user:
+            return jsonify({'error': 'Foydalanuvchi topilmadi'}), 401
+
+        print(
+            f"🔍 Sales history API - User: {current_user.username}, Role: {current_user.role}")
+
+        # Get query parameters for filtering
+        start_date = request.args.get('start_date')
+        end_date = request.args.get('end_date')
+        customer_id = request.args.get('customer_id')
+        store_id = request.args.get('store_id')
+        payment_status = request.args.get('payment_status')
+        payment_method = request.args.get('payment_method')
+        location_filter = request.args.get('location_filter')  # store_1, warehouse_2 formatida
+        search_term = request.args.get('search_term')  # Mahsulot nomi bo'yicha qidiruv
+
+        print(
+            f"📋 Query parameters: start_date={start_date}, end_date={end_date}, customer_id={customer_id}, payment_status={payment_status}, location_filter={location_filter}, search_term={search_term}")
+
+        # Base query - payment_status parametriga qarab filtrlash
+        if payment_status and payment_status == 'pending':
+            # Faqat tasdiqlanmagan savdolar
+            query = Sale.query.filter(Sale.payment_status == 'pending')
+        elif payment_status and payment_status != 'all':
+            # Belgilangan status bo'yicha filtrlash
+            query = Sale.query.filter(Sale.payment_status == payment_status)
+        else:
+            # Default: faqat to'langan savdolar (pending bo'lmaganlar)
+            query = Sale.query.filter(Sale.payment_status != 'pending')
+
+        # Sotuvchi uchun joylashuv filterlash
+        if current_user.role == 'sotuvchi':
+            allowed_locations = current_user.allowed_locations or []
+            print(
+                f"🔍 Seller allowed locations for sales history: {allowed_locations}")
+
+            if allowed_locations:
+                # Faqat ruxsat berilgan joylashuvlardagi savdolar
+                query = query.filter(Sale.store_id.in_(allowed_locations))
+                print(
+                    f"🔍 Filtering sales history by locations: {allowed_locations}")
+            else:
+                # Ruxsat berilgan joylashuv bo'lmasa, bo'sh natija
+                # Hech qaysi savdo topilmaydi
+                query = query.filter(Sale.id == -1)
+                logger.debug(" No allowed locations, returning empty sales history")
+
+        # Apply date filters
+        if start_date:
+            try:
+                start_dt = datetime.strptime(start_date, '%Y-%m-%d')
+                query = query.filter(Sale.sale_date >= start_dt)
+            except ValueError:
+                pass
+
+        if end_date:
+            try:
+                end_dt = datetime.strptime(end_date, '%Y-%m-%d')
+                # Add one day to include the entire end date
+                end_dt = end_dt.replace(hour=23, minute=59, second=59)
+                query = query.filter(Sale.sale_date <= end_dt)
+            except ValueError:
+                pass
+
+        # Apply other filters
+        if customer_id and customer_id != 'all':
+            query = query.filter(Sale.customer_id == customer_id)
+
+        if store_id and store_id != 'all':
+            query = query.filter(Sale.store_id == store_id)
+
+        # payment_status filter yuqorida base query'da qo'llanilgan
+
+        if payment_method and payment_method != 'all':
+            query = query.filter(Sale.payment_method == payment_method)
+
+        # Joylashuv filtri (SaleItem orqali)
+        if location_filter and location_filter != 'all':
+            if location_filter.startswith('store_'):
+                store_filter_id = location_filter.replace('store_', '')
+                # Faqat shu do'kondan kelgan mahsulotlari bo'lgan savdolarni filtrlash
+                query = query.join(SaleItem).filter(
+                    SaleItem.source_type == 'store',
+                    SaleItem.source_id == store_filter_id
+                ).distinct()
+            elif location_filter.startswith('warehouse_'):
+                warehouse_filter_id = location_filter.replace('warehouse_', '')
+                # Faqat shu ombordan kelgan mahsulotlari bo'lgan savdolarni filtrlash
+                query = query.join(SaleItem).filter(
+                    SaleItem.source_type == 'warehouse',
+                    SaleItem.source_id == warehouse_filter_id
+                ).distinct()
+
+        # Qidiruv filtri (mahsulot nomi bo'yicha)
+        if search_term and search_term.strip():
+            # SaleItem va Product orqali qidiruv
+            query = query.join(SaleItem).join(Product).filter(
+                Product.name.ilike(f'%{search_term.strip()}%')
+            ).distinct()
+
+        # Order by date descending (yangi savdolardan eski savdolarga)
+        query = query.order_by(Sale.sale_date.desc())
+
+        # Pagination parametrlarini olish
+        page = request.args.get('page', 1, type=int)
+        per_page = request.args.get('per_page', 50, type=int)
+
+        # Execute query with pagination
+        pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+        sales = pagination.items
+
+        logger.info(f" Ma'lumotlar bazasidan topildi: {len(sales)} ta savdo (sahifa {page}, {per_page} ta per sahifa)")
+        logger.info(f" Jami sahifalar: {pagination.pages}, Jami savdolar: {pagination.total}")
+
+        # Debug: Query parametrlarini ko'rsatish
+        logger.debug(" Query details:")
+        print(f"   - Current user: {current_user.username}")
+        print(f"   - User role: {current_user.role}")
+        print(f"   - Payment status filter: {payment_status}")
+        if hasattr(current_user, 'allowed_locations'):
+            print(f"   - Allowed locations: {current_user.allowed_locations}")
+
+        # Birinchi 3 ta savdo ID'larini ko'rsatish
+        if sales:
+            sale_ids = [sale.id for sale in sales[:3]]
+            print(f"   - Birinchi 3 ta savdo ID: {sale_ids}")
+
+        # Calculate statistics - yangi tuzilma bilan
+        total_sales = len(sales)
+        total_revenue = sum(float(sale.total_amount) for sale in sales)
+        total_profit = sum(float(sale.total_profit) for sale in sales)
+
+        # Jami mahsulotlar soni
+        total_items = sum(len(sale.items) for sale in sales)
+
+        # Average order value
+        avg_order_value = total_revenue / total_sales if total_sales > 0 else 0
+
+        # Profit margin
+        profit_margin = (
+            (total_profit / total_revenue * 100) if total_revenue > 0 else 0
+        )
+
+        # Payment method breakdown
+        payment_methods = {}
+        for sale in sales:
+            method = sale.payment_method
+            if method not in payment_methods:
+                payment_methods[method] = {'count': 0, 'amount': 0}
+            payment_methods[method]['count'] += 1
+            payment_methods[method]['amount'] += float(sale.total_amount)
+
+        # Top selling products - yangi tuzilma bilan
+        product_stats = {}
+        for sale in sales:
+            for item in sale.items:
+                product_name = item.product.name if item.product else 'Noma\'lum'
+                if product_name not in product_stats:
+                    product_stats[product_name] = {'quantity': 0, 'revenue': 0}
+                product_stats[product_name]['quantity'] += float(item.quantity)
+                product_stats[product_name]['revenue'] += float(
+                    item.total_price)
+
+        # Sort by quantity sold
+        top_products = sorted(
+            [{'name': k, 'quantity': v['quantity'], 'revenue': v['revenue']}
+             for k, v in product_stats.items()],
+            key=lambda x: x['quantity'], reverse=True
+        )[:5]  # Top 5 products
+
+        # Store performance
+        store_stats = {}
+        for sale in sales:
+            store_name = sale.store.name if sale.store else 'Noma\'lum'
+            if store_name not in store_stats:
+                store_stats[store_name] = {
+                    'sales': 0, 'revenue': 0, 'profit': 0
+                }
+            store_stats[store_name]['sales'] += 1
+            store_stats[store_name]['revenue'] += float(sale.total_amount)
+            store_stats[store_name]['profit'] += float(sale.total_profit)
+
+        store_performance = [
+            {
+                'name': k,
+                'sales': v['sales'],
+                'revenue': v['revenue'],
+                'profit': v['profit']
+            }
+            for k, v in store_stats.items()
+        ]
+        store_performance.sort(key=lambda x: x['revenue'], reverse=True)
+
+        sales_list = [sale.to_dict() for sale in sales]
+        logger.debug(f" API javobida yuborilayotgan sales: {len(sales_list)} ta")
+        if sales_list:
+            logger.debug(f" Birinchi sale sample: {sales_list[0]}")
+            if len(sales_list) > 1:
+                logger.debug(f" Ikkinchi sale sample: {sales_list[1]}")
+            if len(sales_list) > 2:
+                logger.debug(f" Uchinchi sale sample: {sales_list[2]}")
+
+        return jsonify({
+            'success': True,
+            'data': {
+                'sales': sales_list,
+                'pagination': {
+                    'page': page,
+                    'per_page': per_page,
+                    'total': pagination.total,
+                    'total_pages': pagination.pages,
+                    'has_prev': pagination.has_prev,
+                    'has_next': pagination.has_next,
+                    'prev_num': pagination.prev_num,
+                    'next_num': pagination.next_num
+                },
+                'statistics': {
+                    'total_sales': pagination.total,  # Jami savdolar soni (paginated)
+                    'total_revenue': round(total_revenue, 2),
+                    'total_profit': round(total_profit, 2),
+                    'total_items': total_items,
+                    'avg_order_value': round(avg_order_value, 2),
+                    'profit_margin': round(profit_margin, 2),
+                    'payment_methods': payment_methods,
+                    'top_products': top_products,
+                    'store_performance': store_performance
+                },
+                'filters': {
+                    'start_date': start_date,
+                    'end_date': end_date,
+                    'customer_id': customer_id,
+                    'store_id': store_id,
+                    'payment_status': payment_status,
+                    'payment_method': payment_method
+                }
+            }
+        })
+
+    except Exception as e:
+        app.logger.error(f"Error fetching sales history: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'data': {
+                'sales': [],
+                'statistics': {
+                    'total_sales': 0,
+                    'total_revenue': 0,
+                    'total_profit': 0,
+                    'total_quantity': 0,
+                    'avg_order_value': 0,
+                    'profit_margin': 0,
+                    'payment_methods': {},
+                    'top_products': [],
+                    'store_performance': []
+                }
+            }
+        }), 500
+
+
+# Savdoni tasdiqlash API'si
+@app.route('/api/approve-sale/<int:sale_id>', methods=['POST'])
+def approve_sale(sale_id):
+    try:
+        sale = Sale.query.get(sale_id)
+        if not sale:
+            return jsonify({'success': False, 'error': 'Savdo topilmadi'}), 404
+
+        # Savdo holatini tasdiqlangan qilib o'zgartirish va joriy kurs bilan
+        # yangilash
+        sale.payment_status = 'paid'
+        # Tasdiqlash vaqtidagi joriy kurs
+        sale.currency_rate = get_current_currency_rate()
+        db.session.commit()
+
+        app.logger.info(f"✅ Savdo tasdiqlandi: Sale ID {sale_id}")
+
+        return jsonify({
+            'success': True,
+            'message': 'Savdo muvaffaqiyatli tasdiqlandi'
+        })
+
+    except Exception as e:
+        db.session.rollback()
+        app.logger.error(f"Error approving sale: {str(e)}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+# Savdoni rad etish API'si
+@app.route('/api/reject-sale/<int:sale_id>', methods=['POST'])
+def reject_sale(sale_id):
+    try:
+        data = request.get_json()
+        reason = data.get('reason', '') if data else ''
+
+        sale = Sale.query.get(sale_id)
+        if not sale:
+            return jsonify({'success': False, 'error': 'Savdo topilmadi'}), 404
+
+        print(f"🚫 Savdoni rad etish va o'chirish: Sale ID {sale_id}")
+
+        # Stock'ni qaytarish - har bir mahsulot uchun
+        for sale_item in sale.items:
+            if sale_item.source_type == 'store':
+                # Store stock'ni qaytarish
+                stock = StoreStock.query.filter_by(
+                    store_id=sale_item.source_id,
+                    product_id=sale_item.product_id
+                ).first()
+
+                if stock:
+                    stock.quantity += sale_item.quantity
+                    print(
+                        f"📦 Store stock qaytarildi: {
+                            sale_item.product.name} +{
+                            sale_item.quantity} = {
+                            stock.quantity}")
+                else:
+                    # Agar stock yo'q bo'lsa, yangi stock yaratish
+                    new_stock = StoreStock(
+                        store_id=sale_item.source_id,
+                        product_id=sale_item.product_id,
+                        quantity=sale_item.quantity
+                    )
+                    db.session.add(new_stock)
+                    print(
+                        f"📦 Yangi store stock yaratildi: {
+                            sale_item.product.name} = {
+                            sale_item.quantity}")
+
+            elif sale_item.source_type == 'warehouse':
+                # Warehouse stock'ni qaytarish
+                stock = WarehouseStock.query.filter_by(
+                    warehouse_id=sale_item.source_id,
+                    product_id=sale_item.product_id
+                ).first()
+
+                if stock:
+                    stock.quantity += sale_item.quantity
+                    print(
+                        f"📦 Warehouse stock qaytarildi: {
+                            sale_item.product.name} +{
+                            sale_item.quantity} = {
+                            stock.quantity}")
+                else:
+                    # Agar stock yo'q bo'lsa, yangi stock yaratish
+                    new_stock = WarehouseStock(
+                        warehouse_id=sale_item.source_id,
+                        product_id=sale_item.product_id,
+                        quantity=sale_item.quantity
+                    )
+                    db.session.add(new_stock)
+                    print(
+                        f"📦 Yangi warehouse stock yaratildi: {
+                            sale_item.product.name} = {
+                            sale_item.quantity}")
+
+        # Savdoni butunlay o'chirish
+        db.session.delete(sale)
+        db.session.commit()
+
+        app.logger.info(
+            f"❌ Savdo rad etildi va o'chirildi: Sale ID {sale_id}, Sabab: {reason}")
+
+        return jsonify({
+            'success': True,
+            'message': 'Savdo rad etildi va o\'chirildi. Mahsulotlar o\'z joylashuviga qaytarildi.'
+        })
+
+    except Exception as e:
+        db.session.rollback()
+        app.logger.error(f"Error rejecting sale: {str(e)}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+# Dokon holatini yangilash API'si olib tashlandi
+# Endi faol/faol emas mantigi yo'q
+
+
+@app.route('/edit-sale/<int:sale_id>')
+def edit_sale_page(sale_id):
+    """Savdoni tahrirlash sahifasi"""
+    try:
+        sale = Sale.query.get(sale_id)
+        if not sale:
+            return redirect(url_for('sales_history'))
+
+        # Bu yerda tahrirlash sahifasini yaratish mumkin
+        # Hozircha sales-history ga qaytarish
+        return redirect(url_for('sales_history'))
+
+    except Exception as e:
+        logger.error(f" Edit sale sahifasida xatolik: {str(e)}")
+        return redirect(url_for('sales_history'))
+
+
+@app.route('/api/create-sale', methods=['POST'])
+@role_required('admin', 'kassir', 'sotuvchi')
+def create_sale():
+    """Yangi savdo yaratish API endpoint"""
+    try:
+        print("🚀 create-sale API ga so'rov keldi")
+        logger.debug(f" Request method: {request.method}")
+        logger.debug(f" Content-Type: {request.content_type}")
+        logger.debug(f" Raw data: {request.get_data(as_text=True)}")
+
+        data = request.get_json()
+        logger.debug(f" Parsed JSON data: {data}")
+
+        # Agar payment_status 'pending' bo'lsa, draft sifatida saqlash
+        payment_status = data.get('payment_status', 'paid')
+        if payment_status == 'pending':
+            return create_pending_sale(data)
+
+        if not data:
+            logger.error(" Ma'lumot topilmadi!")
+            return jsonify({
+                'success': False,
+                'error': 'Ma\'lumot topilmadi'
+            }), 400
+
+        customer_id = data.get('customer_id')
+        items = data.get('items', [])
+        multi_location = data.get('multi_location', False)
+        # Tahrirlash rejimi uchun
+        original_sale_id = data.get('original_sale_id')
+        # Tahrirlash rejimi belgisi
+        is_edit_mode = data.get('is_edit_mode', False)  # Tahrirlash rejimi
+
+        logger.debug(f" Customer ID: {customer_id} (type: {type(customer_id)})")
+        logger.info(f" Original Sale ID: {original_sale_id}")
+        print(f"📝 Is Edit Mode: {is_edit_mode}")
+        logger.debug(f" Items count: {len(items)}")
+        logger.info(f" Multi-location mode: {multi_location}")
+
+        # DEBUG: Barcha parametrlarni ko'rsatish
+        logger.debug(" DEBUG: Kelgan barcha parametrlar:")
+        for key, value in data.items():
+            print(f"   {key}: {value}")
+
+        # Debug: har bir item ni ko'rsatish
+        for i, item in enumerate(items):
+            print(
+                f"📋 Item {i + 1}: ID={item.get('id')}, Name={item.get('name')}")
+            print(
+                f"   Location ID: {item.get('location_id')} (type: {type(item.get('location_id'))})")
+            print(f"   Location Type: {item.get('location_type')}")
+            print(f"   Location Name: {item.get('location_name')}")
+
+        if not items:
+            return jsonify({'success': False, 'error': 'Korzina bo\'sh'}), 400
+
+        # Sotuvchi uchun joylashuv ruxsatini tekshirish
+        user_role = session.get('role')
+        if user_role == 'sotuvchi':
+            user_id = session.get('user_id')
+            user = User.query.get(user_id)
+
+            if not user or not user.allowed_locations:
+                return jsonify({
+                    'success': False,
+                    'error': 'Sizga ruxsat etilgan joylashuvlar mavjud emas'
+                }), 403
+
+            # Joylashuvlarni tekshirish
+            if multi_location:
+                for item in items:
+                    item_location_id = item.get('location_id')
+                    if item_location_id and item_location_id not in user.allowed_locations:
+                        return jsonify({
+                            'success': False,
+                            'error': f'"{item.get("name", "")}" mahsuloti uchun tanlangan joylashuvga ruxsatingiz yo\'q'
+                        }), 403
+            else:
+                location_id = data.get('location_id')
+                if location_id and location_id not in user.allowed_locations:
+                    return jsonify({
+                        'success': False,
+                        'error': 'Tanlangan joylashuvga ruxsatingiz yo\'q'
+                    }), 403
+
+        # Multi-location rejimida har bir item uchun joylashuv tekshirish
+        if multi_location:
+            for item in items:
+                if (not item.get('location_id') or not item.get('location_type')):
+                    error_msg = (f'Mahsulot "{item.get("name", "noma\'lum")}" '
+                                 f'uchun joylashuv ma\'lumoti yo\'q')
+                    return jsonify({
+                        'success': False,
+                        'error': error_msg
+                    }), 400
+        else:
+            # Eski rejim - bitta joylashuv
+            location_id = data.get('location_id')
+            location_type = data.get('location_type')
+
+            if not location_id:
+                return jsonify({
+                    'success': False,
+                    'error': 'Joylashuv tanlanmagan'
+                }), 400
+
+        # Multi-location yoki bitta location bo'yicha store topish
+        if not multi_location:
+            # Eski rejim - bitta joylashuv
+            if location_type == 'store':
+                store = Store.query.get(location_id)
+                if not store:
+                    return jsonify({
+                        'success': False,
+                        'error': 'Tanlangan do\'kon topilmadi (ID: {location_id})'
+                    }), 404
+                logger.info(f" Store topildi: {store.name} (ID: {store.id})")
+
+            elif location_type == 'warehouse':
+                warehouse = Warehouse.query.get(location_id)
+                if not warehouse:
+                    return jsonify({
+                        'success': False,
+                        'error': f'Tanlangan ombor topilmadi (ID: {location_id})'
+                    }), 404
+
+                # Warehouse uchun birinchi store ni ishlatish
+                store = Store.query.first()
+                if not store:
+                    return jsonify({
+                        'success': False,
+                        'error': 'Savdo uchun dokon topilmadi'
+                    }), 404
+                logger.warning(f" Warehouse tanlangan: {warehouse.name}")
+        else:
+            # Multi-location rejimida birinchi item dan store ni olish
+            first_item = items[0]
+            if first_item.get('location_type') == 'store':
+                store = Store.query.get(first_item.get('location_id'))
+            else:
+                store = Store.query.first()
+
+            if not store:
+                return jsonify({
+                    'success': False,
+                    'error': 'Savdo uchun dokon topilmadi'
+                }), 404
+
+            logger.info(f" Multi-location mode: {store.name} dokonida savdo")
+
+        # Customer ID ni int ga o'girish
+        final_customer_id = None
+        if customer_id:
+            try:
+                final_customer_id = int(customer_id)
+            except (ValueError, TypeError):
+                final_customer_id = None
+
+        # Hozirgi kursni olish
+        current_rate = get_current_currency_rate()
+
+        # Current user ni olish
+        current_user = get_current_user()
+        if not current_user:
+            return jsonify({
+                'success': False,
+                'error': 'Foydalanuvchi topilmadi'
+            }), 401
+
+        # Bitta savdo yaratish
+        new_sale = Sale(
+            customer_id=final_customer_id,
+            store_id=store.id,
+            seller_id=current_user.id,
+            payment_method='cash',
+            payment_status='paid',
+            notes=f'Multi-location savdo - {len(items)} ta mahsulot',
+            currency_rate=current_rate,
+            created_by=f'{current_user.first_name} {current_user.last_name}'
+        )
+
+        db.session.add(new_sale)
+        db.session.flush()  # ID ni olish uchun
+
+        total_profit = 0
+        total_revenue = 0
+        total_cost = 0
+
+        # Har bir mahsulot uchun SaleItem yaratish
+        for item in items:
+            # product_id ni id yoki product_id dan olish
+            product_id = item.get('product_id') or item.get('id')
+            quantity = int(item.get('quantity', 0))
+            unit_price = float(item.get('unit_price') or item.get('price', 0))
+
+            logger.debug(f" Processing item: {item}")
+            logger.debug(f" Product ID: {product_id} (type: {type(product_id)})")
+
+            if quantity <= 0:
+                continue
+
+            # Multi-location rejimida har bir mahsulot uchun joylashuv
+            if multi_location:
+                item_location_id = item.get('location_id')
+                item_location_type = item.get('location_type')
+            else:
+                item_location_id = location_id
+                item_location_type = location_type
+
+            # Mahsulotni topish
+            product = Product.query.get(product_id)
+            if not product:
+                return jsonify({
+                    'success': False,
+                    'error': f'Mahsulot topilmadi: {product_id}'
+                }), 404
+
+            # Stock tekshirish va yangilash (har bir mahsulot o'z
+            # joylashuvidan)
+            if item_location_type == 'store':
+                # Store stock tekshirish
+                stock = StoreStock.query.filter_by(
+                    store_id=item_location_id,
+                    product_id=product_id
+                ).first()
+
+                if not stock:
+                    store_obj = Store.query.get(item_location_id)
+                    store_name = store_obj.name if store_obj else 'noma\'lum'
+                    return jsonify({
+                        'success': False,
+                        'error': (f'{store_name} do\'konida {product.name} '
+                                  f'mahsuloti mavjud emas')
+                    }), 400
+
+                # Tahrirlash rejimida asl savdo miqdorini hisobga olish
+                available_quantity = stock.quantity
+                print(
+                    f"🔍 Store stock tekshiruvi: product_id={product_id}, current_stock={
+                        stock.quantity}")
+                print(
+                    f"🔍 Tahrirlash rejimi: is_edit_mode={is_edit_mode}, original_sale_id={original_sale_id}")
+
+                if is_edit_mode and original_sale_id:
+                    # Asl savdoda bu mahsulotning miqdorini topish
+                    original_sale_item = db.session.query(SaleItem).filter_by(
+                        sale_id=original_sale_id,
+                        product_id=product_id
+                    ).first()
+
+                    logger.debug(f" Asl savdo item topildi: {original_sale_item}")
+                    if original_sale_item:
+                        print(
+                            f"🔍 Asl savdo miqdori: {
+                                original_sale_item.quantity}")
+                        # Asl savdo miqdorini qo'shish (chunki tahrirlashda
+                        # qaytariladi)
+                        available_quantity += original_sale_item.quantity
+                        print(
+                            f"📝 Tahrirlash rejimi: mahsulot {product_id} uchun asl miqdor {
+                                original_sale_item.quantity} qo'shildi")
+                        print(
+                            f"📊 Mavjud miqdor: {
+                                stock.quantity} + {
+                                original_sale_item.quantity} = {available_quantity}")
+                        logger.info(f" Kerakli miqdor: {quantity}")
+                        logger.info(f" Farq: {available_quantity - quantity}")
+                    else:
+                        print(
+                            f"⚠️ Asl savdoda mahsulot {product_id} topilmadi")
+
+                # Stock tekshirish olib tashlandi - stock allaqachon rezerv
+                # qilingan
+                print(
+                    f"ℹ️ Stock validation o'tkazildi: available={available_quantity}, required={quantity}")
+
+                # Stock allaqachon korzinaga qo'shilganda ayirilgan
+                print(
+                    "ℹ️ Store stock dan ayirilmaydi (allaqachon rezerv qilingan)")
+
+            elif item_location_type == 'warehouse':
+                # Warehouse stock tekshirish
+                stock = WarehouseStock.query.filter_by(
+                    warehouse_id=item_location_id,
+                    product_id=product_id
+                ).first()
+
+                if not stock:
+                    warehouse_obj = Warehouse.query.get(item_location_id)
+                    warehouse_name = warehouse_obj.name if warehouse_obj else 'noma\'lum'
+                    return jsonify({
+                        'success': False,
+                        'error': (f'{warehouse_name} omborida {product.name} '
+                                  f'mahsuloti mavjud emas')
+                    }), 400
+
+                # Tahrirlash rejimida asl savdo miqdorini hisobga olish
+                available_quantity = stock.quantity
+                print(
+                    f"🔍 Warehouse stock tekshiruvi: product_id={product_id}, current_stock={
+                        stock.quantity}")
+                print(
+                    f"🔍 Tahrirlash rejimi: is_edit_mode={is_edit_mode}, original_sale_id={original_sale_id}")
+
+                if is_edit_mode and original_sale_id:
+                    # Asl savdoda bu mahsulotning miqdorini topish
+                    original_sale_item = db.session.query(SaleItem).filter_by(
+                        sale_id=original_sale_id,
+                        product_id=product_id
+                    ).first()
+
+                    logger.debug(f" Asl savdo item topildi: {original_sale_item}")
+                    if original_sale_item:
+                        print(
+                            f"🔍 Asl savdo miqdori: {
+                                original_sale_item.quantity}")
+                        # Asl savdo miqdorini qo'shish
+                        available_quantity += original_sale_item.quantity
+                        print(
+                            f"📝 Warehouse tahrirlash: mahsulot {product_id} uchun asl miqdor {
+                                original_sale_item.quantity} qo'shildi")
+                        print(
+                            f"📊 Mavjud miqdor: {
+                                stock.quantity} + {
+                                original_sale_item.quantity} = {available_quantity}")
+                        logger.info(f" Kerakli miqdor: {quantity}")
+                        logger.info(f" Farq: {available_quantity - quantity}")
+                    else:
+                        print(
+                            f"⚠️ Asl savdoda mahsulot {product_id} topilmadi")
+
+                # Stock tekshirish olib tashlandi - stock allaqachon rezerv
+                # qilingan
+                print(
+                    f"ℹ️ Warehouse stock validation o'tkazildi: available={available_quantity}, required={quantity}")
+
+                # Stock allaqachon korzinaga qo'shilganda ayirilgan
+                print(
+                    "ℹ️ Warehouse stock dan ayirilmaydi (allaqachon rezerv qilingan)")
+
+            # Savdo summasini hisoblash
+            total_amount = unit_price * quantity
+            unit_cost_price = float(product.cost_price)  # Birlik tan narxi
+            total_cost_price = unit_cost_price * quantity  # Jami tan narx
+            profit = total_amount - total_cost_price
+
+            # Location ma'lumotini yaratish
+            if item_location_type == 'warehouse':
+                warehouse_obj = Warehouse.query.get(item_location_id)
+                location_info = f'Ombor: {
+                    warehouse_obj.name} (ID: {
+                    warehouse_obj.id})'
+            else:
+                store_obj = Store.query.get(item_location_id)
+                location_info = f'Dokon: {store_obj.name} (ID: {store_obj.id})'
+
+            # SaleItem yaratish
+            sale_item = SaleItem(
+                sale_id=new_sale.id,
+                product_id=product_id,
+                quantity=quantity,
+                unit_price=Decimal(str(unit_price)),
+                total_price=Decimal(str(total_amount)),
+                cost_price=Decimal(str(unit_cost_price)),
+                profit=Decimal(str(profit)),
+                source_type=item_location_type,
+                source_id=item_location_id,
+                notes=f'{product.name} | {location_info}'
+            )
+
+            db.session.add(sale_item)
+            total_profit += profit
+            total_revenue += total_amount
+            total_cost += total_cost_price
+
+        # Asosiy savdoning jami summasini yangilash
+        new_sale.total_amount = Decimal(str(total_revenue))
+        new_sale.total_cost = Decimal(str(total_cost))
+        new_sale.total_profit = Decimal(str(total_profit))
+
+        # Tahrirlash rejimida asl tasdiqlanmagan savdoni o'chirish
+        if is_edit_mode and original_sale_id:
+            print(
+                f"🔄 Asl tasdiqlanmagan savdoni o'chirish: ID={original_sale_id}")
+            original_sale = Sale.query.get(original_sale_id)
+            if original_sale and original_sale.payment_status == 'pending':
+                # Asl tasdiqlanmagan savdoni o'chirish
+                db.session.delete(original_sale)
+                print(
+                    f"🗑️ Asl tasdiqlanmagan savdo o'chirildi: ID={original_sale_id}")
+            else:
+                print(
+                    f"⚠️ Asl savdo topilmadi yoki pending emas: ID={original_sale_id}")
+
+        # Ma'lumotlar bazasiga saqlash
+        db.session.commit()
+
+        return jsonify({
+            'success': True,
+            'message': f'{len(items)} ta mahsulot bilan savdo yaratildi',
+            'data': {
+                'sale_id': new_sale.id,
+                'items_count': len(items),
+                'total_revenue': total_revenue,
+                'total_profit': total_profit,
+                'store_name': store.name
+            }
+        })
+
+    except Exception as e:
+        db.session.rollback()
+        app.logger.error(f"Error creating sale: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': f'Savdo yaratishda xatolik: {str(e)}'
+        }), 500
+
+
+# Savdoni o'chirish API
+@app.route('/api/sales/<int:sale_id>', methods=['GET'])
+@role_required('admin', 'kassir', 'sotuvchi')
+def get_sale(sale_id):
+    """Bitta savdoni olish va tafsilotlarini ko'rish uchun"""
+    try:
+        current_user = get_current_user()
+        if not current_user:
+            return jsonify({'error': 'Foydalanuvchi topilmadi'}), 401
+
+        sale = Sale.query.get(sale_id)
+        if not sale:
+            return jsonify({
+                'success': False,
+                'error': 'Savdo topilmadi'
+            }), 404
+
+        # Sotuvchi uchun joylashuv ruxsatini tekshirish
+        if current_user.role == 'sotuvchi':
+            allowed_locations = current_user.allowed_locations or []
+            if sale.store_id not in allowed_locations:
+                return jsonify({
+                    'success': False,
+                    'error': 'Bu savdoni ko\'rish uchun ruxsatingiz yo\'q'
+                }), 403
+
+        return jsonify({
+            'success': True,
+            'sale': sale.to_dict()
+        })
+
+    except Exception as e:
+        app.logger.error(f"Error fetching sale: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': f'Savdoni olishda xatolik: {str(e)}'
+        }), 500
+
+
+@app.route('/api/sales/<int:sale_id>', methods=['PUT'])
+@role_required('admin', 'kassir', 'sotuvchi')
+def update_sale(sale_id):
+    """Savdoni tahrirlash (yangi structure)"""
+    try:
+        current_user = get_current_user()
+        if not current_user:
+            return jsonify({'error': 'Foydalanuvchi topilmadi'}), 401
+
+        sale = Sale.query.get(sale_id)
+        if not sale:
+            return jsonify({
+                'success': False,
+                'error': 'Savdo topilmadi'
+            }), 404
+
+        # Sotuvchi uchun joylashuv ruxsatini tekshirish
+        if current_user.role == 'sotuvchi':
+            allowed_locations = current_user.allowed_locations or []
+            if sale.store_id not in allowed_locations:
+                return jsonify({
+                    'success': False,
+                    'error': 'Bu savdoni tahrirlash uchun ruxsatingiz yo\'q'
+                }), 403
+
+        data = request.get_json()
+        app.logger.info(f"🔄 UPDATE Sale ID: {sale_id}")
+        app.logger.info(f"📦 Update data: {data}")
+        app.logger.info(f"💰 Sale payment status: {sale.payment_status}")
+
+        # Sale statusini tekshirish
+        is_confirmed_sale = sale.payment_status == 'paid'
+        app.logger.info(f"🔍 Is confirmed sale: {is_confirmed_sale}")
+
+        # Eski Sale ma'lumotlarini yangilash
+        if 'customer_id' in data and data['customer_id']:
+            sale.customer_id = int(data['customer_id'])
+        elif 'customer_id' in data and not data['customer_id']:
+            sale.customer_id = None
+        if 'payment_method' in data:
+            sale.payment_method = data['payment_method']
+        if 'payment_status' in data:
+            sale.payment_status = data['payment_status']
+        if 'notes' in data:
+            sale.notes = data['notes']
+
+        # Eski SaleItem'larni dictionary'ga yig'ish (product_id -> quantity
+        # mapping)
+        old_items = SaleItem.query.filter_by(sale_id=sale.id).all()
+        old_quantities = {}
+        for item in old_items:
+            key = (item.product_id, item.source_type, item.source_id)
+            old_quantities[key] = item.quantity
+
+        # Confirmed sale: stock allaqachon ayirilgan, real-time API bilan boshqariladi
+        # Edit da faqat difference logic ishlatamiz
+        app.logger.info(
+            f"📦 Real-time stock system: {'confirmed' if is_confirmed_sale else 'pending'} sale")
+
+        # Eski SaleItem'larni o'chirish
+        SaleItem.query.filter_by(sale_id=sale.id).delete()
+
+        # Yangi SaleItem'larni yaratish va stock farqlarini hisoblash
+        if 'items' in data:
+            total_amount = Decimal('0')
+            total_cost = Decimal('0')
+            total_profit = Decimal('0')
+            new_quantities = {}
+
+            for item_data in data['items']:
+                product = Product.query.get(item_data['product_id'])
+                if not product:
+                    continue
+
+                quantity = int(item_data['quantity'])
+                unit_price = Decimal(str(item_data['unit_price']))
+                cost_price = product.cost_price or Decimal('0')
+                location_id = item_data.get('location_id')
+                location_type = item_data.get('location_type', 'store')
+
+                key = (product.id, location_type, location_id)
+                new_quantities[key] = new_quantities.get(key, 0) + quantity
+
+                # Yangi SaleItem yaratish
+                source_name = f"{
+                    'Ombor' if location_type == 'warehouse' else 'Do\'kon'} (ID: {location_id})"
+                sale_item = SaleItem(
+                    sale_id=sale.id,
+                    product_id=product.id,
+                    quantity=quantity,
+                    unit_price=unit_price,
+                    total_price=quantity * unit_price,
+                    cost_price=cost_price,
+                    profit=(unit_price - cost_price) * quantity,
+                    source_type=location_type,
+                    source_id=location_id,
+                    notes=f"{product.name} | {source_name}"
+                )
+                db.session.add(sale_item)
+
+                # Jami hisoblar
+                total_amount += sale_item.total_price
+                total_cost += cost_price * quantity
+                total_profit += sale_item.profit
+
+            # Stock boshqaruvi real-time API'lar orqali amalga oshiriladi
+            # Sale edit'da stock logic'i disabled (real-time reserve/return
+            # API'lar ishlaydi)
+            # Sale jami ma'lumotlarini yangilash
+            app.logger.info(
+                "� Stock management: real-time API'lar orqali boshqariladi (edit'da stock logic disabled)")
+            sale.total_amount = total_amount
+            sale.total_cost = total_cost
+            sale.total_profit = total_profit
+            # Tahrirlash vaqtidagi joriy kurs
+            sale.currency_rate = get_current_currency_rate()
+
+        db.session.commit()
+        app.logger.info(f"✅ Sale {sale_id} successfully updated")
+
+        return jsonify({
+            'success': True,
+            'message': 'Savdo muvaffaqiyatli yangilandi',
+            'data': sale.to_dict()
+        })
+
+    except Exception as e:
+        db.session.rollback()
+        app.logger.error(f"Error updating sale: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': f'Savdoni yangilashda xatolik: {str(e)}'
+        }), 500
+
+
+@app.route('/api/sales/<int:sale_id>', methods=['DELETE'])
+@role_required('admin', 'kassir', 'sotuvchi')
+def delete_sale_with_stock_return(sale_id):
+    """Savdoni o'chirish va stock ni qaytarish - yangi tuzilma bilan"""
+    try:
+        current_user = get_current_user()
+        if not current_user:
+            return jsonify({'error': 'Foydalanuvchi topilmadi'}), 401
+
+        # Savdoni topish
+        sale = Sale.query.get(sale_id)
+        if not sale:
+            return jsonify({
+                'success': False,
+                'error': 'Savdo topilmadi'
+            }), 404
+
+        # Sotuvchi uchun joylashuv ruxsatini tekshirish
+        if current_user.role == 'sotuvchi':
+            allowed_locations = current_user.allowed_locations or []
+            if sale.store_id not in allowed_locations:
+                return jsonify({
+                    'success': False,
+                    'error': 'Bu savdoni o\'chirish uchun ruxsatingiz yo\'q'
+                }), 403
+
+        # Debug: Savdo ma'lumotlarini ko'rsatish
+        logger.debug(f" DELETE DEBUG: Sale ID: {sale_id}")
+        logger.debug(f" DELETE DEBUG: Items count: {len(sale.items)}")
+
+        # Har bir SaleItem uchun stock ni qaytarish
+        for item in sale.items:
+            logger.debug(f" DELETE: Product {item.product_id}, Qty: {item.quantity}")
+            logger.debug(f" DELETE: Source {item.source_type}, ID: {item.source_id}")
+
+            # SaleItem uchun stock qaytarish
+            if item.source_type == 'warehouse':
+                # Warehouse stock ga qaytarish
+                warehouse_stock = WarehouseStock.query.filter_by(
+                    warehouse_id=item.source_id,
+                    product_id=item.product_id
+                ).first()
+
+                if warehouse_stock:
+                    # Mavjud stock ga qo'shish
+                    old_qty = warehouse_stock.quantity
+                    warehouse_stock.quantity += item.quantity
+                    warehouse_stock.last_updated = db.func.current_timestamp()
+                    print(
+                        f"🔍 DELETE: Warehouse updated: {old_qty} + {item.quantity}")
+                else:
+                    # Yangi stock yaratish
+                    new_stock = WarehouseStock(
+                        warehouse_id=item.source_id,
+                        product_id=item.product_id,
+                        quantity=item.quantity,
+                        last_updated=db.func.current_timestamp()
+                    )
+                    db.session.add(new_stock)
+                    logger.debug(f" DELETE: New warehouse stock: {item.quantity}")
+
+            elif item.source_type == 'store':
+                # Store stock ga qaytarish
+                store_stock = StoreStock.query.filter_by(
+                    store_id=item.source_id,
+                    product_id=item.product_id
+                ).first()
+
+                if store_stock:
+                    # Mavjud stock ga qo'shish
+                    old_qty = store_stock.quantity
+                    store_stock.quantity += item.quantity
+                    store_stock.last_updated = db.func.current_timestamp()
+                    print(
+                        f"🔍 DELETE: Store updated: {old_qty} + {item.quantity}")
+                else:
+                    # Yangi stock yaratish
+                    new_stock = StoreStock(
+                        store_id=item.source_id,
+                        product_id=item.product_id,
+                        quantity=item.quantity,
+                        last_updated=db.func.current_timestamp()
+                    )
+                    db.session.add(new_stock)
+                    logger.debug(f" DELETE: New store stock: {item.quantity}")
+
+        # Ma'lumotlarni olish (o'chirishdan oldin)
+        total_items = len(sale.items)
+        store_name = sale.store.name if sale.store else 'Noma\'lum'
+
+        # Savdoni o'chirish (cascade delete SaleItems ham o'chiradi)
+        db.session.delete(sale)
+        db.session.commit()
+
+        return jsonify({
+            'success': True,
+            'message': 'Savdo o\'chirildi! {total_items} ta mahsulot stockga qaytarildi.',
+            'data': {
+                'sale_id': sale_id,
+                'total_items': total_items,
+                'store_name': store_name
+            }
+        })
+
+    except Exception as e:
+        db.session.rollback()
+        app.logger.error(f"Error deleting sale: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': 'Savdoni o\'chirishda xatolik: {str(e)}'
+        }), 500
+
+
+def create_pending_sale(data):
+    """Tasdiqlanmagan savdoni yaratish (draft holatida)"""
+    try:
+        current_user = get_current_user()
+        if not current_user:
+            return jsonify({'error': 'Foydalanuvchi topilmadi'}), 401
+            
+        print("📝 Pending savdo yaratilmoqda...")
+
+        customer_id = data.get('customer_id')
+        items = data.get('items', [])
+        notes = data.get('notes', 'Keyinroq tasdiqlash uchun saqlangan')
+        original_sale_id = data.get('original_sale_id')
+        pending_sale_id = data.get('pending_sale_id')
+        skip_stock_return = data.get('skip_stock_return', False)
+
+        if not items:
+            return jsonify({'success': False, 'error': 'Korzina bo\'sh'}), 400
+
+        # Eski pending savdoni o'chirish (agar mavjud bo'lsa)
+        if pending_sale_id:
+            old_pending_sale = Sale.query.get(pending_sale_id)
+            if old_pending_sale:
+                # Eski pending sale items'ni o'chirish
+                SaleItem.query.filter_by(sale_id=pending_sale_id).delete()
+                # Eski pending savdoni o'chirish
+                db.session.delete(old_pending_sale)
+                logger.info(f" Eski pending savdo o'chirildi: {pending_sale_id}")
+
+        # Agar asl savdo ID'si berilgan bo'lsa, uni o'chirish
+        if original_sale_id:
+            logger.info(f" Asl savdoni pending qilish: ID={original_sale_id}")
+            original_sale = Sale.query.get(original_sale_id)
+            if original_sale:
+                # Stock'ni qaytarish (faqat skip_stock_return False bo'lsa)
+                if not skip_stock_return:
+                    print(
+                        f"📦 Stock qaytarilmoqda asl savdo uchun: {original_sale_id}")
+                    for item in original_sale.items:
+                        if item.source_type == 'store':
+                            stock = StoreStock.query.filter_by(
+                                store_id=item.source_id,
+                                product_id=item.product_id
+                            ).first()
+                            if stock:
+                                stock.quantity += item.quantity
+                        elif item.source_type == 'warehouse':
+                            stock = WarehouseStock.query.filter_by(
+                                warehouse_id=item.source_id,
+                                product_id=item.product_id
+                            ).first()
+                            if stock:
+                                stock.quantity += item.quantity
+                else:
+                    print(
+                        "⏭️ Stock qaytarish o'tkazib yuborildi (skip_stock_return=True)")
+
+                # Asl savdoni o'chirish
+                db.session.delete(original_sale)
+                print("✅ Asl savdo o'chirildi va stock qaytarildi")
+
+        # Customer ID ni int ga o'girish
+        final_customer_id = None
+        if customer_id:
+            try:
+                final_customer_id = int(customer_id)
+            except (ValueError, TypeError):
+                final_customer_id = None
+
+        # Birinchi mahsulotdan store_id ni olish
+        first_item = items[0]
+        item_location_id = first_item.get('location_id')
+        item_location_type = first_item.get('location_type')
+
+        # Store ID ni aniqlash
+        if item_location_type == 'store':
+            store_id = item_location_id
+        else:
+            # Agar warehouse bo'lsa, birinchi store'ni olish
+            store = Store.query.first()
+            store_id = store.id if store else 1
+
+        # Hozirgi kursni olish
+        current_rate = get_current_currency_rate()
+
+        # Pending savdoni yaratish
+        new_sale = Sale(
+            customer_id=final_customer_id,
+            store_id=store_id,
+            seller_id=current_user.id,
+            payment_method='cash',
+            payment_status='pending',  # Pending holatda
+            notes=notes,
+            currency_rate=current_rate,
+            created_by=f'{current_user.first_name} {current_user.last_name} - Pending'
+        )
+
+        db.session.add(new_sale)
+        db.session.flush()  # ID ni olish uchun
+
+        # Items ni qo'shish (stock'dan ayirmasdan)
+        total_amount = 0
+        for item in items:
+            product_id = item.get('product_id') or item.get('id')
+            quantity = int(item.get('quantity', 0))
+            unit_price = float(item.get('unit_price') or item.get('price', 0))
+
+            if quantity <= 0:
+                continue
+
+            # Product tekshirish
+            product = Product.query.get(product_id)
+            if not product:
+                db.session.rollback()
+                return jsonify({
+                    'success': False,
+                    'error': f'Mahsulot topilmadi: {product_id}'
+                }), 404
+
+            # ESLATMA: Stock ayirish frontend'da korzinaga qo'shilganda amalga oshiriladi
+            # Bu yerda faqat ma'lumot saqlash amalga oshiriladi
+            item_location_id = item.get('location_id', store_id)
+            item_location_type = item.get('location_type', 'store')
+
+            print(
+                f"📦 Pending savdo item yaratilmoqda: {
+                    product.name} - {quantity} ta (Stock oldindan rezerv qilingan)")
+
+            # SaleItem yaratish
+            total_price = Decimal(str(quantity * unit_price))
+            cost_price = product.cost_price or Decimal('0')
+            profit = total_price - (Decimal(str(quantity)) * cost_price)
+
+            sale_item = SaleItem(
+                sale_id=new_sale.id,
+                product_id=product_id,
+                quantity=quantity,
+                unit_price=unit_price,
+                total_price=total_price,  # Bu maydon NOT NULL
+                cost_price=cost_price,
+                profit=profit,  # Bu maydon ham NOT NULL bo'lishi mumkin
+                source_type=item_location_type,
+                source_id=item_location_id,
+                notes=f"Pending: {product.name}"
+            )
+
+            db.session.add(sale_item)
+            total_amount += float(total_price)  # Decimal'ni float'ga o'girish
+
+        # Savdo jami summalarini hisoblash
+        total_cost = 0
+        total_profit = 0
+
+        for sale_item in new_sale.items:
+            total_cost += float(sale_item.cost_price * sale_item.quantity)
+            total_profit += float(sale_item.profit)
+
+        new_sale.total_amount = total_amount
+        new_sale.total_cost = total_cost
+        new_sale.total_profit = total_profit
+
+        db.session.commit()
+
+        logger.info(f" Pending savdo yaratildi: ID={new_sale.id}")
+
+        return jsonify({
+            'success': True,
+            'message': 'Savdo keyinroq tasdiqlash uchun saqlandi',
+            'sale_id': new_sale.id,
+            'total_amount': total_amount
+        }), 201
+
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f" Pending savdo yaratishda xatolik: {str(e)}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+# Helper function - hozirgi valyuta kursini olish
+def get_current_currency_rate():
+    """Hozirgi aktiv valyuta kursini qaytaradi"""
+    try:
+        current_rate = CurrencyRate.query.filter_by(
+            is_active=True).order_by(
+            CurrencyRate.updated_date.desc()).first()
+        if current_rate:
+            return float(current_rate.rate)
+        else:
+            return 12500.0  # Default kursi
+    except Exception:
+        return 12500.0  # Xatolik bo'lsa default qaytarish
+
+
+# API endpoint - Real-time stock rezerv qilish (korzinaga qo'shilganda)
+@app.route('/api/reserve-stock', methods=['POST'])
+def api_reserve_stock():
+    """Mahsulot korzinaga qo'shilganda real-time stock'dan ayirish"""
+    try:
+        data = request.get_json()
+        product_id = data.get('product_id')
+        quantity = int(data.get('quantity', 1))
+        location_id = data.get('location_id')
+        location_type = data.get('location_type')
+
+        print(
+            f"📦 Real-time stock rezerv so'rovi: Product {product_id}, Quantity {quantity}, Location {location_id} ({location_type})")
+
+        # Mahsulotni tekshirish
+        product = Product.query.get(product_id)
+        if not product:
+            return jsonify(
+                {'success': False, 'error': 'Mahsulot topilmadi'}), 400
+
+        # Real-time stock ayirish
+        if location_type == 'store':
+            stock = StoreStock.query.filter_by(
+                store_id=location_id,
+                product_id=product_id
+            ).first()
+
+            if not stock:
+                store_obj = Store.query.get(location_id)
+                store_name = store_obj.name if store_obj else 'noma\'lum'
+                return jsonify({
+                    'success': False,
+                    'error': f'{store_name} do\'konida {product.name} mahsuloti stock\'i yo\'q!'
+                }), 400
+
+            if stock.quantity < quantity:
+                store_obj = Store.query.get(location_id)
+                store_name = store_obj.name if store_obj else 'noma\'lum'
+                return jsonify(
+                    {
+                        'success': False, 'error': f'{store_name} do\'konida yetarli stock yo\'q! Mavjud: {
+                            stock.quantity}, Kerak: {quantity}'}), 400
+
+            # Real-time stock'dan ayirish
+            stock.quantity -= quantity
+            remaining_stock = stock.quantity
+            print(
+                f"✅ Do'kon stock real-time rezerv qilindi: {
+                    product.name} - {quantity} = {remaining_stock}")
+
+        elif location_type == 'warehouse':
+            stock = WarehouseStock.query.filter_by(
+                warehouse_id=location_id,
+                product_id=product_id
+            ).first()
+
+            if not stock:
+                warehouse_obj = Warehouse.query.get(location_id)
+                warehouse_name = warehouse_obj.name if warehouse_obj else 'noma\'lum'
+                return jsonify({
+                    'success': False,
+                    'error': f'{warehouse_name} omborida {product.name} mahsuloti stock\'i yo\'q!'
+                }), 400
+
+            if stock.quantity < quantity:
+                warehouse_obj = Warehouse.query.get(location_id)
+                warehouse_name = warehouse_obj.name if warehouse_obj else 'noma\'lum'
+                return jsonify(
+                    {
+                        'success': False, 'error': f'{warehouse_name} omborida yetarli stock yo\'q! Mavjud: {
+                            stock.quantity}, Kerak: {quantity}'}), 400
+
+            # Real-time stock'dan ayirish
+            stock.quantity -= quantity
+            remaining_stock = stock.quantity
+            print(
+                f"✅ Ombor stock real-time rezerv qilindi: {
+                    product.name} - {quantity} = {remaining_stock}")
+
+        else:
+            return jsonify(
+                {'success': False, 'error': 'Noto\'g\'ri joylashuv turi'}), 400
+
+        # O'zgarishlarni saqlash
+        db.session.commit()
+
+        return jsonify({
+            'success': True,
+            'message': f'{product.name} uchun {quantity} ta stock real-time rezerv qilindi',
+            'remaining_stock': remaining_stock
+        })
+
+    except Exception as e:
+        logger.error(f" Stock tekshirishda xatolik: {str(e)}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+# API endpoint - Real-time stock qaytarish (korzinadan o'chirilganda)
+
+
+@app.route('/api/return-stock', methods=['POST'])
+def api_return_stock():
+    """Mahsulot korzinadan o'chirilganda real-time stock'ga qaytarish"""
+    try:
+        data = request.get_json()
+        product_id = data.get('product_id')
+        quantity = int(data.get('quantity', 1))
+        location_id = data.get('location_id')
+        location_type = data.get('location_type')
+
+        print(
+            f"↩️ Real-time stock qaytarish so'rovi: Product {product_id}, Quantity {quantity}, Location {location_id} ({location_type})")
+
+        # Mahsulotni tekshirish
+        product = Product.query.get(product_id)
+        if not product:
+            return jsonify(
+                {'success': False, 'error': 'Mahsulot topilmadi'}), 400
+
+        # Real-time stock qaytarish
+        if location_type == 'store':
+            # Do'kon stock'ini qaytarish
+            stock = StoreStock.query.filter_by(
+                store_id=location_id,
+                product_id=product_id
+            ).first()
+
+            if not stock:
+                # Agar stock yo'q bo'lsa, yangi stock yaratish
+                stock = StoreStock(
+                    store_id=location_id,
+                    product_id=product_id,
+                    quantity=quantity
+                )
+                db.session.add(stock)
+                print(
+                    f"↩️ Yangi do'kon stock yaratildi: {
+                        product.name} = {quantity}")
+            else:
+                stock.quantity += quantity
+                print(
+                    f"↩️ Do'kon stock real-time qaytarildi: {product.name} + {quantity} = {stock.quantity}")
+
+            new_stock = stock.quantity
+
+        elif location_type == 'warehouse':
+            # Ombor stock'ini qaytarish
+            stock = WarehouseStock.query.filter_by(
+                warehouse_id=location_id,
+                product_id=product_id
+            ).first()
+
+            if not stock:
+                # Agar stock yo'q bo'lsa, yangi stock yaratish
+                stock = WarehouseStock(
+                    warehouse_id=location_id,
+                    product_id=product_id,
+                    quantity=quantity
+                )
+                db.session.add(stock)
+                print(
+                    f"↩️ Yangi ombor stock yaratildi: {
+                        product.name} = {quantity}")
+            else:
+                stock.quantity += quantity
+                print(
+                    f"↩️ Ombor stock real-time qaytarildi: {product.name} + {quantity} = {stock.quantity}")
+
+            new_stock = stock.quantity
+
+        else:
+            return jsonify(
+                {'success': False, 'error': 'Noto\'g\'ri joylashuv turi'}), 400
+
+        # O'zgarishlarni saqlash
+        db.session.commit()
+
+        return jsonify({
+            'success': True,
+            'message': f'{product.name} uchun {quantity} ta stock real-time qaytarildi',
+            'new_stock': new_stock
+        })
+
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f" Stock qaytarishda xatolik: {str(e)}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+# API endpoint - Pending savdolar yaratish
+
+
+@app.route('/api/pending-sales', methods=['POST'])
+@role_required('admin', 'kassir', 'sotuvchi')
+def api_create_pending_sale():
+    """Avtomatik pending savdo yaratish API endpoint"""
+    try:
+        current_user = get_current_user()
+        if not current_user:
+            return jsonify({'error': 'Foydalanuvchi topilmadi'}), 401
+
+        print(
+            f"💾 API pending-sales - User: {current_user.username}, Role: {current_user.role}")
+        data = request.get_json()
+        logger.debug(f" Avtomatik pending savdo ma'lumotlari: {data}")
+
+        # Sotuvchi uchun joylashuv ruxsatini tekshirish
+        if current_user.role == 'sotuvchi':
+            store_id = data.get('store_id')
+            if store_id:
+                allowed_locations = current_user.allowed_locations or []
+                if store_id not in allowed_locations:
+                    return jsonify({
+                        'success': False,
+                        'error': 'Bu dokonda savdo qilish uchun ruxsatingiz yo\'q'
+                    }), 403
+
+        return create_pending_sale(data)
+
+    except Exception as e:
+        logger.error(f" API pending-sales xatoligi: {str(e)}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+# API endpoint - Pending savdoni yangilash
+
+
+@app.route('/api/pending-sales/<int:sale_id>', methods=['PUT'])
+@role_required('admin', 'kassir', 'sotuvchi')
+def api_update_pending_sale(sale_id):
+    """Mavjud pending savdoni yangilash"""
+    try:
+        current_user = get_current_user()
+        if not current_user:
+            return jsonify({'error': 'Foydalanuvchi topilmadi'}), 401
+
+        print(
+            f"🔄 Pending savdo yangilash - User: {current_user.username}, Sale ID: {sale_id}")
+        data = request.get_json()
+        logger.debug(f" Yangilanayotgan ma'lumotlar: {data}")
+
+        # Mavjud savdoni topish
+        existing_sale = Sale.query.get(sale_id)
+        if not existing_sale:
+            logger.error(f" Savdo topilmadi: {sale_id}")
+            return jsonify({'success': False, 'error': 'Savdo topilmadi'}), 404
+
+        # Sotuvchi uchun joylashuv ruxsatini tekshirish
+        if current_user.role == 'sotuvchi':
+            allowed_locations = current_user.allowed_locations or []
+            if existing_sale.store_id not in allowed_locations:
+                return jsonify({
+                    'success': False,
+                    'error': 'Bu savdoni yangilash uchun ruxsatingiz yo\'q'
+                }), 403
+
+        print(
+            f"✅ Mavjud savdo topildi: {
+                existing_sale.id}, Status: {
+                existing_sale.payment_status}")
+
+        # Eski sale items'ni o'chirish
+        SaleItem.query.filter_by(sale_id=sale_id).delete()
+
+        # Yangi ma'lumotlar bilan yangilash
+        if data.get('customer_id'):
+            existing_sale.customer_id = data['customer_id']
+
+        existing_sale.total_amount = Decimal(str(data.get('total_amount', 0)))
+        existing_sale.updated_date = datetime.now()
+
+        if data.get('notes'):
+            existing_sale.notes = data['notes']
+
+        # Yangi sale items qo'shish
+        items = data.get('items', [])
+        for item in items:
+            product_id = item.get('id') or item.get('product_id')
+            quantity = int(item.get('quantity', 1))
+            unit_price = Decimal(str(item.get('price', 0)))
+
+            product = Product.query.get(product_id)
+            if not product:
+                continue
+
+            total_price = Decimal(str(quantity * unit_price))
+            cost_price = product.cost_price or Decimal('0')
+            profit = total_price - (Decimal(str(quantity)) * cost_price)
+
+            sale_item = SaleItem(
+                sale_id=sale_id,
+                product_id=product_id,
+                quantity=quantity,
+                unit_price=unit_price,
+                total_price=total_price,
+                cost_price=cost_price,
+                profit=profit,
+                source_id=item.get('location_id'),
+                source_type=item.get('location_type', 'store')
+            )
+            db.session.add(sale_item)
+
+        db.session.commit()
+        logger.info(f" Pending savdo yangilandi: {sale_id}")
+
+        return jsonify({
+            'success': True,
+            'message': 'Pending savdo yangilandi',
+            'sale_id': sale_id
+        })
+
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f" Pending savdo yangilashda xatolik: {str(e)}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+# API endpoint - Pending savdoni o'chirish
+
+
+@app.route('/api/pending-sales/<int:sale_id>', methods=['DELETE'])
+@role_required('admin', 'kassir', 'sotuvchi')
+def api_delete_pending_sale(sale_id):
+    """Pending savdoni o'chirish"""
+    try:
+        current_user = get_current_user()
+        if not current_user:
+            return jsonify({'error': 'Foydalanuvchi topilmadi'}), 401
+
+        print(
+            f"🗑️ Pending savdo o'chirish - User: {current_user.username}, Sale ID: {sale_id}")
+
+        # Savdoni topish
+        sale = Sale.query.get(sale_id)
+        if not sale:
+            return jsonify({'success': False, 'error': 'Savdo topilmadi'}), 404
+
+        # Sotuvchi uchun joylashuv ruxsatini tekshirish
+        if current_user.role == 'sotuvchi':
+            allowed_locations = current_user.allowed_locations or []
+            if sale.store_id not in allowed_locations:
+                return jsonify({
+                    'success': False,
+                    'error': 'Bu savdoni o\'chirish uchun ruxsatingiz yo\'q'
+                }), 403
+
+        # Sale items'ni o'chirish
+        SaleItem.query.filter_by(sale_id=sale_id).delete()
+
+        # Savdoni o'chirish
+        db.session.delete(sale)
+        db.session.commit()
+
+        logger.info(f" Pending savdo o'chirildi: {sale_id}")
+
+        return jsonify({
+            'success': True,
+            'message': 'Pending savdo o\'chirildi'
+        })
+
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f" Pending savdo o'chirishda xatolik: {str(e)}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+# Valyuta kursi API'lari
+
+
+@app.route('/api/currency-rate', methods=['GET'])
+def get_currency_rate():
+    """Joriy valyuta kursini olish"""
+    try:
+        current_rate = CurrencyRate.query.filter_by(
+            is_active=True).order_by(
+            CurrencyRate.updated_date.desc()).first()
+
+        if current_rate:
+            return jsonify({
+                'success': True,
+                'rate': current_rate.to_dict()
+            })
+        else:
+            # Default kursi qaytarish
+            return jsonify({
+                'success': True,
+                'rate': {
+                    'id': 0,
+                    'from_currency': 'USD',
+                    'to_currency': 'UZS',
+                    'rate': 12500.0000,
+                    'is_active': True,
+                    'updated_by': 'system'
+                }
+            })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/currency-rate', methods=['POST'])
+@role_required('admin', 'kassir', 'sotuvchi')
+def update_currency_rate():
+    """Valyuta kursini yangilash"""
+    try:
+        data = request.get_json()
+
+        if not data or 'rate' not in data:
+            return jsonify({'error': 'Valyuta kursi talab qilinadi'}), 400
+
+        new_rate = float(data['rate'])
+        updated_by = data.get('updated_by', 'admin')
+
+        if new_rate <= 0:
+            return jsonify(
+                {'error': 'Valyuta kursi musbat son bo\'lishi kerak'}), 400
+
+        # Yangi kurs qo'shish
+        currency_rate = CurrencyRate(
+            from_currency='USD',
+            to_currency='UZS',
+            rate=new_rate,
+            updated_by=updated_by,
+            updated_date=datetime.utcnow()
+        )
+
+        # Eski kurslarni nofaol qilish
+        CurrencyRate.query.filter_by(
+            is_active=True).update({'is_active': False})
+
+        db.session.add(currency_rate)
+        db.session.commit()
+
+        return jsonify({
+            'success': True,
+            'message': 'Valyuta kursi muvaffaqiyatli yangilandi',
+            'rate': currency_rate.to_dict()
+        })
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/currency-rate/history', methods=['GET'])
+def get_currency_rate_history():
+    """Valyuta kursi tarixini olish"""
+    try:
+        rates = CurrencyRate.query.order_by(
+            CurrencyRate.updated_date.desc()).limit(20).all()
+
+        return jsonify({
+            'success': True,
+            'rates': [rate.to_dict() for rate in rates]
+        })
+
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/currency-rate/clear-history', methods=['DELETE'])
+@role_required('admin')
+def clear_currency_rate_history():
+    """Valyuta kursi tarixini tozalash"""
+    try:
+        # Barcha yozuvlarni olish va sanash
+        all_rates = CurrencyRate.query.all()
+        deleted_count = len(all_rates)
+
+        if deleted_count == 0:
+            return jsonify({
+                'success': False,
+                'message': 'Tozalash uchun yozuvlar topilmadi'
+            })
+
+        # Barcha yozuvlarni o'chirish
+        for rate in all_rates:
+            db.session.delete(rate)
+
+        db.session.commit()
+
+        print(
+            f"✅ Valyuta kursi tarixi tozalandi: {deleted_count} ta yozuv o'chirildi")
+
+        return jsonify({
+            'success': True,
+            'message': 'Barcha valyuta kursi tarixi tozalandi',
+            'deleted_count': deleted_count
+        })
+
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f" Valyuta kursi tarixini tozalashda xatolik: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'message': 'Tarixni tozalashda xatolik yuz berdi'
+        }), 500
+
+
+@app.route('/debug_api.html')
+def debug_api():
+    """Debug sahifasi"""
+    try:
+        with open('debug_api.html', 'r', encoding='utf-8') as f:
+            return f.read()
+    except BaseException:
+        return render_template_string("""<!DOCTYPE html> <html>
+<head>
+    <title>API Debug</title>
+</head>
+<body>
+    <h1>Currency API Debug</h1>
+    <button onclick="testAPI()">Test Currency API</button>
+    <pre id="result"></pre>
+
+    <script>
+        async function testAPI() {
+            try {
+                console.log('Testing API...');
+                const response = await fetch('/api/currency-rate');
+                const data = await response.json();
+
+                document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+                console.log('API Response:', data);
+
+                if (data.success && data.rate) {
+                    console.log('Rate value:', data.rate.rate);
+                    console.log('Rate type:', typeof data.rate.rate);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('result').textContent = 'Error: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>""")
+
+
+@app.route('/header_debug.html')
+def header_debug():
+    """Header debug sahifasi"""
+    try:
+        with open('header_debug.html', 'r', encoding='utf-8') as f:
+            return f.read()
+    except BaseException:
+        return "Header debug file not found"
+
+
+@app.route('/currency_test.html')
+def currency_test():
+    """Currency test sahifasi"""
+    try:
+        with open('currency_test.html', 'r', encoding='utf-8') as f:
+            return f.read()
+    except BaseException:
+        return "Currency test file not found"
+
+
+@app.route('/migrate')
+def migrate_page():
+    """Database migration page"""
+    return render_template('migrate.html')
+
+
+@app.route('/api/add-currency-column', methods=['POST'])
+def add_currency_column():
+    """Add currency_rate column to sales table"""
+    try:
+        # Rollback any pending transactions
+        db.session.rollback()
+
+        # Check if column exists using information_schema
+        result = db.session.execute(text("""
+            SELECT column_name
+            FROM information_schema.columns
+            WHERE table_name='sales' AND column_name='currency_rate'
+        """)).fetchone()
+
+        if result:
+            return jsonify({
+                'success': True,
+                'message': 'currency_rate column already exists'
+            })
+
+        # Add currency_rate column
+        db.session.execute(text("""
+            ALTER TABLE sales
+            ADD COLUMN currency_rate DECIMAL(15,4) DEFAULT 12500.0000
+        """))
+        db.session.commit()
+
+        # Get current active rate
+        current_rate = get_current_currency_rate()
+
+        # Update all existing sales with current rate
+        result = db.session.execute(text("""
+            UPDATE sales
+            SET currency_rate = :rate
+        """), {'rate': current_rate})
+        db.session.commit()
+
+        return jsonify(
+            {
+                'success': True,
+                'message': f'currency_rate column added and {
+                    result.rowcount} sales updated with rate {current_rate}'})
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+
+@app.route('/api/stock-status')
+def api_stock_status():
+    """Barcha stock ma'lumotlarini qaytarish API"""
+    try:
+        print("📦 Stock status API so'rovi")
+
+        # Store stocks
+        store_stocks = db.session.query(
+            StoreStock.product_id,
+            StoreStock.store_id.label('location_id'),
+            StoreStock.quantity,
+            StoreStock.updated_date,
+            Product.name.label('product_name'),
+            Product.code.label('product_code'),
+            Store.name.label('location_name')
+        ).join(
+            Product, StoreStock.product_id == Product.id
+        ).join(
+            Store, StoreStock.store_id == Store.id
+        ).filter(Store.is_active).all()
+
+        # Warehouse stocks
+        warehouse_stocks = db.session.query(
+            WarehouseStock.product_id,
+            WarehouseStock.warehouse_id.label('location_id'),
+            WarehouseStock.quantity,
+            WarehouseStock.updated_date,
+            Product.name.label('product_name'),
+            Product.code.label('product_code'),
+            Warehouse.name.label('location_name')
+        ).join(
+            Product, WarehouseStock.product_id == Product.id
+        ).join(
+            Warehouse, WarehouseStock.warehouse_id == Warehouse.id
+        ).all()
+
+        # Ma'lumotlarni birlashtirish
+        stock_data = []
+
+        # Store stocks ni qo'shish
+        for stock in store_stocks:
+            stock_data.append({
+                'product_id': stock.product_id,
+                'product_name': stock.product_name,
+                'product_code': stock.product_code,
+                'location_id': stock.location_id,
+                'location_type': 'store',
+                'location_name': stock.location_name,
+                'quantity': stock.quantity,
+                'unit': 'dona',
+                'updated_date': stock.updated_date.isoformat() if stock.updated_date else None
+            })
+
+        # Warehouse stocks ni qo'shish
+        for stock in warehouse_stocks:
+            stock_data.append({
+                'product_id': stock.product_id,
+                'product_name': stock.product_name,
+                'product_code': stock.product_code,
+                'location_id': stock.location_id,
+                'location_type': 'warehouse',
+                'location_name': stock.location_name,
+                'quantity': stock.quantity,
+                'unit': 'dona',
+                'updated_date': stock.updated_date.isoformat() if stock.updated_date else None
+            })
+
+        logger.info(f" Jami stock ma'lumotlari: {len(stock_data)} ta")
+
+        return jsonify({
+            'success': True,
+            'data': stock_data,
+            'total_count': len(stock_data)
+        })
+
+    except Exception as e:
+        logger.error(f" Stock status API xatoligi: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+
+@app.route('/api/unchecked-products-count', methods=['POST'])
+def api_unchecked_products_count():
+    """Tekshiruv sessiyasi uchun tekshirilmagan mahsulotlar soni (localStorage ma'lumotlari asosida)"""
+    try:
+        # POST request orqali localStorage ma'lumotlarini olish
+        data = request.get_json()
+
+        if not data or 'products' not in data:
+            return jsonify({
+                'success': False,
+                'error': 'Ma\'lumotlar yetarli emas - products massivi kerak'
+            }), 400
+
+        products = data['products']
+        session_id = data.get('session_id', 'unknown')
+
+        logger.debug(f" DEBUG: API'ga kelgan ma'lumotlar - session_id: {session_id}")
+        logger.debug(f" DEBUG: Products soni: {len(products)}")
+
+        # Statistika hisoblash
+        total_products = len(products)
+        checked_products = 0
+        unchecked_products = 0
+
+        for product in products:
+            is_checked = product.get('isChecked', False)
+            print(
+                f"🔍 DEBUG: Product {
+                    product.get(
+                        'name',
+                        'Unknown')}: isChecked = {is_checked}")
+
+            if is_checked:
+                checked_products += 1
+            else:
+                unchecked_products += 1
+
+        checked_percentage = round(
+            (checked_products / total_products * 100),
+            1) if total_products > 0 else 0
+        unchecked_percentage = round(
+            (unchecked_products / total_products * 100),
+            1) if total_products > 0 else 0
+
+        logger.info(f" Sessiya {session_id} statistikasi:")
+        print(f"   - Jami: {total_products}")
+        print(f"   - Tekshirilgan: {checked_products} ({checked_percentage}%)")
+        print(
+            f"   - Tekshirilmagan: {unchecked_products} ({unchecked_percentage}%)")
+
+        return jsonify({
+            'success': True,
+            'data': {
+                'total_products': total_products,
+                'checked_products': checked_products,
+                'unchecked_products': unchecked_products,
+                'checked_percentage': checked_percentage,
+                'unchecked_percentage': unchecked_percentage
+            }
+        })
+
+    except Exception as e:
+        logger.error(f" Tekshirilmagan mahsulotlar soni API xatoligi: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+
+@app.route('/api/stock-by-location')
+def get_stock_by_location():
+    """Joylashuv bo'yicha stock ma'lumotlarini olish"""
+    try:
+        location_type = request.args.get('type')  # 'store' yoki 'warehouse'
+        location_id = request.args.get('location_id')
+        show_zero = request.args.get('show_zero', 'true').lower(
+        ) == 'true'  # 0 miqdorlilarni ko'rsatishmi
+
+        print(
+            f"📍 Stock ma'lumotlari: {location_type}, ID: {location_id}, Show zero: {show_zero}")
+
+        if not location_type or not location_id:
+            return jsonify({
+                'success': False,
+                'error': 'Location type va location_id majburiy'
+            }), 400
+
+        stock_data = []
+
+        if location_type == 'store':
+            # Do'kon uchun stock ma'lumotlari
+            stocks = db.session.query(
+                StoreStock,
+                Product.name.label('product_name'),
+                Product.sell_price.label('sell_price'),
+                Store.name.label('store_name')
+            ).join(
+                Product, StoreStock.product_id == Product.id
+            ).join(
+                Store, StoreStock.store_id == Store.id
+            ).filter(
+                StoreStock.store_id == location_id,
+                StoreStock.quantity > 0 if not show_zero else True
+            ).all()
+
+            for stock, product_name, sell_price, store_name in stocks:
+                stock_data.append({
+                    'product_id': stock.product_id,
+                    'product_name': product_name,
+                    'quantity': float(stock.quantity),
+                    'sell_price': float(sell_price) if sell_price else 0,
+                    'unit': 'dona',
+                    'location_name': store_name,
+                    'location_type': 'Do\'kon'
+                })
+
+        elif location_type == 'warehouse':
+            # Ombor uchun stock ma'lumotlari
+            stocks = db.session.query(
+                WarehouseStock,
+                Product.name.label('product_name'),
+                Product.sell_price.label('sell_price'),
+                Warehouse.name.label('warehouse_name')
+            ).join(
+                Product, WarehouseStock.product_id == Product.id
+            ).join(
+                Warehouse, WarehouseStock.warehouse_id == Warehouse.id
+            ).filter(
+                WarehouseStock.warehouse_id == location_id,
+                WarehouseStock.quantity > 0 if not show_zero else True
+            ).all()
+
+            for stock, product_name, sell_price, warehouse_name in stocks:
+                stock_data.append({
+                    'product_id': stock.product_id,
+                    'product_name': product_name,
+                    'quantity': float(stock.quantity),
+                    'sell_price': float(sell_price) if sell_price else 0,
+                    'unit': 'dona',
+                    'location_name': warehouse_name,
+                    'location_type': 'Ombor'
+                })
+
+        logger.info(f" {location_type} uchun {len(stock_data)} ta mahsulot topildi")
+
+        return jsonify({
+            'success': True,
+            'data': stock_data
+        })
+
+    except Exception as e:
+        logger.error(f" Stock by location API xatoligi: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+
+# ==================== LOGIN SAHIFASI ====================
+@app.route('/login')
+def login_page():
+    message = request.args.get('message')
+    error_message = None
+
+    if message == 'account_disabled':
+        error_message = 'Hisobingiz faol emas qilingan. Administrator bilan bog\'laning.'
+
+    return render_template('login.html', error_message=error_message)
+
+
+@app.route('/api/login', methods=['POST'])
+def api_login():
+    try:
+        data = request.get_json()
+        username = data.get('username', '').strip()
+        password = data.get('password', '').strip()
+        remember = data.get('remember', False)
+
+        if not username or not password:
+            return jsonify({
+                'success': False,
+                'message': 'Login va parol talab qilinadi'
+            }), 400
+
+        # Foydalanuvchini topish
+        user = User.query.filter_by(username=username).first()
+
+        if not user:
+            return jsonify({
+                'success': False,
+                'message': 'Login yoki parol noto\'g\'ri'
+            }), 401
+
+        # Faol emasligini tekshirish
+        if not user.is_active:
+            return jsonify({
+                'success': False,
+                'message': 'Hisobingiz faol emas. Administrator bilan bog\'laning'
+            }), 401
+
+        # Parolni tekshirish
+        if not check_password(password, user.password):
+            return jsonify({
+                'success': False,
+                'message': 'Login yoki parol noto\'g\'ri'
+            }), 401
+
+        # Session yaratish
+        session['user_id'] = user.id
+        session['username'] = user.username
+        session['role'] = user.role
+        session['user_name'] = f"{user.first_name} {user.last_name}"
+        session['store_id'] = user.store_id
+
+        # Session tracking - database'da session yaratish - vaqtincha disabled
+        # try:
+        #     session_id = str(uuid.uuid4())
+
+        #     # Eski session'larni deactivate qilish
+        #     UserSession.query.filter_by(user_id=user.id, is_active=True).update({'is_active': False})
+
+        #     # Yangi session yaratish
+        #     user_session = UserSession(
+        #         user_id=user.id,
+        #         session_id=session_id,
+        #         ip_address=request.remote_addr,
+        #         user_agent=request.headers.get('User-Agent', '')[:500],  # Truncate if too long
+        #         is_active=True
+        #     )
+
+        #     db.session.add(user_session)
+        #     db.session.commit()
+
+        #     # Session'ga session_id qo'shish
+        #     session['session_id'] = session_id
+
+        #     app.logger.info(f"🔐 Yangi session yaratildi: User {user.username} (ID: {user.id}), Session: {session_id[:8]}...")
+
+        # except Exception as e:
+        #     app.logger.error(f"Session tracking xatosi: {e}")
+        #     # Session tracking xato bo'lsa ham login'ga ruxsat berish
+        #     pass
+
+        if remember:
+            session.permanent = True
+
+        # Muvaffaqiyatli javob
+        redirect_url = '/dashboard'
+        if user.role == 'admin':
+            redirect_url = '/users'  # Admin foydalanuvchilar sahifasiga
+
+        return jsonify({
+            'success': True,
+            'message': 'Muvaffaqiyatli kirildi',
+            'redirect': redirect_url,
+            'user': {
+                'id': user.id,
+                'username': user.username,
+                'name': f"{user.first_name} {user.last_name}",
+                'role': user.role
+            }
+        })
+
+    except Exception:
+        return jsonify({
+            'success': False,
+            'message': 'Server xatoligi yuz berdi'
+        }), 500
+
+
+@app.route('/logout')
+def logout():
+    try:
+        # Session'ni database'da deactivate qilish - vaqtincha disabled
+        # user_id = session.get('user_id')
+        # session_id = session.get('session_id')
+
+        # if user_id and session_id:
+        #     user_session = UserSession.query.filter_by(
+        #         user_id=user_id,
+        #         session_id=session_id,
+        #         is_active=True
+        #     ).first()
+
+        #     if user_session:
+        #         user_session.is_active = False
+        #         db.session.commit()
+        #         app.logger.info(f"🚪 Session deactivated: User {user_id}, Session {session_id[:8]}...")
+        pass
+
+    except Exception as e:
+        app.logger.error(f"Logout session deactivation xatosi: {e}")
+
+    session.clear()
+    return redirect('/login')
+
+# Dashboard API endpoints
+
+
+@app.route('/api/sales-statistics')
+def api_sales_statistics():
+    """Savdo statistikasini qaytarish"""
+    try:
+        location_id = request.args.get('location_id')
+        date_from = request.args.get('date_from')
+        date_to = request.args.get('date_to')
+
+        # Base query
+        query = """
+            SELECT
+                COUNT(*) as total_sales,
+                COALESCE(SUM(si.price * si.quantity), 0) as total_revenue,
+                COALESCE(AVG(si.price * si.quantity), 0) as avg_sale
+            FROM sale_items si
+            JOIN sales s ON si.sale_id = s.id
+        """
+
+        conditions = []
+        params = []
+
+        if location_id:
+            conditions.append("s.location_id = %s")
+            params.append(location_id)
+
+        if date_from:
+            conditions.append("s.sale_date >= %s")
+            params.append(date_from)
+
+        if date_to:
+            conditions.append("s.sale_date <= %s")
+            params.append(date_to)
+
+        if conditions:
+            query += " WHERE " + " AND ".join(conditions)
+
+        # Database query bilan statistics olish
+        result = db.session.execute(text(query), params)
+        stats = result.fetchone()
+
+        # En faol joylashuvni topish
+        top_location_query = """
+            SELECT
+                CASE
+                    WHEN s.location_type = 'store' THEN st.name
+                    WHEN s.location_type = 'warehouse' THEN w.name
+                END as location_name,
+                COUNT(*) as sales_count
+            FROM sales s
+            LEFT JOIN stores st ON s.location_id = st.id AND s.location_type = 'store'
+            LEFT JOIN warehouses w ON s.location_id = w.id AND s.location_type = 'warehouse'
+        """
+
+        top_conditions = []
+        top_params = []
+
+        if date_from:
+            top_conditions.append("s.sale_date >= %s")
+            top_params.append(date_from)
+
+        if date_to:
+            top_conditions.append("s.sale_date <= %s")
+            top_params.append(date_to)
+
+        if top_conditions:
+            top_location_query += " WHERE " + " AND ".join(top_conditions)
+
+        top_location_query += " GROUP BY location_name ORDER BY sales_count DESC LIMIT 1"
+
+        result = db.session.execute(text(top_location_query), top_params)
+        top_location = result.fetchone()
+
+        return jsonify({
+            'total_sales': stats[0] if stats else 0,
+            'total_revenue': float(stats[1]) if stats and stats[1] else 0,
+            'avg_sale': float(stats[2]) if stats and stats[2] else 0,
+            'top_location': top_location[0] if top_location else '-'
+        })
+
+    except Exception as e:
+        print(f"Statistika API xatoligi: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/sales-chart')
+def api_sales_chart():
+    """Savdo grafigi ma'lumotlarini qaytarish"""
+    try:
+        location_id = request.args.get('location_id')
+        date_from = request.args.get('date_from')
+        date_to = request.args.get('date_to')
+        period = request.args.get('period', 'week')  # default: bu hafta
+
+        # Debug uchun parametrlarni chop etamiz
+        print(
+            f"🔍 API parametrlari: location_id={location_id}, period={period}, date_from={date_from}, date_to={date_to}")
+
+        from datetime import datetime, timedelta
+
+        # Vaqt filtri bo'yicha date_from va date_to ni belgilaymiz
+        if not date_from:
+            today = datetime.now().date()
+
+            if period == 'today':
+                date_from = today.strftime('%Y-%m-%d')
+                date_to = today.strftime('%Y-%m-%d')
+            elif period == 'week':
+                # Bu haftaning boshidan
+                days_since_monday = today.weekday()
+                monday = today - timedelta(days=days_since_monday)
+                date_from = monday.strftime('%Y-%m-%d')
+                date_to = today.strftime('%Y-%m-%d')
+            elif period == 'month':
+                # Bu oyning boshidan
+                first_day_of_month = today.replace(day=1)
+                date_from = first_day_of_month.strftime('%Y-%m-%d')
+                date_to = today.strftime('%Y-%m-%d')
+            else:
+                # Default: 7 kunlik
+                date_from = (today - timedelta(days=7)).strftime('%Y-%m-%d')
+
+        # Hisoblangan sanalarni chop etamiz
+        print(
+            f"📅 Hisoblangan sanalar: date_from={date_from}, date_to={date_to}")
+
+        # Bugun filtri uchun soat bo'yicha, boshqalar uchun kun bo'yicha
+        if period == 'today':
+            query = """
+                SELECT
+                    EXTRACT(HOUR FROM s.sale_date) as time_period,
+                    COUNT(*) as period_sales,
+                    COALESCE(SUM(s.total_amount), 0) as period_total,
+                    COALESCE(SUM(s.total_profit), 0) as period_profit
+                FROM sales s
+            """
+        else:
+            query = """
+                SELECT
+                    DATE(s.sale_date) as time_period,
+                    COUNT(*) as period_sales,
+                    COALESCE(SUM(s.total_amount), 0) as period_total,
+                    COALESCE(SUM(s.total_profit), 0) as period_profit
+                FROM sales s
+            """
+
+        conditions = []
+        params = {}
+
+        # Joylashuv filtri (store_id ustuni orqali)
+        if location_id:
+            conditions.append("s.store_id = :location_id")
+            params['location_id'] = int(location_id)
+
+        if date_from:
+            conditions.append("DATE(s.sale_date) >= :date_from")
+            params['date_from'] = date_from
+
+        if date_to:
+            conditions.append("DATE(s.sale_date) <= :date_to")
+            params['date_to'] = date_to
+
+        if conditions:
+            query += " WHERE " + " AND ".join(conditions)
+
+        # GROUP BY va ORDER BY
+        if period == 'today':
+            query += " GROUP BY EXTRACT(HOUR FROM s.sale_date) ORDER BY time_period"
+        else:
+            query += " GROUP BY DATE(s.sale_date) ORDER BY time_period"
+
+        # SQLAlchemy ishlatamiz
+        results = db.session.execute(text(query), params).fetchall()
+
+        labels = []
+        values = []
+        amounts = []
+        profits = []
+
+        if period == 'today':
+            # Bugun filtri uchun 24 soatli ma'lumot yaratish
+            # Avval ma'lumotlarni dictionary ga yig'amiz
+            hourly_data = {}
+            for row in results:
+                hour = int(row[0]) if row[0] is not None else 0
+                hourly_data[hour] = {
+                    'sales': row[1],
+                    'amount': float(row[2]) if row[2] else 0.0,
+                    'profit': float(row[3]) if row[3] else 0.0
+                }
+
+            # 0 dan 23 gacha barcha soatlarni qo'shamiz
+            for hour in range(24):
+                labels.append(f"{hour:02d}:00")
+                if hour in hourly_data:
+                    values.append(hourly_data[hour]['sales'])
+                    amounts.append(hourly_data[hour]['amount'])
+                    profits.append(hourly_data[hour]['profit'])
+                else:
+                    values.append(0)
+                    amounts.append(0.0)
+                    profits.append(0.0)
+        else:
+            # Hafta/oy filtri uchun kunlik ma'lumot
+            for row in results:
+                labels.append(row[0].strftime('%m-%d') if row[0] else '')
+                values.append(row[1])  # savdo soni
+                amounts.append(float(row[2]) if row[2]
+                               else 0.0)  # savdo summasi
+                profits.append(float(row[3]) if row[3]
+                               else 0.0)  # savdo foydasi
+
+        return jsonify({
+            'labels': labels,
+            'values': values,
+            'amounts': amounts,
+            'profits': profits
+        })
+
+    except Exception as e:
+        import traceback
+        logger.error(f" Savdo grafigi API xatoligi: {e}")
+        logger.debug(f" Traceback: {traceback.format_exc()}")
+        return jsonify(
+            {'error': str(e), 'traceback': traceback.format_exc()}), 500
+
+
+@app.route('/api/location-chart')
+def api_location_chart():
+    """Joylashuv grafigi ma'lumotlarini qaytarish"""
+    try:
+        date_from = request.args.get('date_from')
+        date_to = request.args.get('date_to')
+
+        query = """
+            SELECT
+                CASE
+                    WHEN s.location_type = 'store' THEN st.name
+                    WHEN s.location_type = 'warehouse' THEN w.name
+                END as location_name,
+                COUNT(*) as sales_count
+            FROM sales s
+            LEFT JOIN stores st ON s.location_id = st.id AND s.location_type = 'store'
+            LEFT JOIN warehouses w ON s.location_id = w.id AND s.location_type = 'warehouse'
+        """
+
+        conditions = []
+        params = []
+
+        if date_from:
+            conditions.append("s.sale_date >= %s")
+            params.append(date_from)
+
+        if date_to:
+            conditions.append("s.sale_date <= %s")
+            params.append(date_to)
+
+        if conditions:
+            query += " WHERE " + " AND ".join(conditions)
+
+        query += " GROUP BY location_name ORDER BY sales_count DESC"
+
+        result = db.session.execute(text(query), params)
+        results = result.fetchall()
+
+        labels = []
+        values = []
+
+        for row in results:
+            if row[0]:  # location_name mavjud bo'lsa
+                labels.append(row[0])
+                values.append(row[1])
+
+        return jsonify({
+            'labels': labels,
+            'values': values
+        })
+
+    except Exception as e:
+        print(f"Joylashuv grafigi API xatoligi: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/recent-sales')
+def api_recent_sales():
+    """So'nggi savdolar ro'yxatini qaytarish"""
+    try:
+        location_id = request.args.get('location_id')
+        date_from = request.args.get('date_from')
+        date_to = request.args.get('date_to')
+        limit = request.args.get('limit', 10)
+
+        query = """
+            SELECT
+                s.id,
+                s.sale_date,
+                CASE
+                    WHEN s.location_type = 'store' THEN st.name
+                    WHEN s.location_type = 'warehouse' THEN w.name
+                END as location_name,
+                p.name as product_name,
+                si.quantity,
+                (si.price * si.quantity) as total_amount
+            FROM sales s
+            JOIN sale_items si ON s.id = si.sale_id
+            JOIN products p ON si.product_id = p.id
+            LEFT JOIN stores st ON s.location_id = st.id AND s.location_type = 'store'
+            LEFT JOIN warehouses w ON s.location_id = w.id AND s.location_type = 'warehouse'
+        """
+
+        conditions = []
+        params = []
+
+        if location_id:
+            conditions.append("s.location_id = %s")
+            params.append(location_id)
+
+        if date_from:
+            conditions.append("s.sale_date >= %s")
+            params.append(date_from)
+
+        if date_to:
+            conditions.append("s.sale_date <= %s")
+            params.append(date_to)
+
+        if conditions:
+            query += " WHERE " + " AND ".join(conditions)
+
+        query += " ORDER BY s.sale_date DESC, s.id DESC LIMIT %s"
+        params.append(limit)
+
+        result = db.session.execute(text(query), params)
+        results = result.fetchall()
+
+        sales = []
+        for row in results:
+            sales.append({
+                'id': row[0],
+                'sale_date': row[1].isoformat() if row[1] else '',
+                'location_name': row[2] or 'Noma\'lum',
+                'product_name': row[3] or 'Noma\'lum',
+                'quantity': row[4],
+                'total_amount': float(row[5]) if row[5] else 0
+            })
+
+        return jsonify(sales)
+
+    except Exception as e:
+        print(f"So'nggi savdolar API xatoligi: {e}")
+        return jsonify({'error': str(e)}), 500
+
+# Settings API endpointlari
+
+
+@app.route('/api/settings', methods=['GET'])
+def get_settings():
+    """Tizim sozlamalarini olish"""
+    try:
+        # Standart sozlamalar
+        default_settings = {
+            'stock_check_visible': True,  # Sotuvchi uchun qoldiq tekshirish sahifasi ko'rinadimi
+            'auto_currency_update': False,
+            'auto_backup': False
+        }
+
+        # Bazadan sozlamalarni olish
+        settings_data = {}
+        settings_list = Settings.query.all()
+
+        for setting in settings_list:
+            if setting.value.lower() in ['true', 'false']:
+                settings_data[setting.key] = setting.value.lower() == 'true'
+            else:
+                settings_data[setting.key] = setting.value
+
+        # Standart sozlamalar bilan birlashtirish
+        result = {**default_settings, **settings_data}
+
+        return jsonify(result)
+
+    except Exception as e:
+        print(f"Sozlamalarni olishda xato: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/settings', methods=['POST'])
+def save_settings():
+    """Tizim sozlamalarini saqlash"""
+    try:
+        # Admin yoki manager rolini tekshirish
+        if 'user_id' not in session:
+            return jsonify({'error': 'Avtorizatsiya talab qilinadi'}), 401
+
+        user = User.query.get(session['user_id'])
+        if not user or user.role not in ['admin', 'manager']:
+            return jsonify({'error': 'Ruxsat yo\'q'}), 403
+
+        data = request.get_json()
+
+        # Har bir sozlamani saqlash
+        for key, value in data.items():
+            setting = Settings.query.filter_by(key=key).first()
+
+            if setting:
+                # Mavjud sozlamani yangilash
+                setting.value = str(value)
+                setting.updated_at = datetime.now()
+            else:
+                # Yangi sozlama yaratish
+                setting = Settings(
+                    key=key,
+                    value=str(value),
+                    description=f'Sozlama: {key}'
+                )
+                db.session.add(setting)
+
+        db.session.commit()
+        return jsonify({'message': 'Sozlamalar muvaffaqiyatli saqlandi'})
+
+    except Exception as e:
+        db.session.rollback()
+        print(f"Sozlamalarni saqlashda xato: {e}")
+        return jsonify({'error': str(e)}), 500
+
+# Sozlamalar sahifasi
+
+
+@app.route('/settings')
+def settings_page():
+    """Sozlamalar sahifasi"""
+    if 'user_id' not in session:
+        return redirect('/login')
+
+    user = User.query.get(session['user_id'])
+    if not user or user.role not in ['admin', 'manager']:
+        abort(403)  # Faqat admin va manager kirishi mumkin
+
+    return render_template('settings.html')
+
+
+@app.route('/dashboard')
+def dashboard():
+    # Session tekshirish
+    if 'user_id' not in session:
+        return redirect('/login')
+
+    return render_template('dashboard.html')
+
+
+# =======================================================
+# STOCK CHECK SESSION API ENDPOINTS
+# =======================================================
+
+@app.route('/api/stock-check-session/save', methods=['POST'])
+@role_required('admin', 'kassir', 'sotuvchi')
+def save_stock_check_session():
+    """Stock checking session holatini saqlash"""
+    try:
+        user_id = session.get('user_id')
+        print(f"🔐 SESSION SAVE - User ID: {user_id}")
+
+        if not user_id:
+            logger.error(" User not authenticated")
+            return jsonify({'error': 'User not authenticated'}), 401
+
+        data = request.get_json()
+        session_data = data.get('session_data', {})
+        location_type = data.get('location_type')
+        location_id = data.get('location_id')
+
+        print("📥 Kelgan ma'lumotlar:")
+        print(f"  - Location type: {location_type}")
+        print(f"  - Location ID: {location_id}")
+        print(f"  - Session data keys: {list(session_data.keys()) if session_data else 'None'}")
+        print(f"  - Session data size: {len(str(session_data))} bytes")
+
+        # Permission validation
+        user = User.query.get(user_id)
+        if not user:
+            logger.error(" User not found")
+            return jsonify({'error': 'User not found'}), 404
+
+        # Stock check huquqini tekshirish (admin uchun avtomatik ruxsat)
+        if user.role != 'admin':
+            permissions = user.permissions or {}
+            if not permissions.get('stock_check', False):
+                logger.error(f" User {user.username} has no stock check permission")
+                return jsonify({
+                    'error': 'Qoldiqni tekshirish huquqingiz yo\'q',
+                    'required_permission': 'stock_check'
+                }), 403
+            logger.info(f" Stock check permission verified for user: {user.username}")
+        else:
+            print("✅ Admin user - stock check permission granted")
+
+        # Foydalanuvchining location access huquqini tekshirish
+        if location_type and location_id:
+            if user.role == 'admin':
+                # Admin barcha joylashuv​larga kirishi mumkin
+                print("✅ Admin user - barcha joylashuvlarga ruxsat")
+            else:
+                # allowed_locations orqali ruxsatni tekshirish
+                allowed_locations = user.allowed_locations or []
+                location_id_int = int(location_id)
+
+                if location_id_int not in allowed_locations:
+                    logger.error(f" Access denied - User allowed locations: {allowed_locations}, Requested: {location_id}")
+                    return jsonify({
+                        'error': f'Bu {location_type}ga kirishga ruxsatingiz yo\'q',
+                        'user_allowed_locations': allowed_locations,
+                        'requested_location': location_id_int
+                    }), 403
+                logger.info(f" Access granted - User can access {location_type} {location_id}")
+        elif location_type == 'all':
+            # Barcha joylashuvlar uchun alohida tekshiruv yo'q (stock check allowed_locations bo'yicha cheklanadi)
+            print("✅ Access granted for all locations")
+
+        # Mavjud active session ni topish
+        existing_session = StockCheckSession.query.filter_by(
+            user_id=user_id,
+            is_active=True
+        ).first()
+
+        if existing_session:
+            logger.info(f" Mavjud session yangilanmoqda: {existing_session.session_key}")
+            # Mavjud session ni yangilash
+            existing_session.location_type = location_type
+            existing_session.location_id = location_id
+            existing_session.session_data = json.dumps(session_data)
+            existing_session.updated_at = db.func.current_timestamp()
+            session_key = existing_session.session_key
+        else:
+            print("🆕 Yangi session yaratilmoqda")
+            # Yangi session yaratish
+            import time
+            import random
+            session_key = f"stock_check_{user_id}_{int(time.time())}_{random.randint(1000, 9999)}"
+
+            # Unique session key ni ta'minlash uchun loop
+            max_attempts = 10
+            for attempt in range(max_attempts):
+                existing = StockCheckSession.query.filter_by(session_key=session_key).first()
+                if not existing:
+                    break
+                session_key = f"stock_check_{user_id}_{int(time.time())}_{random.randint(1000, 9999)}"
+
+            new_session = StockCheckSession(
+                user_id=user_id,
+                session_key=session_key,
+                location_type=location_type,
+                location_id=location_id,
+                is_active=True,
+                session_data=json.dumps(session_data)
+            )
+
+            db.session.add(new_session)
+
+        db.session.commit()
+        logger.info(f" Session muvaffaqiyatli saqlandi: {session_key}")
+
+        return jsonify({
+            'success': True,
+            'session_key': session_key,
+            'message': 'Session saqlandi'
+        })
+
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f" Session saqlashda xato: {e}")
+        logger.debug(f" Error type: {type(e).__name__}")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/stock-check-session/load', methods=['GET'])
+@role_required('admin', 'kassir', 'sotuvchi')
+def load_stock_check_session():
+    """Stock checking session holatini yuklash"""
+    try:
+        user_id = session.get('user_id')
+        logger.debug(f" SESSION LOAD - User ID: {user_id}")
+
+        if not user_id:
+            logger.error(" User not authenticated")
+            return jsonify({'error': 'User not authenticated'}), 401
+
+        # Permission validation
+        user = User.query.get(user_id)
+        if not user:
+            logger.error(" User not found")
+            return jsonify({'error': 'User not found'}), 404
+
+        # Stock check huquqini tekshirish (admin uchun avtomatik ruxsat)
+        if user.role != 'admin':
+            permissions = user.permissions or {}
+            if not permissions.get('stock_check', False):
+                logger.error(f" User {user.username} has no stock check permission")
+                return jsonify({
+                    'error': 'Qoldiqni tekshirish huquqingiz yo\'q',
+                    'required_permission': 'stock_check'
+                }), 403
+            logger.info(f" Stock check permission verified for user: {user.username}")
+        else:
+            print("✅ Admin user - stock check permission granted")
+
+        # Active session'ni topish
+        active_session = StockCheckSession.query.filter_by(
+            user_id=user_id,
+            is_active=True
+        ).order_by(StockCheckSession.updated_at.desc()).first()
+
+        if not active_session:
+            print("ℹ️ Active session topilmadi")
+            return jsonify({
+                'success': False,
+                'message': 'Active session topilmadi'
+            })
+
+        logger.info(f" Active session topildi: {active_session.session_key}")
+        print(f"📍 Location: {active_session.location_type}-{active_session.location_id}")
+        print(f"🕐 Updated at: {active_session.updated_at}")
+
+        # Location permission validation
+        user = User.query.get(user_id)
+        if not user:
+            logger.error(" User not found")
+            return jsonify({'error': 'User not found'}), 404
+
+        # Session location access huquqini tekshirish
+        if active_session.location_type and active_session.location_id:
+            if user.role == 'admin':
+                print("✅ Admin user - session access granted")
+            else:
+                # allowed_locations orqali session access'ni tekshirish
+                allowed_locations = user.allowed_locations or []
+
+                if active_session.location_id not in allowed_locations:
+                    logger.error(f" Session access denied - User allowed locations: {allowed_locations}, Session location: {active_session.location_id}")
+                    # Session'ni deactivate qilish (xavfsizlik uchun)
+                    active_session.is_active = False
+                    db.session.commit()
+                    return jsonify({
+                        'error': 'Bu session sizga tegishli emas',
+                        'session_deactivated': True
+                    }), 403
+                logger.info(f" Session access granted for {active_session.location_type} {active_session.location_id}")
+        elif active_session.location_type == 'all':
+            print("✅ Session access granted for all locations")
+
+        # Session ma'lumotlarini qaytarish
+        import json
+        session_data = {}
+        if active_session.session_data:
+            session_data = json.loads(active_session.session_data)
+            logger.info(f" Session data keys: {list(session_data.keys())}")
+            logger.info(f" Session data size: {len(active_session.session_data)} bytes")
+
+        result = {
+            'success': True,
+            'session_key': active_session.session_key,
+            'location_type': active_session.location_type,
+            'location_id': active_session.location_id,
+            'session_data': session_data,
+            'updated_at': active_session.updated_at.isoformat()
+        }
+
+        print("📤 Session ma'lumotlari qaytarilmoqda")
+        return jsonify(result)
+
+    except Exception as e:
+        logger.error(f" Session yuklashda xato: {e}")
+        logger.debug(f" Error type: {type(e).__name__}")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/stock-check-session/clear', methods=['POST'])
+@role_required('admin', 'kassir', 'sotuvchi')
+def clear_stock_check_session():
+    """Stock checking session holatini tozalash"""
+    try:
+        user_id = session.get('user_id')
+        if not user_id:
+            return jsonify({'error': 'User not authenticated'}), 401
+
+        # User ning barcha active session'larini deaktiv qilish
+        StockCheckSession.query.filter_by(
+            user_id=user_id,
+            is_active=True
+        ).update({'is_active': False})
+
+        db.session.commit()
+
+        return jsonify({
+            'success': True,
+            'message': 'Session tozalandi'
+        })
+
+    except Exception as e:
+        db.session.rollback()
+        print(f"Session tozalashda xato: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
+# Context processor - barcha templatelarga global o'zgaruvchilarni uzatish
+@app.context_processor
+def inject_settings():
+    """Barcha templatelarga sozlamalarni uzatish"""
+    try:
+        # stock_check_visible sozlamasini olish
+        setting = Settings.query.filter_by(key='stock_check_visible').first()
+        stock_check_visible = (setting.value.lower() == 'true'
+                               if setting else True)
+
+        return {
+            'stock_check_visible': stock_check_visible,
+            'config': app.config
+        }
+    except Exception:
+        # Xato bo'lsa, standart qiymat
+        return {
+            'stock_check_visible': True,
+            'config': app.config
+        }
+
+
+if __name__ == '__main__':
+    # Development rejimi uchun debug=True (avtomatik qayta yuklash)
+    app.run(debug=True, host='0.0.0.0', port=5000)

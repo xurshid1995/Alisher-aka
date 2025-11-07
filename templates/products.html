@@ -1,0 +1,1179 @@
+{% extends "base_with_sidebar.html" %}
+
+{% block title %}Mahsulotlar - Omborxona Boshqaruv Tizimi{% endblock %}
+
+{% block extra_css %}
+<style>
+    .products-container {
+        padding: 1rem;
+        background: #f8f9fa;
+        min-height: auto;
+    }
+    
+    /* Mobile uchun compact padding */
+    @media (max-width: 480px) {
+        .products-container {
+            padding: 0.5rem;
+        }
+    }
+
+    .page-header {
+        margin-bottom: 0.5rem;
+    }
+
+    .page-header h1 {
+        margin: 0;
+        font-size: 2rem;
+        color: #333;
+        font-weight: 600;
+    }
+
+    .controls-section {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .search-box {
+        flex: 1;
+        max-width: 400px;
+        min-width: 320px;
+        position: relative;
+    }
+
+    .search-box input {
+        width: 100%;
+        padding: 0.75rem 1rem 0.75rem 2.5rem;
+        border: 2px solid #e9ecef;
+        border-radius: 25px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .search-box input:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        outline: none;
+    }
+
+    .search-box::before {
+        content: '🔍';
+        position: absolute;
+        left: 0.75rem;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 1rem;
+        z-index: 1;
+    }
+
+    .filter-section {
+        flex-shrink: 0;
+    }
+
+    .status-filter {
+        padding: 0.6rem 0.8rem;
+        border: 2px solid #e9ecef;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        background: white;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        min-width: 140px;
+    }
+
+    .status-filter:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        outline: none;
+    }
+
+    .status-filter:hover {
+        border-color: #667eea;
+    }
+
+    .location-buttons {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: flex-start;
+    }
+
+    .location-button {
+        padding: 0.6rem 1.2rem;
+        border: 2px solid #e9ecef;
+        background: white;
+        color: #495057;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        white-space: nowrap;
+        min-width: 80px;
+        text-align: center;
+        margin-bottom: 0.25rem;
+    }
+
+    .location-button:hover {
+        border-color: #667eea;
+        background: #f8f9ff;
+        color: #667eea;
+    }
+
+    .location-button.active {
+        background: #667eea;
+        border-color: #667eea;
+        color: white;
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+    }
+
+    .location-button.active:hover {
+        background: #5a6fd8;
+        border-color: #5a6fd8;
+    }
+
+    .products-table-container {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .products-table {
+        width: 100%;
+        min-width: 800px; /* Mahsulotlar jadvali uchun minimal kenglik */
+        border-collapse: collapse;
+        font-size: 0.95rem;
+    }
+
+    .products-table thead {
+        background: #667eea;
+        color: white;
+    }
+
+    .products-table th {
+        padding: 0.5rem 1rem 0.5rem 2.8rem;
+        text-align: left;
+        font-weight: 600;
+        font-size: 1rem;
+        border: none;
+        white-space: nowrap;
+        position: relative;
+    }
+
+    .products-table th .emoji {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 1.5rem;
+        text-align: center;
+    }
+
+    .products-table tbody tr {
+        border-bottom: 1px solid #e9ecef;
+        transition: background-color 0.3s ease;
+    }
+
+    .products-table tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+
+    .products-table td {
+        padding: 0.5rem 1rem 0.5rem 2.8rem;
+        border: none;
+        vertical-align: middle;
+        text-align: left;
+    }
+
+    .location-cell {
+        vertical-align: top;
+        text-align: left;
+        line-height: 0.9;
+        padding-top: 0.3rem !important;
+        padding-bottom: 0.3rem !important;
+    }
+
+    .product-name {
+        font-weight: 600;
+        color: #2c3e50;
+    }
+
+    .location-cell {
+        font-weight: 500;
+        color: #6c757d;
+        text-align: center;
+    }
+
+    .price-cell {
+        font-weight: 600;
+        color: #28a745;
+        text-align: right;
+    }
+
+    .quantity-cell {
+        display: inline-block;
+        font-weight: 700;
+        color: white;
+        text-align: center;
+        background-color: #4da6ff;
+        border-radius: 3px;
+        padding: 0.15rem 0.3rem;
+        min-width: 1.8rem;
+        font-size: 0.9rem;
+    }
+
+    .stock-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: bold;
+        text-align: center;
+    }
+
+    .stock-high {
+        color: #27ae60;
+    }
+
+    .stock-medium {
+        color: #e74c3c;
+    }
+
+    /* Search highlight styles */
+    .search-highlight {
+        background-color: #ffeb3b;
+        padding: 1px 2px;
+        border-radius: 2px;
+        font-weight: bold;
+    }
+
+    .stock-out {
+        color: #000000;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: #6c757d;
+    }
+
+    .empty-state .empty-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+
+    .empty-state h3 {
+        margin-bottom: 0.5rem;
+        color: #495057;
+    }
+
+    .empty-state p {
+        margin-bottom: 2rem;
+    }
+
+    .loading-state {
+        text-align: center;
+        padding: 3rem;
+        color: #6c757d;
+    }
+
+    .loading-spinner {
+        display: inline-block;
+        width: 2rem;
+        height: 2rem;
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #667eea;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-bottom: 1rem;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    .table-info {
+        padding: 1rem;
+        background: #f8f9fa;
+        border-top: 1px solid #e9ecef;
+        display: flex;
+        justify-content: between;
+        align-items: center;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #495057;
+    }
+
+    /* Pagination styles */
+    .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 1.5rem 1rem;
+        background: white;
+        border-top: 1px solid #e9ecef;
+        margin-top: 0;
+    }
+
+    #paginationButtons {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .pagination-btn {
+        padding: 0.5rem 0.75rem;
+        border: 1px solid #dee2e6;
+        background: white;
+        color: #495057;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-size: 0.9rem;
+        min-width: 40px;
+        text-align: center;
+    }
+
+    .pagination-btn:hover:not(.active) {
+        background: #f8f9fa;
+        border-color: #adb5bd;
+    }
+
+    .pagination-btn.active {
+        background: #667eea;
+        color: white;
+        border-color: #667eea;
+        font-weight: 600;
+    }
+
+    .pagination-dots {
+        padding: 0.5rem 0.25rem;
+        color: #6c757d;
+        font-weight: bold;
+    }
+
+    @media (max-width: 768px) {
+        .products-container {
+            padding: 1rem;
+        }
+
+        .page-header h1 {
+            font-size: 2rem;
+        }
+
+        .controls-section {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .search-box {
+            min-width: auto;
+        }
+
+        .location-buttons {
+            justify-content: flex-start;
+        }
+
+        .location-button {
+            font-size: 0.85rem;
+            padding: 0.5rem 1rem;
+            min-width: 70px;
+        }
+
+        .products-table {
+            font-size: 0.85rem;
+        }
+
+        .products-table th,
+        .products-table td {
+            padding: 0.75rem 0.5rem;
+        }
+
+        /* Mobile pagination */
+        .pagination {
+            padding: 1rem 0.5rem;
+        }
+
+        #paginationButtons {
+            gap: 0.25rem;
+        }
+
+        .pagination-btn {
+            padding: 0.4rem 0.6rem;
+            font-size: 0.8rem;
+            min-width: 35px;
+        }
+
+        .pagination-dots {
+            padding: 0.4rem 0.15rem;
+        }
+    }
+
+    /* Joylashuv taglari uchun stillar */
+    .location-tag {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.2rem 0.8rem;
+        border-radius: 4px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        margin: -0.05rem 0;
+        width: 180px;
+        height: 1.5rem;
+        box-sizing: border-box;
+    }
+
+    .location-name {
+        flex: 1;
+        text-align: left;
+        margin-right: 0.5rem;
+    }
+
+    .location-quantity {
+        font-weight: 700;
+        margin-left: auto;
+        margin-right: 0;
+        padding: 0.2rem 0.5rem;
+        background-color: rgba(255, 255, 255, 0.4);
+        border-radius: 5px;
+        font-size: 0.95rem;
+        min-width: 2rem;
+        text-align: center;
+        flex-shrink: 0;
+    }
+
+    .warehouse-tag {
+        background-color: #ffcc02;
+        color: #664d03;
+        border: 1px solid #e6b800;
+    }
+
+    .store-tag {
+        background-color: #28a745;
+        color: #ffffff;
+        border: 1px solid #1e7e34;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="products-container" 
+     data-user-store-id="{% if session.store_id %}{{ session.store_id }}{% else %}null{% endif %}"
+     data-user-role="{{ session.role }}">
+    <div class="page-header">
+        <h1>📦 Mahsulotlar</h1>
+    </div>
+    
+    <!-- Controls Section -->
+    <div class="controls-section">
+        <div class="search-box">
+            <input type="text" id="productSearch" placeholder="Mahsulot nomi yoki kodini kiriting...">
+        </div>
+        <div class="filter-section">
+            <select id="statusFilter" class="status-filter">
+                <option value="all">Barcha holatlar</option>
+                <option value="high">✅ Yetarli</option>
+                <option value="medium">⚠️ Kam qolgan</option>
+                <option value="out">❌ Tugagan</option>
+            </select>
+        </div>
+        <div class="location-buttons" id="locationButtons">
+            <button class="location-button active" data-location="all">📍 Barcha joylar</button>
+            <!-- Ombor va dokon tugmalari dinamik yuklanadi -->
+        </div>
+    </div>
+
+    <!-- Products Table -->
+    <div class="table-responsive">
+        <div class="products-table-container">
+        
+        <!-- Table Info (jadval tepasida) -->
+        <div class="table-info" id="tableInfo" style="display: none;">
+            <span id="resultsInfo">0 ta mahsulot ko'rsatilmoqda</span>
+        </div>
+        
+        <div id="loadingState" class="loading-state">
+            <div class="loading-spinner"></div>
+            <p>Mahsulotlar yuklanmoqda...</p>
+        </div>
+
+        <div id="emptyState" class="empty-state" style="display: none;">
+            <div class="empty-icon">📦</div>
+            <h3>Hech qanday mahsulot topilmadi</h3>
+            <p>Hozircha tizimda mahsulotlar mavjud emas.</p>
+        </div>
+
+        <table class="products-table" id="productsTable" style="display: none;">
+            <thead>
+                <tr>
+                    <th><span class="emoji">📦</span>Mahsulot nomi</th>
+                    <th><span class="emoji">💰</span>Narx</th>
+                    <th><span class="emoji">📍</span>Joylashuv</th>
+                    <th><span class="emoji">📊</span><span id="quantityHeader">Umumiy miqdor</span></th>
+                    <th><span class="emoji">⚡</span>Holat</th>
+                </tr>
+            </thead>
+            <tbody id="productsTableBody">
+                <!-- Mahsulotlar bu yerga yuklanadi -->
+            </tbody>
+        </table>
+
+        <!-- Pagination -->
+        <div class="pagination" id="pagination" style="display: none;">
+            <div id="paginationButtons">
+                <!-- Pagination tugmalari bu yerga yuklanadi -->
+            </div>
+        </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let allProducts = [];
+    let filteredProducts = [];
+    let currentPage = 1;
+    const itemsPerPage = 50;
+    let totalProducts = 0;
+    let totalPages = 0;
+    let currentSearch = '';
+    let currentLocation = 'all';
+    let isLoading = false;
+    let userExplicitlySelectedLocation = false; // User o'zi location tanladi
+    let locationButtonsLoaded = false; // Location tugmalar yuklandi
+
+    // Foydalanuvchi ma'lumotlarini data attribute'dan olish
+    const container = document.querySelector('.products-container');
+    const userStoreId = container.dataset.userStoreId === 'null' ? null : parseInt(container.dataset.userStoreId);
+    const userRole = container.dataset.userRole;
+    
+    console.log('👤 Foydalanuvchi dokan ID:', userStoreId, 'Rol:', userRole);
+
+    // Qidiruv matnini ajratib ko'rsatish funksiyasi
+    function highlightSearchText(text, searchTerm) {
+        if (!searchTerm || searchTerm.trim() === '') {
+            return text;
+        }
+        
+        const regex = new RegExp(`(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+        return text.replace(regex, '<span class="search-highlight">$1</span>');
+    }
+
+    // Sahifa yuklanganda
+    document.addEventListener('DOMContentLoaded', function() {
+        loadProducts();
+        
+        // Qidiruv maydoniga fokus berish
+        const searchInput = document.getElementById('productSearch');
+        if (searchInput) {
+            searchInput.focus();
+        }
+        
+        // Qidiruv event listener with debounce
+        let searchTimeout;
+        document.getElementById('productSearch').addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            const searchValue = this.value.trim();
+            
+            searchTimeout = setTimeout(() => {
+                currentSearch = searchValue;
+                loadProducts(1, searchValue, currentLocation);
+            }, 500); // 500ms debounce
+        });
+        
+        // Holat filtiri event listener
+        document.getElementById('statusFilter').addEventListener('change', function() {
+            // Client-side filtering for status (fast)
+            applyStatusFilter();
+        });
+        
+        // "Barcha joylar" tugmasi uchun event listener
+        document.querySelector('[data-location="all"]').addEventListener('click', function() {
+            // Barcha tugmalardan active classini olib tashlash
+            document.querySelectorAll('.location-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Bosilgan tugmaga active class qo'shish
+            this.classList.add('active');
+            
+            // User o'zi "Barcha joylar"ni tanladi
+            userExplicitlySelectedLocation = true;
+            
+            // Barcha joylar bilan sahifani qayta yuklash
+            currentLocation = 'all';
+            loadProducts(1, currentSearch, 'all');
+        });
+    });
+
+    // Mahsulotlarni yuklash
+    async function loadProducts(page = 1, search = '', location = 'all') {
+        if (isLoading) return;
+        
+        try {
+            isLoading = true;
+            showLoading(true);
+            
+            const params = new URLSearchParams({
+                page: page,
+                per_page: itemsPerPage
+            });
+            
+            if (search) {
+                params.append('search', search);
+            }
+            
+            if (location && location !== 'all') {
+                params.append('location', location);
+            }
+            
+            const response = await fetch(`/api/products?${params}`);
+            const data = await response.json();
+            
+            // Server-side pagination data
+            if (data.products) {
+                allProducts = data.products;
+                filteredProducts = [...allProducts];
+                currentPage = data.pagination.page;
+                totalProducts = data.pagination.total;
+                totalPages = data.pagination.pages;
+                
+                // Update current filters (faqat agar user o'zi tanlagan bo'lsa)
+                if (data.filters && userExplicitlySelectedLocation) {
+                    currentSearch = data.filters.search || '';
+                    currentLocation = data.filters.location || 'all';
+                }
+            } else {
+                // Fallback for old API format
+                allProducts = data;
+                filteredProducts = [...allProducts];
+                totalProducts = allProducts.length;
+                totalPages = Math.ceil(totalProducts / itemsPerPage);
+            }
+            
+            // Joylashuv tugmalarini yuklash (faqat birinchi marta)
+            if (!locationButtonsLoaded && page === 1 && search === '') {
+                await loadLocationButtons();
+                locationButtonsLoaded = true;
+            }
+            
+            // Sarlavhani yangilash
+            updateQuantityHeader(location);
+            
+            displayProducts();
+            
+        } catch (error) {
+            console.error('Mahsulotlar yuklashda xatolik:', error);
+            showError('Mahsulotlar yuklashda xatolik yuz berdi');
+        } finally {
+            isLoading = false;
+            showLoading(false);
+        }
+    }
+
+    // Joylashuv tugmalarini yuklash
+    async function loadLocationButtons() {
+        try {
+            const response = await fetch('/api/all-locations');
+            const locations = await response.json();
+            const locationButtons = document.getElementById('locationButtons');
+            
+            // Barcha joylar tugmasidan tashqari boshqa tugmalarni tozalash
+            const allButton = locationButtons.querySelector('[data-location="all"]');
+            locationButtons.innerHTML = '';
+            locationButtons.appendChild(allButton);
+            
+            // Har bir joylashuv uchun tugma yaratish
+            locations.forEach(location => {
+                const button = document.createElement('button');
+                button.className = 'location-button';
+                button.dataset.location = `${location.type}_${location.id}`;
+                
+                // Ombor va dokonlar uchun turli ikonlar
+                const icon = location.type === 'warehouse' ? '🏢' : '🏪';
+                button.textContent = `${icon} ${location.name}`;
+                
+                // Event listener qo'shish
+                button.addEventListener('click', function() {
+                    // Barcha tugmalardan active classini olib tashlash
+                    document.querySelectorAll('.location-button').forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+                    
+                    // Bosilgan tugmaga active class qo'shish
+                    this.classList.add('active');
+                    
+                    // User o'zi location tanladi
+                    userExplicitlySelectedLocation = true;
+                    
+                    // Yangi location bilan sahifani qayta yuklash
+                    const newLocation = this.dataset.location;
+                    currentLocation = newLocation;
+                    loadProducts(1, currentSearch, newLocation);
+                });
+                
+                locationButtons.appendChild(button);
+            });
+            
+            // Agar foydalanuvchi ma'lum dokoniga biriktirilgan bo'lsa VA user o'zi location tanlamagan bo'lsa VA current location 'all' bo'lsa, avtomatik tanlash
+            if (userStoreId && userRole === 'sotuvchi' && !userExplicitlySelectedLocation && currentLocation === 'all' && allProducts.length > 0) {
+                const userStoreButton = locationButtons.querySelector(`[data-location="store_${userStoreId}"]`);
+                if (userStoreButton) {
+                    // Barcha tugmalardan active classini olib tashlash
+                    document.querySelectorAll('.location-button').forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+                    
+                    // Foydalanuvchi dokonini active qilish
+                    userStoreButton.classList.add('active');
+                    
+                    console.log('🎯 Sotuvchi uchun avtomatik dokon tanlandi:', userStoreButton.textContent);
+                    
+                    // Dokon bilan sahifani qayta yuklash
+                    const storeLocation = `store_${userStoreId}`;
+                    currentLocation = storeLocation;
+                    setTimeout(() => {
+                        loadProducts(1, currentSearch, storeLocation);
+                    }, 100);
+                } else {
+                    // Agar user dokon tugmasi topilmasa, "Barcha joylar"ni active qilish
+                    const allButton = locationButtons.querySelector('[data-location="all"]');
+                    if (allButton && currentLocation === 'all') {
+                        allButton.classList.add('active');
+                    }
+                }
+            } else {
+                // User location tanlagan yoki admin/kassir bo'lsa, tegishli tugmani active qilish
+                const activeButton = locationButtons.querySelector(`[data-location="${currentLocation}"]`);
+                if (activeButton) {
+                    activeButton.classList.add('active');
+                }
+            }
+            
+        } catch (error) {
+            console.error('Joylashuv tugmalarini yuklashda xatolik:', error);
+        }
+    }
+
+    // Mahsulotning umumiy zaxirasini hisoblash (filtrga mos ravishda)
+    function getTotalStock(product, locationFilter = null) {
+        let total = 0;
+        if (product.stocks) {
+            product.stocks.forEach(stock => {
+                // Agar locationFilter berilmagan bo'lsa - barcha joylashuvlar hisoblansin
+                if (!locationFilter || locationFilter === 'all') {
+                    total += stock.quantity || 0;
+                } else {
+                    // Aniq joylashuv uchun filtrlash
+                    const [locationType, locationId] = locationFilter.split('_');
+                    
+                    if (locationType === 'warehouse' && stock.warehouse_id == locationId) {
+                        total += stock.quantity || 0;
+                    }
+                    if (locationType === 'store' && stock.store_id == locationId) {
+                        total += stock.quantity || 0;
+                    }
+                }
+            });
+        }
+        return total;
+    }
+
+    // Loading state ko'rsatish
+    function showLoading(show) {
+        const loadingState = document.getElementById('loadingState');
+        const productsTable = document.getElementById('productsTable');
+        const tableInfo = document.getElementById('tableInfo');
+        const pagination = document.getElementById('pagination');
+        
+        if (show) {
+            loadingState.style.display = 'block';
+            productsTable.style.display = 'none';
+            tableInfo.style.display = 'none';
+            pagination.style.display = 'none';
+        } else {
+            loadingState.style.display = 'none';
+        }
+    }
+
+    // Error ko'rsatish
+    function showError(message) {
+        console.error('Error:', message);
+        
+        // Simple error display - alert yoki custom error div ishlatishingiz mumkin
+        alert(message);
+    }
+
+    // Mahsulotlarni ko'rsatish
+    function displayProducts() {
+        const emptyState = document.getElementById('emptyState');
+        const productsTable = document.getElementById('productsTable');
+        const tableInfo = document.getElementById('tableInfo');
+        const tableBody = document.getElementById('productsTableBody');
+
+        if (filteredProducts.length === 0) {
+            emptyState.style.display = 'block';
+            productsTable.style.display = 'none';
+            tableInfo.style.display = 'none';
+            document.getElementById('pagination').style.display = 'none';
+        } else {
+            emptyState.style.display = 'none';
+            productsTable.style.display = 'table';
+            tableInfo.style.display = 'flex';
+            document.getElementById('pagination').style.display = 'flex';
+
+            // Jadval ma'lumotlarini yaratish
+            const activeLocationButton = document.querySelector('.location-button.active');
+            const locationFilter = activeLocationButton ? activeLocationButton.dataset.location : 'all';
+            
+            let tableHtml = '';
+            
+            filteredProducts.forEach(product => {
+                const totalStock = getTotalStock(product, locationFilter);
+                const stockClass = getStockClass(totalStock);
+                const stockText = getStockText(totalStock);
+                const locations = getProductLocations(product);
+                
+                // Qidiruv matnini highlight qilish
+                const highlightedName = highlightSearchText(product.name, currentSearch);
+                
+                tableHtml += `
+                    <tr>
+                        <td class="product-name">${highlightedName}</td>
+                        <td class="price-cell">$${formatPrice(product.sell_price)}</td>
+                        <td class="location-cell">${locations}</td>
+                        <td><span class="quantity-cell">${totalStock}</span></td>
+                        <td><span class="stock-badge ${stockClass}">${stockText}</span></td>
+                    </tr>
+                `;
+            });
+
+            tableBody.innerHTML = tableHtml;
+            
+            // Sahifa ma'lumotlarini yangilash
+            const startItem = (currentPage - 1) * itemsPerPage + 1;
+            const endItem = Math.min(currentPage * itemsPerPage, totalProducts);
+            const displayedItems = Math.min(filteredProducts.length, itemsPerPage);
+            
+            let infoText = `${startItem}-${startItem + displayedItems - 1} (Jami: ${totalProducts} ta mahsulot)`;
+            
+            // Location filter ko'rsatish
+            if (currentLocation !== 'all') {
+                const activeLocationButton = document.querySelector('.location-button.active');
+                const locationName = activeLocationButton ? activeLocationButton.textContent.trim() : '';
+                if (locationName) {
+                    infoText += ` - ${locationName}`;
+                }
+            }
+            
+            document.getElementById('resultsInfo').textContent = infoText;
+            
+            // Pagination tugmalarini yangilash
+            updatePaginationButtons();
+        }
+    }
+
+    // Pagination tugmalarini yangilash
+    function updatePaginationButtons() {
+        const paginationContainer = document.getElementById('paginationButtons');
+        
+        if (totalPages <= 1) {
+            paginationContainer.innerHTML = '';
+            return;
+        }
+        
+        let buttonsHtml = '';
+        
+        // Oldingi sahifa tugmasi
+        if (currentPage > 1) {
+            buttonsHtml += `<button class="pagination-btn" onclick="goToPage(${currentPage - 1})">← Oldingi</button>`;
+        }
+        
+        // Sahifa raqamlari
+        const maxVisiblePages = 5;
+        let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+        let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+        
+        // Agar oxirgi sahifalar ko'rsatilayotgan bo'lsa, boshlanish nuqtasini moslashtirish
+        if (endPage - startPage + 1 < maxVisiblePages) {
+            startPage = Math.max(1, endPage - maxVisiblePages + 1);
+        }
+        
+        // Birinchi sahifani ko'rsatish (agar ko'rinmaydigan bo'lsa)
+        if (startPage > 1) {
+            buttonsHtml += `<button class="pagination-btn" onclick="goToPage(1)">1</button>`;
+            if (startPage > 2) {
+                buttonsHtml += `<span class="pagination-dots">...</span>`;
+            }
+        }
+        
+        // Sahifa raqamlari
+        for (let i = startPage; i <= endPage; i++) {
+            const activeClass = i === currentPage ? 'active' : '';
+            buttonsHtml += `<button class="pagination-btn ${activeClass}" onclick="goToPage(${i})">${i}</button>`;
+        }
+        
+        // Oxirgi sahifani ko'rsatish (agar ko'rinmaydigan bo'lsa)
+        if (endPage < totalPages) {
+            if (endPage < totalPages - 1) {
+                buttonsHtml += `<span class="pagination-dots">...</span>`;
+            }
+            buttonsHtml += `<button class="pagination-btn" onclick="goToPage(${totalPages})">${totalPages}</button>`;
+        }
+        
+        // Keyingi sahifa tugmasi
+        if (currentPage < totalPages) {
+            buttonsHtml += `<button class="pagination-btn" onclick="goToPage(${currentPage + 1})">Keyingi →</button>`;
+        }
+        
+        paginationContainer.innerHTML = buttonsHtml;
+    }
+
+    // Sahifaga o'tish
+    async function goToPage(page) {
+        if (page >= 1 && page <= totalPages && page !== currentPage) {
+            await loadProducts(page, currentSearch, currentLocation);
+            
+            // Sahifa yuqorisiga scroll qilish
+            document.getElementById('productsTable').scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'start' 
+            });
+        }
+    }
+
+    // Stock klassi aniqlash
+    function getStockClass(stock) {
+        if (stock === 0) return 'stock-out';
+        if (stock < 10) return 'stock-medium';
+        return 'stock-high';
+    }
+
+    // Stock matni aniqlash
+    function getStockText(stock) {
+        if (stock === 0) return '🚫 Tugagan';
+        if (stock < 10) return '⚠️ Kam qolgan';
+        return '✓ Yetarli';
+    }
+
+    // "Barcha joylar" rejimida aqlli stock klassi
+    function getSmartStockClass(product) {
+        if (!product.stocks || product.stocks.length === 0) return 'stock-out';
+        
+        let hasHigh = false;
+        let hasMedium = false;
+        let hasAny = false;
+        
+        product.stocks.forEach(stock => {
+            const qty = stock.quantity || 0;
+            if (qty > 0) hasAny = true;
+            if (qty >= 10) hasHigh = true;
+            else if (qty > 0) hasMedium = true;
+        });
+        
+        if (hasHigh) return 'stock-high';
+        if (hasMedium) return 'stock-medium'; 
+        return 'stock-out';
+    }
+
+    // "Barcha joylar" rejimida aqlli stock matni
+    function getSmartStockText(product) {
+        if (!product.stocks || product.stocks.length === 0) return '🚫 Tugagan';
+        
+        let hasHigh = false;
+        let hasMedium = false;
+        let hasAny = false;
+        
+        product.stocks.forEach(stock => {
+            const qty = stock.quantity || 0;
+            if (qty > 0) hasAny = true;
+            if (qty >= 10) hasHigh = true;
+            else if (qty > 0) hasMedium = true;
+        });
+        
+        if (hasHigh) return '✓ Yetarli';
+        if (hasMedium) return '⚠️ Kam qolgan';
+        return '🚫 Tugagan';
+    }
+
+    // Narxni formatlash
+    function formatPrice(price) {
+        return new Intl.NumberFormat('uz-UZ').format(price || 0);
+    }
+
+    // Mahsulotning joylashuvini olish (filtrga mos ravishda)
+    function getProductLocations(product) {
+        const locations = [];
+        
+        // Aktiv joylashuv tugmasini topish
+        const activeLocationButton = document.querySelector('.location-button.active');
+        const locationFilter = activeLocationButton ? activeLocationButton.dataset.location : 'all';
+        
+        if (product.stocks) {
+            product.stocks.forEach(stock => {
+                // Agar "Barcha joylar" tanlangan bo'lsa - hammasi ko'rsatilsin
+                if (locationFilter === 'all') {
+                    // Agar warehouse_id mavjud bo'lsa - ombor (sariq fon)
+                    if (stock.warehouse_id && stock.warehouse_name) {
+                        locations.push(`<span class="location-tag warehouse-tag">
+                            <span class="location-name">${stock.warehouse_name}</span>
+                            <span class="location-quantity">${stock.quantity}</span>
+                        </span>`);
+                    }
+                    // Agar store_id mavjud bo'lsa - do'kon (yashil fon)
+                    if (stock.store_id && stock.store_name) {
+                        locations.push(`<span class="location-tag store-tag">
+                            <span class="location-name">${stock.store_name}</span>
+                            <span class="location-quantity">${stock.quantity}</span>
+                        </span>`);
+                    }
+                } else {
+                    // Aniq joylashuv tanlangan bo'lsa - faqat o'sha joylashuv ko'rsatilsin
+                    const [locationType, locationId] = locationFilter.split('_');
+                    
+                    if (locationType === 'warehouse' && stock.warehouse_id == locationId && stock.warehouse_name) {
+                        locations.push(`<span class="location-tag warehouse-tag">
+                            <span class="location-name">${stock.warehouse_name}</span>
+                        </span>`);
+                    }
+                    if (locationType === 'store' && stock.store_id == locationId && stock.store_name) {
+                        locations.push(`<span class="location-tag store-tag">
+                            <span class="location-name">${stock.store_name}</span>
+                        </span>`);
+                    }
+                }
+            });
+        }
+        
+        if (locations.length === 0) {
+            return 'Mavjud emas';
+        }
+        
+        return locations.join('<br>');
+    }
+
+    // Mahsulotning umumiy qiymatini hisoblash (filtrga mos ravishda)
+    function getTotalValue(product, locationFilter = null) {
+        const totalStock = getTotalStock(product, locationFilter);
+        const price = product.sell_price || product.price || 0;
+        return totalStock * price;
+    }
+
+    // Status bo'yicha client-side filtrlash (faqat hozirgi sahifa uchun)
+    function applyStatusFilter() {
+        const statusFilter = document.getElementById('statusFilter').value;
+        
+        if (statusFilter === 'all') {
+            filteredProducts = [...allProducts];
+        } else {
+            filteredProducts = allProducts.filter(product => {
+                const totalStock = getTotalStock(product, currentLocation);
+                
+                switch (statusFilter) {
+                    case 'high':
+                        return totalStock >= 10;
+                    case 'medium': 
+                        return totalStock > 0 && totalStock < 10;
+                    case 'out':
+                        return totalStock === 0;
+                    default:
+                        return true;
+                }
+            });
+        }
+        
+        updateQuantityHeader(currentLocation);
+        displayProducts();
+    }
+
+    // Miqdor sarlavhasini yangilash
+    function updateQuantityHeader(locationFilter) {
+        const quantityHeader = document.getElementById('quantityHeader');
+        
+        if (locationFilter === 'all') {
+            quantityHeader.textContent = 'Umumiy miqdor';
+        } else {
+            quantityHeader.textContent = 'Miqdor';
+        }
+    }
+
+    // Narxni formatlash
+    function formatPrice(price) {
+        if (!price) return '0';
+        return new Intl.NumberFormat('uz-UZ').format(price);
+    }
+
+    // Mahsulotni ko'rish
+    function viewProduct(productId) {
+        // Mahsulot tafsilotlari sahifasiga o'tish
+        window.location.href = `/product/${productId}`;
+    }
+
+    // Mahsulotni tahrirlash
+    function editProduct(productId) {
+        // Mahsulot tahrirlash sahifasiga o'tish
+        window.location.href = `/edit_product/${productId}`;
+    }
+
+    // Mahsulotni o'chirish
+    async function deleteProduct(productId) {
+        const product = allProducts.find(p => p.id === productId);
+        if (!product) return;
+
+        const confirmed = confirm(`"${product.name}" mahsulotini o'chirmoqchimisiz? Bu amal qaytarilmaydi.`);
+        if (!confirmed) return;
+
+        try {
+            const response = await fetch(`/api/product/${productId}`, {
+                method: 'DELETE'
+            });
+
+            if (response.ok) {
+                // Mahsulotni ro'yxatdan o'chirish
+                allProducts = allProducts.filter(p => p.id !== productId);
+                filteredProducts = filteredProducts.filter(p => p.id !== productId);
+                
+                displayProducts();
+                
+                alert('Mahsulot muvaffaqiyatli o\'chirildi');
+            } else {
+                throw new Error('Server xatoligi');
+            }
+        } catch (error) {
+            console.error('Mahsulot o\'chirishda xatolik:', error);
+            alert('Mahsulot o\'chirishda xatolik yuz berdi');
+        }
+    }
+
+    // Xatolik ko'rsatish
+    function showError(message) {
+        const loadingState = document.getElementById('loadingState');
+        loadingState.innerHTML = `
+            <div style="color: #dc3545; text-align: center; padding: 2rem;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">⚠️</div>
+                <h3>Xatolik yuz berdi</h3>
+                <p>${message}</p>
+                <button onclick="loadProducts()" class="add-product-btn" style="margin-top: 1rem;">
+                    🔄 Qayta urinish
+                </button>
+            </div>
+        `;
+    }
+</script>
+{% endblock %}

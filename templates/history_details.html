@@ -1,0 +1,321 @@
+{% extends "base.html" %}
+
+{% block title %}Tekshiruv tafsilotlari{% endblock %}
+
+{% block extra_css %}
+<!-- CSS qoidalar o'chirildi, JavaScript inline stillar ishlatiladi -->
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid" style="padding: 2rem;">
+    <div class="row">
+        <div class="col-12">
+            <!-- Sarlavha, umumiy ma'lumotlar va orqaga tugmasi -->
+            <div style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 2rem;">
+                <!-- Bir qatorda: Sarlavha, umumiy ma'lumotlar va orqaga tugmasi -->
+                <div style="display: flex; justify-content: space-between; align-items: center; gap: 1rem;">
+                    <h2 style="margin: 0; color: #333; display: flex; align-items: center; flex-shrink: 0;">
+                        <i class="fas fa-chart-line" style="color: #007bff; margin-right: 0.75rem; font-size: 1.5rem;"></i>
+                        Tekshiruv tafsilotlari
+                    </h2>
+                    
+                    <!-- Umumiy ma'lumotlar - o'rtada -->
+                    <div id="headerInfo" style="display: flex; align-items: center; font-size: 0.9rem; gap: 1.5rem; flex: 1; justify-content: center; color: #666;">
+                        <!-- JavaScript orqali yuklanadi -->
+                    </div>
+                    
+                    <a href="javascript:history.back()" style="display: inline-flex; align-items: center; padding: 0.75rem 1.5rem; background: #6c757d; color: white; text-decoration: none; border-radius: 8px; font-weight: 500; transition: all 0.3s; box-shadow: 0 2px 4px rgba(0,0,0,0.1); flex-shrink: 0;">
+                        <i class="fas fa-arrow-left" style="margin-right: 0.5rem;"></i>
+                        Orqaga qaytish
+                    </a>
+                </div>
+            </div>
+
+            <!-- Ma'lumotlar ko'rsatiladigan joy -->
+            <div id="detailsContent">
+                <!-- JavaScript orqali yuklanadi -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let allProducts = [];
+let currentFilter = 'all';
+
+// Sahifa yuklanganda ishga tushishi kerak bo'lgan funksiya
+document.addEventListener('DOMContentLoaded', function() {
+    loadHistoryDetails();
+});
+
+// URL parametrini olish funksiyasi
+function getUrlParameter(name) {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get(name);
+}
+
+// Tarix tafsilotlarini yuklash
+function loadHistoryDetails() {
+    const sessionId = getUrlParameter('id');
+    
+    if (!sessionId) {
+        document.getElementById('detailsContent').innerHTML = `
+            <div style="text-align: center; padding: 3rem; color: #dc3545;">
+                <i class="fas fa-exclamation-triangle" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                <h3>Xatolik yuz berdi</h3>
+                <p>Sessiya ID topilmadi. Iltimos, to'g'ri havoladan foydalaning.</p>
+            </div>
+        `;
+        return;
+    }
+    
+    // localStorage'dan ma'lumotlarni olish
+    const history = localStorage.getItem('stockCheckHistory');
+    if (!history) {
+        document.getElementById('detailsContent').innerHTML = `
+            <div style="text-align: center; padding: 3rem; color: #dc3545;">
+                <i class="fas fa-database" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                <h3>Ma'lumot topilmadi</h3>
+                <p>Tekshiruv tarixi ma'lumotlari topilmadi.</p>
+            </div>
+        `;
+        return;
+    }
+    
+    const historyData = JSON.parse(history);
+    const item = historyData.find(h => h.id == sessionId);
+    
+    if (!item) {
+        document.getElementById('detailsContent').innerHTML = `
+            <div style="text-align: center; padding: 3rem; color: #dc3545;">
+                <i class="fas fa-search" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                <h3>Sessiya topilmadi</h3>
+                <p>Bunday ID bilan sessiya mavjud emas.</p>
+            </div>
+        `;
+        return;
+    }
+    
+    // Header ma'lumotlarini yuklash
+    document.getElementById('headerInfo').innerHTML = `
+        <span><strong>Sana va vaqt:</strong> ${item.date} - ${item.time}</span>
+        <span><strong>Foydalanuvchi:</strong> ${item.user || 'Admin'}</span>
+        <span><strong>Joylashuv:</strong> ${item.location}</span>
+    `;
+    
+    // Ma'lumotlarni hisoblash
+    let totalCount = item.products ? item.products.length : 0;
+    let checkedCount = item.products ? item.products.filter(p => p.isChecked !== false).length : 0;
+    let uncheckedCount = item.products ? item.products.filter(p => p.isChecked === false).length : 0;
+    let errorCount = item.products ? item.products.filter(p => 
+        p.isChecked !== false && p.system_quantity !== p.actual_quantity
+    ).length : 0;
+    
+    let accuracy = checkedCount > 0 ? Math.round(((checkedCount - errorCount) / checkedCount) * 100) : 0;
+    
+    // Statistika kartalarini yaratish
+    const detailsHTML = `
+        <div class="stats-row" style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: nowrap;">
+            <div class="stat-card" style="flex: 1; padding: 6px; border-radius: 4px; text-align: center; color: white; min-width: 0; background: linear-gradient(135deg, #007bff, #0056b3);">
+                <div class="icon" style="font-size: 18px; margin-bottom: 4px;"><i class="fas fa-boxes"></i></div>
+                <h6 style="margin: 0 0 4px 0; font-size: 15px; opacity: 0.9; font-weight: 600;">Jami mahsulotlar</h6>
+                <div class="value" style="font-size: 24px; font-weight: bold; margin-bottom: 2px;">${totalCount}</div>
+                <small>dona</small>
+            </div>
+            
+            <div class="stat-card" style="flex: 1; padding: 6px; border-radius: 4px; text-align: center; color: white; min-width: 0; background: linear-gradient(135deg, #28a745, #218838);">
+                <div class="icon" style="font-size: 18px; margin-bottom: 4px;"><i class="fas fa-check-circle"></i></div>
+                <h6 style="margin: 0 0 4px 0; font-size: 15px; opacity: 0.9; font-weight: 600;">Tekshirildi</h6>
+                <div class="value" style="font-size: 24px; font-weight: bold; margin-bottom: 2px;">${checkedCount}</div>
+                <small>dona</small>
+            </div>
+            
+            <div class="stat-card" style="flex: 1; padding: 6px; border-radius: 4px; text-align: center; color: white; min-width: 0; background: linear-gradient(135deg, #6c757d, #545b62);">
+                <div class="icon" style="font-size: 18px; margin-bottom: 4px;"><i class="fas fa-question-circle"></i></div>
+                <h6 style="margin: 0 0 4px 0; font-size: 15px; opacity: 0.9; font-weight: 600;">Tekshirilmagan</h6>
+                <div class="value" style="font-size: 24px; font-weight: bold; margin-bottom: 2px;">${uncheckedCount}</div>
+                <small>dona</small>
+            </div>
+            
+            <div class="stat-card" style="flex: 1; padding: 6px; border-radius: 4px; text-align: center; color: white; min-width: 0; background: linear-gradient(135deg, ${errorCount > 0 ? '#dc3545, #c82333' : '#28a745, #218838'});">
+                <div class="icon" style="font-size: 18px; margin-bottom: 4px;"><i class="fas fa-${errorCount > 0 ? 'exclamation-triangle' : 'check'}"></i></div>
+                <h6 style="margin: 0 0 4px 0; font-size: 15px; opacity: 0.9; font-weight: 600;">Xatoliklar</h6>
+                <div class="value" style="font-size: 24px; font-weight: bold; margin-bottom: 2px;">${errorCount}</div>
+                <small>ta xatolik</small>
+            </div>
+            
+            <div class="stat-card" style="flex: 1; padding: 6px; border-radius: 4px; text-align: center; color: white; min-width: 0; background: linear-gradient(135deg, #ffc107, #e0a800);">
+                <div class="icon" style="font-size: 18px; margin-bottom: 4px;"><i class="fas fa-percentage"></i></div>
+                <h6 style="margin: 0 0 4px 0; font-size: 15px; opacity: 0.9; font-weight: 600;">Aniqlik</h6>
+                <div class="value" style="font-size: 24px; font-weight: bold; margin-bottom: 2px;">${accuracy}%</div>
+                <small>foiz</small>
+            </div>
+        </div>
+        
+        <!-- Jadval -->
+        <div style="background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-top: 2rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h3 style="margin: 0; color: #333;"><span id="tableTitle">Barcha mahsulotlar</span></h3>
+                
+                <div style="display: flex; gap: 0.5rem;">
+                    <button id="filterAll" onclick="filterProducts('all')" 
+                            style="padding: 0.5rem 1rem; border: 2px solid #007bff; background: #007bff; color: white; border-radius: 6px; cursor: pointer;">
+                        Barchasi
+                    </button>
+                    <button id="filterChecked" onclick="filterProducts('checked')" 
+                            style="padding: 0.5rem 1rem; border: 2px solid #28a745; background: white; color: #28a745; border-radius: 6px; cursor: pointer;">
+                        Tekshirilgan
+                    </button>
+                    <button id="filterUnchecked" onclick="filterProducts('unchecked')" 
+                            style="padding: 0.5rem 1rem; border: 2px solid #dc3545; background: white; color: #dc3545; border-radius: 6px; cursor: pointer;">
+                        Xatoliklar
+                    </button>
+                    <button id="filterNotChecked" onclick="filterProducts('not_checked')" 
+                            style="padding: 0.5rem 1rem; border: 2px solid #6c757d; background: white; color: #6c757d; border-radius: 6px; cursor: pointer;">
+                        Tekshirilmagan
+                    </button>
+                </div>
+            </div>
+            
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background: #f8f9fa;">
+                            <th style="padding: 1rem; text-align: left;">№</th>
+                            <th style="padding: 1rem; text-align: left;">Mahsulot nomi</th>
+                            <th style="padding: 1rem; text-align: center;">Tizimda</th>
+                            <th style="padding: 1rem; text-align: center;">Haqiqiy</th>
+                            <th style="padding: 1rem; text-align: center;">Farq</th>
+                            <th style="padding: 1rem; text-align: center;">Holat</th>
+                        </tr>
+                    </thead>
+                    <tbody id="detailsTable">
+                        <!-- JavaScript orqali yuklanadi -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('detailsContent').innerHTML = detailsHTML;
+    loadTableData(item);
+}
+
+// Jadval ma'lumotlarini yuklash
+function loadTableData(item) {
+    if (!item.products || item.products.length === 0) {
+        document.getElementById('detailsTable').innerHTML = `
+            <tr>
+                <td colspan="6" style="text-align: center; padding: 2rem; color: #6c757d;">
+                    Ma'lumot topilmadi
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    allProducts = item.products;
+    filterProducts('all');
+}
+
+// Mahsulotlarni filtr qilish
+function filterProducts(filterType) {
+    currentFilter = filterType;
+    
+    // Tugma stilini yangilash
+    const buttons = ['filterAll', 'filterChecked', 'filterUnchecked', 'filterNotChecked'];
+    buttons.forEach(buttonId => {
+        const button = document.getElementById(buttonId);
+        if (button) {
+            if ((filterType === 'all' && buttonId === 'filterAll') ||
+                (filterType === 'checked' && buttonId === 'filterChecked') ||
+                (filterType === 'unchecked' && buttonId === 'filterUnchecked') ||
+                (filterType === 'not_checked' && buttonId === 'filterNotChecked')) {
+                // Aktiv tugma
+                if (filterType === 'all') {
+                    button.style.background = '#007bff';
+                    button.style.color = 'white';
+                } else if (filterType === 'checked') {
+                    button.style.background = '#28a745';
+                    button.style.color = 'white';
+                } else if (filterType === 'unchecked') {
+                    button.style.background = '#dc3545';
+                    button.style.color = 'white';
+                } else if (filterType === 'not_checked') {
+                    button.style.background = '#6c757d';
+                    button.style.color = 'white';
+                }
+            } else {
+                // Noaktiv tugma
+                button.style.background = 'white';
+                if (buttonId === 'filterAll') {
+                    button.style.color = '#007bff';
+                } else if (buttonId === 'filterChecked') {
+                    button.style.color = '#28a745';
+                } else if (buttonId === 'filterUnchecked') {
+                    button.style.color = '#dc3545';
+                } else if (buttonId === 'filterNotChecked') {
+                    button.style.color = '#6c757d';
+                }
+            }
+        }
+    });
+    
+    // Filtr qilish
+    let filteredProducts = allProducts;
+    let titleText = 'Barcha mahsulotlar';
+    
+    if (filterType === 'checked') {
+        filteredProducts = allProducts.filter(p => 
+            p.isChecked !== false && p.system_quantity === p.actual_quantity
+        );
+        titleText = 'Tekshirilgan mahsulotlar';
+    } else if (filterType === 'unchecked') {
+        filteredProducts = allProducts.filter(p => 
+            p.isChecked !== false && p.system_quantity !== p.actual_quantity
+        );
+        titleText = 'Xatoliklar';
+    } else if (filterType === 'not_checked') {
+        filteredProducts = allProducts.filter(p => p.isChecked === false);
+        titleText = 'Tekshirilmagan mahsulotlar';
+    }
+    
+    document.getElementById('tableTitle').textContent = `${titleText} (${filteredProducts.length})`;
+    
+    // Jadvalni yaratish
+    let tableHTML = '';
+    filteredProducts.forEach((product, index) => {
+        const isChecked = product.isChecked !== false;
+        const hasError = isChecked && (product.system_quantity !== product.actual_quantity);
+        const difference = product.actual_quantity - product.system_quantity;
+        
+        let statusHTML = '';
+        let differenceHTML = '';
+        
+        if (!isChecked) {
+            statusHTML = `<span style="background: #6c757d; color: white; padding: 0.25rem 0.5rem; border-radius: 12px; font-size: 0.8rem;">Tekshirilmagan</span>`;
+            differenceHTML = '-';
+        } else if (hasError) {
+            statusHTML = `<span style="background: #dc3545; color: white; padding: 0.25rem 0.5rem; border-radius: 12px; font-size: 0.8rem;">Xatolik</span>`;
+            differenceHTML = difference > 0 ? `+${difference}` : `${difference}`;
+        } else {
+            statusHTML = `<span style="background: #28a745; color: white; padding: 0.25rem 0.5rem; border-radius: 12px; font-size: 0.8rem;">To'g'ri</span>`;
+            differenceHTML = '0';
+        }
+        
+        tableHTML += `
+            <tr>
+                <td style="padding: 0.75rem;">${index + 1}</td>
+                <td style="padding: 0.75rem;">${product.name}</td>
+                <td style="padding: 0.75rem; text-align: center;">${product.system_quantity}</td>
+                <td style="padding: 0.75rem; text-align: center;">${isChecked ? product.actual_quantity : '-'}</td>
+                <td style="padding: 0.75rem; text-align: center;">${differenceHTML}</td>
+                <td style="padding: 0.75rem; text-align: center;">${statusHTML}</td>
+            </tr>
+        `;
+    });
+    
+    document.getElementById('detailsTable').innerHTML = tableHTML;
+}
+</script>
+{% endblock %}

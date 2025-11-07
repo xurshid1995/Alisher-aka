@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width                </div>
+
+                <div style="text-align: center; margin-top: 2rem;"">ale=1.0">
+    <title>Omborni tahrirlash - DOKON</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <!-- Sidebar Navigation -->
+    <div class="sidebar">
+        <div class="sidebar-logo">
+            <h2>🏪 DOKON</h2>
+        </div>
+        <ul class="sidebar-menu">
+            <li>
+                <a href="/">
+                    <span class="icon">🏠</span>
+                    Bosh sahifa
+                </a>
+            </li>
+            <li>
+                <a href="/sales">
+                    <span class="icon">💰</span>
+                    Savdo
+                </a>
+            </li>
+            <li>
+                <a href="/sales-history">
+                    <span class="icon">📊</span>
+                    Savdo tarixi
+                </a>
+            </li>
+            <li>
+                <a href="/customers">
+                    <span class="icon">👥</span>
+                    Mijozlar
+                </a>
+            </li>
+            <li>
+                <a href="/products">
+                    <span class="icon">📦</span>
+                    Mahsulotlar
+                </a>
+            </li>
+            <li>
+                <a href="/transfer">
+                    <span class="icon">🔄</span>
+                    Transfer
+                </a>
+            </li>
+            <li>
+                <a href="/add_product">
+                    <span class="icon">➕</span>
+                    Mahsulot qo'shish
+                </a>
+            </li>
+            <li>
+                <a href="/stores">
+                    <span class="icon">🏬</span>
+                    Do'konlar
+                </a>
+            </li>
+            <li>
+                <a href="/warehouses" class="active">
+                    <span class="icon">🏭</span>
+                    Omborlar
+                </a>
+            </li>
+            <li>
+                <a href="/users">
+                    <span class="icon">👤</span>
+                    Foydalanuvchilar
+                </a>
+            </li>
+            <li>
+                <a href="/settings">
+                    <span class="icon">⚙️</span>
+                    Sozlanmalar
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Content Header -->
+        <div class="content-header">
+            <h1>🏭 Omborni tahrirlash</h1>
+            <div class="breadcrumb">Dokon boshqaruvi / Omborlar / "{{ warehouse.name }}" ni tahrirlash</div>
+        </div>
+
+        <!-- Form Container -->
+        <div class="form-container">
+            <h2 style="text-align: center; margin-bottom: 2rem; color: #2c3e50;">
+                ✏️ "{{ warehouse.name }}" ma'lumotlarini yangilash
+            </h2>
+
+            <form method="POST" action="/edit_warehouse/{{ warehouse.id }}">
+                <div class="form-group">
+                    <label for="name">🏷️ Ombor nomi:</label>
+                    <input type="text" id="name" name="name" required 
+                           value="{{ warehouse.name }}"
+                           placeholder="Masalan: Markaziy ombor #1">
+                </div>
+
+                <div class="form-group">
+                    <label for="address">📍 Manzil:</label>
+                    <textarea id="address" name="address" rows="3" required 
+                              placeholder="To'liq manzilni kiriting...">{{ warehouse.address }}</textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="manager_name">👤 Menejer:</label>
+                    <input type="text" id="manager_name" name="manager_name" required 
+                           value="{{ warehouse.manager_name }}"
+                           placeholder="Menejer ism-familiyasi">
+                </div>
+
+                <div class="form-group">
+                    <label for="phone">📞 Telefon raqami:</label>
+                    <input type="tel" id="phone" name="phone" 
+                           value="{{ warehouse.phone or '' }}"
+                           placeholder="+998 XX XXX XX XX">
+                </div>
+
+                <div class="form-group">
+                    <label for="capacity">📦 Sig'im (maksimal mahsulot soni):</label>
+                    <input type="number" id="capacity" name="capacity" 
+                           min="1" max="100000" value="{{ warehouse.capacity }}" required>
+                    <small style="color: #7f8c8d; margin-top: 0.5rem; display: block;">
+                        Joriy zaxira: {{ warehouse.current_stock }} ta
+                    </small>
+                </div>
+
+                <div class="form-actions">
+                    <a href="/warehouses" class="btn-cancel">
+                        Bekor qilish
+                    </a>
+                    <button type="submit" class="submit-btn">
+                        O'zgarishlarni saqlash
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Ma'lumot card -->
+        <div class="card" style="margin-top: 2rem;">
+            <h3 style="color: #2c3e50;">📊 Ombor statistikasi</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem;">
+                <div style="background: #ecf0f1; padding: 1rem; border-radius: 6px; text-align: center;">
+                    <h4 style="color: #27ae60; font-size: 2rem; margin-bottom: 0.5rem;">{{ warehouse.current_stock }}</h4>
+                    <p style="color: #7f8c8d;">Joriy zaxira</p>
+                </div>
+                <div style="background: #ecf0f1; padding: 1rem; border-radius: 6px; text-align: center;">
+                    <h4 style="color: #9b59b6; font-size: 2rem; margin-bottom: 0.5rem;">{{ warehouse.created_date.strftime('%Y') }}</h4>
+                    <p style="color: #7f8c8d;">Yaratilgan yil</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ogohlantirish -->
+        <div class="card" style="background: #fff3cd; border-left: 4px solid #ffc107;">
+            <h3 style="color: #856404;">⚠️ Muhim eslatma</h3>
+            <ul style="color: #856404; margin-top: 1rem;">
+                <li>Sig'imni kamaytirganingizda, joriy zaxiradan ko'p bo'lmasligi kerak</li>
+                <li>Ombor nomini o'zgartirganda, barcha hisobotlarda yangi nom ko'rsatiladi</li>
+                <li>Menejer ma'lumotlari barcha tizimda yangilanadi</li>
+                <li>O'zgarishlar darhol kuchga kiradi</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Form validation
+        document.querySelector('form').addEventListener('submit', function(e) {
+            // Success message
+            const btn = document.querySelector('button[type="submit"]');
+            btn.innerHTML = '⏳ Saqlanmoqda...';
+            btn.disabled = true;
+        });
+
+        // Auto format phone number
+        document.getElementById('phone').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.startsWith('998')) {
+                value = '+' + value;
+            }
+            e.target.value = value;
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, maximum-scale=5.0">
+    <meta name="description" content="DOKON - Professional Omborxona va Savdo Boshqaruv Tizimi">
+    <meta name="keywords" content="omborxona, savdo, boshqaruv, inventory, warehouse, management">
+    <meta name="author" content="DOKON Team">
+    <meta name="robots" content="noindex, nofollow">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="theme-color" content="#667eea">
+    <title>{% block title %}DOKON - Boshqaruv Tizimi{% endblock %}</title>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Mobile Navigation Toggle -->
+    <button class="mobile-nav-toggle" onclick="toggleMobileNav()">
+        <i class="fas fa-bars"></i>
+    </button>
+    
+    <!-- Mobile Header -->
+    <div class="mobile-header">
+        <h1>DOKON</h1>
+    </div>
+    
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" onclick="closeMobileNav()"></div>
+    
+    <!-- Sidebar Navigation -->
+    <div class="sidebar" id="sidebar">
+        <ul class="sidebar-menu">
+            <li>
+                <a href="/" {% if request.endpoint == 'index' %}class="active"{% endif %}>
+                    <span class="icon">🏠</span>
+                    Bosh sahifa
+                </a>
+            </li>
+            <li>
+                <a href="/sales" {% if request.endpoint == 'sales' %}class="active"{% endif %}>
+                    <span class="icon">🛒</span>
+                    Savdo
+                </a>
+            </li>
+            <li>
+                <a href="/sales-history" {% if request.endpoint == 'sales_history' %}class="active"{% endif %}>
+                    <span class="icon">📊</span>
+                    Savdo tarixi
+                </a>
+            </li>
+            <li>
+                <a href="/pending-sales" {% if request.endpoint == 'pending_sales' %}class="active"{% endif %}>
+                    <span class="icon">⏳</span>
+                    Tasdiqlanmagan savdolar
+                </a>
+            </li>
+            <li>
+                <a href="/products" {% if request.endpoint == 'products_list' %}class="active"{% endif %}>
+                    <span class="icon">📦</span>
+                    Mahsulotlar
+                </a>
+            </li>
+            <li>
+                <a href="/transfer" {% if request.endpoint == 'transfer' %}class="active"{% endif %}>
+                    <span class="icon">🔄</span>
+                    Transfer
+                </a>
+            </li>
+            {% if session.role != 'sotuvchi' or (session.role == 'sotuvchi' and stock_check_visible) %}
+            <li>
+                <a href="/check_stock" {% if request.endpoint == 'check_stock' %}class="active"{% endif %}>
+                    <span class="icon">📋</span>
+                    Qoldiqni tekshirish
+                </a>
+            </li>
+            {% endif %}
+            {% if session.role != 'sotuvchi' %}
+            <li>
+                <a href="/add_product" {% if request.endpoint == 'add_product' %}class="active"{% endif %}>
+                    <span class="icon">➕</span>
+                    Mahsulot qo'shish
+                </a>
+            </li>
+            <li>
+                <a href="/stores" {% if request.endpoint == 'stores' %}class="active"{% endif %}>
+                    <span class="icon">🏬</span>
+                    Do'konlar
+                </a>
+            </li>
+            <li>
+                <a href="/warehouses" {% if request.endpoint == 'warehouses' %}class="active"{% endif %}>
+                    <span class="icon">🏭</span>
+                    Omborlar
+                </a>
+            </li>
+            {% endif %}
+            <li>
+                <a href="/customers" {% if request.endpoint == 'customers' %}class="active"{% endif %}>
+                    <span class="icon">👥</span>
+                    Mijozlar
+                </a>
+            </li>
+            {% if session.role != 'sotuvchi' %}
+            <li>
+                <a href="/users" {% if request.endpoint == 'users' %}class="active"{% endif %}>
+                    <span class="icon">👤</span>
+                    Foydalanuvchilar
+                </a>
+            </li>
+            <li>
+                <a href="/currency-rate" {% if request.endpoint == 'currency_rate' %}class="active"{% endif %}>
+                    <span class="icon">💱</span>
+                    Valyuta Kursi
+                </a>
+            </li>
+            {% endif %}
+            {% if session.role in ['admin', 'manager'] %}
+            <li>
+                <a href="/settings" {% if request.endpoint == 'settings_page' %}class="active"{% endif %}>
+                    <span class="icon">⚙️</span>
+                    Sozlamalar
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </div>
+
+    <!-- Top Header Bar -->
+    <div class="top-header">
+        <div class="header-left">
+            <h1>🏪 Dokon Tizimi</h1>
+        </div>
+        <div class="header-right">
+            <div class="currency-display" title="Valyuta kursi - yangilash uchun bosing">
+                <span class="currency-rate">💵 1 USD = ... UZS</span>
+                <button class="edit-rate-btn" onclick="editCurrency()" title="Kursni o'zgartirish">
+                    <span>📝</span>
+                </button>
+            </div>
+            <div class="user-info">
+                <span class="user-icon">👤</span>
+                <span class="user-name">{{ session.user_name or 'Foydalanuvchi' }}</span>
+                <span class="user-role">({{ session.role or 'rol' }})</span>
+            </div>
+            <button class="logout-btn" onclick="logout()" title="Tizimdan chiqish">
+                <span class="logout-icon">➡️</span>
+                <span class="logout-text">Chiqish</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        {% block content %}
+        {% endblock %}
+    </div>
+
+    <script>
+        let currentCurrencyRate = null; // Null boshlanadi, API dan olinadi
+        
+        // Sahifa yuklanganda valyuta kursini olish
+        document.addEventListener('DOMContentLoaded', function() {
+            // Darhol kursni yuklash
+            loadCurrencyRate();
+            
+            // Har 30 soniyada kursni yangilash
+            setInterval(loadCurrencyRate, 30000);
+        });
+
+        // Sahifa yuklanganda ham darhol ishga tushirish
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', loadCurrencyRate);
+        } else {
+            loadCurrencyRate();
+        }
+        
+        // Valyuta kursini API dan olish
+        async function loadCurrencyRate() {
+            try {
+                console.log('🔄 Valyuta kursini yuklayapman...');
+                const response = await fetch('/api/currency-rate');
+                const data = await response.json();
+                
+                if (data.success && data.rate) {
+                    currentCurrencyRate = data.rate.rate;
+                    updateCurrencyDisplay(data.rate.rate);
+                    console.log('✅ Valyuta kursi yuklandi:', currentCurrencyRate);
+                } else {
+                    console.log('❌ API dan ma\'lumot olishda xatolik:', data);
+                    updateCurrencyDisplay(12500); // Fallback
+                }
+            } catch (error) {
+                console.error('❌ Valyuta kursini yuklashda xatolik:', error);
+                // Xatolik bo'lsa, default qiymatdan foydalanish
+                updateCurrencyDisplay(12500);
+            }
+        }
+        
+        // Valyuta ko'rinishini yangilash
+        function updateCurrencyDisplay(rate) {
+            const currencyElement = document.querySelector('.currency-rate');
+            if (currencyElement && rate != null) {
+                const formattedRate = parseFloat(rate).toLocaleString('uz-UZ');
+                currencyElement.textContent = `💵 1 USD = ${formattedRate} UZS`;
+                currencyElement.title = `Oxirgi yangilanish: ${new Date().toLocaleString('uz-UZ')}`;
+                console.log('🔄 Header valyuta kursi yangilandi:', formattedRate);
+            } else {
+                console.log('❌ Currency element topilmadi yoki rate null');
+            }
+        }
+        
+        // Valyuta kursini o'zgartirish
+        async function editCurrency() {
+            if (currentCurrencyRate === null) {
+                alert('⏳ Valyuta kursi hali yuklanmagan. Iltimos kuting...');
+                return;
+            }
+            
+            const currentRateFormatted = parseFloat(currentCurrencyRate).toLocaleString('uz-UZ');
+            const newRate = prompt(
+                `💱 Valyuta kursini o'zgartirish:\n\n` +
+                `Joriy kurs: 1 USD = ${currentRateFormatted} UZS\n\n` +
+                `Yangi kursni kiriting:`, 
+                currentCurrencyRate.toString()
+            );
+            
+            if (newRate === null) return; // Cancel bosildi
+            
+            const numericRate = parseFloat(newRate);
+            if (isNaN(numericRate) || numericRate <= 0) {
+                alert('❌ Noto\'g\'ri qiymat kiritildi!\nIltimos, musbat son kiriting.');
+                return;
+            }
+            
+            try {
+                // API orqali kursni yangilash
+                const response = await fetch('/api/currency-rate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        rate: numericRate,
+                        updated_by: 'header_admin'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    currentCurrencyRate = numericRate;
+                    updateCurrencyDisplay(numericRate);
+                    alert('✅ Valyuta kursi muvaffaqiyatli yangilandi!');
+                    
+                    // Boshqa sahifalardagi valyuta kurslarini yangilash uchun event yuborish
+                    window.dispatchEvent(new CustomEvent('currencyRateUpdated', {
+                        detail: { newRate: numericRate }
+                    }));
+                } else {
+                    alert('❌ Kursni yangilashda xatolik: ' + (data.error || 'Noma\'lum xatolik'));
+                }
+            } catch (error) {
+                console.error('Error updating currency rate:', error);
+                alert('❌ Server bilan aloqa qilishda xatolik yuz berdi');
+            }
+        }
+        
+        // Chiqish funksiyasi
+        function logout() {
+            if (confirm('🚪 Tizimdan chiqishni xohlaysizmi?')) {
+                window.location.href = '/logout';
+            }
+        }
+        
+        // Mobile Navigation Functions
+        function toggleMobileNav() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.querySelector('.sidebar-overlay');
+            
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
+        }
+        
+        function closeMobileNav() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.querySelector('.sidebar-overlay');
+            
+            sidebar.classList.remove('active');
+            overlay.classList.remove('active');
+        }
+        
+        // Close mobile nav when clicking on menu items
+        document.addEventListener('DOMContentLoaded', function() {
+            const menuLinks = document.querySelectorAll('.sidebar-menu a');
+            menuLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    if (window.innerWidth <= 768) {
+                        closeMobileNav();
+                    }
+                });
+            });
+            
+            // Close mobile nav on window resize if screen becomes larger
+            window.addEventListener('resize', function() {
+                if (window.innerWidth > 768) {
+                    closeMobileNav();
+                }
+            });
+        });
+    </script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

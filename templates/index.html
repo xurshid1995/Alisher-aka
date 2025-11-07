@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block extra_css %}
+<!-- Font Awesome for icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+{% endblock %}
+
+{% block content %}
+<!-- Content Header -->
+<div class="content-header">
+    <h1>Bosh sahifa</h1>
+    <div class="breadcrumb">Dokon boshqaruvi / Asosiy panel</div>
+</div>
+
+<!-- Decimal ma'lumotlari -->
+<div class="decimal-info">
+    <h2>💰 PostgreSQL DECIMAL - Moliyaviy hisoblash</h2>
+    <p>Decimal turi pul va aniq matematik hisoblashlar uchun eng yaxshi tanlov!</p>
+    
+    <div class="decimal-pros-cons">
+        <div class="pros">
+            <h4>✅ Afzalliklari</h4>
+            <ul>
+                <li>Aniq matematik hisoblash</li>
+                <li>Moliyaviy operatsiyalar uchun ideal</li>
+                <li>Yaxlitlash xatolari yo'q</li>
+                <li>Banklarning standart turi</li>
+                <li>0.1 + 0.2 = 0.3 (aniq natija)</li>
+            </ul>
+        </div>
+        <div class="cons">
+            <h4>⚠️ Kamchiliklari</h4>
+            <ul>
+                <li>Float ga nisbatan sekinroq</li>
+                <li>Ko'proq xotira egallaydi</li>
+                <li>Oddiy matematik amallar uchun ortiqcha</li>
+                <li>Katta hajmdagi hisoblashlarda sekin</li>
+                <li>Murakkab matematik funktsiyalar cheklangan</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- Mahsulotlar Grid -->
+<div class="card">
+    <h2>📦 Mahsulotlar ro'yxati</h2>
+    <p>Barcha mahsulotlar DECIMAL turi bilan aniq hisoblashlar</p>
+    
+    <div class="product-grid">
+        {% for product in products %}
+        <div class="product-card">
+            <h3>{{ product.name }}</h3>
+            <div class="product-price">${{ "%.2f"|format(product.price) }}</div>
+            <p class="product-description">{{ product.description or 'Tavsif mavjud emas' }}</p>
+            <span class="product-stock">📦 {{ product.stock_quantity }} ta</span>
+        </div>
+        {% else %}
+        <div class="product-card">
+            <h3>Mahsulotlar topilmadi</h3>
+            <p>Hali mahsulotlar qo'shilmagan. <a href="/add_product">Birinchi mahsulotni qo'shing</a></p>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Jami qiymat hisoblash -->
+    <div style="text-align: center; margin-top: 2rem;">
+        <button class="btn" onclick="calculateTotal()">
+            💰 Jami qiymatni hisoblash
+        </button>
+        <div id="total-result" style="margin-top: 1rem; font-size: 1.2rem; font-weight: bold;"></div>
+    </div>
+</div>
+
+<!-- API ma'lumotlari -->
+<div class="card">
+    <h2>🔗 API Endpoints</h2>
+    <p>Quyidagi API endpointlar mavjud:</p>
+    <ul style="margin-top: 1rem;">
+        <li><strong>GET /api/products</strong> - Barcha mahsulotlar ro'yxati</li>
+        <li><strong>POST /api/products</strong> - Yangi mahsulot qo'shish</li>
+        <li><strong>GET /api/calculate</strong> - Jami qiymatni hisoblash</li>
+    </ul>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Jami qiymat hisoblash
+    function calculateTotal() {
+        fetch('/api/calculate')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('total-result').innerHTML = `
+                    <div style="background: #27ae60; color: white; padding: 1rem; border-radius: 6px;">
+                        💰 Jami qiymat: <strong>${data.total_value} ${data.currency}</strong><br>
+                        🎯 Aniq qiymat: <strong>${data.precision}</strong>
+                    </div>
+                `;
+            })
+            .catch(error => {
+                console.error('Xatolik:', error);
+                document.getElementById('total-result').innerHTML = `
+                    <div style="background: #e74c3c; color: white; padding: 1rem; border-radius: 6px;">
+                        ❌ Xatolik yuz berdi: ${error.message}
+                    </div>
+                `;
+            });
+    }
+</script>
+{% endblock %}

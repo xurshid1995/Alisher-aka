@@ -1,0 +1,272 @@
+{% extends "base_with_sidebar.html" %}
+
+{% block title %}{{ stock.product.name }} - Mahsulotni tahrirlash{% endblock %}
+
+{% block extra_css %}
+<style>
+.edit-container {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+.edit-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.info-card {
+    background: #e7f3ff;
+    border: 1px solid #b3d4fc;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 0.8rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+.submit-btn {
+    background: #27ae60;
+    color: white;
+    padding: 1rem 2rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+.error-message {
+    background: #f8d7da;
+    color: #721c24;
+    padding: 1rem;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="edit-container">
+    <h1>Mahsulotni tahrirlash</h1>
+    
+    <div class="info-text" style="background: #e7f3ff; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; border-left: 4px solid #3498db;">
+        <div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: center;">
+            <span><strong>Mahsulot:</strong> {{ stock.product.name }}</span>
+            <span><strong>Miqdor:</strong> {{ stock.quantity }} dona</span>
+            <span><strong>Tan narxi:</strong> ${{ "%.2f"|format(stock.purchase_price) }}</span>
+            <span><strong>Savdo narxi:</strong> ${{ "%.2f"|format(stock.product.sell_price) }}</span>
+            <span><strong>Min zaxira:</strong> {{ stock.product.min_stock }} dona</span>
+        </div>
+    </div>
+    
+    <div class="edit-card">
+        {% if error %}
+        <div class="error-message">
+            ⚠️ {{ error }}
+        </div>
+        {% endif %}
+
+        <form method="POST">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="productName">Mahsulot nomi:</label>
+                    <input type="text" id="productName" name="productName" value="{{ stock.product.name }}" required>
+                </div>
+                <div class="form-group">
+                    <label for="quantity">Miqdor:</label>
+                    <input type="number" id="quantity" name="quantity" value="{{ stock.quantity }}" min="0" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="costPrice">Tan narxi (USD):</label>
+                    <input type="number" id="costPrice" name="costPrice" value="{{ "%.2f"|format(calculations.cost_price) }}" step="0.01" min="0" required>
+                </div>
+                <div class="form-group">
+                    <label for="sellPrice">Savdo narxi (USD):</label>
+                    <input type="number" id="sellPrice" name="sellPrice" value="{{ "%.2f"|format(calculations.sell_price) }}" step="0.01" min="0" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="minStock">Minimal zaxira:</label>
+                    <input type="number" id="minStock" name="minStock" value="{{ stock.product.min_stock }}" min="0">
+                </div>
+                <div class="form-group">
+                    <label for="profitInfo">Foyda ma'lumotlari:</label>
+                    <input type="text" id="profitInfo" readonly style="background-color: #f8f9fa;" placeholder="$0.00 (0.0%)">
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <a href="javascript:history.back()" class="btn-cancel">
+                    Bekor qilish
+                </a>
+                <button type="submit" class="submit-btn">
+                    Saqlash
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+// Foyda hisobi
+function calculateProfit() {
+    const costPrice = parseFloat(document.getElementById('costPrice').value) || 0;
+    const sellPrice = parseFloat(document.getElementById('sellPrice').value) || 0;
+    
+    const profit = sellPrice - costPrice;
+    const profitPercent = costPrice > 0 ? (profit / costPrice) * 100 : 0;
+    
+    // Sotish narxi tekshiruvi
+    const sellPriceInput = document.getElementById('sellPrice');
+    const profitInfoInput = document.getElementById('profitInfo');
+    
+    if (sellPrice < costPrice && sellPrice > 0 && costPrice > 0) {
+        // Qizil rang - xato
+        sellPriceInput.style.borderColor = '#e74c3c';
+        sellPriceInput.style.backgroundColor = '#fdf2f2';
+        profitInfoInput.style.color = '#e74c3c';
+        profitInfoInput.value = '⚠️ Sotish narxi tan narxidan past!';
+    } else {
+        // Normal rang
+        sellPriceInput.style.borderColor = '#ddd';
+        sellPriceInput.style.backgroundColor = 'white';
+        profitInfoInput.style.color = '#333';
+        
+        // Bitta maydonda ko'rsatish: $2.50    (25.0%)
+        const profitText = `$${profit.toFixed(2)}    (${profitPercent.toFixed(1)}%)`;
+        profitInfoInput.value = profitText;
+    }
+}
+
+// Mahsulot nomini tekshirish
+let originalProductName = "{{ stock.product.name }}";
+let isCheckingName = false;
+
+function checkProductName() {
+    const productName = document.getElementById('productName').value.trim();
+    
+    // Agar nom o'zgartirilmagan bo'lsa, tekshirish shart emas
+    if (productName === originalProductName) {
+        return;
+    }
+    
+    if (productName.length < 2) {
+        return;
+    }
+    
+    if (isCheckingName) return;
+    isCheckingName = true;
+    
+    fetch('/api/check-product-name', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            name: productName,
+            exclude_id: {{ stock.product.id }}
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        const nameInput = document.getElementById('productName');
+        if (data.exists) {
+            nameInput.style.borderColor = '#e74c3c';
+            nameInput.style.backgroundColor = '#fdf2f2';
+            nameInput.title = 'Bu nom allaqachon mavjud!';
+        } else {
+            nameInput.style.borderColor = '#27ae60';
+            nameInput.style.backgroundColor = '#f2fdf2';
+            nameInput.title = 'Nom mavjud!';
+        }
+        isCheckingName = false;
+    })
+    .catch(error => {
+        console.error('Xato:', error);
+        isCheckingName = false;
+    });
+}
+
+// Formni submit qilishda oddiy validatsiya
+document.querySelector('form').addEventListener('submit', function(e) {
+    const productName = document.getElementById('productName').value.trim();
+    const quantity = parseInt(document.getElementById('quantity').value) || 0;
+    const costPrice = parseFloat(document.getElementById('costPrice').value) || 0;
+    const sellPrice = parseFloat(document.getElementById('sellPrice').value) || 0;
+    
+    // Mahsulot nomi tekshiruvi
+    if (productName !== originalProductName) {
+        const nameInput = document.getElementById('productName');
+        if (nameInput.style.borderColor === 'rgb(231, 76, 60)') {
+            e.preventDefault();
+            alert('⚠️ Bu mahsulot nomi allaqachon mavjud!');
+            return false;
+        }
+    }
+    
+    // Sotish narxi tekshiruvi
+    if (sellPrice < costPrice && sellPrice > 0 && costPrice > 0) {
+        e.preventDefault();
+        alert('⚠️ Sotish narxi tan narxidan past bo\'lishi mumkin emas!');
+        return false;
+    }
+    
+    if (quantity < 0) {
+        e.preventDefault();
+        alert('⚠️ Miqdor manfiy bo\'lishi mumkin emas!');
+        return false;
+    }
+    
+    if (costPrice < 0 || sellPrice < 0) {
+        e.preventDefault();
+        alert('⚠️ Narxlar manfiy bo\'lishi mumkin emas!');
+        return false;
+    }
+});
+
+// Mahsulot nomi o'zgarganda tekshirish
+document.getElementById('productName').addEventListener('input', function() {
+    // 500ms kechikish bilan tekshirish
+    clearTimeout(this.checkTimeout);
+    this.checkTimeout = setTimeout(checkProductName, 500);
+});
+
+// Narx o'zgarganda foydani qayta hisoblash
+document.getElementById('costPrice').addEventListener('input', calculateProfit);
+document.getElementById('sellPrice').addEventListener('input', calculateProfit);
+
+// Sahifa yuklanganda dastlabki hisobni amalga oshirish
+calculateProfit();
+</script>
+{% endblock %}
