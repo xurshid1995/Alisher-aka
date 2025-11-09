@@ -2046,9 +2046,36 @@ def api_delete_store(store_id):
         if sales_count > 0:
             logger.info(f" Bu dokonda {sales_count} ta savdo mavjud, lekin savdolar saqlanadi")
 
-        # Store ga bog'liq stocklarni o'chirish (FAQAT stock ma'lumotlari)
-        deleted_stocks = StoreStock.query.filter_by(store_id=store_id).delete()
-        logger.info(f" O'chirilgan stocklar: {deleted_stocks} ta")
+        # Store ga bog'liq stocklarni olish
+        store_stocks = StoreStock.query.filter_by(store_id=store_id).all()
+        deleted_stocks_count = len(store_stocks)
+        deleted_products_count = 0
+
+        # Har bir stockni tekshirish va agar mahsulot boshqa joyda bo'lmasa o'chirish
+        for stock in store_stocks:
+            product_id = stock.product_id
+            
+            # Bu mahsulot boshqa do'konlarda bormi?
+            other_store_stocks = StoreStock.query.filter(
+                StoreStock.product_id == product_id,
+                StoreStock.store_id != store_id
+            ).count()
+            
+            # Bu mahsulot omborlarda bormi?
+            warehouse_stocks = WarehouseStock.query.filter_by(
+                product_id=product_id
+            ).count()
+            
+            # Stockni o'chirish
+            db.session.delete(stock)
+            
+            # Agar mahsulot boshqa joyda yo'q bo'lsa, productni ham o'chirish
+            if other_store_stocks == 0 and warehouse_stocks == 0:
+                product = Product.query.get(product_id)
+                if product:
+                    db.session.delete(product)
+                    deleted_products_count += 1
+                    logger.info(f" Mahsulot butunlay o'chirildi: {product.name} (faqat shu do'konda edi)")
 
         # Store ni o'chirish (Savdo tarixi saqlanadi, chunki Sale jadvalida store_id saqlanadi)
         store_name = store.name
@@ -2058,9 +2085,17 @@ def api_delete_store(store_id):
         message = f'Do\'kon "{store_name}" muvaffaqiyatli o\'chirildi'
         if sales_count > 0:
             message += f' (Savdo tarixi saqlanadi: {sales_count} ta savdo)'
+        if deleted_products_count > 0:
+            message += f'\n{deleted_products_count} ta mahsulot butunlay o\'chirildi (faqat shu do\'konda edi)'
 
         logger.info(f" Store muvaffaqiyatli o'chirildi: {store_name}")
-        return jsonify({'success': True, 'message': message})
+        logger.info(f" O'chirilgan stocklar: {deleted_stocks_count} ta, mahsulotlar: {deleted_products_count} ta")
+        return jsonify({
+            'success': True, 
+            'message': message,
+            'deleted_stocks': deleted_stocks_count,
+            'deleted_products': deleted_products_count
+        })
 
     except Exception as e:
         db.session.rollback()
@@ -2528,12 +2563,36 @@ def api_delete_warehouse(warehouse_id):
         logger.info(f" Ombor o'chirish so'rovi: Warehouse ID: {warehouse_id}")
         logger.info(f" Warehouse topildi: {warehouse.name}")
 
-        # Transfer tarixini tekshirish (agar kerak bo'lsa)
-        # Hozircha transfer jadvalimiz yo'q, lekin kelajakda qo'shilishi mumkin
+        # Ombor bilan bog'liq barcha stocklarni olish
+        warehouse_stocks = WarehouseStock.query.filter_by(warehouse_id=warehouse_id).all()
+        deleted_stocks_count = len(warehouse_stocks)
+        deleted_products_count = 0
 
-        # Ombor bilan bog'liq barcha stocklarni o'chirish (FAQAT stock ma'lumotlari)
-        deleted_stocks = WarehouseStock.query.filter_by(warehouse_id=warehouse_id).delete()
-        logger.info(f" O'chirilgan warehouse stocklar: {deleted_stocks} ta")
+        # Har bir stockni tekshirish va agar mahsulot boshqa joyda bo'lmasa o'chirish
+        for stock in warehouse_stocks:
+            product_id = stock.product_id
+            
+            # Bu mahsulot boshqa omborlarda bormi?
+            other_warehouse_stocks = WarehouseStock.query.filter(
+                WarehouseStock.product_id == product_id,
+                WarehouseStock.warehouse_id != warehouse_id
+            ).count()
+            
+            # Bu mahsulot do'konlarda bormi?
+            store_stocks = StoreStock.query.filter_by(
+                product_id=product_id
+            ).count()
+            
+            # Stockni o'chirish
+            db.session.delete(stock)
+            
+            # Agar mahsulot boshqa joyda yo'q bo'lsa, productni ham o'chirish
+            if other_warehouse_stocks == 0 and store_stocks == 0:
+                product = Product.query.get(product_id)
+                if product:
+                    db.session.delete(product)
+                    deleted_products_count += 1
+                    logger.info(f" Mahsulot butunlay o'chirildi: {product.name} (faqat shu omborda edi)")
 
         # Ombor nomini saqlash (log uchun)
         warehouse_name = warehouse.name
@@ -2543,13 +2602,18 @@ def api_delete_warehouse(warehouse_id):
         db.session.commit()
 
         message = f'"{warehouse_name}" ombori muvaffaqiyatli o\'chirildi'
-        if deleted_stocks > 0:
-            message += f' ({deleted_stocks} ta stock ma\'lumoti o\'chirildi)'
+        if deleted_stocks_count > 0:
+            message += f' ({deleted_stocks_count} ta stock ma\'lumoti o\'chirildi)'
+        if deleted_products_count > 0:
+            message += f'\n{deleted_products_count} ta mahsulot butunlay o\'chirildi (faqat shu omborda edi)'
 
         logger.info(f" Warehouse muvaffaqiyatli o'chirildi: {warehouse_name}")
+        logger.info(f" O'chirilgan stocklar: {deleted_stocks_count} ta, mahsulotlar: {deleted_products_count} ta")
         return jsonify({
             'success': True,
-            'message': message
+            'message': message,
+            'deleted_stocks': deleted_stocks_count,
+            'deleted_products': deleted_products_count
         }), 200
 
     except Exception as e:
