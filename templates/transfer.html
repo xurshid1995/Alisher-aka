@@ -1111,29 +1111,9 @@
                         const locations = await response.json();
                         let availableQuantity = 0;
                         
-                        // Barcha joylarni birlashtirish
-                        const allLocations = [];
-                        if (locations.stores) {
-                            locations.stores.forEach(store => {
-                                allLocations.push({
-                                    type: 'store',
-                                    id: store.id,
-                                    quantity: store.quantity || 0
-                                });
-                            });
-                        }
-                        if (locations.warehouses) {
-                            locations.warehouses.forEach(warehouse => {
-                                allLocations.push({
-                                    type: 'warehouse',
-                                    id: warehouse.id,
-                                    quantity: warehouse.quantity || 0
-                                });
-                            });
-                        }
-
+                        // Yangi format - locations to'g'ridan array
                         // Tanlangan joydagi miqdorni topish
-                        allLocations.forEach(location => {
+                        locations.forEach(location => {
                             const locationKey = location.type === 'store' ? `store_${location.id}` : `warehouse_${location.id}`;
                             if (locationKey === fromLocation) {
                                 availableQuantity = location.quantity || 0;
@@ -1478,17 +1458,16 @@
                 if (response.ok) {
                     const locations = await response.json();
                     
+                    // Yangi format - locations to'g'ridan array
                     // Tanlangan joyda miqdorni topish
                     let quantity = 0;
-                    const [locationType, locationId] = fromLocation.split('_');
                     
-                    if (locationType === 'store') {
-                        const store = locations.stores?.find(s => s.id == locationId);
-                        quantity = store ? store.quantity : 0;
-                    } else if (locationType === 'warehouse') {
-                        const warehouse = locations.warehouses?.find(w => w.id == locationId);
-                        quantity = warehouse ? warehouse.quantity : 0;
-                    }
+                    locations.forEach(location => {
+                        const locationKey = location.type === 'store' ? `store_${location.id}` : `warehouse_${location.id}`;
+                        if (locationKey === fromLocation) {
+                            quantity = location.quantity || 0;
+                        }
+                    });
                     
                     document.getElementById('available_quantity').value = quantity;
                 } else {
