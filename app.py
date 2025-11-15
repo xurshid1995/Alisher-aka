@@ -5482,7 +5482,7 @@ def create_pending_sale(data):
         if not current_user:
             return jsonify({'error': 'Foydalanuvchi topilmadi'}), 401
             
-        print("📝 Pending savdo yaratilmoqda...")
+        logger.info("📝 Pending savdo yaratilmoqda...")
 
         customer_id = data.get('customer_id')
         items = data.get('items', [])
@@ -5491,7 +5491,7 @@ def create_pending_sale(data):
         pending_sale_id = data.get('pending_sale_id')
         skip_stock_return = data.get('skip_stock_return', False)
         
-        logger.info(f"🔍 PENDING SALE PARAMS:")
+        logger.info("🔍 PENDING SALE PARAMS:")
         logger.info(f"   original_sale_id: {original_sale_id}")
         logger.info(f"   pending_sale_id: {pending_sale_id}")
         logger.info(f"   skip_stock_return: {skip_stock_return} (type: {type(skip_stock_return)})")
@@ -5516,7 +5516,7 @@ def create_pending_sale(data):
             if original_sale:
                 # Stock'ni qaytarish (faqat skip_stock_return False bo'lsa)
                 if not skip_stock_return:
-                    print(
+                    logger.info(
                         f"📦 Stock qaytarilmoqda asl savdo uchun: {original_sale_id}")
                     for item in original_sale.items:
                         if item.source_type == 'store':
@@ -5534,12 +5534,12 @@ def create_pending_sale(data):
                             if stock:
                                 stock.quantity += item.quantity
                 else:
-                    print(
+                    logger.info(
                         "⏭️ Stock qaytarish o'tkazib yuborildi (skip_stock_return=True)")
 
                 # Asl savdoni o'chirish
                 db.session.delete(original_sale)
-                print("✅ Asl savdo o'chirildi va stock qaytarildi")
+                logger.info("✅ Asl savdo o'chirildi")
 
         # Customer ID ni int ga o'girish
         final_customer_id = None
