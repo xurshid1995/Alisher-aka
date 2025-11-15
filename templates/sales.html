@@ -4451,7 +4451,7 @@
     }
 
     // Edit card da tahrirlangan mahsulotni saqlash
-    function saveEditedItem(productId) {
+    async function saveEditedItem(productId) {
         const currentTabId = activeTabId;
         if (!currentTabId) return;
         
@@ -4497,9 +4497,19 @@
         
         // Miqdorni yangilash (agar o'zgardi bo'lsa)
         if (item.quantity !== newQuantity) {
-            console.log(`Miqdorni yangilash: ${item.quantity} → ${newQuantity}`);
+            const oldQuantity = item.quantity;
+            console.log(`📝 Edit card: Miqdorni yangilash ${oldQuantity} → ${newQuantity}`);
+            
             // setQuantityAsync orqali yangilash - bu avtomatik stock boshqaruvini amalga oshiradi
-            setQuantityAsync(productId, newQuantity, currentTabId);
+            await setQuantityAsync(productId, newQuantity, currentTabId);
+            
+            // ✅ MUHIM: originalQuantities ni yangilash
+            // Edit orqali o'zgartirilgandan keyin, bu yangi miqdor "asl" miqdor bo'ladi
+            if (tabData.isEditMode && tabData.originalQuantities) {
+                const oldOriginal = tabData.originalQuantities[productId];
+                tabData.originalQuantities[productId] = newQuantity;
+                console.log(`✅ originalQuantities yangilandi: ${oldOriginal} → ${newQuantity}`);
+            }
         } else {
             // Faqat narx o'zgardi, korzinani yangilash
             updateCart(currentTabId);
