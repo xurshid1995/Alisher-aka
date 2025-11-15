@@ -2597,6 +2597,7 @@
     let autoSaveTimeout = null;
     let isAutoSaving = false;
     let isLoadingEditData = false; // Tahrirlash ma'lumotlari yuklanayotganini belgilash
+    let quantityUpdateLocks = {}; // Miqdor yangilanishi uchun lock'lar
 
     // Debug mode configuration - Production da false qiling
     const DEBUG_MODE = true; // Development uchun
@@ -4237,6 +4238,16 @@
             return;
         }
 
+        // 🔒 LOCK: Agar bu mahsulot uchun update jarayoni davom etayotgan bo'lsa, kutamiz
+        const lockKey = `${currentTabId}_${productId}`;
+        if (quantityUpdateLocks[lockKey]) {
+            console.log(`⏸️ Lock aktiv: ${lockKey} - oldingi update tugashini kutmoqda...`);
+            return;
+        }
+        
+        quantityUpdateLocks[lockKey] = true; // Lock yoqish
+        console.log(`🔒 Lock yoqildi: ${lockKey}`);
+
         const item = tabData.cart.find(item => item.id === productId);
         if (item) {
             const oldQuantity = item.quantity;
@@ -4249,6 +4260,8 @@
                 console.log(`⏸️ Tahrirlash yuklanmoqda - stock operatsiyalari skip qilindi`);
                 item.quantity = quantity; // Faqat miqdorni yangilash
                 updateCart(currentTabId);
+                quantityUpdateLocks[lockKey] = false; // Lock o'chirish
+                console.log(`🔓 Lock o'chirildi: ${lockKey}`);
                 return;
             }
             
@@ -4259,6 +4272,8 @@
             
             if (!returnSuccess) {
                 console.log(`❌ Stock qaytarib bo'lmadi`);
+                quantityUpdateLocks[lockKey] = false; // Lock o'chirish
+                console.log(`🔓 Lock o'chirildi (xatolik): ${lockKey}`);
                 return;
             }
             console.log(`✅ ${oldQuantity} ta stock qaytarildi`);
@@ -4271,6 +4286,8 @@
                 console.log(`❌ Stock rezerv qilib bo'lmadi`);
                 // Rollback: eski miqdorni qaytadan rezerv qilish
                 await reserveStock(item.id, oldQuantity, item.location_id, item.location_type);
+                quantityUpdateLocks[lockKey] = false; // Lock o'chirish
+                console.log(`🔓 Lock o'chirildi (rollback): ${lockKey}`);
                 return;
             }
             console.log(`✅ ${quantity} ta stock rezerv qilindi`);
@@ -4283,6 +4300,9 @@
             // Auto save qo'shish
             autoSavePendingSale(currentTabId);
         }
+        
+        quantityUpdateLocks[lockKey] = false; // Lock o'chirish
+        console.log(`🔓 Lock o'chirildi (muvaffaqiyatli): ${lockKey}`);
     }
 
     // Mobile cart uchun miqdorni o'zgartirish
