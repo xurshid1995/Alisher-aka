@@ -30,6 +30,10 @@ load_dotenv()
 # Flask app yaratish
 app = Flask(__name__)
 
+# Template cache'ni o'chirish - yangilanishlarni darhol ko'rish uchun
+app.config['TEMPLATES_AUTO_RELOAD'] = True
+app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
+
 # Logging konfiguratsiyasi
 logging.basicConfig(
     level=logging.INFO,
