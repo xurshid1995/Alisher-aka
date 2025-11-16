@@ -431,9 +431,21 @@
         
         // Modal ochish
         const modal = document.getElementById('deleteModal');
+        console.log('Modal element:', modal);
+        
         const modalWarehouseName = document.getElementById('modalWarehouseName');
+        console.log('Modal warehouse name element:', modalWarehouseName);
+        
         const confirmInput = document.getElementById('confirmInput');
+        console.log('Confirm input element:', confirmInput);
+        
         const confirmBtn = document.getElementById('confirmDeleteBtn');
+        console.log('Confirm button element:', confirmBtn);
+        
+        if (!modal) {
+            console.error('❌ Modal topilmadi!');
+            return;
+        }
         
         modalWarehouseName.textContent = warehouseName;
         confirmInput.value = '';
@@ -441,6 +453,7 @@
         confirmBtn.classList.remove('enabled');
         
         modal.classList.add('active');
+        console.log('✅ Modal ochildi, active class qo\'shildi');
         
         // Input'ga fokus
         setTimeout(() => confirmInput.focus(), 300);
