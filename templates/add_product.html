@@ -1619,6 +1619,8 @@
                     alert('✅ Barcha mahsulotlar muvaffaqiyatli saqlandi!');
                     tempProducts = [];
                     updateTempList();
+                    // Tarixni avtomatik yangilash
+                    refreshHistory();
                 } else {
                     alert('❌ Xatolik: ' + (data.error || 'Noma\'lum xatolik'));
                 }
@@ -1875,7 +1877,7 @@
         // Mahsulot tarixini yuklash
         async function loadProductHistory() {
             try {
-                const response = await fetch('/api/products/history?limit=20');
+                const response = await fetch('/api/products/history?limit=50');
                 const data = await response.json();
                 
                 if (data.success && data.history) {
