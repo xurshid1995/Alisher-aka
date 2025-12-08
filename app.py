@@ -4413,8 +4413,16 @@ def api_sales_history():
         location_filter = request.args.get('location_filter')  # store_1, warehouse_2 formatida
         search_term = request.args.get('search_term')  # Mahsulot nomi bo'yicha qidiruv
         
-        # Statistika uchun alohida sana filtri (faqat bugungi kun statistikasi)
-        stats_date_filter = request.args.get('stats_date_filter', 'today')  # 'today' yoki 'all'
+        # Statistika uchun logika: 
+        # - Agar sana filtri berilgan bo'lsa, shu sanalar bo'yicha statistika
+        # - Agar sana filtri yo'q bo'lsa, faqat bugungi kun statistikasi
+        stats_date_filter = request.args.get('stats_date_filter', 'filtered')  # 'filtered', 'today' yoki 'all'
+        
+        # Agar sana tanlangan bo'lsa, statistikani shu sana bo'yicha hisoblash
+        if start_date or end_date:
+            stats_date_filter = 'filtered'  # Tanlangan sana oralig'i
+        elif stats_date_filter == 'filtered':
+            stats_date_filter = 'today'  # Default: bugungi kun
         
         print(
             f"📋 Query parameters: start_date={start_date}, end_date={end_date}, customer_id={customer_id}, payment_status={payment_status}, location_filter={location_filter}, search_term={search_term}, stats_date_filter={stats_date_filter}")
@@ -4511,30 +4519,36 @@ def api_sales_history():
         # Base query'ni statistics uchun saqlash (ORDER BY siz)
         base_stats_query = query
         
-        # Statistika uchun alohida filtr (faqat bugungi kun)
+        # Statistika uchun alohida query yaratish
         if stats_date_filter == 'today':
+            # Faqat bugungi kun
             today = datetime.now().date()
             today_start = datetime.combine(today, datetime.min.time())
             today_end = datetime.combine(today, datetime.max.time())
-            stats_query = base_stats_query.filter(
+            stats_filtered_query = base_stats_query.filter(
                 Sale.sale_date >= today_start,
                 Sale.sale_date <= today_end
             )
             logger.info(f"📊 Statistika: Faqat bugungi kun ({today})")
+        elif stats_date_filter == 'filtered':
+            # Tanlangan sana oralig'i (base_query allaqachon sana filtri bilan)
+            stats_filtered_query = base_stats_query
+            logger.info(f"📊 Statistika: Tanlangan sana oralig'i bo'yicha ({start_date} - {end_date})")
         else:
-            stats_query = base_stats_query
-            logger.info(f"📊 Statistika: Barcha filtr qo'llanilgan savdolar")
+            # Barcha savdolar (sana filtrisiz)
+            stats_filtered_query = base_stats_query
+            logger.info(f"📊 Statistika: Barcha savdolar")
         
-        # Asosiy statistika (count, sum)
-        stats_result = stats_query.with_entities(
+        # Asosiy statistika (count, sum) - aggregate qilish
+        stats_aggregate_result = stats_filtered_query.with_entities(
             func.count(Sale.id).label('total_count'),
             func.sum(Sale.total_amount).label('total_revenue'),
             func.sum(Sale.total_profit).label('total_profit')
         ).first()
         
-        total_sales_count = stats_result.total_count or 0
-        total_revenue = float(stats_result.total_revenue or 0)
-        total_profit = float(stats_result.total_profit or 0)
+        total_sales_count = stats_aggregate_result.total_count or 0
+        total_revenue = float(stats_aggregate_result.total_revenue or 0)
+        total_profit = float(stats_aggregate_result.total_profit or 0)
         
         logger.info(f"📊 Jami savdolar: {total_sales_count}")
         logger.info(f"💰 Jami daromad: ${total_revenue:.2f}")
@@ -4581,8 +4595,8 @@ def api_sales_history():
         )
 
         # Payment method breakdown - SQL GROUP BY bilan optimal
-        # stats_query ishlatamiz (bugungi kun filtri bilan)
-        payment_stats_query = stats_query.with_entities(
+        # stats_filtered_query ishlatamiz (bugungi kun filtri bilan)
+        payment_stats_query = stats_filtered_query.with_entities(
             Sale.payment_method,
             func.count(Sale.id).label('count'),
             func.sum(Sale.total_amount).label('total')
@@ -4596,11 +4610,11 @@ def api_sales_history():
                 'amount': float(total or 0)
             }
 
-        # Top selling products - stats_query dan foydalanib (bugungi kun filtri bilan)
+        # Top selling products - stats_filtered_query dan foydalanib (bugungi kun filtri bilan)
         from sqlalchemy.orm import aliased
         
-        # Stats query'dan sale ID'larini olish (bugungi kun yoki barcha filtrlar)
-        filtered_sale_ids = [sale_id for (sale_id,) in stats_query.with_entities(Sale.id).all()]
+        # Stats filtered query'dan sale ID'larini olish (bugungi kun yoki barcha filtrlar)
+        filtered_sale_ids = [sale_id for (sale_id,) in stats_filtered_query.with_entities(Sale.id).all()]
         
         top_products = []
         if filtered_sale_ids:
