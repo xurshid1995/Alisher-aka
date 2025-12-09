@@ -367,37 +367,79 @@
             box-shadow: 0 2px 6px rgba(220, 53, 69, 0.3);
         }
 
+        .btn-refresh-history {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0,123,255,0.3);
+        }
+
+        .btn-refresh-history:hover {
+            background: linear-gradient(135deg, #0056b3, #004085);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,123,255,0.4);
+        }
+
+        .btn-refresh-history:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 6px rgba(0,123,255,0.3);
+        }
+
+        .btn-refresh-history:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* Mahsulot Tarixi Jadvali Stillari - Transfer tarixi kabi */
+        .history-section {
+            margin-top: 2rem;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .history-table-container {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
         .history-table {
             width: 100%;
+            min-width: 1000px;
             border-collapse: collapse;
             font-size: 0.9rem;
         }
 
-        .history-table th,
-        .history-table td {
-            padding: 0.75rem;
-            text-align: left;
-            border-bottom: 1px solid #dee2e6;
-        }
-
         .history-table th {
-            background: linear-gradient(135deg, #495057 0%, #343a40 100%);
-            color: white;
+            background: #f8f9fa;
+            color: #495057;
             font-weight: 600;
+            padding: 1rem 0.75rem;
+            text-align: left;
+            border-bottom: 2px solid #dee2e6;
             position: sticky;
             top: 0;
+            z-index: 10;
         }
 
-        .history-table tr:hover {
-            background: #f8f9fa;
+        .history-table td {
+            padding: 0.75rem;
+            border-bottom: 1px solid #f1f3f4;
+            color: #6c757d;
         }
 
-        .history-table tr:nth-child(even) {
-            background: #f9f9f9;
+        .history-table tbody tr:hover {
+            background-color: #f8f9fa;
         }
 
-        .history-table tr:nth-child(even):hover {
-            background: #f1f3f4;
+        .history-info {
+            padding: 0 1.5rem;
         }
 
         @media (max-width: 768px) {
@@ -564,26 +606,26 @@
         </div>
 
         <!-- Mahsulotlar Tarixi Bo'limi -->
-        <div class="history-section" style="margin-top: 2rem;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 2px solid #e9ecef;">
-                <h3 style="color: #2c3e50; margin: 0; font-size: 1.5rem;">📊 Qo'shilgan Mahsulotlar Tarixi</h3>
+        <div class="history-section">
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 1.5rem; background: linear-gradient(135deg, #f8f9fa, #e9ecef); border-bottom: 2px solid #dee2e6;">
+                <h2 style="color: #495057; margin: 0; font-size: 1.4rem;">📊 Qo'shilgan Mahsulotlar Tarixi</h2>
                 <button type="button" onclick="refreshHistory()" class="btn-refresh-history" id="refreshHistoryBtn">
                     🔄 Yangilash
                 </button>
             </div>
             
-            <div class="history-info" style="margin-bottom: 1rem;">
-                <p style="margin: 0; padding: 1rem; background: #e8f5e9; border-left: 4px solid #4caf50; color: #2e7d32; font-size: 0.9rem; border-radius: 4px;">
+            <div class="history-info">
+                <p style="margin: 1rem 0; padding: 1rem; background: #e8f5e9; border-left: 4px solid #4caf50; color: #2e7d32; font-size: 0.9rem; border-radius: 4px;">
                     ℹ️ <strong>Ma'lumot:</strong> Bu jadvalda so'nggi 50 ta mahsulot qo'shish tarixi ko'rsatiladi. 
                     Ma'lumotlar faqat ko'rish uchun, stock miqdoriga hech qanday ta'sir qilmaydi.
                 </p>
             </div>
             
-            <div id="historyLoading" style="text-align: center; padding: 2rem; background: white; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+            <div id="historyLoading" style="text-align: center; padding: 2rem;">
                 <p style="color: #6c757d;">📥 Tarix yuklanmoqda...</p>
             </div>
             
-            <div class="history-table-container" id="historyTableContainer" style="display: none; background: white; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); overflow: hidden;">
+            <div class="history-table-container" id="historyTableContainer" style="display: none;">
                 <table class="history-table" id="productHistoryTable">
                     <thead>
                         <tr>
