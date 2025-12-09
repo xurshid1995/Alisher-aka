@@ -862,11 +862,11 @@ class StockChange(db.Model):
     change_date = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     notes = db.Column(db.Text, nullable=True)
     
-    # Relationships
-    product = db.relationship('Product', backref='stock_changes')
-    warehouse = db.relationship('Warehouse', backref='stock_changes')
-    store = db.relationship('Store', backref='stock_changes')
-    user = db.relationship('User', backref='stock_changes')
+    # Relationships (backref olib tashlandi - delete muammosini keltirib chiqaradi)
+    product = db.relationship('Product')
+    warehouse = db.relationship('Warehouse')
+    store = db.relationship('Store')
+    user = db.relationship('User')
 
 
 class CurrencyRate(db.Model):
