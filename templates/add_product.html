@@ -565,16 +565,18 @@
 
         <!-- Mahsulotlar Tarixi Bo'limi -->
         <div class="history-section" style="margin-top: 2rem;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                <h3 style="color: #2c3e50; margin: 0;">📊 Qo'shilgan Mahsulotlar Tarixi</h3>
-                <div style="display: flex; gap: 0.5rem;">
-                    <button type="button" onclick="refreshHistory()" class="btn-refresh-history" id="refreshHistoryBtn">
-                        🔄 Yangilash
-                    </button>
-                    <button type="button" onclick="clearProductHistory()" class="btn-clear-history" id="clearProductHistoryBtn" style="display: none;">
-                        🗑️ Tozalash
-                    </button>
-                </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 2px solid #e9ecef;">
+                <h3 style="color: #2c3e50; margin: 0; font-size: 1.5rem;">📊 Qo'shilgan Mahsulotlar Tarixi</h3>
+                <button type="button" onclick="refreshHistory()" class="btn-refresh-history" id="refreshHistoryBtn">
+                    🔄 Yangilash
+                </button>
+            </div>
+            
+            <div class="history-info" style="margin-bottom: 1rem;">
+                <p style="margin: 0; padding: 1rem; background: #e8f5e9; border-left: 4px solid #4caf50; color: #2e7d32; font-size: 0.9rem; border-radius: 4px;">
+                    ℹ️ <strong>Ma'lumot:</strong> Bu jadvalda so'nggi 50 ta mahsulot qo'shish tarixi ko'rsatiladi. 
+                    Ma'lumotlar faqat ko'rish uchun, stock miqdoriga hech qanday ta'sir qilmaydi.
+                </p>
             </div>
             
             <div id="historyLoading" style="text-align: center; padding: 2rem; background: white; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
@@ -592,6 +594,7 @@
                             <th>💰 Tan Narx</th>
                             <th>💸 Sotish Narx</th>
                             <th>💵 Jami Qiymat</th>
+                            <th>👤 Kim qo'shdi</th>
                         </tr>
                     </thead>
                     <tbody id="productHistoryBody">
@@ -1898,16 +1901,8 @@
             const tbody = document.getElementById('productHistoryBody');
             tbody.innerHTML = '';
             
-            // Tozalash tugmasini ko'rsatish/yashirish
-            const clearBtn = document.getElementById('clearProductHistoryBtn');
-            if (history && history.length > 0) {
-                clearBtn.style.display = 'inline-block';
-            } else {
-                clearBtn.style.display = 'none';
-            }
-            
             if (!history || history.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #6c757d; padding: 2rem;">📝 Hech qanday mahsulot qo\'shilmagan</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: #6c757d; padding: 2rem;">📝 Hech qanday mahsulot qo\'shilmagan</td></tr>';
                 return;
             }
             
@@ -1928,6 +1923,9 @@
                 const formattedSellPrice = product.sell_price.toLocaleString('uz-UZ');
                 const formattedTotalValue = product.total_value.toLocaleString('uz-UZ');
                 
+                // Kim qo'shdi
+                const addedBy = product.added_by || 'Noma\'lum';
+                
                 row.innerHTML = `
                     <td style="font-size: 0.85rem;">${formattedDate}</td>
                     <td style="font-size: 0.85rem; color: #6c757d;">${locations}</td>
@@ -1936,6 +1934,7 @@
                     <td style="text-align: right; color: #dc3545;">$${formattedCostPrice}</td>
                     <td style="text-align: right; color: #28a745;">$${formattedSellPrice}</td>
                     <td style="text-align: right; font-weight: 600; color: #007bff;">$${formattedTotalValue}</td>
+                    <td style="text-align: center; color: #6c757d; font-size: 0.85rem;">👤 ${addedBy}</td>
                 `;
                 
                 tbody.appendChild(row);
@@ -1962,50 +1961,6 @@
             } finally {
                 refreshBtn.innerHTML = originalText;
                 refreshBtn.disabled = false;
-            }
-        }
-
-        // Mahsulot tarixini tozalash (faqat jadval ko'rinishi)
-        function clearProductHistory() {
-            // Tasdiqlash dialog
-            const confirmed = confirm(
-                '📋 Tarix Jadvalini Tozalash\n\n' +
-                'Faqat tarix jadvalini tozalashni xohlaysizmi?\n\n' +
-                'Bu mahsulotlar va stock\'larni o\'chirmaydi,\n' +
-                'faqat jadval ko\'rinishini tozalaydi.\n\n' +
-                'Davom etasizmi?'
-            );
-            
-            if (!confirmed) {
-                return;
-            }
-            
-            // Loading holatiga o'tkazish
-            const clearBtn = document.getElementById('clearProductHistoryBtn');
-            const originalText = clearBtn.innerHTML;
-            
-            try {
-                clearBtn.innerHTML = '⏳ Tozalanmoqda...';
-                clearBtn.disabled = true;
-                
-                // Tarix jadvalini tozalash
-                const tbody = document.getElementById('productHistoryBody');
-                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #6c757d; padding: 2rem;">📝 Tarix jadvali tozalandi</td></tr>';
-                
-                // Tugmani yashirish
-                clearBtn.style.display = 'none';
-                
-                // Muvaffaqiyat xabari
-                setTimeout(() => {
-                    alert('✅ Tarix jadvali tozalandi\n\nMahsulotlar va stock\'lar saqlanib qoldi.');
-                }, 100);
-                
-            } finally {
-                // Loading holatini bekor qilish
-                setTimeout(() => {
-                    clearBtn.innerHTML = originalText;
-                    clearBtn.disabled = false;
-                }, 500);
             }
         }
 
