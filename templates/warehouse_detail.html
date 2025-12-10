@@ -258,6 +258,12 @@
         // DOM yuklanganida pagination sistemasini ishga tushirish
         document.addEventListener('DOMContentLoaded', function() {
             loadStockData(1, '');
+            
+            // Fokusni qidiruv maydoniga berish
+            const searchInput = document.getElementById('search-input');
+            if (searchInput) {
+                setTimeout(() => searchInput.focus(), 300);
+            }
         });
 
         function loadStockData(page = 1, search = '', status = '') {
