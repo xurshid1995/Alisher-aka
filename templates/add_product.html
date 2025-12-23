@@ -534,8 +534,8 @@
                             <input type="number" id="cost_price" name="cost_price" class="form-control" 
                                    placeholder="0.00" step="0.01" min="0" 
                                    oninput="calculateProfit();"
-                                   onblur="updateOriginalCostPreview(); enableAutoUpdate(); comparePrices();"
-                                   onfocus="cancelAutoUpdate();">
+                                   onfocus="saveCostPriceOnFocus(); cancelAutoUpdate();"
+                                   onblur="updateOriginalCostPreview(); enableAutoUpdate(); comparePrices();">
                         </div>
                         <div class="form-group">
                             <label for="sell_price">💵 Sotish narxi ($):</label>
@@ -1305,6 +1305,16 @@
         // Mahsulotni tanlash funksiyasi
         // Global o'zgaruvchilar - tanlangan mahsulot ma'lumotlari
         let selectedProductData = null;
+        let userEnteredCostPrice = null; // Foydalanuvchi kiritgan asl tan narx (backend uchun)
+        
+        // Foydalanuvchi tan narx maydoniga kirganida qiymatni saqlash
+        function saveCostPriceOnFocus() {
+            const costPrice = parseFloat(document.getElementById('cost_price').value) || 0;
+            if (costPrice > 0) {
+                userEnteredCostPrice = costPrice;
+                console.log(`💾 Foydalanuvchi kiritgan tan narx saqlandi: $${userEnteredCostPrice}`);
+            }
+        }
         
         // Yangi kiritilgan tan narxni "Asl tan narx" maydoniga ko'rsatish
         function updateOriginalCostPreview() {
@@ -1432,11 +1442,17 @@
         // Vaqtinchalik ro'yxatga qo'shish
         function addToTempList() {
             const productName = document.getElementById('product_name').value.trim();
-            const costPrice = parseFloat(document.getElementById('cost_price').value);
+            let costPrice = parseFloat(document.getElementById('cost_price').value);
             const sellPrice = parseFloat(document.getElementById('sell_price').value);
             const quantity = parseInt(document.getElementById('quantity').value);
             const minStock = parseInt(document.getElementById('min_stock').value) || 0;
             const location = document.getElementById('location').value;
+            
+            // MUHIM: Agar userEnteredCostPrice mavjud bo'lsa (foydalanuvchi kiritgan qiymat), uni ishlatish
+            if (userEnteredCostPrice && userEnteredCostPrice > 0) {
+                costPrice = userEnteredCostPrice;
+                console.log(`✅ Backend uchun asl tan narx ishlatildi: $${costPrice} (ekranda ko'rsatilgan: ${document.getElementById('cost_price').value})`);
+            }
             
             // Validatsiya
             if (!productName) {
@@ -1632,6 +1648,11 @@
             document.getElementById('searchResult').style.display = 'none';
             document.getElementById('priceComparison').style.display = 'none';
             document.getElementById('profitDisplay').style.display = 'none';
+            
+            // Global o'zgaruvchilarni tozalash
+            selectedProductData = null;
+            userEnteredCostPrice = null;
+            console.log('🧹 Forma va global o\'zgaruvchilar tozalandi');
         }
 
         // Barchasini o'chirish
@@ -1869,9 +1890,14 @@
                         
                         // Ortacha tan narxni tan narx maydoniga yozish
                         if (newQuantity > 0 && Math.abs(averagePrice - newCostPrice) > 0.01) {
+                            // Agar foydalanuvchi hali kiritgan bo'lmasa, hozirgi qiymatni saqlash
+                            if (!userEnteredCostPrice) {
+                                userEnteredCostPrice = newCostPrice;
+                            }
+                            
                             // 1. Foydalanuvchi kiritgan qiymatni "Asl tan narx" ga saqlash
                             const originalCostField = document.getElementById('original_cost');
-                            originalCostField.value = `$${newCostPrice.toFixed(2)} (siz kiritgan)`;
+                            originalCostField.value = `$${userEnteredCostPrice.toFixed(2)} (siz kiritgan)`;
                             
                             // 2. Ortacha narxni "Tan narx" maydoniga yozish
                             document.getElementById('cost_price').value = averagePrice.toFixed(2);
@@ -1879,7 +1905,7 @@
                             // 3. Foyda qayta hisoblash
                             calculateProfit();
                             
-                            console.log(`📊 Siz kiritgan: $${newCostPrice.toFixed(2)}, Ortacha: $${averagePrice.toFixed(2)} → Tan narx maydoniga yozildi`);
+                            console.log(`📊 Siz kiritgan: $${userEnteredCostPrice.toFixed(2)}, Ortacha: $${averagePrice.toFixed(2)} → Tan narx maydoniga yozildi`);
                         }
                     } else {
                         priceComparisonDiv.style.display = 'none';
