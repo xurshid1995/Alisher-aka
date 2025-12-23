@@ -1494,7 +1494,8 @@
             const product = {
                 id: Date.now(),
                 name: productName,
-                cost_price: costPrice,
+                cost_price: costPrice, // Tan narx maydonidagi ortacha narx yoki oddiy narx
+                last_batch_cost: userEnteredCostPrice || costPrice, // Foydalanuvchi kiritgan asl qiymat
                 sell_price: sellPrice,
                 quantity: quantity,
                 min_stock: minStock,
@@ -1507,6 +1508,8 @@
             };
             
             console.log('📦 Yaratilgan mahsulot:', product);
+            console.log(`   cost_price (ortacha): $${product.cost_price}`);
+            console.log(`   last_batch_cost (kiritilgan): $${product.last_batch_cost}`);
             
             tempProducts.push(product);
             updateTempList();

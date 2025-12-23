@@ -1361,18 +1361,18 @@ def api_add_product():
                 existing_product = Product.query.filter_by(
                     name=product_data['name']).first()
                 if existing_product:
-                    # Mavjud mahsulot - Frontend allaqachon ortacha narxni hisoblagan
-                    # Backend to'g'ridan-to'g'ri qabul qiladi, qayta hisoblash yo'q
+                    # Mavjud mahsulot - Frontend'dan ortacha narx va asl narx keladi
                     
                     logger.info(f"📊 Mavjud mahsulot yangilanmoqda:")
-                    logger.info(f"   Eski tan narx: ${existing_product.cost_price}")
-                    logger.info(f"   Frontend dan kelgan (foydalanuvchi kiritgan): ${cost_price}")
+                    logger.info(f"   Eski cost_price (ortacha): ${existing_product.cost_price}")
+                    logger.info(f"   Frontend dan kelgan cost_price (ortacha): ${cost_price}")
+                    logger.info(f"   Frontend dan kelgan last_batch_cost (yangi partiya): ${product_data.get('lastBatchCost', cost_price)}")
                     
-                    # Frontend'dan kelgan narxni to'g'ridan-to'g'ri o'rnatish
+                    # Ortacha narxni yangilash
                     existing_product.cost_price = cost_price
                     
                     # Oxirgi partiya ma'lumotlarini saqlash
-                    existing_product.last_batch_cost = cost_price
+                    existing_product.last_batch_cost = Decimal(str(product_data.get('lastBatchCost', cost_price)))
                     existing_product.last_batch_date = datetime.now(timezone.utc)
                     
                     # Boshqa maydonlar
@@ -1542,16 +1542,17 @@ def api_batch_products():
                 db.session.flush()  # ID olish uchun
                 logger.info(f"✅ Yangi mahsulot yaratildi - ID: {product.id}, cost_price: ${product.cost_price}, last_batch_cost: ${product.last_batch_cost}")
             else:
-                # Mavjud mahsulot - Frontend allaqachon ortacha narxni hisoblagan
+                # Mavjud mahsulot - Frontend'dan ortacha narx va asl narx keladi
                 logger.info(f"♻️ Mavjud mahsulot yangilanmoqda - ID: {product.id}")
-                logger.info(f"   Eski cost_price: ${product.cost_price}")
-                logger.info(f"   Frontend dan kelgan (allaqachon ortacha): ${cost_price}")
+                logger.info(f"   Eski cost_price (ortacha): ${product.cost_price}")
+                logger.info(f"   Frontend dan kelgan cost_price (ortacha): ${cost_price}")
+                logger.info(f"   Frontend dan kelgan last_batch_cost (yangi partiya): ${product_data.get('lastBatchCost', cost_price)}")
                 
-                # Frontend'dan kelgan ortacha narxni to'g'ridan-to'g'ri o'rnatish
+                # Ortacha narxni yangilash
                 product.cost_price = cost_price
                 
                 # Oxirgi partiya ma'lumotlarini saqlash
-                product.last_batch_cost = cost_price
+                product.last_batch_cost = Decimal(str(product_data.get('lastBatchCost', cost_price)))
                 product.last_batch_date = datetime.now(timezone.utc)
                 
                 logger.info(f"✅ Yangilandi - cost_price: ${product.cost_price}, last_batch_cost: ${product.last_batch_cost}")
