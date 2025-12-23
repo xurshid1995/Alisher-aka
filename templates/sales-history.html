@@ -1740,6 +1740,27 @@ async function loadSalesHistory(page = 1) {
         let apiUrl = `/api/sales-history?page=${page}&per_page=${itemsPerPage}`;
         if (dateFrom) apiUrl += `&start_date=${dateFrom}`;
         if (dateTo) apiUrl += `&end_date=${dateTo}`;
+        
+        // Mijoz filtri qo'shish
+        if (selectedCustomerId) {
+            apiUrl += `&customer_id=${selectedCustomerId}`;
+            console.log('👤 Mijoz filtri qo\'shildi:', selectedCustomerId);
+        }
+        
+        // Qidiruv filtri qo'shish
+        const searchTerm = document.getElementById('searchInput')?.value.trim();
+        if (searchTerm) {
+            apiUrl += `&search_term=${encodeURIComponent(searchTerm)}`;
+            console.log('🔍 Qidiruv filtri qo\'shildi:', searchTerm);
+        }
+        
+        // Joylashuv filtri qo'shish
+        const locationFilter = document.getElementById('locationFilter')?.value;
+        if (locationFilter) {
+            apiUrl += `&location_filter=${encodeURIComponent(locationFilter)}`;
+            console.log('📍 Joylashuv filtri qo\'shildi:', locationFilter);
+        }
+        
         apiUrl += `&nocache=` + new Date().getTime();
         
         console.log('📅 API URL:', apiUrl);
@@ -3017,107 +3038,13 @@ function selectCustomer(customerId, customerName, customerPhone) {
 
 
 
-// Qidiruv va filtrlarni qo'llash
+// Qidiruv va filtrlarni qo'llash - serverdan qayta yuklash
 function applySearchAndFilters() {
-    if (!allSalesData.length) return;
+    console.log('🔍 Filtrlar qo\'llanmoqda - serverdan ma\'lumot yuklanadi');
     
-    const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
-    const dateFrom = document.getElementById('dateFromFilter').value;
-    const dateTo = document.getElementById('dateToFilter').value;
-    const locationFilter = document.getElementById('locationFilter').value;
-    
-    filteredSalesData = allSalesData.filter(sale => {
-        // Qidiruv filtrи
-        if (searchTerm) {
-            const matchesSearch = (
-                (sale.customer_name || '').toLowerCase().includes(searchTerm) ||
-                (sale.customer_phone || '').toLowerCase().includes(searchTerm) ||
-                sale.items.some(item => 
-                    (item.product_name || '').toLowerCase().includes(searchTerm) ||
-                    (item.location_name || '').toLowerCase().includes(searchTerm)
-                )
-            );
-            if (!matchesSearch) return false;
-        }
-        
-        // Sana filtri
-        if (dateFrom || dateTo) {
-            const saleDate = new Date(sale.sale_date).toISOString().split('T')[0];
-            if (dateFrom && saleDate < dateFrom) return false;
-            if (dateTo && saleDate > dateTo) return false;
-        }
-        
-        // Mijoz filtri
-        if (selectedCustomerId && sale.customer_id != selectedCustomerId) return false;
-        
-        // Joylashuv filtri
-        if (locationFilter) {
-            console.log('🔍 JOYLASHUV FILTRI QOLLANMOQDA:', locationFilter);
-            console.log('📦 Sale items:', sale.items);
-            
-            // locationFilter format: "store_1" yoki "warehouse_2"
-            const [locationType, locationId] = locationFilter.split('_');
-            console.log('🏷️ Filter turi:', locationType, 'ID:', locationId);
-            
-            const hasMatchingLocation = sale.items.some(item => {
-                console.log('🔍 Item tekshirilmoqda:', {
-                    location_name: item.location_name
-                });
-                
-                let matches = false;
-                
-                if (locationType === 'store') {
-                    // Do'kon uchun - source_type va source_id orqali tekshirish
-                    console.log('🔍 Store filtri - item.source_type:', item.source_type, 'item.source_id:', item.source_id);
-                    if (item.source_type === 'store' && item.source_id == locationId) {
-                        matches = true;
-                        console.log('✅ Do\'kon ID match:', item.source_id, '==', locationId);
-                    }
-                    
-                    // Qo'shimcha: location_name orqali ham tekshirish
-                    if (!matches && item.location_name && item.location_name.includes('Dokon:')) {
-                        const selectedStore = window.storesData?.find(store => store.id == locationId);
-                        if (selectedStore) {
-                            matches = item.location_name.includes(selectedStore.name);
-                            console.log('🏪 Do\'kon nom solishtirish:', item.location_name, 'includes', selectedStore.name, '→', matches);
-                        }
-                    }
-                    console.log('🏪 Do\'kon filtri natijasi:', matches);
-                } else if (locationType === 'warehouse') {
-                    // Ombor uchun - source_type va source_id orqali tekshirish
-                    console.log('🔍 Warehouse filtri - item.source_type:', item.source_type, 'item.source_id:', item.source_id);
-                    if (item.source_type === 'warehouse' && item.source_id == locationId) {
-                        matches = true;
-                        console.log('✅ Ombor ID match:', item.source_id, '==', locationId);
-                    }
-                    
-                    // Qo'shimcha: location_name orqali ham tekshirish
-                    if (!matches && item.location_name && item.location_name.includes('Ombor:')) {
-                        const selectedWarehouse = window.warehousesData?.find(warehouse => warehouse.id == locationId);
-                        if (selectedWarehouse) {
-                            matches = item.location_name.includes(selectedWarehouse.name);
-                            console.log('🏭 Ombor nom solishtirish:', item.location_name, 'includes', selectedWarehouse.name, '→', matches);
-                        }
-                    }
-                    console.log('🏭 Ombor filtri natijasi:', matches);
-                } else {
-                    // Eski mantiq (agar locationFilter oddiy nom bo'lsa)
-                    matches = item.location_name === locationFilter;
-                    console.log('📝 Nom filtri natijasi:', matches);
-                }
-                
-                return matches;
-            });
-            
-            console.log('✅ hasMatchingLocation:', hasMatchingLocation);
-            if (!hasMatchingLocation) return false;
-        }
-        
-        return true;
-    });
-    
-    // Filtrlangan ma'lumotlarni ko'rsatish
-    displayFilteredData();
+    // Birinchi sahifadan boshlab serverdan filtrlab olish
+    currentPage = 1;
+    loadSalesHistory(currentPage);
 }
 
 // Filtrlangan ma'lumotlarni ko'rsatish

@@ -255,11 +255,13 @@ class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     cost_price = db.Column(db.DECIMAL(precision=10, scale=2),
-                           nullable=False)  # Tan narxi
+                           nullable=False)  # Ortacha tan narxi
     sell_price = db.Column(db.DECIMAL(precision=10, scale=2),
                            nullable=False)  # Sotish narxi
     min_stock = db.Column(db.Integer, default=0,
                           nullable=False)  # Minimal qoldiq
+    last_batch_cost = db.Column(db.DECIMAL(precision=10, scale=2))  # Oxirgi partiya tan narxi
+    last_batch_date = db.Column(db.DateTime)  # Oxirgi partiya sanasi
     created_at = db.Column(db.DateTime,
                            default=lambda: datetime.now(timezone.utc))  # Qo'shilgan sana
     is_checked = db.Column(
@@ -299,6 +301,8 @@ class Product(db.Model):
             'sell_price': float(self.sell_price),
             'price': float(self.sell_price),  # Compatibility uchun
             'min_stock': self.min_stock,
+            'last_batch_cost': float(self.last_batch_cost) if self.last_batch_cost else None,
+            'last_batch_date': self.last_batch_date.isoformat() if self.last_batch_date else None,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'stocks': stocks
         }
@@ -1357,8 +1361,38 @@ def api_add_product():
                 existing_product = Product.query.filter_by(
                     name=product_data['name']).first()
                 if existing_product:
-                    # Mavjud mahsulot narxlarini yangilash
-                    existing_product.cost_price = cost_price
+                    # Mavjud mahsulot - ortacha tan narxni hisoblash
+                    # Joriy stock miqdorini olish
+                    current_total_quantity = 0
+                    for ws in existing_product.warehouse_stocks:
+                        current_total_quantity += ws.quantity
+                    for ss in existing_product.store_stocks:
+                        current_total_quantity += ss.quantity
+                    
+                    # Ortacha tan narxni hisoblash
+                    if current_total_quantity > 0:
+                        current_total_value = float(existing_product.cost_price) * current_total_quantity
+                        new_batch_value = float(cost_price) * quantity
+                        new_total_value = current_total_value + new_batch_value
+                        new_total_quantity = current_total_quantity + quantity
+                        new_average_cost = Decimal(str(new_total_value / new_total_quantity))
+                        
+                        logger.info(f"📊 Ortacha tan narx hisoblash:")
+                        logger.info(f"   Eski: {current_total_quantity} ta × ${existing_product.cost_price} = ${current_total_value}")
+                        logger.info(f"   Yangi: {quantity} ta × ${cost_price} = ${new_batch_value}")
+                        logger.info(f"   Jami: {new_total_quantity} ta = ${new_total_value}")
+                        logger.info(f"   Yangi ortacha: ${new_average_cost}")
+                        
+                        existing_product.cost_price = new_average_cost
+                    else:
+                        # Agar stock 0 bo'lsa, yangi narxni to'g'ridan-to'g'ri qo'yamiz
+                        existing_product.cost_price = cost_price
+                    
+                    # Oxirgi partiya ma'lumotlarini saqlash
+                    existing_product.last_batch_cost = cost_price
+                    existing_product.last_batch_date = datetime.now(timezone.utc)
+                    
+                    # Boshqa maydonlar
                     existing_product.sell_price = sell_price
                     existing_product.min_stock = product_data.get(
                         'minStock', existing_product.min_stock)
@@ -1369,6 +1403,8 @@ def api_add_product():
                         name=product_data['name'],
                         cost_price=cost_price,
                         sell_price=sell_price,
+                        last_batch_cost=cost_price,  # Birinchi partiya
+                        last_batch_date=datetime.now(timezone.utc),
                         stock_quantity=0,  # Global stock 0 ga qo'yamiz
                         min_stock=product_data.get('minStock', 0)
                     )
@@ -1500,22 +1536,65 @@ def api_batch_products():
             cost_price = Decimal(str(product_data['cost_price']))
             sell_price = Decimal(str(product_data['sell_price']))
             min_stock = int(product_data['min_stock'])
+            
+            logger.info(f"🔍 Batch mahsulot qo'shilmoqda: {name}")
+            logger.info(f"   Tan narx (cost_price): ${cost_price}")
+            logger.info(f"   Sotish narx: ${sell_price}")
+            logger.info(f"   Miqdor: {quantity}")
 
             # Mahsulot mavjudligini tekshirish
             product = Product.query.filter_by(name=name).first()
             if not product:
                 # Yangi mahsulot yaratish
+                logger.info(f"✨ Yangi mahsulot yaratilmoqda")
                 product = Product(
                     name=name,
                     cost_price=cost_price,
                     sell_price=sell_price,
+                    last_batch_cost=cost_price,  # Birinchi partiya
+                    last_batch_date=datetime.now(timezone.utc),
                     min_stock=min_stock
                 )
                 db.session.add(product)
                 db.session.flush()  # ID olish uchun
+                logger.info(f"✅ Yangi mahsulot yaratildi - ID: {product.id}, cost_price: ${product.cost_price}, last_batch_cost: ${product.last_batch_cost}")
             else:
-                # Mavjud mahsulot narxlarini yangilash
-                product.cost_price = cost_price
+                # Mavjud mahsulot - ortacha tan narxni hisoblash
+                logger.info(f"♻️ Mavjud mahsulot yangilanmoqda - ID: {product.id}")
+                logger.info(f"   Eski cost_price: ${product.cost_price}")
+                logger.info(f"   Eski last_batch_cost: ${product.last_batch_cost}")
+                
+                current_total_quantity = 0
+                for ws in product.warehouse_stocks:
+                    current_total_quantity += ws.quantity
+                for ss in product.store_stocks:
+                    current_total_quantity += ss.quantity
+                
+                # Ortacha tan narxni hisoblash
+                if current_total_quantity > 0:
+                    current_total_value = float(product.cost_price) * current_total_quantity
+                    new_batch_value = float(cost_price) * quantity
+                    new_total_value = current_total_value + new_batch_value
+                    new_total_quantity = current_total_quantity + quantity
+                    new_average_cost = Decimal(str(new_total_value / new_total_quantity))
+                    
+                    logger.info(f"📊 Ortacha narx hisoblash:")
+                    logger.info(f"   Eski: {current_total_quantity} ta × ${product.cost_price} = ${current_total_value}")
+                    logger.info(f"   Yangi: {quantity} ta × ${cost_price} = ${new_batch_value}")
+                    logger.info(f"   Yangi ortacha: ${new_average_cost}")
+                    
+                    product.cost_price = new_average_cost
+                else:
+                    logger.info(f"   Stock 0 - yangi narx to'g'ridan qo'yilmoqda")
+                    product.cost_price = cost_price
+                
+                # Oxirgi partiya ma'lumotlarini saqlash
+                product.last_batch_cost = cost_price
+                product.last_batch_date = datetime.now(timezone.utc)
+                
+                logger.info(f"✅ Yangilandi - cost_price: ${product.cost_price}, last_batch_cost: ${product.last_batch_cost}")
+                
+                # Boshqa maydonlar
                 product.sell_price = sell_price
                 product.min_stock = min_stock
 
@@ -2055,7 +2134,9 @@ def api_store_stock(store_id):
                         'id': stock.product.id,
                         'name': stock.product.name,
                         'cost_price': float(stock.product.cost_price),
-                        'sell_price': float(stock.product.sell_price)
+                        'sell_price': float(stock.product.sell_price),
+                        'last_batch_cost': float(stock.product.last_batch_cost) if stock.product.last_batch_cost else None,
+                        'last_batch_date': stock.product.last_batch_date.isoformat() if stock.product.last_batch_date else None
                     }
                 },
                 'unit_profit': float(unit_profit),
@@ -2268,7 +2349,9 @@ def api_warehouse_stock(warehouse_id):
                         'id': stock.product.id,
                         'name': stock.product.name,
                         'cost_price': float(stock.product.cost_price),
-                        'sell_price': float(stock.product.sell_price)
+                        'sell_price': float(stock.product.sell_price),
+                        'last_batch_cost': float(stock.product.last_batch_cost) if stock.product.last_batch_cost else None,
+                        'last_batch_date': stock.product.last_batch_date.isoformat() if stock.product.last_batch_date else None
                     }
                 },
                 'unit_profit': float(unit_profit),

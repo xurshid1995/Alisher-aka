@@ -222,6 +222,7 @@
                 <tr style="background-color: #f8f9fa;">
                     <th style="padding: 12px; text-align: left; border-bottom: 2px solid #dee2e6; font-weight: 600;">Mahsulot nomi</th>
                     <th style="padding: 12px; text-align: center; border-bottom: 2px solid #dee2e6; font-weight: 600;">Miqdor</th>
+                    <th style="padding: 12px; text-align: right; border-bottom: 2px solid #dee2e6; font-weight: 600;">Asl tan narx</th>
                     <th style="padding: 12px; text-align: right; border-bottom: 2px solid #dee2e6; font-weight: 600;">Tan narx</th>
                     <th style="padding: 12px; text-align: right; border-bottom: 2px solid #dee2e6; font-weight: 600;">Sotish narx</th>
                     <th style="padding: 12px; text-align: right; border-bottom: 2px solid #dee2e6; font-weight: 600;">Birlik foyda</th>
@@ -232,7 +233,7 @@
             </thead>
             <tbody>
                 <tr>
-                    <td colspan="8" style="text-align: center; color: #666; padding: 2rem;">
+                    <td colspan="9" style="text-align: center; color: #666; padding: 2rem;">
                         <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
                             <div style="width: 20px; height: 20px; border: 2px solid #f3f3f3; border-top: 2px solid #3498db; border-radius: 50%; animation: spin 1s linear infinite;"></div>
                             Ma'lumotlar yuklanmoqda...
@@ -285,7 +286,7 @@
         // Yuklash indikatorini ko'rsatish
         tbody.innerHTML = `
             <tr>
-                <td colspan="8" style="text-align: center; color: #666; padding: 2rem;">
+                <td colspan="9" style="text-align: center; color: #666; padding: 2rem;">
                     <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
                         <div style="width: 20px; height: 20px; border: 2px solid #f3f3f3; border-top: 2px solid #3498db; border-radius: 50%; animation: spin 1s linear infinite;"></div>
                         Ma'lumotlar yuklanmoqda...
@@ -318,7 +319,7 @@
                 console.error('Ma\'lumotlarni yuklashda xatolik:', error);
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="8" style="text-align: center; color: #e74c3c; padding: 2rem;">
+                        <td colspan="9" style="text-align: center; color: #e74c3c; padding: 2rem;">
                             Ma'lumotlarni yuklashda xatolik yuz berdi. Sahifani yangilang.
                         </td>
                     </tr>
@@ -333,7 +334,7 @@
         if (stockInfo.length === 0) {
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="8" style="text-align: center; color: #666; padding: 2rem;">
+                    <td colspan="9" style="text-align: center; color: #666; padding: 2rem;">
                         Mahsulotlar topilmadi
                     </td>
                 </tr>
@@ -344,8 +345,7 @@
         tbody.innerHTML = stockInfo.map(item => `
             <tr class="stock-row" data-status="${item.status}" style="border-bottom: 1px solid #dee2e6;">
                 <td style="padding: 12px; text-align: left;"><strong>${item.stock.product.name}</strong></td>
-                <td style="padding: 12px; text-align: center; font-weight: bold;">${item.stock.quantity}</td>
-                <td style="padding: 12px; text-align: right; font-weight: bold; color: #3498db;">$${item.stock.product.cost_price.toFixed(2)}</td>
+                <td style="padding: 12px; text-align: center; font-weight: bold;">${item.stock.quantity}</td>                    <td style="padding: 12px; text-align: right; font-weight: bold; color: #9b59b6;">$${item.stock.product.last_batch_cost ? item.stock.product.last_batch_cost.toFixed(2) : '0.00'}</td>                <td style="padding: 12px; text-align: right; font-weight: bold; color: #3498db;">$${item.stock.product.cost_price.toFixed(2)}</td>
                 <td style="padding: 12px; text-align: right; font-weight: bold;">$${item.stock.product.sell_price.toFixed(2)}</td>
                 <td style="padding: 12px; text-align: right; color: #27ae60; font-weight: bold;">$${item.unit_profit.toFixed(2)}</td>
                 <td style="padding: 12px; text-align: center; color: #3498db; font-weight: bold;">${item.profit_percentage.toFixed(1)}%</td>
