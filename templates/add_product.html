@@ -1313,8 +1313,18 @@
             const costPrice = parseFloat(costPriceField.value) || 0;
             
             if (costPrice > 0) {
-                originalCostField.value = `$${costPrice.toFixed(2)} (yangi)`;
-                console.log(`🏷️ Yangi tan narx ko'rsatildi: $${costPrice.toFixed(2)}`);
+                // Agar mavjud mahsulot tanlangan bo'lsa va tan narx o'zgartgan bo'lsa
+                if (selectedProductData && selectedProductData.lastBatchCost) {
+                    // Yangi tan narx asl tan narxdan farqli bo'lsa
+                    if (Math.abs(costPrice - selectedProductData.lastBatchCost) > 0.01) {
+                        originalCostField.value = `$${costPrice.toFixed(2)} (yangi)`;
+                        console.log(`🏷️ Yangi tan narx ko'rsatildi: $${costPrice.toFixed(2)}`);
+                    }
+                } else {
+                    // Yangi mahsulot - oddiy ko'rsatish
+                    originalCostField.value = `$${costPrice.toFixed(2)}`;
+                    console.log(`🏷️ Tan narx o'rnatildi: $${costPrice.toFixed(2)}`);
+                }
             }
         }
         
