@@ -1441,20 +1441,21 @@
         function addToTempList() {
             const productName = document.getElementById('product_name').value.trim();
             // Tan narx maydonidagi qiymatni olish (bu ortacha narx bo'lishi mumkin)
-            let costPrice = parseFloat(document.getElementById('cost_price').value);
+            const costPriceFromField = parseFloat(document.getElementById('cost_price').value);
             const sellPrice = parseFloat(document.getElementById('sell_price').value);
             const quantity = parseInt(document.getElementById('quantity').value);
             const minStock = parseInt(document.getElementById('min_stock').value) || 0;
             const location = document.getElementById('location').value;
             
-            // MUHIM: Agar foydalanuvchi kiritgan qiymat mavjud bo'lsa, UNI ishlatish (backend uchun)
-            if (userEnteredCostPrice && userEnteredCostPrice > 0) {
-                costPrice = userEnteredCostPrice;
-                console.log(`✅ Backend uchun FOYDALANUVCHI KIRITGAN qiymat ishlatiladi: $${costPrice}`);
-                console.log(`ℹ️ Tan narx maydonidagi ortacha: ${document.getElementById('cost_price').value}`);
-            } else {
-                console.log(`✅ Tan narx maydonidan olingan qiymat: $${costPrice}`);
-            }
+            // MUHIM: To'g'ri ajratish
+            // - cost_price = tan narx maydonidagi ortacha narx
+            // - last_batch_cost = foydalanuvchi kiritgan asl qiymat
+            const finalCostPrice = costPriceFromField; // Tan narx maydonidagi qiymat (ortacha)
+            const finalLastBatchCost = userEnteredCostPrice || costPriceFromField; // Foydalanuvchi kiritgan qiymat
+            
+            console.log(`📊 To'g'ri ajratish:`);
+            console.log(`   Tan narx (cost_price - ortacha): $${finalCostPrice}`);
+            console.log(`   Asl tan narx (last_batch_cost - kiritilgan): $${finalLastBatchCost}`);
             
             // Validatsiya
             if (!productName) {
@@ -1462,7 +1463,7 @@
                 return;
             }
             
-            if (!costPrice || costPrice <= 0) {
+            if (!finalCostPrice || finalCostPrice <= 0) {
                 alert('❌ To\'g\'ri tan narxini kiriting!');
                 return;
             }
@@ -1494,8 +1495,8 @@
             const product = {
                 id: Date.now(),
                 name: productName,
-                cost_price: costPrice, // Tan narx maydonidagi ortacha narx yoki oddiy narx
-                last_batch_cost: userEnteredCostPrice || costPrice, // Foydalanuvchi kiritgan asl qiymat
+                cost_price: finalCostPrice, // Tan narx maydonidagi ortacha narx
+                last_batch_cost: finalLastBatchCost, // Foydalanuvchi kiritgan asl qiymat
                 sell_price: sellPrice,
                 quantity: quantity,
                 min_stock: minStock,
@@ -1503,8 +1504,8 @@
                 location_id: location, // Yangi format uchun
                 location_name: locationName,
                 location_type: locationType,
-                profit: sellPrice - costPrice,
-                total_value: costPrice * quantity
+                profit: sellPrice - finalCostPrice,
+                total_value: finalCostPrice * quantity
             };
             
             console.log('📦 Yaratilgan mahsulot:', product);
