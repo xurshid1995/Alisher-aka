@@ -83,7 +83,7 @@ app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
 app.config['SESSION_COOKIE_SECURE'] = False  # HTTPS yo'q, shuning uchun False
 app.config['SESSION_COOKIE_HTTPONLY'] = True  # JavaScript orqali o'qib bo'lmaydi
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'  # CSRF himoyasi
-app.config['PERMANENT_SESSION_LIFETIME'] = 28800  # 8 soat (ish kuni)
+app.config['PERMANENT_SESSION_LIFETIME'] = 43200  # 12 soat (uzaytirilgan ish vaqti)
 
 # SQLAlchemy obyektini yaratish
 db = SQLAlchemy(app)
@@ -6870,8 +6870,8 @@ def api_login():
         #     # Session tracking xato bo'lsa ham login'ga ruxsat berish
         #     pass
 
-        if remember:
-            session.permanent = True
+        # Session'ni har doim permanent qilish (8 soat)
+        session.permanent = True
 
         # Muvaffaqiyatli javob
         redirect_url = '/dashboard'  # Barcha foydalanuvchilar bosh sahifaga

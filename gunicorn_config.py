@@ -10,8 +10,8 @@ backlog = 2048
 workers = int(os.getenv('WORKERS', multiprocessing.cpu_count() * 2 + 1))
 worker_class = 'sync'
 worker_connections = 1000
-timeout = int(os.getenv('TIMEOUT', 120))
-keepalive = 2
+timeout = int(os.getenv('TIMEOUT', 300))  # 5 minut - API requestlar uchun yetarli
+keepalive = 5  # Keep-alive connection 5 sekund
 
 # Logging
 accesslog = 'logs/access.log'
