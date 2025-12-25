@@ -3273,11 +3273,11 @@
             const quantityText = product.location_type === 'warehouse' ? `Omborda: ${availableQty}` : `${availableQty}`;
             const uzsPrice = Math.round((product.price || 0) * USD_TO_UZS_RATE);
             
-            // Mahsulot nomini highlight qilish
-            const highlightedName = highlightSearchText(product.name, searchTerm);
-            
-            // Mahsulot ma'lumotlarini JSON formatda saqlash
+            // Mahsulot ma'lumotlarini JSON formatda saqlash (asl nom bilan)
             const productDataJson = JSON.stringify(product).replace(/"/g, '&quot;');
+            
+            // Mahsulot nomini highlight qilish (faqat ko'rsatish uchun)
+            const highlightedName = highlightSearchText(product.name, searchTerm);
             
             dropdownHtml += `
                 <div class="product-dropdown-item" data-product-id="${product.id}" data-product-data="${productDataJson}" onclick="selectProductFromDropdown(this, '${currentTabId}')">
