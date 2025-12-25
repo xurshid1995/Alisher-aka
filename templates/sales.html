@@ -2861,25 +2861,15 @@
 
         let dropdownHtml = '';
         customers.forEach((customer, index) => {
-            // Highlight qilish
-            const highlightedName = highlightSearchText(customer.name, searchTerm);
-            const highlightedPhone = customer.phone ? highlightSearchText(customer.phone, searchTerm) : 'N/A';
-            const highlightedEmail = customer.email ? highlightSearchText(customer.email, searchTerm) : 'N/A';
-            
-            // Debug log
-            console.log('Customer name:', customer.name);
-            console.log('Highlighted name:', highlightedName);
-            
             dropdownHtml += `
                 <div class="dropdown-item" data-customer-id="${customer.id}" onclick="selectCustomer(${customer.id}, '${currentTabId}')">
-                    <strong>${highlightedName}</strong><br>
-                    <small>Tel: ${highlightedPhone} | Email: ${highlightedEmail}</small>
+                    <strong>${customer.name}</strong><br>
+                    <small>Tel: ${customer.phone || 'N/A'} | Email: ${customer.email || 'N/A'}</small>
                 </div>
             `;
         });
 
         dropdown.innerHTML = dropdownHtml;
-        console.log('Dropdown HTML:', dropdownHtml);
         dropdown.style.display = 'block';
         
         // Keyboard navigation uchun birinchi elementni highlight qilish
@@ -3289,16 +3279,13 @@
             const quantityText = product.location_type === 'warehouse' ? `Omborda: ${availableQty}` : `${availableQty}`;
             const uzsPrice = Math.round((product.price || 0) * USD_TO_UZS_RATE);
             
-            // Mahsulot ma'lumotlarini JSON formatda saqlash (asl nom bilan)
+            // Mahsulot ma'lumotlarini JSON formatda saqlash
             const productDataJson = JSON.stringify(product).replace(/"/g, '&quot;');
-            
-            // Mahsulot nomini highlight qilish (faqat ko'rsatish uchun)
-            const highlightedName = highlightSearchText(product.name, searchTerm);
             
             dropdownHtml += `
                 <div class="product-dropdown-item" data-product-id="${product.id}" data-product-data="${productDataJson}" onclick="selectProductFromDropdown(this, '${currentTabId}')">
                     <div class="product-dropdown-content" style="display: flex; justify-content: space-between; align-items: center;">
-                        <strong style="color: #2c3e50; font-size: 1.1rem;">${highlightedName}</strong>
+                        <strong style="color: #2c3e50; font-size: 1.1rem;">${product.name}</strong>
                         <div style="display: flex; align-items: center; gap: 10px;">
                             <span style="color: #28a745; font-weight: 600;">$${product.price || '0.00'} / ${uzsPrice.toLocaleString()} So'm</span>
                             <span class="quantity-badge" style="color: white !important; background-color: #28a745; padding: 2px 6px; border-radius: 3px; font-weight: 600;">${quantityText}</span>
