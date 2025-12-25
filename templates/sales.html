@@ -2635,14 +2635,25 @@
             return text;
         }
         
+        // HTML maxsus belgilarini escape qilish
+        const escapeHtml = (str) => {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        };
+        
+        // Matnni avval escape qilish
+        let highlightedText = escapeHtml(text);
+        
         // Qidiruv so'zlarini ajratish
         const searchWords = searchTerm.trim().split(/\s+/);
-        let highlightedText = text;
         
         // Har bir so'zni highlight qilish
         searchWords.forEach(word => {
             if (word) {
-                const regex = new RegExp(`(${word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+                // Qidiruv so'zini ham escape qilish
+                const escapedWord = escapeHtml(word);
+                const regex = new RegExp(`(${escapedWord.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
                 highlightedText = highlightedText.replace(regex, '<span class="search-highlight">$1</span>');
             }
         });
