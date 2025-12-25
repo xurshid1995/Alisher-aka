@@ -2421,7 +2421,7 @@
                     <div class="form-row">
                         <label for="customerSearch-{TAB_ID}">👤 Mijoz tanlash:</label>
                         <div class="customer-search-container">
-                            <input type="text" id="customerSearch-{TAB_ID}" class="form-input" placeholder="Mijoz nomini kiriting (ixtiyoriy)..." onkeyup="if(!['ArrowDown','ArrowUp','Enter','Escape'].includes(event.key)) searchCustomers('{TAB_ID}')" onkeydown="handleCustomerKeyNavigation(event, '{TAB_ID}')">
+                            <input type="text" id="customerSearch-{TAB_ID}" class="form-input" placeholder="Misol: Ahm Jon (qisman so'zlar)" onkeyup="if(!['ArrowDown','ArrowUp','Enter','Escape'].includes(event.key)) searchCustomers('{TAB_ID}')" onkeydown="handleCustomerKeyNavigation(event, '{TAB_ID}')">
                             <div id="customerDropdown-{TAB_ID}" class="customer-dropdown" style="display: none;"></div>
                             <input type="hidden" id="selectedCustomerId-{TAB_ID}" value="">
                         </div>
@@ -2432,7 +2432,7 @@
                         <div class="form-group">
                             <label for="productSearch-{TAB_ID}">🔍 Mahsulot qidirish:</label>
                             <div class="product-search-container">
-                                <input type="text" id="productSearch-{TAB_ID}" class="form-input" placeholder="Mahsulot nomini kiriting (min 2 harf)..." onkeyup="if(!['ArrowDown','ArrowUp','Enter','Escape'].includes(event.key)) debouncedSearchProducts('{TAB_ID}')" onkeydown="handleProductKeyNavigation(event, '{TAB_ID}')">
+                                <input type="text" id="productSearch-{TAB_ID}" class="form-input" placeholder="Misol: Mat gra weis (qisman so'zlar)" onkeyup="if(!['ArrowDown','ArrowUp','Enter','Escape'].includes(event.key)) debouncedSearchProducts('{TAB_ID}')" onkeydown="handleProductKeyNavigation(event, '{TAB_ID}')">
                                 <div id="productDropdown-{TAB_ID}" class="product-dropdown" style="display: none;"></div>
                             </div>
                         </div>
@@ -2629,6 +2629,27 @@
         return result;
     }
 
+    // Qidiruv matnini ajratib ko'rsatish funksiyasi (har bir so'zni alohida)
+    function highlightSearchText(text, searchTerm) {
+        if (!searchTerm || searchTerm.trim() === '') {
+            return text;
+        }
+        
+        // Qidiruv so'zlarini ajratish
+        const searchWords = searchTerm.trim().split(/\s+/);
+        let highlightedText = text;
+        
+        // Har bir so'zni highlight qilish
+        searchWords.forEach(word => {
+            if (word) {
+                const regex = new RegExp(`(${word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+                highlightedText = highlightedText.replace(regex, '<span class="search-highlight">$1</span>');
+            }
+        });
+        
+        return highlightedText;
+    }
+
     // Narxni formatlash (USD va som)
     function formatPrice(usdAmount) {
         const usdFormatted = parseFloat(usdAmount).toFixed(2);
@@ -2815,7 +2836,11 @@
         if (!currentTabId) return;
         
         const dropdown = document.getElementById(`customerDropdown-${currentTabId}`);
+        const customerSearchInput = document.getElementById(`customerSearch-${currentTabId}`);
         if (!dropdown) return;
+        
+        // Qidiruv matnini olish
+        const searchTerm = customerSearchInput ? customerSearchInput.value.trim() : '';
         
         if (customers.length === 0) {
             dropdown.innerHTML = '<div class="dropdown-item" style="color: #6c757d; text-align: center;">Mijoz topilmadi</div>';
@@ -2824,11 +2849,16 @@
         }
 
         let dropdownHtml = '';
-        customers.forEach((customer, index) => { // Barcha mijozlarni ko'rsatish
+        customers.forEach((customer, index) => {
+            // Highlight qilish
+            const highlightedName = highlightSearchText(customer.name, searchTerm);
+            const highlightedPhone = customer.phone ? highlightSearchText(customer.phone, searchTerm) : 'N/A';
+            const highlightedEmail = customer.email ? highlightSearchText(customer.email, searchTerm) : 'N/A';
+            
             dropdownHtml += `
                 <div class="dropdown-item" data-customer-id="${customer.id}" onclick="selectCustomer(${customer.id}, '${currentTabId}')">
-                    <strong>${customer.name}</strong><br>
-                    <small>Tel: ${customer.phone || 'N/A'} | Email: ${customer.email || 'N/A'}</small>
+                    <strong>${highlightedName}</strong><br>
+                    <small>Tel: ${highlightedPhone} | Email: ${highlightedEmail}</small>
                 </div>
             `;
         });
@@ -3226,7 +3256,11 @@
         if (!currentTabId) return;
         
         const dropdown = document.getElementById(`productDropdown-${currentTabId}`);
+        const productSearchInput = document.getElementById(`productSearch-${currentTabId}`);
         if (!dropdown) return;
+        
+        // Qidiruv matnini olish
+        const searchTerm = productSearchInput ? productSearchInput.value.trim() : '';
         
         if (products.length === 0) {
             dropdown.style.display = 'none';
@@ -3234,10 +3268,13 @@
         }
 
         let dropdownHtml = '';
-        products.forEach((product, index) => { // Barcha mahsulotlarni ko'rsatish
+        products.forEach((product, index) => {
             const availableQty = product.available_quantity || product.total_stock || 0;
             const quantityText = product.location_type === 'warehouse' ? `Omborda: ${availableQty}` : `${availableQty}`;
             const uzsPrice = Math.round((product.price || 0) * USD_TO_UZS_RATE);
+            
+            // Mahsulot nomini highlight qilish
+            const highlightedName = highlightSearchText(product.name, searchTerm);
             
             // Mahsulot ma'lumotlarini JSON formatda saqlash
             const productDataJson = JSON.stringify(product).replace(/"/g, '&quot;');
@@ -3245,7 +3282,7 @@
             dropdownHtml += `
                 <div class="product-dropdown-item" data-product-id="${product.id}" data-product-data="${productDataJson}" onclick="selectProductFromDropdown(this, '${currentTabId}')">
                     <div class="product-dropdown-content" style="display: flex; justify-content: space-between; align-items: center;">
-                        <strong style="color: #2c3e50; font-size: 1.1rem;">${product.name}</strong>
+                        <strong style="color: #2c3e50; font-size: 1.1rem;">${highlightedName}</strong>
                         <div style="display: flex; align-items: center; gap: 10px;">
                             <span style="color: #28a745; font-weight: 600;">$${product.price || '0.00'} / ${uzsPrice.toLocaleString()} So'm</span>
                             <span class="quantity-badge" style="color: white !important; background-color: #28a745; padding: 2px 6px; border-radius: 3px; font-weight: 600;">${quantityText}</span>

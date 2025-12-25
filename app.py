@@ -1226,7 +1226,12 @@ def api_search_products_by_location(location_type, location_id):
             ).filter(WarehouseStock.warehouse_id == location_id)
 
             if search_term:
-                query = query.filter(Product.name.ilike(f'%{search_term}%'))
+                # Qidiruv so'zlarini bo'laklarga ajratish
+                search_words = search_term.lower().split()
+                # Har bir so'z uchun filter qo'shish
+                for word in search_words:
+                    if word:
+                        query = query.filter(Product.name.ilike(f'%{word}%'))
 
             stocks = query.limit(limit).all()
 
@@ -1246,7 +1251,12 @@ def api_search_products_by_location(location_type, location_id):
             ).filter(StoreStock.store_id == location_id)
 
             if search_term:
-                query = query.filter(Product.name.ilike(f'%{search_term}%'))
+                # Qidiruv so'zlarini bo'laklarga ajratish
+                search_words = search_term.lower().split()
+                # Har bir so'z uchun filter qo'shish
+                for word in search_words:
+                    if word:
+                        query = query.filter(Product.name.ilike(f'%{word}%'))
 
             stocks = query.limit(limit).all()
 
