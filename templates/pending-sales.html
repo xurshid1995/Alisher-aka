@@ -1900,7 +1900,7 @@ function showSaleDetailsModal(sale) {
                         </div>
                         <div class="info-row">
                             <span class="info-label">Sana:</span>
-                            <span class="info-value">${new Date(sale.sale_date).toLocaleString('uz-UZ')}</span>
+                            <span class="info-value">${new Date(sale.sale_date).toLocaleString('uz-UZ', { timeZone: 'Asia/Tashkent' })}</span>
                         </div>
                         <div class="info-row">
                             <span class="info-label">Mijoz:</span>
@@ -2102,7 +2102,7 @@ function generatePrintableReceipt(sale) {
                 <div class="shop-name">${sale.store_name || 'Do\'kon'}</div>
                 <div class="receipt-info">
                     <div>Chek #${sale.id}</div>
-                    <div>${new Date(sale.sale_date).toLocaleString('uz-UZ')}</div>
+                    <div>${new Date(sale.sale_date).toLocaleString('uz-UZ', { timeZone: 'Asia/Tashkent' })}</div>
                     <div>Kassir: ${sale.created_by || 'System'}</div>
                 </div>
             </div>

@@ -873,7 +873,7 @@ function showSaleDetailsModal(sale) {
     const content = document.getElementById('saleDetailsContent');
     
     const saleDate = new Date(sale.sale_date);
-    const formattedDate = saleDate.toLocaleString('uz-UZ');
+    const formattedDate = saleDate.toLocaleString('uz-UZ', { timeZone: 'Asia/Tashkent' });
     
     let itemsHtml = '';
     if (sale.items && sale.items.length > 0) {
@@ -960,7 +960,7 @@ function printSaleReceipt() {
     receiptText += '================================\n';
     receiptText += '         SAVDO CHEKI\n';
     receiptText += '================================\n';
-    receiptText += 'Sana: ' + new Date(sale.sale_date).toLocaleString('uz-UZ') + '\n';
+    receiptText += 'Sana: ' + new Date(sale.sale_date).toLocaleString('uz-UZ', { timeZone: 'Asia/Tashkent' }) + '\n';
     receiptText += 'Mijoz: ' + (sale.customer_name || 'Noma\'lum') + '\n';
     if (sale.customer_phone) {
         receiptText += 'Tel: ' + sale.customer_phone + '\n';

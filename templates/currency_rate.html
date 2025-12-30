@@ -302,7 +302,7 @@
         
         // Oxirgi yangilanish ma'lumoti
         const updateDate = new Date(rate.updated_date || Date.now());
-        const formattedDate = updateDate.toLocaleString('uz-UZ');
+        const formattedDate = updateDate.toLocaleString('uz-UZ', { timeZone: 'Asia/Tashkent' });
         rateInfoElement.innerHTML = `
             Oxirgi yangilanish: ${formattedDate}<br>
             Yangilagan: ${rate.updated_by || 'System'}
@@ -345,7 +345,7 @@
             
             // Sanani formatlash
             const date = new Date(rate.updated_date || rate.created_date);
-            const formattedDate = date.toLocaleString('uz-UZ');
+            const formattedDate = date.toLocaleString('uz-UZ', { timeZone: 'Asia/Tashkent' });
             
             // Kursni formatlash
             const formattedRate = parseFloat(rate.rate).toLocaleString('uz-UZ');
