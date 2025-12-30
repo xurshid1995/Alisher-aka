@@ -744,12 +744,16 @@ class SaleItem(db.Model):
     def to_dict(self):
         # Joylashuv nomini olish
         location_name = 'Noma\'lum'
-        if self.source_type == 'warehouse' and self.source_id:
-            warehouse = Warehouse.query.get(self.source_id)
-            location_name = f"Ombor: {warehouse.name}" if warehouse else f"Ombor (ID: {self.source_id})"
-        elif self.source_type == 'store' and self.source_id:
-            store = Store.query.get(self.source_id)
-            location_name = f"Dokon: {store.name}" if store else f"Dokon (ID: {self.source_id})"
+        try:
+            if self.source_type == 'warehouse' and self.source_id:
+                warehouse = Warehouse.query.get(self.source_id)
+                location_name = f"Ombor: {warehouse.name}" if warehouse else f"Ombor (ID: {self.source_id})"
+            elif self.source_type == 'store' and self.source_id:
+                store = Store.query.get(self.source_id)
+                location_name = f"Dokon: {store.name}" if store else f"Dokon (ID: {self.source_id})"
+        except Exception as e:
+            app.logger.error(f"Error getting location name for SaleItem {self.id}: {str(e)}")
+            location_name = f"{self.source_type.title()} (ID: {self.source_id})" if self.source_type and self.source_id else 'Noma\'lum'
 
         return {
             'id': self.id,
@@ -4882,7 +4886,17 @@ def api_sales_history():
                     'profit': float(profit or 0)
                 })
 
-        sales_list = [sale.to_dict() for sale in sales]
+        # Sales list conversion with error handling
+        sales_list = []
+        for sale in sales:
+            try:
+                sales_list.append(sale.to_dict())
+            except Exception as e:
+                app.logger.error(f"Error converting sale {sale.id} to dict: {str(e)}")
+                app.logger.exception("Full traceback:")
+                # Skip this sale and continue
+                continue
+        
         logger.debug(f" API javobida yuborilayotgan sales: {len(sales_list)} ta")
         if sales_list:
             logger.debug(f" Birinchi sale sample: {sales_list[0]}")
@@ -4929,6 +4943,7 @@ def api_sales_history():
 
     except Exception as e:
         app.logger.error(f"Error fetching sales history: {str(e)}")
+        app.logger.exception("Full traceback for sales history error:")
         return jsonify({
             'success': False,
             'error': str(e),
