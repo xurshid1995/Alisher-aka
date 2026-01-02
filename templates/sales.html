@@ -65,12 +65,13 @@
                         <tr style="background: #f8f9fa; border-bottom: 2px solid #dee2e6;">
                             <th style="padding: 10px 8px; text-align: left; font-size: 13px; color: #495057; min-width: 290px; width: 290px; word-wrap: break-word; white-space: normal; border-right: 1px solid #dee2e6;">Mahsulot</th>
                             <th style="padding: 10px 8px; text-align: center; font-size: 13px; color: #495057; min-width: 50px; width: 50px; word-wrap: break-word; white-space: normal; border-right: 1px solid #dee2e6;">Mavjud</th>
-                            <th style="padding: 10px 8px; text-align: left; font-size: 13px; color: #495057; min-width: 160px; width: 160px; word-wrap: break-word; white-space: normal;">Narx</th>
+                            <th style="padding: 10px 8px; text-align: left; font-size: 13px; color: #495057; min-width: 160px; width: 160px; word-wrap: break-word; white-space: normal; border-right: 1px solid #dee2e6;">Narx</th>
+                            <th style="padding: 10px 8px; text-align: center; font-size: 13px; color: #495057; min-width: 20px; width: 20px; word-wrap: break-word; white-space: normal;">Amal</th>
                         </tr>
                     </thead>
                     <tbody id="productsTable">
                         <tr>
-                            <td colspan="3" style="text-align: center; padding: 30px; color: #999;">
+                            <td colspan="4" style="text-align: center; padding: 30px; color: #999;">
                                 Joylashuvni tanlang
                             </td>
                         </tr>
@@ -182,7 +183,7 @@
             return;
         }
         
-        tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; padding: 30px; color: #999;">⏳ Yuklanmoqda...</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 30px; color: #999;">⏳ Yuklanmoqda...</td></tr>';
         
         try {
             const [type, id] = locationValue.split('_');
@@ -195,7 +196,7 @@
             const products = Array.isArray(data) ? data : (data.products || []);
             
             if (products.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; padding: 30px; color: #999;">Mahsulotlar topilmadi</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 30px; color: #999;">Mahsulotlar topilmadi</td></tr>';
                 return;
             }
             
@@ -232,9 +233,12 @@
                     <td style="padding: 12px 8px; text-align: center; font-size: 14px; word-wrap: break-word; white-space: normal; border-right: 1px solid #eee;">
                         <span style="background: #28a745; color: white; padding: 4px 8px; border-radius: 4px; font-weight: 500; display: inline-block;">${quantity}</span>
                     </td>
-                    <td style="padding: 12px 8px; text-align: left; font-size: 14px; word-wrap: break-word; white-space: normal;">
+                    <td style="padding: 12px 8px; text-align: left; font-size: 14px; word-wrap: break-word; white-space: normal; border-right: 1px solid #eee;">
                         <span style="background: #ffc107; color: white; padding: 4px 8px; border-radius: 4px; font-weight: 500; margin-right: 6px; display: inline-block;">$${formatPrice(sellingPrice)}</span>
                         <span style="background: #5cb3ff; color: white; padding: 4px 8px; border-radius: 4px; font-weight: 500; display: inline-block;">${formatPrice(sellingPrice * 12650)} so'm</span>
+                    </td>
+                    <td style="padding: 12px 8px; text-align: center; font-size: 14px;">
+                        <button onclick="addToCart(${product.id}, '${product.name.replace(/'/g, "\\'")}', ${quantity}, ${sellingPrice})" style="background: #007bff; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px;">+</button>
                     </td>
                 `;
                 tbody.appendChild(row);
@@ -243,8 +247,14 @@
             console.log(`✅ ${products.length} ta mahsulot yuklandi`);
         } catch (error) {
             console.error('Mahsulotlarni yuklashda xatolik:', error);
-            tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; padding: 30px; color: #dc3545;">⚠️ Xatolik yuz berdi</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 30px; color: #dc3545;">⚠️ Xatolik yuz berdi</td></tr>';
         }
+    }
+    
+    // Mahsulotni savatga qo'shish
+    function addToCart(productId, productName, quantity, price) {
+        console.log(`➕ Savatga qo'shildi: ${productName} (ID: ${productId})`);
+        // Bu yerda savat logikasini qo'shish kerak
     }
     
     // Mahsulot qidirish funksiyasi
