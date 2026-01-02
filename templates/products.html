@@ -246,11 +246,21 @@
     }
 
     .stock-badge {
-        padding: 0.25rem 0.75rem;
+        padding: 0.25rem 0.5rem;
         border-radius: 20px;
-        font-size: 0.85rem;
+        font-size: 0.8rem;
         font-weight: bold;
         text-align: center;
+        white-space: nowrap;
+    }
+
+    /* Holat ustuni uchun max-width */
+    .products-table th:nth-child(5),
+    .products-table td:nth-child(5) {
+        max-width: 100px;
+        width: 100px;
+        padding-left: 0.5rem !important;
+        padding-right: 0.5rem !important;
     }
 
     .stock-high {
