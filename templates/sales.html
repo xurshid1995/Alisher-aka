@@ -2556,19 +2556,26 @@
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
                     <div>
                         <label style="display: block; margin-bottom: 5px; font-size: 14px; color: #666;">📍 Joylashuvni tanlang:</label>
-                        <select style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                        <select id="newLocationSelect" onchange="loadNewTableProducts()" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
                             <option value="">Tanlang...</option>
                         </select>
                     </div>
                     <div>
                         <label style="display: block; margin-bottom: 5px; font-size: 14px; color: #666;">👤 Mijozni tanlang:</label>
-                        <input type="text" placeholder="Mijoz qidirish..." style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                        <input type="text" id="newCustomerSearch" placeholder="Mijoz qidirish..." style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
                     </div>
                 </div>
                 
                 <div style="overflow: hidden;">
                 <table style="width: 100%; border-collapse: collapse; table-layout: fixed;">
-                    <tbody>
+                    <thead>
+                        <tr style="background: #f8f9fa; border-bottom: 2px solid #dee2e6;">
+                            <th style="padding: 10px; text-align: left; font-size: 13px; color: #495057;">Mahsulot</th>
+                            <th style="padding: 10px; text-align: center; font-size: 13px; color: #495057; width: 80px;">Mavjud</th>
+                            <th style="padding: 10px; text-align: right; font-size: 13px; color: #495057; width: 100px;">Narx</th>
+                        </tr>
+                    </thead>
+                    <tbody id="newProductsTable">
                         <!-- Ma'lumotlar bu yerda -->
                     </tbody>
                 </table>
@@ -2794,12 +2801,90 @@
             Object.keys(tabs).forEach(tabId => {
                 populateTabSelects(tabId);
             });
+            
+            // Yangi jadval uchun joylashuvlarni to'ldirish
+            populateNewLocationSelect();
         } catch (error) {
             console.error('Error loading locations:', error);
             allLocations = [];
             allStores = [];
             allWarehouses = [];
         }
+    }
+    
+    // Yangi jadval uchun joylashuvlarni to'ldirish
+    function populateNewLocationSelect() {
+        const locationSelect = document.getElementById('newLocationSelect');
+        if (locationSelect && allLocations.length > 0) {
+            locationSelect.innerHTML = '<option value="">Tanlang...</option>';
+            
+            allLocations.forEach(location => {
+                const option = document.createElement('option');
+                option.value = `${location.type}_${location.id}`;
+                
+                let locationType = location.type === 'warehouse' ? '🏭 Ombor' : '🏪 Do\'kon';
+                option.textContent = `${locationType}: ${location.name}`;
+                locationSelect.appendChild(option);
+            });
+            
+            console.log(`✅ Yangi jadval uchun ${allLocations.length} ta joylashuv to'ldirildi`);
+        }
+    }
+    
+    // Yangi jadval uchun mahsulotlarni yuklash
+    async function loadNewTableProducts() {
+        const locationSelect = document.getElementById('newLocationSelect');
+        const tbody = document.getElementById('newProductsTable');
+        
+        if (!locationSelect || !tbody) {
+            console.error('Elementlar topilmadi');
+            return;
+        }
+        
+        const locationValue = locationSelect.value;
+        
+        if (!locationValue) {
+            tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; padding: 20px; color: #999;">Joylashuvni tanlang</td></tr>';
+            return;
+        }
+        
+        // Loading ko'rsatish
+        tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; padding: 20px; color: #999;">⏳ Yuklanmoqda...</td></tr>';
+        
+        try {
+            const [type, id] = locationValue.split('_');
+            const response = await fetch(`/api/products?location_type=${type}&location_id=${id}`);
+            const products = await response.json();
+            
+            if (products.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; padding: 20px; color: #999;">Mahsulotlar topilmadi</td></tr>';
+                return;
+            }
+            
+            // Mahsulotlarni jadvalga qo'shish
+            tbody.innerHTML = '';
+            products.forEach(product => {
+                const row = document.createElement('tr');
+                row.style.borderBottom = '1px solid #f0f0f0';
+                row.innerHTML = `
+                    <td style="padding: 10px; font-size: 13px; color: #333;">${product.name}</td>
+                    <td style="padding: 10px; text-align: center; font-size: 13px; color: #28a745; font-weight: 500;">${product.quantity || 0}</td>
+                    <td style="padding: 10px; text-align: right; font-size: 13px; color: #333; font-weight: 500;">${formatPrice(product.selling_price)} so'm</td>
+                `;
+                tbody.appendChild(row);
+            });
+            
+            console.log(`✅ ${products.length} ta mahsulot yuklandi`);
+        } catch (error) {
+            console.error('Error loading products:', error);
+            tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; padding: 20px; color: #dc3545;">⚠️ Xatolik yuz berdi</td></tr>';
+        }
+    }
+    
+    // Narxni formatlash funksiyasi
+    function formatPrice(price) {
+        if (!price) return '0';
+        return Number(price).toLocaleString('uz-UZ');
     }
 
     // Mijozlarni yuklash
