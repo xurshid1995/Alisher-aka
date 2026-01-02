@@ -2389,6 +2389,55 @@
     <div id="tabsContent">
         <!-- Tablar bu yerga qo'shiladi -->
     </div>
+    
+    <!-- Ikkita jadval bir xil kenglikda -->
+    <div style="display: grid; grid-template-columns: 665px 665px; gap: 20px; padding: 20px; justify-content: center; margin-top: 20px;">
+        <!-- Birinchi jadval -->
+        <div style="background: white; border-radius: 8px; padding: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); overflow: hidden;">
+            <h3 style="margin-top: 0; margin-bottom: 15px; color: #333;">Jadval 1</h3>
+            
+            <!-- Joylashuv va Mijoz tanlash bir qatorda -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+                <div>
+                    <label style="display: block; margin-bottom: 5px; font-size: 14px; color: #666;">📍 Joylashuvni tanlang:</label>
+                    <select id="newLocationSelect" onchange="loadNewTableProducts()" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                        <option value="">Tanlang...</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 5px; font-size: 14px; color: #666;">👤 Mijozni tanlang:</label>
+                    <input type="text" id="newCustomerSearch" placeholder="Mijoz qidirish..." style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                </div>
+            </div>
+            
+            <div style="overflow: hidden;">
+            <table style="width: 100%; border-collapse: collapse; table-layout: fixed;">
+                <thead>
+                    <tr style="background: #f8f9fa; border-bottom: 2px solid #dee2e6;">
+                        <th style="padding: 10px; text-align: left; font-size: 13px; color: #495057;">Mahsulot</th>
+                        <th style="padding: 10px; text-align: center; font-size: 13px; color: #495057; width: 80px;">Mavjud</th>
+                        <th style="padding: 10px; text-align: right; font-size: 13px; color: #495057; width: 100px;">Narx</th>
+                    </tr>
+                </thead>
+                <tbody id="newProductsTable">
+                    <!-- Ma'lumotlar bu yerda -->
+                </tbody>
+            </table>
+            </div>
+        </div>
+        
+        <!-- Ikkinchi jadval -->
+        <div style="background: white; border-radius: 8px; padding: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); overflow: hidden;">
+            <h3 style="margin-top: 0; margin-bottom: 15px; color: #333;">Jadval 2</h3>
+            <div style="overflow: hidden;">
+            <table style="width: 100%; border-collapse: collapse; table-layout: fixed;">
+                <tbody>
+                    <!-- Ma'lumotlar bu yerda -->
+                </tbody>
+            </table>
+            </div>
+        </div>
+    </div>
 </div>
 
 <!-- Sale Tab Template -->
