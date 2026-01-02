@@ -95,7 +95,7 @@ body {
 }
 
 .sidebar-menu li {
-    margin: 2px 0;
+    margin: 0px 0; /* Bo'shliqni olib tashladik */
 }
 
 .sidebar-menu a {
