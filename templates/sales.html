@@ -63,7 +63,7 @@
                         <tr style="background: #f8f9fa; border-bottom: 2px solid #dee2e6;">
                             <th style="padding: 10px 8px; text-align: left; font-size: 13px; color: #495057; min-width: 300px; word-wrap: break-word; white-space: normal; border-right: 1px solid #dee2e6;">Mahsulot</th>
                             <th style="padding: 10px 8px; text-align: center; font-size: 13px; color: #495057; min-width: 80px; width: 80px; word-wrap: break-word; white-space: normal; border-right: 1px solid #dee2e6;">Mavjud</th>
-                            <th style="padding: 10px 8px; text-align: center; font-size: 13px; color: #495057; min-width: 150px; width: 150px; word-wrap: break-word; white-space: normal;">Narx</th>
+                            <th style="padding: 10px 8px; text-align: left; font-size: 13px; color: #495057; min-width: 150px; width: 150px; word-wrap: break-word; white-space: normal;">Narx</th>
                         </tr>
                     </thead>
                     <tbody id="productsTable">
@@ -173,7 +173,7 @@
                 row.innerHTML = `
                     <td style="padding: 12px 8px; font-size: 14px; color: #333; word-wrap: break-word; white-space: normal; border-right: 1px solid #eee;" title="${product.name || 'N/A'}">${product.name || 'N/A'}</td>
                     <td style="padding: 12px 8px; text-align: center; font-size: 14px; color: #28a745; font-weight: 500; word-wrap: break-word; white-space: normal; border-right: 1px solid #eee;">${quantity}</td>
-                    <td style="padding: 12px 8px; text-align: center; font-size: 14px; color: #333; font-weight: 500; word-wrap: break-word; white-space: normal;">$${formatPrice(sellingPrice)}</td>
+                    <td style="padding: 12px 8px; text-align: left; font-size: 14px; color: #333; font-weight: 500; word-wrap: break-word; white-space: normal;">$${formatPrice(sellingPrice)} so'm</td>
                 `;
                 tbody.appendChild(row);
             });
