@@ -790,7 +790,7 @@
                     const minStock = parseInt(row['Minimal qoldiq'] || row['minimal qoldiq'] || row['Min qoldiq'] || row['min qoldiq'] || 0);
                     // Narxlarni to'g'ri formatga keltirish (vergul o'rniga nuqta)
                     let costPriceRaw = row['Tan narx'] || row['tan narx'] || row['Tan narxi'] || row['tan narxi'] || 0;
-                    let sellPriceRaw = row['Sotish narxi'] || row['sotish narxi'] || row['Sotuv narxi'] || row['sotuv narxi'] || 0;
+                    let sellPriceRaw = row['Sotish narxi'] || row['sotish narxi'] || row['Sotish narx'] || row['sotish narx'] || row['Sotuv narxi'] || row['sotuv narxi'] || 0;
                     
                     // Agar string bo'lsa, vergulni nuqtaga almashtirish
                     if (typeof costPriceRaw === 'string') {
