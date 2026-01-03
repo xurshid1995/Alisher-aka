@@ -251,13 +251,8 @@
         
         // Savdo korzinasi sarlavhasida mijoz ma'lumotlarini ko'rsatish
         const cartCustomerInfo = document.getElementById('cartCustomerInfo');
-        cartCustomerInfo.innerHTML = `
-            <div>
-                <h3 style="margin: 0; color: #333; font-size: 16px;">👤 Mijoz</h3>
-                <div style="font-size: 14px; color: #007bff; font-weight: 600; margin-top: 4px;">${name}</div>
-                ${phone ? `<div style="font-size: 12px; color: #6c757d; margin-top: 2px;">${phone}</div>` : ''}
-            </div>
-        `;
+        const customerDisplay = phone ? `👤 ${name} ${phone}` : `👤 ${name}`;
+        cartCustomerInfo.innerHTML = `<h3 style="margin: 0; color: #007bff; font-size: 15px; font-weight: 600;">${customerDisplay}</h3>`;
         
         console.log(`✅ Mijoz tanlandi: ${name} (ID: ${id})`);
     }
