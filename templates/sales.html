@@ -1056,16 +1056,52 @@
     });
     
     // Savatni tozalash
-    function clearCart() {
+    async function clearCart() {
         if (cart.length === 0) {
             alert('Savat allaqachon bo\'sh!');
             return;
         }
-        if (confirm('Savatni tozalashni xohlaysizmi?')) {
-            cart = [];
-            updateCart();
-            console.log('🗑️ Savat tozalandi');
+        
+        if (!confirm('Savatni tozalashni xohlaysizmi? Barcha mahsulotlar stokga qaytariladi.')) {
+            return;
         }
+        
+        // Barcha mahsulotlarni stokga qaytarish
+        console.log('🔄 Barcha mahsulotlarni stokga qaytarish...');
+        
+        for (const item of cart) {
+            try {
+                const response = await fetch('/api/return-stock', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        product_id: item.id,
+                        quantity: item.quantity,
+                        location_id: selectedLocationId,
+                        location_type: selectedLocationType
+                    })
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    console.log(`✅ ${item.name}: ${item.quantity} dona stokga qaytarildi`);
+                } else {
+                    console.error(`❌ ${item.name}: Stokga qaytarishda xatolik - ${result.error}`);
+                }
+            } catch (error) {
+                console.error(`❌ ${item.name}: Stok qaytarish xatosi:`, error);
+            }
+        }
+        
+        // Korzinani tozalash
+        cart = [];
+        updateCart();
+        
+        // Mahsulotlar jadvalini yangilash
+        await loadProducts();
+        
+        console.log('🗑️ Savat tozalandi va barcha mahsulotlar stokga qaytarildi');
+        alert('✅ Savat tozalandi va mahsulotlar stokga qaytarildi');
     }
     
     // Keyinroq tasdiqlash
