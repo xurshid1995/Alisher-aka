@@ -1609,6 +1609,7 @@ def api_batch_products():
             location_type = product_data['location_type']
             location_id = int(product_data['location_id'])
             name = product_data['name']
+            barcode = product_data.get('barcode', None)  # Barcode olish
             quantity = float(product_data['quantity'])
             cost_price = Decimal(str(product_data['cost_price']))
             sell_price = Decimal(str(product_data['sell_price']))
@@ -1616,6 +1617,7 @@ def api_batch_products():
             last_batch_cost = Decimal(str(product_data.get('lastBatchCost', cost_price)))
             
             logger.info(f"🔍 Batch mahsulot qo'shilmoqda: {name}")
+            logger.info(f"   Barcode: {barcode}")
             logger.info(f"   Tan narx (cost_price - ortacha): ${cost_price}")
             logger.info(f"   Asl tan narx (lastBatchCost): ${last_batch_cost}")
             logger.info(f"   Sotish narx: ${sell_price}")
@@ -1628,6 +1630,7 @@ def api_batch_products():
                 logger.info(f"✨ Yangi mahsulot yaratilmoqda")
                 product = Product(
                     name=name,
+                    barcode=barcode,  # Barcode saqlash
                     cost_price=cost_price,
                     sell_price=sell_price,
                     last_batch_cost=last_batch_cost,  # Frontend'dan kelgan qiymat
@@ -1636,7 +1639,7 @@ def api_batch_products():
                 )
                 db.session.add(product)
                 db.session.flush()  # ID olish uchun
-                logger.info(f"✅ Yangi mahsulot yaratildi - ID: {product.id}, cost_price: ${product.cost_price}, last_batch_cost: ${product.last_batch_cost}")
+                logger.info(f"✅ Yangi mahsulot yaratildi - ID: {product.id}, barcode: {product.barcode}, cost_price: ${product.cost_price}, last_batch_cost: ${product.last_batch_cost}")
             else:
                 # Mavjud mahsulot - Frontend'dan ortacha narx va asl narx keladi
                 logger.info(f"♻️ Mavjud mahsulot yangilanmoqda - ID: {product.id}")
@@ -1647,11 +1650,15 @@ def api_batch_products():
                 # Ortacha narxni yangilash
                 product.cost_price = cost_price
                 
+                # Barcode yangilash (agar kiritilgan bo'lsa)
+                if barcode:
+                    product.barcode = barcode
+                
                 # Oxirgi partiya ma'lumotlarini saqlash
                 product.last_batch_cost = last_batch_cost
                 product.last_batch_date = get_tashkent_time()
                 
-                logger.info(f"✅ Yangilandi - cost_price: ${product.cost_price}, last_batch_cost: ${product.last_batch_cost}")
+                logger.info(f"✅ Yangilandi - barcode: {product.barcode}, cost_price: ${product.cost_price}, last_batch_cost: ${product.last_batch_cost}")
                 
                 # Boshqa maydonlar
                 product.sell_price = sell_price

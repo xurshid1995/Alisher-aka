@@ -1768,6 +1768,7 @@
                     
                     return {
                         name: product.name,
+                        barcode: product.barcode || null, // Barcode qo'shish
                         cost_price: product.cost_price, // Ortacha tan narx
                         lastBatchCost: product.last_batch_cost, // Foydalanuvchi kiritgan asl qiymat
                         sell_price: product.sell_price,
