@@ -870,11 +870,16 @@
     
     // Qolgan summani maydonga qo'shish
     function addRemainingToField(fieldId) {
+        console.log('🔧 addRemainingToField chaqirildi:', fieldId);
+        
         // Jami summani hisoblash
         let totalUSD = 0;
         cart.forEach(item => {
             totalUSD += item.priceUSD * item.quantity;
         });
+        
+        console.log('💰 Jami summa (USD):', totalUSD);
+        console.log('💱 Exchange rate:', exchangeRate);
         
         // Hozirgi to'lovlarni hisoblash (USD + UZS/kurs)
         const cashUSD = parseFloat(document.getElementById('paymentCashUSD').value) || 0;
@@ -886,6 +891,8 @@
         const debtUSD = parseFloat(document.getElementById('paymentDebtUSD').value) || 0;
         const debtUZS = parseFloat(document.getElementById('paymentDebtUZS').value) || 0;
         
+        console.log('💵 Hozirgi to\'lovlar:', { cashUSD, cashUZS, clickUSD, clickUZS, terminalUSD, terminalUZS, debtUSD, debtUZS });
+        
         const cash = cashUSD + (cashUZS / exchangeRate);
         const click = clickUSD + (clickUZS / exchangeRate);
         const terminal = terminalUSD + (terminalUZS / exchangeRate);
@@ -894,6 +901,9 @@
         const currentTotal = cash + click + terminal + debt;
         const remaining = totalUSD - currentTotal;
         
+        console.log('📊 Hozirgi jami:', currentTotal);
+        console.log('📊 Qolgan:', remaining);
+        
         if (remaining > 0) {
             const currentValue = parseFloat(document.getElementById(fieldId).value) || 0;
             const newUSDValue = currentValue + remaining;
@@ -901,15 +911,18 @@
             
             // UZS maydonini ham yangilash
             const uzsFieldId = fieldId.replace('USD', 'UZS');
+            console.log('🔄 UZS maydon ID:', uzsFieldId);
+            
             if (document.getElementById(uzsFieldId)) {
                 const currentUZSValue = parseFloat(document.getElementById(uzsFieldId).value) || 0;
                 const newUZSValue = currentUZSValue + Math.round(remaining * exchangeRate);
                 document.getElementById(uzsFieldId).value = newUZSValue;
+                console.log(`➕ Qolgan $${remaining.toFixed(2)} (${Math.round(remaining * exchangeRate)} so'm) ${fieldId} ga qo'shildi`);
+            } else {
+                console.error('❌ UZS maydoni topilmadi:', uzsFieldId);
             }
-            
-            console.log(`➕ Qolgan $${remaining.toFixed(2)} ${fieldId} ga qo'shildi`);
         } else {
-            console.log('✅ To\'lov to\'liq');
+            console.log('✅ To\'lov to\'liq yoki ortiqcha');
         }
     }
     
