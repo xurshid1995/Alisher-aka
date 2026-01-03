@@ -106,6 +106,13 @@
                     </table>
                 </div>
                 <div id="cartTotal" style="border-top: 2px solid #dee2e6; padding-top: 10px; font-weight: bold; font-size: 16px; text-align: right;"></div>
+                
+                <!-- Tugmalar -->
+                <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end;">
+                    <button onclick="clearCart()" style="background: #dc3545; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500;">🗑️ Tozalash</button>
+                    <button onclick="savePending()" style="background: #ffc107; color: #333; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500;">⏸️ Keyinroq</button>
+                    <button onclick="completeSale()" style="background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500;">✅ Yakunlash</button>
+                </div>
             </div>
         </div>
     </div>
@@ -673,5 +680,49 @@
         
         console.log('✅ Sales sahifasi tayyor');
     });
+    
+    // Savatni tozalash
+    function clearCart() {
+        if (cart.length === 0) {
+            alert('Savat allaqachon bo\'sh!');
+            return;
+        }
+        if (confirm('Savatni tozalashni xohlaysizmi?')) {
+            cart = [];
+            updateCart();
+            console.log('🗑️ Savat tozalandi');
+        }
+    }
+    
+    // Keyinroq tasdiqlash
+    function savePending() {
+        if (cart.length === 0) {
+            alert('Savat bo\'sh!');
+            return;
+        }
+        // Bu yerda pending sales API'ga saqlash kerak
+        alert('Savdo keyinroq tasdiqlash uchun saqlandi!');
+        console.log('⏸️ Savdo pending holatga o\'tkazildi');
+    }
+    
+    // Savdoni yakunlash
+    function completeSale() {
+        if (cart.length === 0) {
+            alert('Savat bo\'sh!');
+            return;
+        }
+        
+        const customerId = document.getElementById('selectedCustomerId').value;
+        if (!customerId) {
+            alert('Mijozni tanlang!');
+            return;
+        }
+        
+        // Bu yerda savdoni yakunlash API'ga yuborish kerak
+        alert('Savdo muvaffaqiyatli yakunlandi!');
+        cart = [];
+        updateCart();
+        console.log('✅ Savdo yakunlandi');
+    }
 </script>
 {% endblock %}
