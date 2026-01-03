@@ -131,33 +131,37 @@
                 </div>
             </div>
             
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+            <div style="display: grid; grid-template-columns: 1fr; gap: 15px; margin-bottom: 20px;">
                 <div>
-                    <label style="display: block; margin-bottom: 5px; font-weight: 500;">💵 Naxt ($):</label>
+                    <label style="display: block; margin-bottom: 5px; font-weight: 500;">💵 Naxt:</label>
                     <div style="display: flex; gap: 5px;">
-                        <input type="number" id="paymentCash" step="0.01" value="0.00" style="flex: 1; padding: 10px; border: 1px solid #ced4da; border-radius: 6px; font-size: 14px;">
-                        <button onclick="addRemainingToField('paymentCash')" style="padding: 10px 15px; background: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; white-space: nowrap;">+ Qolgan</button>
+                        <input type="number" id="paymentCashUSD" step="0.01" value="0.00" placeholder="$" style="flex: 1; padding: 10px; border: 1px solid #ced4da; border-radius: 6px; font-size: 14px;">
+                        <input type="number" id="paymentCashUZS" step="1" value="0" placeholder="UZS" style="flex: 1; padding: 10px; border: 1px solid #ced4da; border-radius: 6px; font-size: 14px;">
+                        <button onclick="addRemainingToField('paymentCashUSD')" style="padding: 10px 15px; background: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; white-space: nowrap;">+ Qolgan</button>
                     </div>
                 </div>
                 <div>
-                    <label style="display: block; margin-bottom: 5px; font-weight: 500;">📱 Click ($):</label>
+                    <label style="display: block; margin-bottom: 5px; font-weight: 500;">📱 Click:</label>
                     <div style="display: flex; gap: 5px;">
-                        <input type="number" id="paymentClick" step="0.01" value="0.00" style="flex: 1; padding: 10px; border: 1px solid #ced4da; border-radius: 6px; font-size: 14px;">
-                        <button onclick="addRemainingToField('paymentClick')" style="padding: 10px 15px; background: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; white-space: nowrap;">+ Qolgan</button>
+                        <input type="number" id="paymentClickUSD" step="0.01" value="0.00" placeholder="$" style="flex: 1; padding: 10px; border: 1px solid #ced4da; border-radius: 6px; font-size: 14px;">
+                        <input type="number" id="paymentClickUZS" step="1" value="0" placeholder="UZS" style="flex: 1; padding: 10px; border: 1px solid #ced4da; border-radius: 6px; font-size: 14px;">
+                        <button onclick="addRemainingToField('paymentClickUSD')" style="padding: 10px 15px; background: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; white-space: nowrap;">+ Qolgan</button>
                     </div>
                 </div>
                 <div>
-                    <label style="display: block; margin-bottom: 5px; font-weight: 500;">🏧 Terminal ($):</label>
+                    <label style="display: block; margin-bottom: 5px; font-weight: 500;">🏧 Terminal:</label>
                     <div style="display: flex; gap: 5px;">
-                        <input type="number" id="paymentTerminal" step="0.01" value="0.00" style="flex: 1; padding: 10px; border: 1px solid #ced4da; border-radius: 6px; font-size: 14px;">
-                        <button onclick="addRemainingToField('paymentTerminal')" style="padding: 10px 15px; background: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; white-space: nowrap;">+ Qolgan</button>
+                        <input type="number" id="paymentTerminalUSD" step="0.01" value="0.00" placeholder="$" style="flex: 1; padding: 10px; border: 1px solid #ced4da; border-radius: 6px; font-size: 14px;">
+                        <input type="number" id="paymentTerminalUZS" step="1" value="0" placeholder="UZS" style="flex: 1; padding: 10px; border: 1px solid #ced4da; border-radius: 6px; font-size: 14px;">
+                        <button onclick="addRemainingToField('paymentTerminalUSD')" style="padding: 10px 15px; background: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; white-space: nowrap;">+ Qolgan</button>
                     </div>
                 </div>
                 <div>
-                    <label style="display: block; margin-bottom: 5px; font-weight: 500;">📋 Qarz ($):</label>
+                    <label style="display: block; margin-bottom: 5px; font-weight: 500;">📋 Qarz:</label>
                     <div style="display: flex; gap: 5px;">
-                        <input type="number" id="paymentDebt" step="0.01" value="0.00" style="flex: 1; padding: 10px; border: 1px solid #ced4da; border-radius: 6px; font-size: 14px;">
-                        <button onclick="addRemainingToField('paymentDebt')" style="padding: 10px 15px; background: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; white-space: nowrap;">+ Qolgan</button>
+                        <input type="number" id="paymentDebtUSD" step="0.01" value="0.00" placeholder="$" style="flex: 1; padding: 10px; border: 1px solid #ced4da; border-radius: 6px; font-size: 14px;">
+                        <input type="number" id="paymentDebtUZS" step="1" value="0" placeholder="UZS" style="flex: 1; padding: 10px; border: 1px solid #ced4da; border-radius: 6px; font-size: 14px;">
+                        <button onclick="addRemainingToField('paymentDebtUSD')" style="padding: 10px 15px; background: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; white-space: nowrap;">+ Qolgan</button>
                     </div>
                 </div>
             </div>
@@ -809,10 +813,14 @@
         
         // To'lov modal oynasini ochish
         document.getElementById('paymentTotalAmount').textContent = `$${totalUSD.toFixed(2)}`;
-        document.getElementById('paymentCash').value = totalUSD.toFixed(2);
-        document.getElementById('paymentClick').value = '0.00';
-        document.getElementById('paymentTerminal').value = '0.00';
-        document.getElementById('paymentDebt').value = '0.00';
+        document.getElementById('paymentCashUSD').value = totalUSD.toFixed(2);
+        document.getElementById('paymentCashUZS').value = '0';
+        document.getElementById('paymentClickUSD').value = '0.00';
+        document.getElementById('paymentClickUZS').value = '0';
+        document.getElementById('paymentTerminalUSD').value = '0.00';
+        document.getElementById('paymentTerminalUZS').value = '0';
+        document.getElementById('paymentDebtUSD').value = '0.00';
+        document.getElementById('paymentDebtUZS').value = '0';
         document.getElementById('paymentModal').style.display = 'flex';
         console.log('💳 To\'lov modali ochildi');
     }
@@ -830,11 +838,21 @@
             totalUSD += item.priceUSD * item.quantity;
         });
         
-        // Hozirgi to'lovlarni hisoblash
-        const cash = parseFloat(document.getElementById('paymentCash').value) || 0;
-        const click = parseFloat(document.getElementById('paymentClick').value) || 0;
-        const terminal = parseFloat(document.getElementById('paymentTerminal').value) || 0;
-        const debt = parseFloat(document.getElementById('paymentDebt').value) || 0;
+        // Hozirgi to'lovlarni hisoblash (USD + UZS/kurs)
+        const exchangeRate = parseFloat(document.getElementById('exchangeRate').value) || 12500;
+        const cashUSD = parseFloat(document.getElementById('paymentCashUSD').value) || 0;
+        const cashUZS = parseFloat(document.getElementById('paymentCashUZS').value) || 0;
+        const clickUSD = parseFloat(document.getElementById('paymentClickUSD').value) || 0;
+        const clickUZS = parseFloat(document.getElementById('paymentClickUZS').value) || 0;
+        const terminalUSD = parseFloat(document.getElementById('paymentTerminalUSD').value) || 0;
+        const terminalUZS = parseFloat(document.getElementById('paymentTerminalUZS').value) || 0;
+        const debtUSD = parseFloat(document.getElementById('paymentDebtUSD').value) || 0;
+        const debtUZS = parseFloat(document.getElementById('paymentDebtUZS').value) || 0;
+        
+        const cash = cashUSD + (cashUZS / exchangeRate);
+        const click = clickUSD + (clickUZS / exchangeRate);
+        const terminal = terminalUSD + (terminalUZS / exchangeRate);
+        const debt = debtUSD + (debtUZS / exchangeRate);
         
         const currentTotal = cash + click + terminal + debt;
         const remaining = totalUSD - currentTotal;
@@ -850,10 +868,20 @@
     
     // To'lovni tasdiqlash
     function confirmPayment() {
-        const cash = parseFloat(document.getElementById('paymentCash').value) || 0;
-        const click = parseFloat(document.getElementById('paymentClick').value) || 0;
-        const terminal = parseFloat(document.getElementById('paymentTerminal').value) || 0;
-        const debt = parseFloat(document.getElementById('paymentDebt').value) || 0;
+        const exchangeRate = parseFloat(document.getElementById('exchangeRate').value) || 12500;
+        const cashUSD = parseFloat(document.getElementById('paymentCashUSD').value) || 0;
+        const cashUZS = parseFloat(document.getElementById('paymentCashUZS').value) || 0;
+        const clickUSD = parseFloat(document.getElementById('paymentClickUSD').value) || 0;
+        const clickUZS = parseFloat(document.getElementById('paymentClickUZS').value) || 0;
+        const terminalUSD = parseFloat(document.getElementById('paymentTerminalUSD').value) || 0;
+        const terminalUZS = parseFloat(document.getElementById('paymentTerminalUZS').value) || 0;
+        const debtUSD = parseFloat(document.getElementById('paymentDebtUSD').value) || 0;
+        const debtUZS = parseFloat(document.getElementById('paymentDebtUZS').value) || 0;
+        
+        const cash = cashUSD + (cashUZS / exchangeRate);
+        const click = clickUSD + (clickUZS / exchangeRate);
+        const terminal = terminalUSD + (terminalUZS / exchangeRate);
+        const debt = debtUSD + (debtUZS / exchangeRate);
         
         // Jami summani hisoblash
         let totalUSD = 0;
@@ -876,12 +904,13 @@
             customer_id: document.getElementById('selectedCustomerId').value,
             items: cart,
             payment: {
-                cash: cash,
-                click: click,
-                terminal: terminal,
-                debt: debt
+                cash: { usd: cashUSD, uzs: cashUZS },
+                click: { usd: clickUSD, uzs: clickUZS },
+                terminal: { usd: terminalUSD, uzs: terminalUZS },
+                debt: { usd: debtUSD, uzs: debtUZS }
             },
-            total_usd: totalUSD
+            total_usd: totalUSD,
+            exchange_rate: exchangeRate
         };
         
         console.log('✅ Savdo tasdiqlandi:', saleData);
