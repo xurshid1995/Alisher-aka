@@ -122,7 +122,13 @@
     <!-- To'lov modal oyna -->
     <div id="paymentModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; justify-content: center; align-items: center;">
         <div style="background: white; border-radius: 8px; padding: 30px; width: 650px; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
-            <h3 style="margin: 0 0 20px 0; color: #333;">💳 To'lov turlari</h3>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="margin: 0; color: #333;">💳 To'lov turlari</h3>
+                <div id="paymentModalTotal" style="text-align: right;">
+                    <div style="font-size: 12px; color: #666;">Jami summa:</div>
+                    <div style="font-weight: 700; color: #28a745; font-size: 16px;"><span id="paymentModalTotalUSD">$0.00</span> / <span id="paymentModalTotalUZS">0 so'm</span></div>
+                </div>
+            </div>
             
             <div style="display: grid; grid-template-columns: 1fr; gap: 10px; margin-bottom: 20px;">
                 <div style="display: flex; align-items: center; gap: 8px;">
@@ -851,6 +857,8 @@
         const totalUZS = totalUSD * exchangeRate;
         
         // To'lov modal oynasini ochish
+        document.getElementById('paymentModalTotalUSD').textContent = `$${totalUSD.toFixed(2)}`;
+        document.getElementById('paymentModalTotalUZS').textContent = `${Math.round(totalUZS).toLocaleString('uz-UZ')} so'm`;
         document.getElementById('paymentCashUSD').value = totalUSD.toFixed(2);
         document.getElementById('paymentCashUZS').value = Math.round(totalUZS);
         document.getElementById('paymentClickUSD').value = '0.00';
