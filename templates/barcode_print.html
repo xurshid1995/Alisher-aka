@@ -7,7 +7,7 @@
     <style>
         @media print {
             @page {
-                size: 58mm 40mm;
+                size: 58mm 30mm;
                 margin: 0;
             }
             body {
@@ -31,9 +31,9 @@
         
         .label-container {
             width: 58mm;
-            height: 40mm;
+            height: 30mm;
             border: 2px dashed #999;
-            padding: 3mm;
+            padding: 2mm;
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
@@ -43,28 +43,28 @@
         }
         
         .product-name {
-            font-size: 11px;
+            font-size: 9px;
             font-weight: bold;
             text-align: center;
-            margin-bottom: 2px;
+            margin-bottom: 1px;
             max-width: 100%;
             overflow: hidden;
             text-overflow: ellipsis;
             display: -webkit-box;
-            -webkit-line-clamp: 2;
+            -webkit-line-clamp: 1;
             -webkit-box-orient: vertical;
-            line-height: 1.2;
+            line-height: 1.1;
         }
         
         .barcode-svg {
-            max-width: 52mm;
+            max-width: 54mm;
             height: auto;
         }
         
         .barcode-number {
-            font-size: 8px;
+            font-size: 7px;
             text-align: center;
-            margin-top: 1px;
+            margin-top: 0px;
             color: #333;
             font-family: monospace;
         }
@@ -101,7 +101,7 @@
             .label-container {
                 border: none;
                 width: 58mm;
-                height: 40mm;
+                height: 30mm;
                 page-break-after: always;
             }
         }
@@ -133,8 +133,8 @@
         try {
             JsBarcode("#barcode", barcode, {
                 format: "CODE128",
-                width: 1.5,
-                height: 35,
+                width: 1.2,
+                height: 28,
                 displayValue: false,
                 margin: 0
             });
