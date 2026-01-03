@@ -515,6 +515,7 @@
                                        autocomplete="off"
                                        style="border: 2px solid #28a745; flex: 1;">
                                 <button type="button" 
+                                        id="autoGenerateBtn"
                                         onclick="generateBarcode()" 
                                         style="padding: 8px 12px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 13px; white-space: nowrap;"
                                         title="Avtomatik barcode yaratish">
@@ -1002,11 +1003,18 @@
             const productNameField = document.getElementById('product_name');
             productNameField.addEventListener('input', function() {
                 const barcodeInput = document.getElementById('barcode');
-                // Agar foydalanuvchi mahsulot nomini o'zgartirsa, barcode'ni yozish mumkin qilish
+                const autoGenerateBtn = document.getElementById('autoGenerateBtn');
+                
+                // Agar foydalanuvchi mahsulot nomini o'zgartirsa, barcode va Auto tugmasini unlock qilish
                 if (!selectedProductData || this.value.trim() !== selectedProductData.name) {
                     barcodeInput.removeAttribute('readonly');
                     barcodeInput.style.backgroundColor = '#fff';
                     barcodeInput.style.cursor = 'text';
+                    
+                    autoGenerateBtn.disabled = false;
+                    autoGenerateBtn.style.opacity = '1';
+                    autoGenerateBtn.style.cursor = 'pointer';
+                    autoGenerateBtn.title = 'Avtomatik barcode yaratish';
                 }
             });
             
@@ -1379,19 +1387,32 @@
             document.getElementById('min_stock').value = minStock;
             
             const barcodeInput = document.getElementById('barcode');
+            const autoGenerateBtn = document.getElementById('autoGenerateBtn');
             barcodeInput.value = barcode || ''; // Barcode to'ldirish
             
-            // Agar barcode mavjud bo'lsa - readonly qilish, agar yo'q bo'lsa - yozish mumkin
+            // Agar barcode mavjud bo'lsa - readonly va Auto tugmasini disabled qilish
             if (barcode && barcode.trim() !== '') {
                 barcodeInput.setAttribute('readonly', 'readonly');
                 barcodeInput.style.backgroundColor = '#e9ecef'; // Kulrang fon
                 barcodeInput.style.cursor = 'not-allowed';
-                console.log('🔒 Barcode mavjud - readonly');
+                
+                autoGenerateBtn.disabled = true;
+                autoGenerateBtn.style.opacity = '0.5';
+                autoGenerateBtn.style.cursor = 'not-allowed';
+                autoGenerateBtn.title = 'Barcode mavjud - generatsiya mumkin emas';
+                
+                console.log('🔒 Barcode mavjud - readonly, Auto disabled');
             } else {
                 barcodeInput.removeAttribute('readonly');
                 barcodeInput.style.backgroundColor = '#fff'; // Oq fon
                 barcodeInput.style.cursor = 'text';
-                console.log('✏️ Barcode yo\'q - yozish mumkin');
+                
+                autoGenerateBtn.disabled = false;
+                autoGenerateBtn.style.opacity = '1';
+                autoGenerateBtn.style.cursor = 'pointer';
+                autoGenerateBtn.title = 'Avtomatik barcode yaratish';
+                
+                console.log('✏️ Barcode yo\'q - yozish mumkin, Auto enabled');
             }
             
             console.log('📝 Barcode maydoniga yozildi:', barcodeInput.value);
