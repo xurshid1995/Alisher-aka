@@ -881,24 +881,15 @@
         console.log('💰 Jami summa (USD):', totalUSD);
         console.log('💱 Exchange rate:', exchangeRate);
         
-        // Hozirgi to'lovlarni hisoblash (USD + UZS/kurs)
+        // Hozirgi to'lovlarni hisoblash (faqat USD qiymatlardan, UZS dan emas)
         const cashUSD = parseFloat(document.getElementById('paymentCashUSD').value) || 0;
-        const cashUZS = parseFloat(document.getElementById('paymentCashUZS').value) || 0;
         const clickUSD = parseFloat(document.getElementById('paymentClickUSD').value) || 0;
-        const clickUZS = parseFloat(document.getElementById('paymentClickUZS').value) || 0;
         const terminalUSD = parseFloat(document.getElementById('paymentTerminalUSD').value) || 0;
-        const terminalUZS = parseFloat(document.getElementById('paymentTerminalUZS').value) || 0;
         const debtUSD = parseFloat(document.getElementById('paymentDebtUSD').value) || 0;
-        const debtUZS = parseFloat(document.getElementById('paymentDebtUZS').value) || 0;
         
-        console.log('💵 Hozirgi to\'lovlar:', { cashUSD, cashUZS, clickUSD, clickUZS, terminalUSD, terminalUZS, debtUSD, debtUZS });
+        console.log('💵 Hozirgi to\'lovlar (faqat USD):', { cashUSD, clickUSD, terminalUSD, debtUSD });
         
-        const cash = cashUSD + (cashUZS / exchangeRate);
-        const click = clickUSD + (clickUZS / exchangeRate);
-        const terminal = terminalUSD + (terminalUZS / exchangeRate);
-        const debt = debtUSD + (debtUZS / exchangeRate);
-        
-        const currentTotal = cash + click + terminal + debt;
+        const currentTotal = cashUSD + clickUSD + terminalUSD + debtUSD;
         const remaining = totalUSD - currentTotal;
         
         console.log('📊 Hozirgi jami:', currentTotal);
@@ -929,18 +920,17 @@
     // To'lovni tasdiqlash
     function confirmPayment() {
         const cashUSD = parseFloat(document.getElementById('paymentCashUSD').value) || 0;
-        const cashUZS = parseFloat(document.getElementById('paymentCashUZS').value) || 0;
         const clickUSD = parseFloat(document.getElementById('paymentClickUSD').value) || 0;
-        const clickUZS = parseFloat(document.getElementById('paymentClickUZS').value) || 0;
         const terminalUSD = parseFloat(document.getElementById('paymentTerminalUSD').value) || 0;
-        const terminalUZS = parseFloat(document.getElementById('paymentTerminalUZS').value) || 0;
         const debtUSD = parseFloat(document.getElementById('paymentDebtUSD').value) || 0;
+        
+        const cashUZS = parseFloat(document.getElementById('paymentCashUZS').value) || 0;
+        const clickUZS = parseFloat(document.getElementById('paymentClickUZS').value) || 0;
+        const terminalUZS = parseFloat(document.getElementById('paymentTerminalUZS').value) || 0;
         const debtUZS = parseFloat(document.getElementById('paymentDebtUZS').value) || 0;
         
-        const cash = cashUSD + (cashUZS / exchangeRate);
-        const click = clickUSD + (clickUZS / exchangeRate);
-        const terminal = terminalUSD + (terminalUZS / exchangeRate);
-        const debt = debtUSD + (debtUZS / exchangeRate);
+        // Faqat USD qiymatlardan foydalanish (UZS avtomatik sinxronlashgan)
+        const totalPayment = cashUSD + clickUSD + terminalUSD + debtUSD;
         
         // Jami summani hisoblash
         let totalUSD = 0;
@@ -948,7 +938,6 @@
             totalUSD += item.priceUSD * item.quantity;
         });
         
-        const totalPayment = cash + click + terminal + debt;
         const paymentWarning = document.getElementById('paymentWarning');
         
         // To'lov tekshiruvi
