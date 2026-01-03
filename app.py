@@ -484,7 +484,7 @@ class Transfer(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     product_id = db.Column(
         db.Integer,
-        db.ForeignKey('products.id'),
+        db.ForeignKey('products.id', ondelete='CASCADE'),
         nullable=False)
     from_location_type = db.Column(db.String(20),
                                    nullable=False)  # 'store' yoki 'warehouse'
