@@ -473,7 +473,7 @@
                 <tr style="border-bottom: 1px solid #f0f0f0;">
                     <td style="padding: 8px 5px; font-size: 14px; color: #333; border-right: 1px solid #f0f0f0; word-wrap: break-word; width: 322px; max-width: 322px; overflow: hidden;">${item.name}</td>
                     <td style="padding: 8px 5px; text-align: center; font-size: 14px; color: #333; border-right: 1px solid #f0f0f0; width: 74px;">
-                        <span style="background: #28a745; color: white; padding: 3px 6px; border-radius: 3px; font-weight: 500; font-size: 13px;">${item.quantity}</span>
+                        <input type="number" value="${item.quantity}" min="1" onchange="updateCartQuantity(${index}, this.value)" style="width: 50px; text-align: center; border: 1px solid #ced4da; border-radius: 4px; padding: 4px; font-size: 13px; font-weight: 500;">
                     </td>
                     <td style="padding: 8px 5px; text-align: right; font-size: 13px; color: #333; border-right: 1px solid #f0f0f0; width: 90px;">
                         <div style="margin-bottom: 2px; font-weight: 600; color: #333; font-size: 13px;">$${item.priceUSD.toFixed(2)}</div>
@@ -507,6 +507,19 @@
         cart.splice(index, 1);
         updateCart();
         console.log('🗑️ Savatdan o\'chirildi');
+    }
+    
+    // Savat miqdorini yangilash
+    function updateCartQuantity(index, newQuantity) {
+        const quantity = parseInt(newQuantity);
+        if (quantity < 1 || isNaN(quantity)) {
+            alert('Noto\'g\'ri miqdor!');
+            updateCart();
+            return;
+        }
+        cart[index].quantity = quantity;
+        updateCart();
+        console.log('📝 Miqdor yangilandi:', quantity);
     }
     
     // Savat elementini tahrirlash
