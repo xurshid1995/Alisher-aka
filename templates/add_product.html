@@ -509,10 +509,18 @@
                         </div>
                         <div class="form-group" style="flex: 1;">
                             <label for="barcode">📷 Barcode:</label>
-                            <input type="text" id="barcode" name="barcode" class="form-control" 
-                                   placeholder="Barcode raqami (optional)" 
-                                   autocomplete="off"
-                                   style="border: 2px solid #28a745;">
+                            <div style="display: flex; gap: 5px;">
+                                <input type="text" id="barcode" name="barcode" class="form-control" 
+                                       placeholder="Avtomatik yoki kiriting" 
+                                       autocomplete="off"
+                                       style="border: 2px solid #28a745; flex: 1;">
+                                <button type="button" 
+                                        onclick="generateBarcode()" 
+                                        style="padding: 8px 12px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 13px; white-space: nowrap;"
+                                        title="Avtomatik barcode yaratish">
+                                    🔄 Auto
+                                </button>
+                            </div>
                         </div>
                     </div>
 
@@ -1670,6 +1678,43 @@
             selectedProductData = null;
             userEnteredCostPrice = null;
             console.log('🧹 Forma va global o\'zgaruvchilar tozalandi');
+        }
+
+        // Avtomatik barcode generatsiya qilish
+        function generateBarcode() {
+            // EAN-13 formatida barcode yaratish (13 raqam)
+            // Birinchi 3 raqam - mamlakat kodi (860 = O'zbekiston)
+            // Keyingi 9 raqam - mahsulot kodi (timestamp asosida)
+            // Oxirgi 1 raqam - checksum
+            
+            const countryCode = '860';
+            const timestamp = Date.now().toString().slice(-9); // 9 raqam
+            
+            // 12 raqamli kod (checksum'siz)
+            const partialCode = countryCode + timestamp;
+            
+            // EAN-13 checksum hisoblash
+            let sum = 0;
+            for (let i = 0; i < 12; i++) {
+                const digit = parseInt(partialCode[i]);
+                sum += (i % 2 === 0) ? digit : digit * 3;
+            }
+            const checksum = (10 - (sum % 10)) % 10;
+            
+            // To'liq barcode
+            const barcode = partialCode + checksum;
+            
+            // Input ga qo'yish
+            document.getElementById('barcode').value = barcode;
+            
+            // Visual feedback
+            const barcodeInput = document.getElementById('barcode');
+            barcodeInput.style.background = '#d4edda';
+            setTimeout(() => {
+                barcodeInput.style.background = 'white';
+            }, 500);
+            
+            console.log('✅ Avtomatik barcode yaratildi:', barcode);
         }
 
         // Barchasini o'chirish
