@@ -852,7 +852,7 @@
         
         // To'lov modal oynasini ochish
         document.getElementById('paymentCashUSD').value = totalUSD.toFixed(2);
-        document.getElementById('paymentCashUZS').value = '0';
+        document.getElementById('paymentCashUZS').value = Math.round(totalUZS);
         document.getElementById('paymentClickUSD').value = '0.00';
         document.getElementById('paymentClickUZS').value = '0';
         document.getElementById('paymentTerminalUSD').value = '0.00';
