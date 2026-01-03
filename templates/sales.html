@@ -812,7 +812,6 @@
             totalUSD += item.priceUSD * item.quantity;
         });
         
-        const exchangeRate = parseFloat(document.getElementById('exchangeRate').value) || 12500;
         const totalUZS = totalUSD * exchangeRate;
         
         // To'lov modal oynasini ochish
@@ -844,7 +843,6 @@
         });
         
         // Hozirgi to'lovlarni hisoblash (USD + UZS/kurs)
-        const exchangeRate = parseFloat(document.getElementById('exchangeRate').value) || 12500;
         const cashUSD = parseFloat(document.getElementById('paymentCashUSD').value) || 0;
         const cashUZS = parseFloat(document.getElementById('paymentCashUZS').value) || 0;
         const clickUSD = parseFloat(document.getElementById('paymentClickUSD').value) || 0;
@@ -873,7 +871,6 @@
     
     // To'lovni tasdiqlash
     function confirmPayment() {
-        const exchangeRate = parseFloat(document.getElementById('exchangeRate').value) || 12500;
         const cashUSD = parseFloat(document.getElementById('paymentCashUSD').value) || 0;
         const cashUZS = parseFloat(document.getElementById('paymentCashUZS').value) || 0;
         const clickUSD = parseFloat(document.getElementById('paymentClickUSD').value) || 0;
