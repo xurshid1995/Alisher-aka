@@ -2237,26 +2237,38 @@ def api_delete_store(store_id):
             product_id = stock.product_id
             
             # Bu mahsulot boshqa do'konlarda bormi?
+            # Boshqa do'konlarda bormi?
             other_store_stocks = StoreStock.query.filter(
                 StoreStock.product_id == product_id,
                 StoreStock.store_id != store_id
             ).count()
             
-            # Bu mahsulot omborlarda bormi?
+            # Omborlarda bormi?
             warehouse_stocks = WarehouseStock.query.filter_by(
                 product_id=product_id
             ).count()
             
-            # Stockni o'chirish
+            # Tarixiy ma'lumotlarda ishlatilganmi?
+            transfers_count = Transfer.query.filter_by(product_id=product_id).count()
+            sales_count = Sale.query.filter_by(product_id=product_id).count()
+            pending_sales_count = PendingSale.query.filter_by(product_id=product_id).count()
+            
+            # StoreStock'ni o'chirish
             db.session.delete(stock)
             
-            # Agar mahsulot boshqa joyda yo'q bo'lsa, productni ham o'chirish
-            if other_store_stocks == 0 and warehouse_stocks == 0:
+            # Agar mahsulot hech qayerda yo'q va tarixda ham yo'q bo'lsa, Product'ni ham o'chirish
+            if (other_store_stocks == 0 and warehouse_stocks == 0 and 
+                transfers_count == 0 and sales_count == 0 and pending_sales_count == 0):
                 product = Product.query.get(product_id)
                 if product:
                     db.session.delete(product)
                     deleted_products_count += 1
-                    logger.info(f" Mahsulot butunlay o'chirildi: {product.name} (faqat shu do'konda edi)")
+                    logger.info(f" Mahsulot butunlay o'chirildi: {product.name} (hech qayerda ishlatilmagan)")
+            else:
+                product = Product.query.get(product_id)
+                if product:
+                    deleted_products_count += 1
+                    logger.info(f" StoreStock o'chirildi: {product.name} (Product saqlandi - boshqa joylarda yoki tarixda mavjud)")
 
         # Store ni o'chirish (Savdo tarixi saqlanadi, chunki Sale jadvalida store_id saqlanadi)
         store_name = store.name
