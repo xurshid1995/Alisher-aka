@@ -896,7 +896,17 @@
         
         if (remaining > 0) {
             const currentValue = parseFloat(document.getElementById(fieldId).value) || 0;
-            document.getElementById(fieldId).value = (currentValue + remaining).toFixed(2);
+            const newUSDValue = currentValue + remaining;
+            document.getElementById(fieldId).value = newUSDValue.toFixed(2);
+            
+            // UZS maydonini ham yangilash
+            const uzsFieldId = fieldId.replace('USD', 'UZS');
+            if (document.getElementById(uzsFieldId)) {
+                const currentUZSValue = parseFloat(document.getElementById(uzsFieldId).value) || 0;
+                const newUZSValue = currentUZSValue + Math.round(remaining * exchangeRate);
+                document.getElementById(uzsFieldId).value = newUZSValue;
+            }
+            
             console.log(`➕ Qolgan $${remaining.toFixed(2)} ${fieldId} ga qo'shildi`);
         } else {
             console.log('✅ To\'lov to\'liq');
