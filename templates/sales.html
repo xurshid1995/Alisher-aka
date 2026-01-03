@@ -624,6 +624,10 @@
         
         updateCart();
         closeModal();
+        
+        // Chap tomondagi mahsulotlar jadvalini yangilash
+        await loadProducts();
+        
         console.log('✅ Savatga qo\'shildi:', currentProduct?.name || 'Noma\'lum mahsulot', quantity, 'dona, $' + priceUSD);
     }
     
@@ -720,6 +724,10 @@
         
         cart.splice(index, 1);
         updateCart();
+        
+        // Chap tomondagi mahsulotlar jadvalini yangilash
+        await loadProducts();
+        
         console.log('🗑️ Savatdan o\'chirildi');
     }
     
