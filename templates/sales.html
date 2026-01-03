@@ -327,26 +327,58 @@
     document.addEventListener('DOMContentLoaded', function() {
         const universalSearch = document.getElementById('universalSearch');
         
-        // Barcode scanner ko'pincha enter tugmasini avtomatik bosadi
-        universalSearch.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
+        // Keyboard navigation
+        universalSearch.addEventListener('keydown', function(e) {
+            // Klaviatura navigatsiyasi
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                navigateProductTable('down');
+                return;
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                navigateProductTable('up');
+                return;
+            } else if (e.key === 'Enter') {
                 e.preventDefault();
                 const searchValue = universalSearch.value.trim();
+                
+                // Agar mahsulot tanlangan bo'lsa, uni savatga qo'shish
+                if (currentSelectedRowIndex >= 0 && visibleProductRows[currentSelectedRowIndex]) {
+                    selectProductFromTable(visibleProductRows[currentSelectedRowIndex]);
+                    return;
+                }
+                
+                // Aks holda qidiruv
                 if (searchValue) {
                     // Agar faqat raqamlar bo'lsa va uzunligi barcode ga o'xshasa - barcode qidirish
                     if (/^\d+$/.test(searchValue) && searchValue.length >= 8) {
                         searchProductByBarcode(searchValue);
-                    } else {
-                        // Aks holda mahsulot qidirish
-                        filterProducts();
                     }
                 }
+                return;
+            } else if (e.key === 'Escape') {
+                e.preventDefault();
+                clearProductSelection();
+                universalSearch.value = '';
+                filterProducts();
+                return;
+            }
+        });
+        
+        // Barcode scanner ko'pincha enter tugmasini avtomatik bosadi
+        universalSearch.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                // keydown da ishlov beriladi
             }
         });
         
         // Klaviaturadan kiritish (Bluetooth scanner uchun)
         universalSearch.addEventListener('input', function(e) {
             const value = e.target.value.trim();
+            
+            // Reset navigatsiya
+            clearProductSelection();
             
             // Agar faqat raqamlar bo'lsa va scanner tez yozayotgan bo'lsa (buffer)
             if (/^\d+$/.test(value)) {
@@ -374,6 +406,10 @@
     let currentProduct = null;
     let selectedLocationId = null;
     let selectedLocationType = null;
+    
+    // Klaviatura navigatsiyasi uchun o'zgaruvchilar
+    let visibleProductRows = [];
+    let currentSelectedRowIndex = -1;
     
     async function loadCustomers() {
         try {
@@ -514,10 +550,11 @@
                 
                 const row = document.createElement('tr');
                 row.style.borderBottom = '1px solid #f0f0f0';
+                row.setAttribute('data-product-id', product.id);
                 const productName = product.name || 'N/A';
                 const safeProductName = productName.replace(/'/g, "\\'");
                 row.innerHTML = `
-                    <td style="padding: 12px 8px; font-size: 14px; color: #333;" title="${productName}">${productName}</td>
+                    <td style="padding: 12px 8px; font-size: 14px; color: #333;" data-original-text="${productName}" title="${productName}">${productName}</td>
                     <td style="padding: 12px 8px; text-align: left; font-size: 14px;">
                         <span style="background: #28a745; color: white; padding: 4px 8px; border-radius: 0; font-weight: 500; display: inline-block;">${quantity}</span>
                     </td>
@@ -1142,6 +1179,86 @@
                 }
             }
         }
+        
+        // Ko'rinadigan qatorlarni yangilash
+        updateVisibleProductRows();
+    }
+    
+    // Ko'rinadigan mahsulot qatorlarini yangilash
+    function updateVisibleProductRows() {
+        const tbody = document.getElementById('productsTable');
+        const allRows = Array.from(tbody.getElementsByTagName('tr'));
+        
+        visibleProductRows = allRows.filter(row => {
+            const cells = row.getElementsByTagName('td');
+            if (cells.length <= 1) return false; // Xabar qatorlarini o'tkazib yuborish
+            return row.style.display !== 'none';
+        });
+    }
+    
+    // Mahsulotlar jadvalida navigatsiya
+    function navigateProductTable(direction) {
+        updateVisibleProductRows();
+        
+        if (visibleProductRows.length === 0) return;
+        
+        if (direction === 'down') {
+            currentSelectedRowIndex = currentSelectedRowIndex < visibleProductRows.length - 1 
+                ? currentSelectedRowIndex + 1 
+                : 0;
+        } else if (direction === 'up') {
+            currentSelectedRowIndex = currentSelectedRowIndex > 0 
+                ? currentSelectedRowIndex - 1 
+                : visibleProductRows.length - 1;
+        }
+        
+        highlightSelectedRow();
+    }
+    
+    // Tanlangan qatorni highlight qilish
+    function highlightSelectedRow() {
+        // Barcha qatorlardan highlight ni olib tashlash
+        visibleProductRows.forEach(row => {
+            row.style.background = '';
+        });
+        
+        // Tanlangan qatorni highlight qilish
+        if (currentSelectedRowIndex >= 0 && visibleProductRows[currentSelectedRowIndex]) {
+            const selectedRow = visibleProductRows[currentSelectedRowIndex];
+            selectedRow.style.background = '#e3f2fd';
+            
+            // Scrollni tanlangan qatorga olib borish
+            selectedRow.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    }
+    
+    // Tanlangan mahsulotni savatga qo'shish
+    function selectProductFromTable(row) {
+        const cells = row.getElementsByTagName('td');
+        if (cells.length < 4) return;
+        
+        // Mahsulot ma'lumotlarini olish
+        const productName = cells[0].getAttribute('data-original-text') || cells[0].textContent.trim();
+        const productId = row.getAttribute('data-product-id');
+        const quantity = parseInt(cells[2].textContent.trim()) || 0;
+        const price = parseFloat(cells[1].textContent.replace(/[$,]/g, '').trim()) || 0;
+        
+        if (productId && quantity > 0) {
+            addToCart(parseInt(productId), productName, quantity, price);
+            
+            // Qidiruvni tozalash
+            document.getElementById('universalSearch').value = '';
+            filterProducts();
+            clearProductSelection();
+        }
+    }
+    
+    // Mahsulot tanlanishini tozalash
+    function clearProductSelection() {
+        currentSelectedRowIndex = -1;
+        visibleProductRows.forEach(row => {
+            row.style.background = '';
+        });
     }
     
     // Narxni formatlash
