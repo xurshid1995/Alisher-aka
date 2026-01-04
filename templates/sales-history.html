@@ -1846,6 +1846,15 @@ function displaySalesData(data) {
     salesData.forEach(sale => {
         const items = sale.items || []; // SaleItems array
         
+        // DEBUG: Birinchi savdoni tekshirish
+        if (salesData.indexOf(sale) === 0) {
+            console.log('🔍 DEBUG - Birinchi savdo:', sale);
+            console.log('🔍 DEBUG - Items:', items);
+            if (items.length > 0) {
+                console.log('🔍 DEBUG - Birinchi item unit_price:', items[0].unit_price);
+            }
+        }
+        
         // Agar items bo'sh bo'lsa, default item yaratamiz
         if (items.length === 0) {
             items.push({
