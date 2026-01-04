@@ -763,16 +763,6 @@ tbody tr.sale-group-start:first-child {
     border-bottom: 2px solid #6c757d !important;
 }
 
-/* Qidiruv natijalarini highlight qilish - faqat mahsulot nomi */
-.product-highlight {
-    background-color: #ffc107 !important;
-    color: #212529 !important;
-    font-weight: 600 !important;
-    border-radius: 3px;
-    padding: 2px 4px;
-    border: 1px solid #ffb300;
-}
-
 .group-cell {
     vertical-align: middle !important;
     text-align: center !important;
@@ -2011,9 +2001,6 @@ function displaySalesData(data) {
     
     // Ombor matnlarini sariq fon bilan ajratish
     highlightWarehouseLocations();
-    
-    // Qidiruv natijalarini highlight qilish
-    highlightSearchResults();
 }
 
 // SaleItem dan joylashuv nomini olish funksiyasi
@@ -3162,61 +3149,6 @@ function calculateFilteredStatistics() {
         total_revenue: totalRevenue,
         total_profit: totalProfit
     };
-}
-
-// Qidiruv natijalarini highlight qilish funksiyasi - faqat mahsulot ustunida
-function highlightSearchResults() {
-    const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
-    
-    // Avval barcha highlight'larni tozalash
-    document.querySelectorAll('#salesTableBody tr').forEach(row => {
-        // Barcha hujayralardagi highlight'larni tozalash
-        const cells = row.querySelectorAll('td');
-        cells.forEach(cell => {
-            // Agar highlight span'lar bor bo'lsa, ularni oddiy text bilan almashtirish
-            const spans = cell.querySelectorAll('.product-highlight');
-            spans.forEach(span => {
-                span.outerHTML = span.textContent;
-            });
-        });
-    });
-    
-    if (!searchTerm) {
-        return;
-    }
-    
-    // Faqat mahsulot ustunidagi qidiruv so'zini highlight qilish
-    document.querySelectorAll('#salesTableBody tr').forEach(row => {
-        // Har bir qatorda mahsulot hujayrasini topish
-        // Birinchi qator: 5-ustun, qolgan qatorlar: 2-ustun
-        let productCell = null;
-        
-        // Agar qatorda 8+ ustun bo'lsa (to'liq qator), mahsulot 5-ustunda
-        const cells = row.querySelectorAll('td');
-        if (cells.length >= 8) {
-            productCell = row.querySelector('td:nth-child(5)');
-        } 
-        // Agar qatorda kam ustun bo'lsa (qisqa qator), mahsulot 2-ustunda  
-        else if (cells.length >= 2) {
-            productCell = row.querySelector('td:nth-child(2)');
-        }
-        
-        if (productCell) {
-            highlightTextInCell(productCell, searchTerm);
-        }
-    });
-}
-
-// Hujayradagi matnni highlight qilish yordamchi funksiyasi
-function highlightTextInCell(cell, searchTerm) {
-    const cellText = cell.textContent.toLowerCase();
-    
-    if (cellText.includes(searchTerm)) {
-        const originalHTML = cell.innerHTML;
-        const regex = new RegExp(`(${searchTerm})`, 'gi');
-        const highlightedHTML = originalHTML.replace(regex, '<span class="product-highlight">$1</span>');
-        cell.innerHTML = highlightedHTML;
-    }
 }
 
 // Ombor matnlarini sariq fon bilan ajratish funksiyasi
