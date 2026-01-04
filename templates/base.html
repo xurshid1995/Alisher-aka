@@ -285,13 +285,27 @@
             const sidebar = document.getElementById('sidebar');
             const overlay = document.querySelector('.sidebar-overlay');
             
+            console.log('🔍 Toggle navigation:', {
+                sidebarExists: !!sidebar,
+                overlayExists: !!overlay,
+                sidebarActive: sidebar?.classList.contains('active'),
+                overlayActive: overlay?.classList.contains('active')
+            });
+            
             sidebar.classList.toggle('active');
             overlay.classList.toggle('active');
+            
+            console.log('✅ After toggle:', {
+                sidebarActive: sidebar?.classList.contains('active'),
+                overlayActive: overlay?.classList.contains('active')
+            });
         }
         
         function closeMobileNav() {
             const sidebar = document.getElementById('sidebar');
             const overlay = document.querySelector('.sidebar-overlay');
+            
+            console.log('❌ Closing navigation');
             
             sidebar.classList.remove('active');
             overlay.classList.remove('active');
