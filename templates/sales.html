@@ -1309,6 +1309,7 @@
     // Savdo guruhini yuklash (bir xil sale_date, customer, location)
     async function loadSaleGroup(saleId) {
         try {
+            console.log(`📥 Savdo ${saleId} yuklanmoqda...`);
             const response = await fetch(`/api/sales/${saleId}`);
             if (!response.ok) {
                 throw new Error('Savdoni yuklashda xatolik');
@@ -1323,16 +1324,30 @@
                 // Joylashuvni tanlash
                 const locationSelect = document.getElementById('locationSelect');
                 const locationValue = sale.location_type === 'store' ? `store_${sale.location_id}` : `warehouse_${sale.location_id}`;
+                console.log(`📍 Joylashuv tanlanmoqda: ${locationValue}`);
                 locationSelect.value = locationValue;
-                await loadProducts(); // Mahsulotlarni yuklash
+                
+                // Global o'zgaruvchilarni yangilash
+                selectedLocationType = sale.location_type;
+                selectedLocationId = sale.location_id;
+                
+                // Mahsulotlarni yuklash
+                console.log('📦 Mahsulotlar yuklanmoqda...');
+                await loadProducts();
                 
                 // Mijozni tanlash
                 document.getElementById('customerSearch').value = sale.customer_name || '';
                 document.getElementById('selectedCustomerId').value = sale.customer_id || '';
+                console.log(`👤 Mijoz tanlandi: ${sale.customer_name}`);
+                
+                // Kichik kutish - mahsulotlar DOM'ga qo'shilishi uchun
+                await new Promise(resolve => setTimeout(resolve, 500));
                 
                 // Savdo elementlarini savatga qo'shish
                 if (sale.items && sale.items.length > 0) {
+                    console.log(`🛒 ${sale.items.length} ta mahsulot savatga qo'shilmoqda...`);
                     for (const item of sale.items) {
+                        console.log(`  - ${item.product_name}: ${item.quantity} x $${item.unit_price}`);
                         addToCart(
                             item.product_id,
                             item.product_name,
@@ -1341,7 +1356,12 @@
                         );
                     }
                     console.log(`✅ ${sale.items.length} ta mahsulot savatga qo'shildi`);
+                } else {
+                    console.warn('⚠️ Savdoda mahsulotlar topilmadi');
                 }
+            } else {
+                console.error('❌ API javobida xatolik:', data);
+                alert('Savdo ma\'lumotlari noto\'g\'ri formatda');
             }
         } catch (error) {
             console.error('❌ Savdo guruhini yuklashda xatolik:', error);
@@ -1352,6 +1372,7 @@
     // Bitta savdoni yuklash
     async function loadSingleSale(saleId) {
         try {
+            console.log(`📥 Savdo ${saleId} yuklanmoqda...`);
             const response = await fetch(`/api/sales/${saleId}`);
             if (!response.ok) {
                 throw new Error('Savdoni yuklashda xatolik');
@@ -1366,16 +1387,29 @@
                 // Joylashuvni tanlash
                 const locationSelect = document.getElementById('locationSelect');
                 const locationValue = sale.location_type === 'store' ? `store_${sale.location_id}` : `warehouse_${sale.location_id}`;
+                console.log(`📍 Joylashuv tanlanmoqda: ${locationValue}`);
                 locationSelect.value = locationValue;
-                await loadProducts(); // Mahsulotlarni yuklash
+                
+                // Global o'zgaruvchilarni yangilash
+                selectedLocationType = sale.location_type;
+                selectedLocationId = sale.location_id;
+                
+                // Mahsulotlarni yuklash
+                console.log('📦 Mahsulotlar yuklanmoqda...');
+                await loadProducts();
                 
                 // Mijozni tanlash
                 document.getElementById('customerSearch').value = sale.customer_name || '';
                 document.getElementById('selectedCustomerId').value = sale.customer_id || '';
+                console.log(`👤 Mijoz tanlandi: ${sale.customer_name}`);
+                
+                // Kichik kutish - mahsulotlar DOM'ga qo'shilishi uchun
+                await new Promise(resolve => setTimeout(resolve, 500));
                 
                 // Savdo elementini savatga qo'shish
                 if (sale.items && sale.items.length > 0) {
                     const item = sale.items[0]; // Birinchi element
+                    console.log(`🛒 Mahsulot savatga qo'shilmoqda: ${item.product_name}`);
                     addToCart(
                         item.product_id,
                         item.product_name,
@@ -1383,7 +1417,12 @@
                         item.unit_price
                     );
                     console.log('✅ Mahsulot savatga qo\'shildi');
+                } else {
+                    console.warn('⚠️ Savdoda mahsulotlar topilmadi');
                 }
+            } else {
+                console.error('❌ API javobida xatolik:', data);
+                alert('Savdo ma\'lumotlari noto\'g\'ri formatda');
             }
         } catch (error) {
             console.error('❌ Savdoni yuklashda xatolik:', error);
@@ -1392,13 +1431,14 @@
     }
     
     // Sahifa yuklanganda joylashuvlarni yuklash
-    document.addEventListener('DOMContentLoaded', function() {
-        loadLocations();
-        loadCustomers();
-        loadExchangeRate();
+    document.addEventListener('DOMContentLoaded', async function() {
+        // Avval asosiy ma'lumotlarni yuklash
+        await loadLocations();
+        await loadCustomers();
+        await loadExchangeRate();
         
-        // URL parametrlarini tekshirish va savdo ma'lumotlarini yuklash
-        checkURLParametersAndLoadSale();
+        // Keyin URL parametrlarini tekshirish va savdo ma'lumotlarini yuklash
+        await checkURLParametersAndLoadSale();
         
         // Universal qidiruv uchun event listener allaqachon DOMContentLoaded da qo'shilgan
         
