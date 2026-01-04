@@ -1309,7 +1309,7 @@
     // Savdo guruhini yuklash (bir xil sale_date, customer, location)
     async function loadSaleGroup(saleId) {
         try {
-            const response = await fetch(`/api/sale/${saleId}`);
+            const response = await fetch(`/api/sales/${saleId}`);
             if (!response.ok) {
                 throw new Error('Savdoni yuklashda xatolik');
             }
@@ -1352,7 +1352,7 @@
     // Bitta savdoni yuklash
     async function loadSingleSale(saleId) {
         try {
-            const response = await fetch(`/api/sale/${saleId}`);
+            const response = await fetch(`/api/sales/${saleId}`);
             if (!response.ok) {
                 throw new Error('Savdoni yuklashda xatolik');
             }
