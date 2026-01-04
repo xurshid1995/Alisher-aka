@@ -7375,11 +7375,6 @@ def api_sales_chart():
             'terminal': sum(float(row[6]) if len(row) > 6 and row[6] else 0.0 for row in results),
             'debt': sum(float(row[7]) if len(row) > 7 and row[7] else 0.0 for row in results)
         }
-        
-        # Debug: To'lov turlari va filtrlar
-        print(f"💰 To'lov turlari: {payment_totals}")
-        print(f"📊 Jami {len(results)} ta natija topildi")
-        print(f"🔍 Qo'llangan filtrlar: location_id={location_id}, location_type={location_type}, period={period}")
 
         return jsonify({
             'labels': labels,
