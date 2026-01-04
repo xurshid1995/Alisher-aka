@@ -393,16 +393,16 @@
     <!-- Statistika kartochkalari -->
     <div class="stats-cards">
         <div class="stat-card total">
-            <h3>📊 Umumiy qarz</h3>
+            <h3>� Umumiy qarz</h3>
             <div class="value" id="totalDebt">$0.00</div>
-        </div>
-        <div class="stat-card paid">
-            <h3>✅ To'langan</h3>
-            <div class="value" id="totalPaid">$0.00</div>
         </div>
         <div class="stat-card customers">
             <h3>👥 Qarzli mijozlar</h3>
             <div class="value" id="debtCustomers">0</div>
+        </div>
+        <div class="stat-card paid">
+            <h3>📋 Jami mijozlar</h3>
+            <div class="value" id="totalCustomers">0</div>
         </div>
     </div>
 
@@ -541,12 +541,12 @@
     // Statistikani yangilash
     function updateStats() {
         const totalDebt = debts.reduce((sum, d) => sum + (d.remaining_debt || 0), 0);
-        const totalPaid = debts.reduce((sum, d) => sum + (d.paid_amount || 0), 0);
         const debtCustomers = debts.filter(d => (d.remaining_debt || 0) > 0).length;
+        const totalCustomers = debts.length;
 
         document.getElementById('totalDebt').textContent = `$${totalDebt.toFixed(2)}`;
-        document.getElementById('totalPaid').textContent = `$${totalPaid.toFixed(2)}`;
         document.getElementById('debtCustomers').textContent = debtCustomers;
+        document.getElementById('totalCustomers').textContent = totalCustomers;
     }
 
     // Jadvalni render qilish
