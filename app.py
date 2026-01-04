@@ -4857,6 +4857,7 @@ def api_sales_history():
             query = query.join(SaleItem).join(Product).filter(
                 Product.name.ilike(f'%{search_term.strip()}%')
             ).distinct()
+            print(f"🔍 Qidiruv: '{search_term.strip()}' (mahsulot nomi)")
 
         # STATISTIKA: SQL aggregate funksiyalari bilan optimal hisoblash
         from sqlalchemy import func
