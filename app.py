@@ -7260,7 +7260,11 @@ def api_sales_chart():
                     EXTRACT(HOUR FROM s.sale_date) as time_period,
                     COUNT(*) as period_sales,
                     COALESCE(SUM(s.total_amount), 0) as period_total,
-                    COALESCE(SUM(s.total_profit), 0) as period_profit
+                    COALESCE(SUM(s.total_profit), 0) as period_profit,
+                    COALESCE(SUM(s.cash_amount), 0) as cash_total,
+                    COALESCE(SUM(s.click_amount), 0) as click_total,
+                    COALESCE(SUM(s.terminal_amount), 0) as terminal_total,
+                    COALESCE(SUM(s.debt_amount), 0) as debt_total
                 FROM sales s
             """
         else:
@@ -7269,7 +7273,11 @@ def api_sales_chart():
                     DATE(s.sale_date) as time_period,
                     COUNT(*) as period_sales,
                     COALESCE(SUM(s.total_amount), 0) as period_total,
-                    COALESCE(SUM(s.total_profit), 0) as period_profit
+                    COALESCE(SUM(s.total_profit), 0) as period_profit,
+                    COALESCE(SUM(s.cash_amount), 0) as cash_total,
+                    COALESCE(SUM(s.click_amount), 0) as click_total,
+                    COALESCE(SUM(s.terminal_amount), 0) as terminal_total,
+                    COALESCE(SUM(s.debt_amount), 0) as debt_total
                 FROM sales s
             """
 
@@ -7332,7 +7340,11 @@ def api_sales_chart():
                 hourly_data[hour] = {
                     'sales': row[1],
                     'amount': float(row[2]) if row[2] else 0.0,
-                    'profit': float(row[3]) if row[3] else 0.0
+                    'profit': float(row[3]) if row[3] else 0.0,
+                    'cash': float(row[4]) if row[4] else 0.0,
+                    'click': float(row[5]) if row[5] else 0.0,
+                    'terminal': float(row[6]) if row[6] else 0.0,
+                    'debt': float(row[7]) if row[7] else 0.0
                 }
 
             # 0 dan 23 gacha barcha soatlarni qo'shamiz
@@ -7356,11 +7368,20 @@ def api_sales_chart():
                 profits.append(float(row[3]) if row[3]
                                else 0.0)  # savdo foydasi
 
+        # To'lov turlarini hisoblash
+        payment_totals = {
+            'cash': sum(float(row[4]) if len(row) > 4 and row[4] else 0.0 for row in results),
+            'click': sum(float(row[5]) if len(row) > 5 and row[5] else 0.0 for row in results),
+            'terminal': sum(float(row[6]) if len(row) > 6 and row[6] else 0.0 for row in results),
+            'debt': sum(float(row[7]) if len(row) > 7 and row[7] else 0.0 for row in results)
+        }
+
         return jsonify({
             'labels': labels,
             'values': values,
             'amounts': amounts,
-            'profits': profits
+            'profits': profits,
+            'payment_totals': payment_totals
         })
 
     except Exception as e:

@@ -54,6 +54,11 @@
                                         <span class="stat-label-inline">💰 Summa</span>
                                         <span class="stat-number-inline" id="totalAmount">0$</span>
                                     </div>
+                                    <div class="stat-separator">|</div>
+                                    <div class="stat-item" id="paymentMethodsContainer" style="display: flex; gap: 5px; align-items: center;">
+                                        <span class="stat-label-inline" style="margin-right: 5px;">To'lovlar:</span>
+                                        <span id="paymentMethods" style="font-size: 12px; color: #666;">-</span>
+                                    </div>
                                     {% if session.role != 'sotuvchi' %}
                                     <div class="stat-separator">|</div>
                                     <div class="stat-item">
@@ -617,6 +622,17 @@ function updateStatistics(data) {
     // Formatlash va ko'rsatish
     document.getElementById('totalSales').textContent = totalSales.toLocaleString();
     document.getElementById('totalAmount').textContent = Math.floor(totalAmount).toLocaleString() + '$';
+    
+    // To'lov turlarini ko'rsatish
+    if (data.payment_totals) {
+        const payments = [];
+        if (data.payment_totals.cash > 0) payments.push(`💵 $${Math.floor(data.payment_totals.cash)}`);
+        if (data.payment_totals.click > 0) payments.push(`📱 $${Math.floor(data.payment_totals.click)}`);
+        if (data.payment_totals.terminal > 0) payments.push(`💳 $${Math.floor(data.payment_totals.terminal)}`);
+        if (data.payment_totals.debt > 0) payments.push(`📝 $${Math.floor(data.payment_totals.debt)}`);
+        
+        document.getElementById('paymentMethods').textContent = payments.length > 0 ? payments.join(' • ') : '-';
+    }
     
     // Foyda faqat sotuvchi bo'lmasa yangilanadi
     if (userRole !== 'sotuvchi') {
