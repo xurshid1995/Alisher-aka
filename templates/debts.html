@@ -495,26 +495,15 @@
 
             <!-- To'lov qilish bo'limi -->
             <div class="payment-section">
-                <h3>💳 To'lov qilish</h3>
+                <h3>💳 Qarzga to'lov qilish</h3>
                 <div class="payment-total">
-                    To'lanishi kerak: <span id="paymentAmount">$0.00</span>
+                    Qarz summasi: <span id="paymentAmount">$0.00</span>
                 </div>
                 <div class="payment-methods">
-                    <div class="payment-method">
-                        <label>💵 Naxt ($)</label>
-                        <input type="number" id="payCash" step="0.01" value="0.00" oninput="calculatePaymentTotal()">
+                    <div class="payment-method" style="grid-column: 1/-1;">
+                        <label>💵 To'lov summasi ($)</label>
+                        <input type="number" id="paymentSum" step="0.01" value="0.00" placeholder="To'lov summasini kiriting..." style="font-size: 18px; padding: 15px;">
                     </div>
-                    <div class="payment-method">
-                        <label>💳 Click ($)</label>
-                        <input type="number" id="payClick" step="0.01" value="0.00" oninput="calculatePaymentTotal()">
-                    </div>
-                    <div class="payment-method">
-                        <label>🏧 Terminal ($)</label>
-                        <input type="number" id="payTerminal" step="0.01" value="0.00" oninput="calculatePaymentTotal()">
-                    </div>
-                </div>
-                <div class="payment-total">
-                    Jami to'lov: <span id="totalPaymentAmount">$0.00</span>
                 </div>
                 <div class="payment-actions">
                     <button class="btn-cancel" onclick="closeModal()">❌ Bekor qilish</button>
@@ -695,14 +684,17 @@
                 historyBody.innerHTML = '<tr><td colspan="6" class="no-data">📭 Qarzlar tarixi yo\'q</td></tr>';
             }
             
-            // To'lov maydonlarini tozalash
-            document.getElementById('payCash').value = '0.00';
-            document.getElementById('payClick').value = '0.00';
-            document.getElementById('payTerminal').value = '0.00';
-            document.getElementById('totalPaymentAmount').textContent = '$0.00';
+            // To'lov maydonini tozalash
+            document.getElementById('paymentSum').value = '0.00';
             
             // Modalni ochish
             document.getElementById('debtModal').style.display = 'flex';
+            
+            // Fokusni to'lov maydoniga berish
+            setTimeout(() => {
+                document.getElementById('paymentSum').focus();
+                document.getElementById('paymentSum').select();
+            }, 100);
         } catch (error) {
             console.error('Xatolik:', error);
             alert('❌ Ma\'lumotlarni yuklashda xatolik yuz berdi');
@@ -720,16 +712,6 @@
         currentCustomerId = null;
     }
 
-    // To'lov summalarini hisoblash
-    function calculatePaymentTotal() {
-        const cash = parseFloat(document.getElementById('payCash').value) || 0;
-        const click = parseFloat(document.getElementById('payClick').value) || 0;
-        const terminal = parseFloat(document.getElementById('payTerminal').value) || 0;
-        
-        const total = cash + click + terminal;
-        document.getElementById('totalPaymentAmount').textContent = `$${total.toFixed(2)}`;
-    }
-
     // To'lovni tasdiqlash
     async function confirmPayment() {
         if (!currentCustomerId) {
@@ -737,23 +719,16 @@
             return;
         }
 
-        const cash = parseFloat(document.getElementById('payCash').value) || 0;
-        const click = parseFloat(document.getElementById('payClick').value) || 0;
-        const terminal = parseFloat(document.getElementById('payTerminal').value) || 0;
+        const paymentSum = parseFloat(document.getElementById('paymentSum').value) || 0;
         
-        const total = cash + click + terminal;
-        
-        if (total <= 0) {
+        if (paymentSum <= 0) {
             alert('❌ To\'lov summasini kiriting');
             return;
         }
 
         const paymentData = {
             customer_id: currentCustomerId,
-            cash_usd: cash,
-            click_usd: click,
-            terminal_usd: terminal,
-            total_usd: total
+            payment_usd: paymentSum
         };
 
         try {

@@ -3063,12 +3063,9 @@ def api_debt_payment():
     try:
         data = request.get_json()
         customer_id = data.get('customer_id')
-        cash_usd = Decimal(str(data.get('cash_usd', 0)))
-        click_usd = Decimal(str(data.get('click_usd', 0)))
-        terminal_usd = Decimal(str(data.get('terminal_usd', 0)))
-        total_usd = cash_usd + click_usd + terminal_usd
+        payment_usd = Decimal(str(data.get('payment_usd', 0)))
 
-        if total_usd <= 0:
+        if payment_usd <= 0:
             return jsonify({
                 'success': False,
                 'error': 'To\'lov summasi 0 dan katta bo\'lishi kerak'
@@ -3086,35 +3083,26 @@ def api_debt_payment():
                 'error': 'Qarzli savdolar topilmadi'
             }), 404
 
-        remaining_payment = total_usd
+        remaining_payment = payment_usd
         updated_sales = []
 
         # Har bir qarzga to'lovni taqsimlash
         for sale in sales:
-            current_debt = sale.debt_usd - (
-                (sale.cash_usd or Decimal('0')) +
-                (sale.click_usd or Decimal('0')) +
-                (sale.terminal_usd or Decimal('0'))
-            )
+            if remaining_payment <= 0:
+                break
+
+            # Ushbu savdodagi qolgan qarz
+            current_debt = sale.debt_usd
 
             if current_debt <= 0:
                 continue
 
-            if remaining_payment <= 0:
-                break
-
             # Ushbu savdoga qancha to'lov qilish mumkin
             payment_for_this_sale = min(remaining_payment, current_debt)
 
-            # To'lovlarni taqsimlash (proportsional)
-            if total_usd > 0:
-                cash_part = (cash_usd / total_usd) * payment_for_this_sale
-                click_part = (click_usd / total_usd) * payment_for_this_sale
-                terminal_part = (terminal_usd / total_usd) * payment_for_this_sale
-
-                sale.cash_usd = (sale.cash_usd or Decimal('0')) + cash_part
-                sale.click_usd = (sale.click_usd or Decimal('0')) + click_part
-                sale.terminal_usd = (sale.terminal_usd or Decimal('0')) + terminal_part
+            # Qarzni kamaytirish
+            sale.debt_usd = sale.debt_usd - payment_for_this_sale
+            sale.debt_amount = float(sale.debt_usd) * float(sale.currency_rate)
 
             remaining_payment -= payment_for_this_sale
             updated_sales.append(sale.id)
@@ -3125,7 +3113,7 @@ def api_debt_payment():
             'success': True,
             'message': 'To\'lov muvaffaqiyatli amalga oshirildi',
             'updated_sales': updated_sales,
-            'paid_amount': float(total_usd - remaining_payment)
+            'paid_amount': float(payment_usd - remaining_payment)
         })
 
     except Exception as e:
