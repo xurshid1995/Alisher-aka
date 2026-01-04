@@ -2407,12 +2407,16 @@ function generatePaymentDetailsHTML(sale) {
     }
     
     // To'lov turlarini bir qatorda ko'rsatish
-    return activePayments.map(payment => `
+    const paymentsText = activePayments
+        .map(p => `${p.name}: $${parseFloat(p.amount).toFixed(2)}`)
+        .join('   ');
+    
+    return `
         <div class="total-row">
-            <span class="total-label">${payment.name}:</span>
-            <span class="total-value">$${parseFloat(payment.amount).toFixed(2)}</span>
+            <span class="total-label" style="display: inline; margin-right: 10px;">To'lovlar:</span>
+            <span class="total-value" style="display: inline;">${paymentsText}</span>
         </div>
-    `).join('');
+    `;
 }
 
 // To'lov holati matnini olish
