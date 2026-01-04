@@ -1812,10 +1812,14 @@
                 cart = [];
                 updateCart();
                 
-                // Mijozni tozalash
-                document.getElementById('selectedCustomerId').value = '';
-                document.getElementById('customerNameDisplay').textContent = 'Mijoz tanlanmagan';
-                document.getElementById('customerPhoneDisplay').textContent = '';
+                // Mijozni tozalash (elementlar mavjudligini tekshirish)
+                const customerIdInput = document.getElementById('selectedCustomerId');
+                const customerNameDisplay = document.getElementById('customerNameDisplay');
+                const customerPhoneDisplay = document.getElementById('customerPhoneDisplay');
+                
+                if (customerIdInput) customerIdInput.value = '';
+                if (customerNameDisplay) customerNameDisplay.textContent = 'Mijoz tanlanmagan';
+                if (customerPhoneDisplay) customerPhoneDisplay.textContent = '';
             } else {
                 alert('❌ Xatolik: ' + (result.error || 'Noma\'lum xatolik'));
             }
