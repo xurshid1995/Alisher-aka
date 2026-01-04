@@ -1311,43 +1311,71 @@
         try {
             console.log(`📥 Savdo ${saleId} yuklanmoqda...`);
             const response = await fetch(`/api/sales/${saleId}`);
+            console.log('📡 API response status:', response.status);
+            
             if (!response.ok) {
                 throw new Error('Savdoni yuklashda xatolik');
             }
             
             const data = await response.json();
-            console.log('📦 Savdo guruhi ma\'lumotlari:', data);
+            console.log('📦 API javob (to\'liq):', JSON.stringify(data, null, 2));
+            console.log('📦 data.success:', data.success);
+            console.log('📦 data.sale:', data.sale);
             
             if (data.success && data.sale) {
                 const sale = data.sale;
+                console.log('📦 Sale obyekti:', sale);
+                console.log('📍 location_type:', sale.location_type);
+                console.log('📍 location_id:', sale.location_id);
+                console.log('👤 customer_name:', sale.customer_name);
+                console.log('👤 customer_id:', sale.customer_id);
+                console.log('📦 items:', sale.items);
+                console.log('📦 items.length:', sale.items?.length);
                 
                 // Joylashuvni tanlash
                 const locationSelect = document.getElementById('locationSelect');
+                console.log('📍 locationSelect element:', locationSelect);
+                console.log('📍 locationSelect.options.length:', locationSelect?.options?.length);
+                
                 const locationValue = sale.location_type === 'store' ? `store_${sale.location_id}` : `warehouse_${sale.location_id}`;
-                console.log(`📍 Joylashuv tanlanmoqda: ${locationValue}`);
+                console.log(`📍 Joylashuv qiymati: ${locationValue}`);
                 locationSelect.value = locationValue;
+                console.log(`📍 locationSelect.value o'rnatildi: ${locationSelect.value}`);
                 
                 // Global o'zgaruvchilarni yangilash
                 selectedLocationType = sale.location_type;
                 selectedLocationId = sale.location_id;
+                console.log(`📍 Global o'zgaruvchilar: ${selectedLocationType}, ${selectedLocationId}`);
                 
                 // Mahsulotlarni yuklash
                 console.log('📦 Mahsulotlar yuklanmoqda...');
                 await loadProducts();
+                console.log('📦 Mahsulotlar yuklandi');
                 
                 // Mijozni tanlash
-                document.getElementById('customerSearch').value = sale.customer_name || '';
-                document.getElementById('selectedCustomerId').value = sale.customer_id || '';
-                console.log(`👤 Mijoz tanlandi: ${sale.customer_name}`);
+                const customerSearchInput = document.getElementById('customerSearch');
+                const selectedCustomerIdInput = document.getElementById('selectedCustomerId');
+                console.log('👤 customerSearch element:', customerSearchInput);
+                console.log('👤 selectedCustomerId element:', selectedCustomerIdInput);
+                
+                customerSearchInput.value = sale.customer_name || '';
+                selectedCustomerIdInput.value = sale.customer_id || '';
+                console.log(`👤 Mijoz o'rnatildi: ${customerSearchInput.value}, ID: ${selectedCustomerIdInput.value}`);
                 
                 // Kichik kutish - mahsulotlar DOM'ga qo'shilishi uchun
+                console.log('⏳ 500ms kutilmoqda...');
                 await new Promise(resolve => setTimeout(resolve, 500));
                 
                 // Savdo elementlarini savatga qo'shish
                 if (sale.items && sale.items.length > 0) {
                     console.log(`🛒 ${sale.items.length} ta mahsulot savatga qo'shilmoqda...`);
                     for (const item of sale.items) {
-                        console.log(`  - ${item.product_name}: ${item.quantity} x $${item.unit_price}`);
+                        console.log(`  📦 Item:`, item);
+                        console.log(`  - product_id: ${item.product_id}`);
+                        console.log(`  - product_name: ${item.product_name}`);
+                        console.log(`  - quantity: ${item.quantity}`);
+                        console.log(`  - unit_price: ${item.unit_price}`);
+                        
                         addToCart(
                             item.product_id,
                             item.product_name,
@@ -1365,6 +1393,7 @@
             }
         } catch (error) {
             console.error('❌ Savdo guruhini yuklashda xatolik:', error);
+            console.error('❌ Error stack:', error.stack);
             alert('Savdo ma\'lumotlarini yuklashda xatolik: ' + error.message);
         }
     }
