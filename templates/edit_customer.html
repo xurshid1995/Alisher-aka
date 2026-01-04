@@ -383,6 +383,11 @@
                 document.getElementById('customerId').value = currentCustomer.id;
                 document.getElementById('customerName').value = currentCustomer.name || '';
                 document.getElementById('customerPhone').value = currentCustomer.phone || '';
+                // Telefon raqamini formatlash
+                const phoneInput = document.getElementById('customerPhone');
+                if (phoneInput.value) {
+                    formatPhoneNumber(phoneInput);
+                }
                 document.getElementById('customerEmail').value = currentCustomer.email || '';
                 document.getElementById('customerAddress').value = currentCustomer.address || '';
                 
