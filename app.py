@@ -5346,20 +5346,30 @@ def create_sale():
                     }), 404
                 logger.warning(f" Warehouse tanlangan: {warehouse.name}")
         else:
-            # Multi-location rejimida birinchi item dan store ni olish
-            first_item = items[0]
-            if first_item.get('location_type') == 'store':
-                store = Store.query.get(first_item.get('location_id'))
+            # Multi-location rejimida eng ko'p ishlatiladigan store ni topish
+            store_ids = []
+            for item in items:
+                if item.get('location_type') == 'store':
+                    item_store_id = item.get('location_id')
+                    if item_store_id:
+                        store_ids.append(int(item_store_id))
+            
+            # Eng ko'p uchraydigan store_id ni topish
+            if store_ids:
+                from collections import Counter
+                most_common_store_id = Counter(store_ids).most_common(1)[0][0]
+                store = Store.query.get(most_common_store_id)
+                logger.info(f" Multi-location: Eng ko'p ishlatilgan store - {store.name} (ID: {most_common_store_id})")
             else:
+                # Agar barcha mahsulotlar warehouse dan bo'lsa, default store
                 store = Store.query.first()
+                logger.warning(f" Multi-location: Barcha mahsulotlar warehouse dan, default store - {store.name}")
 
             if not store:
                 return jsonify({
                     'success': False,
                     'error': 'Savdo uchun dokon topilmadi'
                 }), 404
-
-            logger.info(f" Multi-location mode: {store.name} dokonida savdo")
 
         # Customer ID ni int ga o'girish
         final_customer_id = None
