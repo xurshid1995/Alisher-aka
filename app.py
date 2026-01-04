@@ -2973,7 +2973,7 @@ def api_debts():
                 COALESCE(SUM(s.debt_usd), 0) as total_debt,
                 0 as paid_amount,
                 COALESCE(SUM(s.debt_usd), 0) as remaining_debt,
-                c.last_debt_payment_date,
+                c.last_debt_payment_date as last_payment_date,
                 COALESCE(c.last_debt_payment_usd, 0) as last_payment_amount
             FROM customers c
             LEFT JOIN sales s ON c.id = s.customer_id AND s.debt_usd > 0
