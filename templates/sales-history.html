@@ -1948,7 +1948,7 @@ function displaySalesData(data) {
                 <td class="group-cell group-location">
                     ${getLocationName(firstItem)}
                 </td>
-                <td>${highlightSearchTerms(firstItem.product_name || 'Noma\'lum', document.getElementById('searchInput')?.value)}</td>
+                <td class="product-cell">${firstItem.product_name || 'Noma\'lum'}</td>
                 <td>${firstItem.quantity}</td>
                 <td>${formatPrice(firstItem.unit_price || 0, sale.currency_rate)}</td>
                 <td>${formatPrice(firstItem.total_price || 0, sale.currency_rate)}</td>
@@ -1981,7 +1981,7 @@ function displaySalesData(data) {
                     <td class="group-cell group-location">
                         ${getLocationName(item)}
                     </td>
-                    <td>${highlightSearchTerms(item.product_name || 'Noma\'lum', document.getElementById('searchInput')?.value)}</td>
+                    <td class="product-cell">${item.product_name || 'Noma\'lum'}</td>
                     <td>${item.quantity}</td>
                     <td>${formatPrice(item.unit_price || 0, sale.currency_rate)}</td>
                     <td>${formatPrice(item.total_price || 0, sale.currency_rate)}</td>
@@ -1999,8 +1999,26 @@ function displaySalesData(data) {
         updateTableForCompactView();
     }
     
+    salesTableBody.innerHTML = html;
+    
+    // HTML yaratilgandan keyin mahsulot nomlarini highlight qilish
+    highlightProductNames();
+    
     // Ombor matnlarini sariq fon bilan ajratish
     highlightWarehouseLocations();
+}
+
+// Mahsulot nomlarini highlight qilish
+function highlightProductNames() {
+    const searchTerm = document.getElementById('searchInput')?.value;
+    if (!searchTerm || !searchTerm.trim()) return;
+    
+    const productCells = document.querySelectorAll('.product-cell');
+    productCells.forEach(cell => {
+        const originalText = cell.textContent;
+        const highlightedHTML = highlightSearchTerms(originalText, searchTerm);
+        cell.innerHTML = highlightedHTML;
+    });
 }
 
 // SaleItem dan joylashuv nomini olish funksiyasi
