@@ -495,9 +495,9 @@
         </div>
         <div class="modal-body">
             <!-- Mijoz ma'lumotlari va To'lov qilish yonma-yon -->
-            <div style="display: flex; gap: 20px; margin-bottom: 20px; flex-wrap: wrap;">
+            <div style="display: flex; gap: 20px; margin-bottom: 20px; flex-wrap: wrap; align-items: stretch;">
                 <!-- Mijoz ma'lumotlari -->
-                <div class="customer-info" style="flex: 1; min-width: 300px;">
+                <div class="customer-info" style="flex: 1; min-width: 300px; display: flex; flex-direction: column;">
                     <h3 id="modalCustomerName">-</h3>
                     <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
                         <p><strong>📞 Telefon:</strong> <span id="modalCustomerPhone">-</span></p>
@@ -507,7 +507,7 @@
                 </div>
 
                 <!-- To'lov qilish bo'limi -->
-                <div class="payment-section" style="flex: 1; min-width: 400px; margin-bottom: 0;">
+                <div class="payment-section" style="flex: 1; min-width: 400px; margin-bottom: 0; display: flex; flex-direction: column;">
                     <h3>💳 Qarzga to'lov qilish</h3>
                     <div class="payment-total">
                         Qarz summasi: <span id="paymentAmount">$0.00</span>
