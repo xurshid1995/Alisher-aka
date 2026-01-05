@@ -452,7 +452,7 @@
                     <td><strong style="color: ${remaining > 0 ? '#dc3545' : '#28a745'}">$${remaining.toFixed(2)}</strong></td>
                     <td><span class="status-badge ${status}">${statusText}</span></td>
                     <td>
-                        <a href="/sales/details/${h.sale_id}" target="_blank" style="text-decoration: none; color: #007bff; font-size: 14px;">👁️ Ko'rish</a>
+                        <button onclick="viewSaleDetails(${h.sale_id})" style="background: #007bff; color: white; border: none; padding: 5px 12px; border-radius: 4px; cursor: pointer; font-size: 13px;">👁️ Ko'rish</button>
                     </td>
                 </tr>
             `;
@@ -546,5 +546,124 @@
         loadDebtData();
         setupCurrencyConversion();
     });
+
+    // Savdo tafsilotlarini ko'rish
+    function viewSaleDetails(saleId) {
+        fetch(`/api/sales/${saleId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.sale) {
+                    showSaleDetailsModal(data.sale);
+                } else {
+                    alert('❌ Savdo tafsilotlarini olishda xatolik');
+                }
+            })
+            .catch(error => {
+                console.error('Xatolik:', error);
+                alert('❌ Tarmoq xatoligi');
+            });
+    }
+
+    // Modal oynani ko'rsatish
+    function showSaleDetailsModal(sale) {
+        const rate = sale.currency_rate || 12000;
+        
+        const cashUSD = parseFloat(sale.cash_usd || 0);
+        const clickUSD = parseFloat(sale.click_usd || 0);
+        const terminalUSD = parseFloat(sale.terminal_usd || 0);
+        const debtUSD = parseFloat(sale.debt_usd || 0);
+        
+        const cashUZS = sale.cash_amount || (cashUSD * rate);
+        const clickUZS = sale.click_amount || (clickUSD * rate);
+        const terminalUZS = sale.terminal_amount || (terminalUSD * rate);
+        const debtUZS = sale.debt_amount || (debtUSD * rate);
+        
+        const payments = [
+            { name: '💵 Naqd pul', usd: cashUSD, uzs: cashUZS, isDebt: false },
+            { name: '📱 Click', usd: clickUSD, uzs: clickUZS, isDebt: false },
+            { name: '💳 Terminal', usd: terminalUSD, uzs: terminalUZS, isDebt: false },
+            { name: '📝 Qarz', usd: debtUSD, uzs: debtUZS, isDebt: true }
+        ];
+        
+        const activePayments = payments.filter(p => p.usd > 0);
+        
+        const paymentsHTML = activePayments.map(p => `
+            <div style="display: inline-block; background: #f8f9fa; padding: 8px 14px; margin: 4px ${p.isDebt ? '40px' : '8px'} 4px 0; border-radius: 6px; border-left: 4px solid #007bff;">
+                <div style="font-weight: 600; color: #495057; margin-bottom: 2px;">${p.name}</div>
+                <div style="font-size: 15px; font-weight: 700; color: #28a745;">$${p.usd.toFixed(2)}</div>
+                <div style="font-size: 12px; color: #6c757d;">${p.uzs.toLocaleString('uz-UZ')} so'm</div>
+            </div>
+        `).join('');
+        
+        const totalUSD = activePayments.reduce((sum, p) => sum + p.usd, 0);
+        const totalUZS = activePayments.reduce((sum, p) => sum + p.uzs, 0);
+        
+        const totalHTML = `
+            <div style="display: inline-block; background: #007bff; padding: 8px 14px; margin: 4px 8px 4px 0; border-radius: 6px; border-left: 4px solid #0056b3;">
+                <div style="font-weight: 600; color: #ffffff; margin-bottom: 2px;">Jami to'lov</div>
+                <div style="font-size: 15px; font-weight: 700; color: #ffffff;">$${totalUSD.toFixed(2)}</div>
+                <div style="font-size: 12px; color: #ffffff;">${totalUZS.toLocaleString('uz-UZ')} so'm</div>
+            </div>
+        `;
+        
+        const modalHtml = `
+            <div id="saleDetailsModal" style="display: flex; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; justify-content: center; align-items: center;">
+                <div style="background: white; border-radius: 12px; width: 90%; max-width: 900px; max-height: 90vh; overflow-y: auto; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+                    <div style="padding: 20px; border-bottom: 1px solid #dee2e6; display: flex; justify-content: space-between; align-items: center; background: #f8f9fa;">
+                        <h3 style="margin: 0; color: #333;">👁️ Savdo Tafsilotlari</h3>
+                        <button onclick="closeSaleDetailsModal()" style="background: none; border: none; font-size: 28px; cursor: pointer; color: #666;">&times;</button>
+                    </div>
+                    <div style="padding: 20px;">
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                            <strong>Mijoz:</strong> ${sale.customer_name || 'Noma\'lum'}
+                            ${sale.customer_phone ? `<span style="color: #666;"> (${sale.customer_phone})</span>` : ''}
+                            <span style="margin: 0 10px; color: #ccc;">•</span>
+                            <strong>Sana:</strong> ${new Date(sale.sale_date).toLocaleString('uz-UZ')}
+                        </div>
+                        
+                        <h4 style="margin-bottom: 10px;">Mahsulotlar:</h4>
+                        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                            <thead>
+                                <tr style="background: #f8f9fa;">
+                                    <th style="padding: 10px; text-align: left; border-bottom: 2px solid #dee2e6;">Mahsulot</th>
+                                    <th style="padding: 10px; text-align: left; border-bottom: 2px solid #dee2e6;">Joylashuv</th>
+                                    <th style="padding: 10px; text-align: center; border-bottom: 2px solid #dee2e6;">Miqdori</th>
+                                    <th style="padding: 10px; text-align: right; border-bottom: 2px solid #dee2e6;">Narx</th>
+                                    <th style="padding: 10px; text-align: right; border-bottom: 2px solid #dee2e6;">Jami</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${sale.items.map(item => `
+                                    <tr>
+                                        <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">${item.product_name}</td>
+                                        <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">${item.location_name}</td>
+                                        <td style="padding: 8px; text-align: center; border-bottom: 1px solid #dee2e6;">${item.quantity}</td>
+                                        <td style="padding: 8px; text-align: right; border-bottom: 1px solid #dee2e6;">$${parseFloat(item.unit_price || 0).toFixed(2)}</td>
+                                        <td style="padding: 8px; text-align: right; border-bottom: 1px solid #dee2e6; font-weight: 600;">$${parseFloat(item.total_price || 0).toFixed(2)}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                        
+                        <div style="margin-top: 20px;">
+                            <div style="margin-bottom: 8px; font-weight: 500; color: #495057;">To'lovlar:</div>
+                            <div style="display: flex; flex-wrap: wrap; align-items: center;">${paymentsHTML}${totalHTML}</div>
+                        </div>
+                    </div>
+                    <div style="padding: 15px 20px; border-top: 1px solid #dee2e6; text-align: right; background: #f8f9fa;">
+                        <button onclick="closeSaleDetailsModal()" style="padding: 10px 20px; background: #6c757d; color: white; border: none; border-radius: 6px; cursor: pointer;">Yopish</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+    }
+
+    // Modalni yopish
+    function closeSaleDetailsModal() {
+        const modal = document.getElementById('saleDetailsModal');
+        if (modal) modal.remove();
+    }
 </script>
 {% endblock %}
