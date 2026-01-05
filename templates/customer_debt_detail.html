@@ -403,7 +403,7 @@
             if (rateResponse.ok) {
                 const rateData = await rateResponse.json();
                 console.log('📦 Rate data:', rateData);
-                currentRate = rateData.rate || 12000;
+                currentRate = rateData.rate?.rate || rateData.rate || 12000;
                 console.log('✅ Current rate o\'rnatildi:', currentRate);
             } else {
                 console.log('❌ Rate response not OK');
