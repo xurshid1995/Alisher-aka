@@ -6325,6 +6325,11 @@ def delete_sale_with_stock_return(sale_id):
 
         # Har bir SaleItem uchun stock ni qaytarish
         for item in sale.items:
+            # Agar product o'chirilgan bo'lsa (product_id NULL), stock qaytarib bo'lmaydi
+            if not item.product_id:
+                logger.warning(f"⚠️ DELETE: Product o'chirilgan (sale_item {item.id}), stock qaytarilmaydi")
+                continue
+                
             logger.debug(f" DELETE: Product {item.product_id}, Qty: {item.quantity}")
             logger.debug(f" DELETE: Source {item.source_type}, ID: {item.source_id}")
 
