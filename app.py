@@ -3969,24 +3969,28 @@ def delete_store_stock(store_id, product_id):
 
         total_other_locations = other_store_stocks + warehouse_stocks
 
-        # Faqat stock ni o'chirish (product saqlanadi - tarixda kerak bo'ladi)
+        # Stock ni o'chirish
         db.session.delete(stock)
-        db.session.commit()
-
+        
+        # Agar boshqa stoklarda yo'q bo'lsa - product'ni ham o'chirish
+        # product_name_snapshot mavjud bo'lgani uchun tarixda saqlanadi
         if total_other_locations == 0:
+            db.session.delete(product)
+            db.session.commit()
+            
             return jsonify({
                 'success': True,
-                'message': f'{product_name} bu do\'kondan o\'chirildi (boshqa joylarda yo\'q, lekin tarixda saqlanadi)',
-                'deleted_completely': False,
-                'other_locations': 0
+                'message': f'{product_name} mahsuloti butunlay o\'chirildi (tarixda snapshot bilan saqlanadi)',
+                'deleted_completely': True
             })
-        else:
-            return jsonify({
-                'success': True,
-                'message': f'{product_name} bu do\'kondan o\'chirildi (boshqa joylarda hali mavjud)',
-                'deleted_completely': False,
-                'other_locations': total_other_locations
-            })
+        
+        db.session.commit()
+        return jsonify({
+            'success': True,
+            'message': f'{product_name} bu do\'kondan o\'chirildi (boshqa joylarda hali mavjud)',
+            'deleted_completely': False,
+            'other_locations': total_other_locations
+        })
 
     except Exception as e:
         db.session.rollback()
