@@ -326,7 +326,7 @@
                     </div>
                     <div style="flex: 1; display: flex; align-items: center; gap: 4px;">
                         <span style="font-weight: 700; color: #6c757d; font-size: 16px;">UZS</span>
-                        <input type="number" id="paymentCashUZS" step="1" value="0" placeholder="0" style="flex: 1; padding: 8px; border: 1px solid #ced4da; border-radius: 6px; font-size: 14px; background: #f8f9fa;" readonly>
+                        <input type="number" id="paymentCashUZS" step="1" value="0" placeholder="0" style="flex: 1; padding: 8px; border: 1px solid #ced4da; border-radius: 6px; font-size: 14px;">
                     </div>
                     <button onclick="addRemainingToField('paymentCashUSD')" style="padding: 8px 12px; background: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 11px; white-space: nowrap;">+ Qolgan</button>
                 </div>
@@ -338,7 +338,7 @@
                     </div>
                     <div style="flex: 1; display: flex; align-items: center; gap: 4px;">
                         <span style="font-weight: 700; color: #6c757d; font-size: 16px;">UZS</span>
-                        <input type="number" id="paymentClickUZS" step="1" value="0" placeholder="0" style="flex: 1; padding: 8px; border: 1px solid #ced4da; border-radius: 6px; font-size: 14px; background: #f8f9fa;" readonly>
+                        <input type="number" id="paymentClickUZS" step="1" value="0" placeholder="0" style="flex: 1; padding: 8px; border: 1px solid #ced4da; border-radius: 6px; font-size: 14px;">
                     </div>
                     <button onclick="addRemainingToField('paymentClickUSD')" style="padding: 8px 12px; background: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 11px; white-space: nowrap;">+ Qolgan</button>
                 </div>
@@ -350,7 +350,7 @@
                     </div>
                     <div style="flex: 1; display: flex; align-items: center; gap: 4px;">
                         <span style="font-weight: 700; color: #6c757d; font-size: 16px;">UZS</span>
-                        <input type="number" id="paymentTerminalUZS" step="1" value="0" placeholder="0" style="flex: 1; padding: 8px; border: 1px solid #ced4da; border-radius: 6px; font-size: 14px; background: #f8f9fa;" readonly>
+                        <input type="number" id="paymentTerminalUZS" step="1" value="0" placeholder="0" style="flex: 1; padding: 8px; border: 1px solid #ced4da; border-radius: 6px; font-size: 14px;">
                     </div>
                     <button onclick="addRemainingToField('paymentTerminalUSD')" style="padding: 8px 12px; background: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 11px; white-space: nowrap;">+ Qolgan</button>
                 </div>
@@ -546,12 +546,18 @@
         }
     }
 
-    // USD va UZS o'rtasida avtomatik konversiya
+    // USD va UZS o'rtasida ikki tomonlama avtomatik konversiya
     function setupCurrencyConversion() {
         // Cash USD -> UZS
         document.getElementById('paymentCashUSD').addEventListener('input', function() {
             const usd = parseFloat(this.value) || 0;
             document.getElementById('paymentCashUZS').value = Math.round(usd * currentRate);
+        });
+        
+        // Cash UZS -> USD
+        document.getElementById('paymentCashUZS').addEventListener('input', function() {
+            const uzs = parseFloat(this.value) || 0;
+            document.getElementById('paymentCashUSD').value = (uzs / currentRate).toFixed(2);
         });
         
         // Click USD -> UZS
@@ -560,10 +566,22 @@
             document.getElementById('paymentClickUZS').value = Math.round(usd * currentRate);
         });
         
+        // Click UZS -> USD
+        document.getElementById('paymentClickUZS').addEventListener('input', function() {
+            const uzs = parseFloat(this.value) || 0;
+            document.getElementById('paymentClickUSD').value = (uzs / currentRate).toFixed(2);
+        });
+        
         // Terminal USD -> UZS
         document.getElementById('paymentTerminalUSD').addEventListener('input', function() {
             const usd = parseFloat(this.value) || 0;
             document.getElementById('paymentTerminalUZS').value = Math.round(usd * currentRate);
+        });
+        
+        // Terminal UZS -> USD
+        document.getElementById('paymentTerminalUZS').addEventListener('input', function() {
+            const uzs = parseFloat(this.value) || 0;
+            document.getElementById('paymentTerminalUSD').value = (uzs / currentRate).toFixed(2);
         });
     }
 
