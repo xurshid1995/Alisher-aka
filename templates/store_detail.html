@@ -501,20 +501,21 @@
                     'Content-Type': 'application/json',
                 }
             })
-            .then(response => {
-                if (response.ok) {
+            .then(response => response.json().then(data => ({status: response.status, data: data})))
+            .then(result => {
+                if (result.status === 200) {
                     // Joriy sahifani qayta yuklash
                     const searchValue = document.querySelector('#search-input').value;
                     const statusValue = document.querySelector('#status-filter').value;
                     loadStockData(currentPage, searchValue, statusValue);
-                    alert('Mahsulot muvaffaqiyatli o\'chirildi!');
+                    alert('✅ ' + result.data.message);
                 } else {
-                    throw new Error('O\'chirishda xatolik');
+                    throw new Error(result.data.error || 'O\'chirishda xatolik');
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('Mahsulotni o\'chirishda xatolik yuz berdi!');
+                alert('❌ Mahsulotni o\'chirishda xatolik yuz berdi!\n\n' + error.message);
             });
         }
     }

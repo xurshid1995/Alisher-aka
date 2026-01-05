@@ -3993,13 +3993,20 @@ def delete_store_stock(store_id, product_id):
 
     except Exception as e:
         db.session.rollback()
-        logger.error(f" Store stock o'chirishda xatolik: {str(e)}")
-        logger.error(f" Store ID: {store_id}, Product ID: {product_id}")
+        error_msg = str(e)
+        print(f"🔴 Store stock o'chirishda xatolik!")
+        print(f"🔴 Store ID: {store_id}, Product ID: {product_id}")
+        print(f"🔴 Xatolik: {error_msg}")
         import traceback
-        logger.error(f" Traceback: {traceback.format_exc()}")
+        print(f"🔴 Traceback:\n{traceback.format_exc()}")
+        
+        logger.error(f"Store stock o'chirishda xatolik: {error_msg}")
+        logger.error(f"Store ID: {store_id}, Product ID: {product_id}")
+        logger.error(f"Traceback: {traceback.format_exc()}")
+        
         return jsonify({
             'success': False,
-            'error': str(e),
+            'error': error_msg,
             'details': f'Store ID: {store_id}, Product ID: {product_id}'
         }), 500
 
