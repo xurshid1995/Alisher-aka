@@ -42,41 +42,39 @@
         color: white;
     }
 
-    .customer-info-card {
-        background: white;
-        padding: 10px 20px;
-        border-radius: 6px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    .customer-info {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 15px 25px;
+        border-radius: 8px;
         margin-bottom: 20px;
-        border-left: 3px solid #007bff;
-        display: inline-block;
-        width: 100%;
+        color: white;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
     }
 
-    .info-grid {
+    .customer-info h3 {
+        margin: 0 0 10px 0;
+        font-size: 16px;
+        font-weight: 600;
+        opacity: 0.9;
+    }
+
+    .customer-details {
         display: flex;
-        gap: 35px;
-        align-items: baseline;
-        line-height: 1;
+        gap: 30px;
+        align-items: center;
+        flex-wrap: wrap;
     }
 
-    .info-item {
-        display: inline-flex;
-        align-items: baseline;
-        gap: 6px;
-        white-space: nowrap;
-    }
-
-    .info-label {
-        font-size: 12px;
-        color: #6c757d;
+    .customer-detail-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 15px;
         font-weight: 500;
     }
 
-    .info-value {
-        font-size: 14px;
-        color: #212529;
-        font-weight: 600;
+    .customer-detail-item .icon {
+        font-size: 18px;
     }
 
     .debt-stats {
@@ -249,6 +247,44 @@
         <a href="/debts" class="back-button">
             ← Orqaga
         </a>
+    </div>
+
+    <!-- Mijoz ma'lumotlari -->
+    <div class="customer-info">
+        <h3>Mijoz ma'lumotlari</h3>
+        <div class="customer-details">
+            <div class="customer-detail-item">
+                <span class="icon">👤</span>
+                <span id="customerName">-</span>
+            </div>
+            <div class="customer-detail-item">
+                <span class="icon">📞</span>
+                <span id="customerPhone">-</span>
+            </div>
+            <div class="customer-detail-item">
+                <span class="icon">📍</span>
+                <span id="customerAddress">-</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mijoz ma'lumotlari -->
+    <div class="customer-info">
+        <h3>Mijoz ma'lumotlari</h3>
+        <div class="customer-details">
+            <div class="customer-detail-item">
+                <span class="icon">👤</span>
+                <span id="customerName">-</span>
+            </div>
+            <div class="customer-detail-item">
+                <span class="icon">📞</span>
+                <span id="customerPhone">-</span>
+            </div>
+            <div class="customer-detail-item">
+                <span class="icon">📍</span>
+                <span id="customerAddress">-</span>
+            </div>
+        </div>
     </div>
 
     <!-- Qarz statistikasi -->
