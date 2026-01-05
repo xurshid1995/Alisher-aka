@@ -403,9 +403,12 @@ async function loadSalesChart(locationId = null, period = null, locationType = n
         const response = await fetch(`/api/sales-chart?${params}`);
         const data = await response.json();
         
-        // Debug uchun API javobini ko'ramiz
+        // Debug uchun API javobini to'liq ko'ramiz
         console.log('🔍 API parametrlari:', params.toString());
         console.log('📊 API javobi:', data);
+        console.log('📊 Savdolar soni (values):', data.values);
+        console.log('📊 Savdo summalari (amounts):', data.amounts);
+        console.log('💰 To\'lov turlari:', data.payment_totals);
         
         currentSalesData = data;
         
