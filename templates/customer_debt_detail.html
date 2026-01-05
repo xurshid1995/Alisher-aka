@@ -422,6 +422,7 @@
             renderHistory();
             
             // Currency conversion setup (kurs olingandan keyin)
+            console.log('Valyuta kursi yuklandi:', currentRate);
             setupCurrencyConversion();
             
         } catch (error) {
@@ -551,11 +552,16 @@
 
     // USD va UZS o'rtasida ikki tomonlama avtomatik konversiya
     function setupCurrencyConversion() {
+        console.log('setupCurrencyConversion chaqirildi, currentRate:', currentRate);
+        
         // Cash USD -> UZS
         document.getElementById('paymentCashUSD').addEventListener('input', function() {
+            console.log('Cash USD input:', this.value);
             const usd = parseFloat(this.value);
             if (!isNaN(usd) && this.value !== '') {
-                document.getElementById('paymentCashUZS').value = Math.round(usd * currentRate);
+                const uzs = Math.round(usd * currentRate);
+                console.log('Cash USD->UZS:', usd, '->', uzs);
+                document.getElementById('paymentCashUZS').value = uzs;
             } else {
                 document.getElementById('paymentCashUZS').value = '';
             }
@@ -563,9 +569,12 @@
         
         // Cash UZS -> USD
         document.getElementById('paymentCashUZS').addEventListener('input', function() {
+            console.log('Cash UZS input:', this.value);
             const uzs = parseFloat(this.value);
             if (!isNaN(uzs) && this.value !== '') {
-                document.getElementById('paymentCashUSD').value = (uzs / currentRate).toFixed(2);
+                const usdValue = (uzs / currentRate).toFixed(2);
+                console.log('Cash UZS->USD:', uzs, '->', usdValue);
+                document.getElementById('paymentCashUSD').value = usdValue;
             } else {
                 document.getElementById('paymentCashUSD').value = '';
             }
