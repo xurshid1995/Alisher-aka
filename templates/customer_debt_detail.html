@@ -54,22 +54,25 @@
         margin: 0 0 20px 0;
         color: #333;
         font-size: 22px;
+        border-bottom: 2px solid #dee2e6;
+        padding-bottom: 15px;
     }
 
     .info-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 15px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 30px;
+        align-items: center;
     }
 
     .info-item {
         display: flex;
-        flex-direction: column;
-        gap: 5px;
+        align-items: center;
+        gap: 8px;
     }
 
     .info-label {
-        font-size: 13px;
+        font-size: 14px;
         color: #666;
         font-weight: 500;
     }
@@ -254,14 +257,18 @@
 
     <!-- Mijoz ma'lumotlari -->
     <div class="customer-info-card">
-        <h2 id="customerName">-</h2>
+        <h2>👤 Mijoz ma'lumotlari</h2>
         <div class="info-grid">
             <div class="info-item">
-                <span class="info-label">📞 Telefon</span>
+                <span class="info-label">👤 Ism:</span>
+                <span class="info-value" id="customerName">-</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">📞 Telefon:</span>
                 <span class="info-value" id="customerPhone">-</span>
             </div>
             <div class="info-item">
-                <span class="info-label">📍 Manzil</span>
+                <span class="info-label">📍 Manzil:</span>
                 <span class="info-value" id="customerAddress">-</span>
             </div>
         </div>
