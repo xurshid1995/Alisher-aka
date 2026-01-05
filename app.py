@@ -3145,6 +3145,10 @@ def api_debt_payment():
             # Qarzni kamaytirish
             sale.debt_usd = sale.debt_usd - payment_for_this_sale
             sale.debt_amount = float(sale.debt_usd) * float(sale.currency_rate)
+            
+            # Agar qarz to'liq yopilgan bo'lsa, statusni o'zgartirish
+            if sale.debt_usd == 0:
+                sale.payment_status = 'paid'
 
             remaining_payment -= payment_for_this_sale
             updated_sales.append(sale.id)
