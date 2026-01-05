@@ -563,8 +563,14 @@
                     <td>${index + 1}</td>
                     <td>${debt.customer_name}</td>
                     <td>${debt.customer_phone || '-'}</td>
-                    <td><strong style="color: ${remainingDebt > 0 ? '#dc3545' : '#28a745'}">$${remainingDebt.toFixed(2)}</strong></td>
-                    <td><strong style="color: #28a745">$${lastPaymentAmount.toFixed(2)}</strong></td>
+                    <td>
+                        <strong style="color: ${remainingDebt > 0 ? '#dc3545' : '#28a745'}">$${remainingDebt.toFixed(2)}</strong>
+                        <br><small style="color: #666;">${(remainingDebt * exchangeRate).toLocaleString('uz-UZ')} so'm</small>
+                    </td>
+                    <td>
+                        <strong style="color: #28a745">$${lastPaymentAmount.toFixed(2)}</strong>
+                        <br><small style="color: #666;">${(lastPaymentAmount * exchangeRate).toLocaleString('uz-UZ')} so'm</small>
+                    </td>
                     <td>${lastPayment}</td>
                     <td><span class="status-badge ${status}">${statusText}</span></td>
                     <td>
@@ -619,8 +625,14 @@
                     <td>${index + 1}</td>
                     <td>${debt.customer_name}</td>
                     <td>${debt.customer_phone || '-'}</td>
-                    <td><strong style="color: ${remainingDebt > 0 ? '#dc3545' : '#28a745'}">$${remainingDebt.toFixed(2)}</strong></td>
-                    <td><strong style="color: #28a745">$${lastPaymentAmount.toFixed(2)}</strong></td>
+                    <td>
+                        <strong style="color: ${remainingDebt > 0 ? '#dc3545' : '#28a745'}">$${remainingDebt.toFixed(2)}</strong>
+                        <br><small style="color: #666;">${(remainingDebt * exchangeRate).toLocaleString('uz-UZ')} so'm</small>
+                    </td>
+                    <td>
+                        <strong style="color: #28a745">$${lastPaymentAmount.toFixed(2)}</strong>
+                        <br><small style="color: #666;">${(lastPaymentAmount * exchangeRate).toLocaleString('uz-UZ')} so'm</small>
+                    </td>
                     <td>${lastPayment}</td>
                     <td><span class="status-badge ${status}">${statusText}</span></td>
                     <td>
