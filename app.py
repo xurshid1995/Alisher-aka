@@ -1101,6 +1101,36 @@ def api_products():
             pass
     # Location filter yo'q bo'lsa - barcha mahsulotlarni ko'rsatish (stock bo'lsin yoki bo'lmasin)
 
+    # Saralash: Agar joylashuv tanlangan bo'lsa, eng ko'p sotilgan mahsulotlarni birinchi ko'rsatish
+    if location_filter and location_filter != 'all':
+        try:
+            location_type, location_id = location_filter.split('_')
+            location_id = int(location_id)
+            
+            # Sale_items dan sotilgan miqdorni hisoblash va saralash
+            from sqlalchemy import func, case, desc
+            
+            subquery = db.session.query(
+                SaleItem.product_id,
+                func.sum(SaleItem.quantity).label('total_sold')
+            ).filter(
+                SaleItem.source_type == location_type,
+                SaleItem.source_id == location_id
+            ).group_by(SaleItem.product_id).subquery()
+            
+            query = query.outerjoin(
+                subquery, Product.id == subquery.c.product_id
+            ).order_by(
+                desc(case((subquery.c.total_sold == None, 0), else_=subquery.c.total_sold)),
+                Product.name
+            )
+        except (ValueError, IndexError, AttributeError):
+            # Xatolik bo'lsa, oddiy nom bo'yicha saralash
+            query = query.order_by(Product.name)
+    else:
+        # Joylashuv tanlanmagan bo'lsa, nom bo'yicha saralash
+        query = query.order_by(Product.name)
+
     # Get paginated results
     paginated = query.paginate(
         page=page,
@@ -6328,6 +6358,11 @@ def delete_sale_with_stock_return(sale_id):
             # Agar product o'chirilgan bo'lsa (product_id NULL), stock qaytarib bo'lmaydi
             if not item.product_id:
                 logger.warning(f"⚠️ DELETE: Product o'chirilgan (sale_item {item.id}), stock qaytarilmaydi")
+                continue
+            
+            # Agar source_id yo'q bo'lsa (ma'lumot buzilgan), stock qaytarib bo'lmaydi
+            if not item.source_id:
+                logger.warning(f"⚠️ DELETE: Source ID yo'q (sale_item {item.id}), stock qaytarilmaydi")
                 continue
                 
             logger.debug(f" DELETE: Product {item.product_id}, Qty: {item.quantity}")
