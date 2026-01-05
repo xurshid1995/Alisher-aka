@@ -522,6 +522,7 @@
                                     <span style="font-weight: 700; color: #6c757d; font-size: 16px;">UZS</span>
                                     <input type="number" id="modalPaymentCashUZS" step="1" placeholder="0" style="flex: 1; padding: 8px; border: 1px solid #ced4da; border-radius: 6px; font-size: 14px;">
                                 </div>
+                                <button onclick="addModalRemainingToField('modalPaymentCashUSD')" style="padding: 8px 12px; background: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 11px; white-space: nowrap;">+ Qolgan</button>
                             </div>
                             <div style="display: flex; align-items: center; gap: 8px;">
                                 <label style="font-weight: 500; white-space: nowrap; min-width: 90px;">📱 Click:</label>
@@ -533,6 +534,7 @@
                                     <span style="font-weight: 700; color: #6c757d; font-size: 16px;">UZS</span>
                                     <input type="number" id="modalPaymentClickUZS" step="1" placeholder="0" style="flex: 1; padding: 8px; border: 1px solid #ced4da; border-radius: 6px; font-size: 14px;">
                                 </div>
+                                <button onclick="addModalRemainingToField('modalPaymentClickUSD')" style="padding: 8px 12px; background: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 11px; white-space: nowrap;">+ Qolgan</button>
                             </div>
                             <div style="display: flex; align-items: center; gap: 8px;">
                                 <label style="font-weight: 500; white-space: nowrap; min-width: 90px;">🏧 Terminal:</label>
@@ -544,6 +546,7 @@
                                     <span style="font-weight: 700; color: #6c757d; font-size: 16px;">UZS</span>
                                     <input type="number" id="modalPaymentTerminalUZS" step="1" placeholder="0" style="flex: 1; padding: 8px; border: 1px solid #ced4da; border-radius: 6px; font-size: 14px;">
                                 </div>
+                                <button onclick="addModalRemainingToField('modalPaymentTerminalUSD')" style="padding: 8px 12px; background: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 11px; white-space: nowrap;">+ Qolgan</button>
                             </div>
                         </div>
                     </div>
@@ -837,6 +840,39 @@
     // To'lov modalni ochish
     function openPaymentModal(customerId) {
         viewDebtDetails(customerId);
+    }
+
+    // Qolgan qarzni maydoniga qo'shish (modal uchun)
+    function addModalRemainingToField(fieldId) {
+        const debtElement = document.querySelector('#debtModal .debt-summary strong');
+        if (!debtElement) {
+            alert('❌ Qarz ma\'lumotlari topilmadi');
+            return;
+        }
+        
+        const debtText = debtElement.textContent.replace('$', '').replace(',', '');
+        const remainingDebt = parseFloat(debtText) || 0;
+        
+        const field = document.getElementById(fieldId);
+        if (!field) return;
+        
+        const currentValue = parseFloat(field.value) || 0;
+        
+        // Hozirgi to'lovlarni hisoblash
+        const cashUSD = parseFloat(document.getElementById('modalPaymentCashUSD').value) || 0;
+        const clickUSD = parseFloat(document.getElementById('modalPaymentClickUSD').value) || 0;
+        const terminalUSD = parseFloat(document.getElementById('modalPaymentTerminalUSD').value) || 0;
+        
+        const totalPaid = cashUSD + clickUSD + terminalUSD;
+        const remaining = remainingDebt - totalPaid + currentValue;
+        
+        if (remaining > 0) {
+            field.value = remaining.toFixed(2);
+            // USD yozilganda UZS ham yangilanadi (avtomatik konvertatsiya)
+            field.dispatchEvent(new Event('input'));
+        } else {
+            alert('✅ Qarz to\'liq to\'landi');
+        }
     }
 
     // Modalni yopish
