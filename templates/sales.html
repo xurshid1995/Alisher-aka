@@ -534,6 +534,12 @@
         cartCustomerInfo.innerHTML = `<h3 style="margin: 0; color: #333; font-size: 15px; font-weight: 600;">${customerDisplay}</h3>`;
         
         console.log(`✅ Mijoz tanlandi: ${name} (ID: ${id})`);
+        
+        // Fokusni mahsulot qidirish maydoniga o'tkazish
+        const universalSearch = document.getElementById('universalSearch');
+        if (universalSearch) {
+            setTimeout(() => universalSearch.focus(), 100);
+        }
     }
     
     // Mahsulotlarni yuklash
