@@ -846,6 +846,9 @@
         updateCart();
         closeModal();
         
+        // Avtomatik pending savdo yaratish/yangilash
+        await autoSavePending();
+        
         // Chap tomondagi mahsulotlar jadvalini yangilash
         await loadProducts();
         
@@ -988,6 +991,9 @@
         cart.splice(index, 1);
         updateCart();
         
+        // Avtomatik pending savdo yangilash
+        await autoSavePending();
+        
         // Chap tomondagi mahsulotlar jadvalini yangilash
         await loadProducts();
         
@@ -1070,6 +1076,9 @@
         
         cart[index].quantity = quantity;
         updateCart();
+        
+        // Avtomatik pending savdo yangilash
+        await autoSavePending();
         
         // Chap tomondagi mahsulotlar jadvalini yangilash
         await loadProducts();
@@ -1727,6 +1736,19 @@
         // Korzinani tozalash
         cart = [];
         
+        // Pending savdoni o'chirish
+        if (currentPendingSaleId) {
+            try {
+                await fetch(`/api/sales/${currentPendingSaleId}`, {
+                    method: 'DELETE'
+                });
+                console.log('🗑️ Pending savdo o\'chirildi:', currentPendingSaleId);
+                currentPendingSaleId = null;
+            } catch (error) {
+                console.error('❌ Pending savdoni o\'chirishda xatolik:', error);
+            }
+        }
+        
         // Mijoz maydonini tozalash
         const customerSearch = document.getElementById('customerSearch');
         const selectedCustomerId = document.getElementById('selectedCustomerId');
@@ -1744,6 +1766,104 @@
         
         console.log('🗑️ Savat tozalandi va barcha mahsulotlar stokga qaytarildi');
         alert('✅ Savat tozalandi va mahsulotlar stokga qaytarildi');
+    }
+    
+    // Avtomatik pending savdo yaratish/yangilash
+    async function autoSavePending() {
+        // Agar savat bo'sh bo'lsa, pending savdoni o'chirish
+        if (cart.length === 0) {
+            if (currentPendingSaleId) {
+                try {
+                    await fetch(`/api/sales/${currentPendingSaleId}`, {
+                        method: 'DELETE'
+                    });
+                    console.log('🗑️ Bo\'sh pending savdo o\'chirildi:', currentPendingSaleId);
+                    currentPendingSaleId = null;
+                } catch (error) {
+                    console.error('❌ Pending savdoni o\'chirishda xatolik:', error);
+                }
+            }
+            return;
+        }
+        
+        // Location tanlanmagan bo'lsa, saqlamaymiz
+        if (!selectedLocationId || !selectedLocationType) {
+            console.log('⚠️ Location tanlanmagan, pending savdo saqlanmaydi');
+            return;
+        }
+        
+        // Savdo ma'lumotlarini tayyorlash
+        const customerId = document.getElementById('selectedCustomerId').value || null;
+        let totalUSD = 0;
+        cart.forEach(item => {
+            totalUSD += item.priceUSD * item.quantity;
+        });
+        
+        const saleData = {
+            customer_id: customerId ? parseInt(customerId) : null,
+            location_id: selectedLocationId,
+            location_type: selectedLocationType,
+            items: cart.map(item => ({
+                product_id: item.id || item.productId,
+                product_name: item.name || item.productName,
+                quantity: item.quantity,
+                unit_price: item.priceUSD,
+                price: item.priceUSD,
+                price_usd: item.priceUSD,
+                price_uzs: item.priceUZS
+            })),
+            payment: {
+                cash_usd: 0,
+                cash_uzs: 0,
+                click_usd: 0,
+                click_uzs: 0,
+                terminal_usd: 0,
+                terminal_uzs: 0,
+                debt_usd: totalUSD,
+                debt_uzs: Math.round(totalUSD * exchangeRate)
+            },
+            total_usd: totalUSD,
+            total_uzs: totalUSD * exchangeRate,
+            exchange_rate: exchangeRate,
+            payment_status: 'pending'
+        };
+        
+        try {
+            let response, result;
+            
+            if (currentPendingSaleId) {
+                // Mavjud pending savdoni yangilash
+                console.log('📝 Pending savdoni yangilash:', currentPendingSaleId);
+                response = await fetch(`/api/sales/${currentPendingSaleId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(saleData)
+                });
+            } else {
+                // Yangi pending savdo yaratish
+                console.log('➕ Yangi pending savdo yaratish');
+                response = await fetch('/api/pending-sales', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(saleData)
+                });
+            }
+            
+            result = await response.json();
+            
+            if (result.success) {
+                if (!currentPendingSaleId) {
+                    currentPendingSaleId = result.sale_id;
+                    console.log('✅ Yangi pending savdo yaratildi, ID:', currentPendingSaleId);
+                } else {
+                    console.log('✅ Pending savdo yangilandi, ID:', currentPendingSaleId);
+                }
+            } else {
+                console.error('❌ Pending savdoni saqlashda xatolik:', result.error);
+            }
+        } catch (error) {
+            console.error('❌ Pending savdoni saqlashda xatolik:', error);
+        }
     }
     
     // Keyinroq tasdiqlash
@@ -2044,6 +2164,19 @@
             }
             
             console.log('✅ Savdo muvaffaqiyatli saqlandi:', result);
+            
+            // Pending savdoni o'chirish (chunki yakunlandi)
+            if (currentPendingSaleId) {
+                try {
+                    await fetch(`/api/sales/${currentPendingSaleId}`, {
+                        method: 'DELETE'
+                    });
+                    console.log('🗑️ Pending savdo o\'chirildi (yakunlandi):', currentPendingSaleId);
+                    currentPendingSaleId = null;
+                } catch (error) {
+                    console.error('⚠️ Pending savdoni o\'chirishda xatolik:', error);
+                }
+            }
             
             // Tahrirlash rejimida eski sahifaga qaytish
             if (editingSaleId) {
