@@ -1831,14 +1831,20 @@
         try {
             let response, result;
             
-            if (currentPendingSaleId) {
-                // Mavjud pending savdoni yangilash
-                console.log('📝 Pending savdoni yangilash:', currentPendingSaleId);
-                response = await fetch(`/api/sales/${currentPendingSaleId}`, {
+            // Tahrirlash rejimida bo'lsa yoki mavjud pending savdo bo'lsa - yangilash
+            if (editingSaleId || currentPendingSaleId) {
+                const saleIdToUpdate = editingSaleId || currentPendingSaleId;
+                console.log('📝 Pending savdoni yangilash:', saleIdToUpdate, editingSaleId ? '(tahrirlash rejimi)' : '(avtosave)');
+                response = await fetch(`/api/sales/${saleIdToUpdate}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(saleData)
                 });
+                
+                // Agar tahrirlash rejimida bo'lsa, currentPendingSaleId ni o'rnatish
+                if (editingSaleId && !currentPendingSaleId) {
+                    currentPendingSaleId = editingSaleId;
+                }
             } else {
                 // Yangi pending savdo yaratish
                 console.log('➕ Yangi pending savdo yaratish');
