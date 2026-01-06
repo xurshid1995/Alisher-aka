@@ -481,15 +481,17 @@
         const dropdown = document.getElementById('customerDropdown');
         dropdown.innerHTML = filteredCustomers.map((customer, index) => {
             const isSelected = index === selectedCustomerIndex;
-            const bgColor = isSelected ? '#e3f2fd' : 'white';
-            const hoverBg = isSelected ? '#e3f2fd' : '#f8f9fa';
+            const bgColor = isSelected ? '#2196F3' : 'white';
+            const hoverBg = isSelected ? '#2196F3' : '#f8f9fa';
+            const textColor = isSelected ? 'white' : '#333';
+            const phoneColor = isSelected ? 'white' : '#6c757d';
             return `<div onclick="selectCustomer(${customer.id}, '${customer.name.replace(/'/g, "\\'")}', '${customer.phone || ''}')" 
                     class="customer-item" data-index="${index}"
-                    style="padding: 10px; cursor: pointer; border-bottom: 1px solid #f0f0f0; transition: background 0.2s; background: ${bgColor};"
+                    style="padding: 10px; cursor: pointer; border-bottom: 1px solid #f0f0f0; transition: all 0.2s; background: ${bgColor};"
                     onmouseover="this.style.background='${hoverBg}'"
                     onmouseout="this.style.background='${bgColor}'">
-                    <div style="font-weight: 500; color: #333;">${customer.name}</div>
-                    <div style="font-size: 12px; color: #6c757d;">${customer.phone || 'Telefon yo\'q'}</div>
+                    <div style="font-weight: 500; color: ${textColor};">${customer.name}</div>
+                    <div style="font-size: 12px; color: ${phoneColor};">${customer.phone || 'Telefon yo\'q'}</div>
                 </div>`;
         }).join('');
     }
