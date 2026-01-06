@@ -558,7 +558,7 @@
                 const row = document.createElement('tr');
                 row.style.borderBottom = '1px solid #f0f0f0';
                 row.setAttribute('data-product-id', product.id);
-                const productName = product.name || 'N/A';
+                const productName = product.name || `Mahsulot #${product.id}`;
                 const safeProductName = productName.replace(/'/g, "\\'");
                 row.innerHTML = `
                     <td style="padding: 12px 8px; font-size: 14px; color: #333;" data-original-text="${productName}" title="${productName}">${productName}</td>
@@ -830,7 +830,7 @@
         } else {
             cart.push({
                 id: currentProduct.id,
-                name: currentProduct?.name || 'Noma\'lum mahsulot',
+                name: currentProduct?.name || `Mahsulot #${currentProduct.id}`,
                 priceUSD: priceUSD,
                 priceUZS: priceUZS,
                 quantity: quantity
@@ -852,7 +852,7 @@
             }
         }, 200);
         
-        console.log('✅ Savatga qo\'shildi:', currentProduct?.name || 'Noma\'lum mahsulot', quantity, 'dona, $' + priceUSD);
+        console.log('✅ Savatga qo\'shildi:', currentProduct?.name || `Mahsulot #${currentProduct.id}`, quantity, 'dona, $' + priceUSD);
     }
     
     // Savatni yangilash
