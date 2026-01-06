@@ -1012,28 +1012,50 @@
     async function removeFromCart(index) {
         const item = cart[index];
         
-        // Stokka qaytarish
-        try {
-            const response = await fetch('/api/return-stock', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    product_id: item.id,
-                    quantity: item.quantity,
-                    location_id: selectedLocationId,
-                    location_type: selectedLocationType
-                })
-            });
-            
-            const result = await response.json();
-            if (!result.success) {
-                console.error('Stokka qaytarishda xatolik:', result.error);
-                // Xatolik bo'lsa ham savatdan o'chiramiz
-            } else {
-                console.log('✅ Stokka qaytarildi:', item.quantity, 'dona');
+        console.log('🗑️ Savatdan o\'chirish boshlandi:', {
+            index: index,
+            product_id: item.id,
+            product_name: item.name,
+            quantity: item.quantity,
+            location_id: selectedLocationId,
+            location_type: selectedLocationType
+        });
+        
+        // FAQAT BIR MARTA stokka qaytarish
+        if (!item._stockReturned) {
+            try {
+                const response = await fetch('/api/return-stock', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        product_id: item.id,
+                        quantity: item.quantity,
+                        location_id: selectedLocationId,
+                        location_type: selectedLocationType
+                    })
+                });
+                
+                console.log('📡 API response status:', response.status);
+                
+                const result = await response.json();
+                console.log('📦 API response:', result);
+                
+                if (!result.success) {
+                    console.error('❌ Stokka qaytarishda xatolik:', result.error);
+                    alert('Stokka qaytarishda xatolik: ' + result.error);
+                    return; // Xatolik bo'lsa savatdan o'chirmaymiz
+                } else {
+                    console.log('✅ Stokka qaytarildi:', item.quantity, 'dona');
+                    console.log('📊 Yangi stock:', result.new_stock);
+                    item._stockReturned = true; // Belgi qo'yamiz
+                }
+            } catch (error) {
+                console.error('❌ Stok qaytarish xatosi:', error);
+                alert('Stok qaytarish xatosi: ' + error.message);
+                return; // Xatolik bo'lsa savatdan o'chirmaymiz
             }
-        } catch (error) {
-            console.error('Stok qaytarish xatosi:', error);
+        } else {
+            console.log('⚠️ Stock allaqachon qaytarilgan, qayta qaytarmaymiz');
         }
         
         cart.splice(index, 1);
@@ -1045,7 +1067,7 @@
         // Chap tomondagi mahsulotlar jadvalini yangilash
         await loadProducts();
         
-        console.log('🗑️ Savatdan o\'chirildi');
+        console.log('✅ Savatdan o\'chirish tugadi');
     }
     
     // Savat miqdorini yangilash
