@@ -742,7 +742,7 @@
                         <td class="actions">
                             <button onclick="viewCustomer(${customer.id})" class="btn-view">👁️ Ko'rish</button>
                             ${userRole === 'admin' ? `<a href="/edit-customer/${customer.id}" class="btn-edit">✏️ Tahrirlash</a>` : ''}
-                            ${userRole === 'admin' ? `<button onclick="deleteCustomer(${customer.id}, '${customer.name}')" class="btn-delete">🗑️ O'chirish</button>` : ''}
+                            ${userRole === 'admin' ? `<button onclick="deleteCustomer(${customer.id}, '${customer.name.replace(/'/g, "\\'")}')" class="btn-delete">🗑️ O'chirish</button>` : ''}
                         </td>
                     </tr>
                 `;
