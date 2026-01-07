@@ -465,6 +465,11 @@
         fromSelect.addEventListener('change', function() {
             filterToLocation();
         });
+        
+        // Qayerga o'zgarganda qayerdan ni filterlash
+        toSelect.addEventListener('change', function() {
+            filterFromLocation();
+        });
     }
     
     // Qayerga selectni filterlash (Qayerdan tanlangan joyni berkitish)
@@ -475,7 +480,7 @@
         // Barcha optionlarni yoqish
         Array.from(toSelect.options).forEach(option => {
             option.disabled = false;
-            option.style.display = '';
+            option.style.color = '';
         });
         
         // Tanlangan qayerdan ni berkitish
@@ -490,6 +495,35 @@
             // Agar qayerga da qayerdan bilan bir xil tanlangan bo'lsa, tozalash
             if (toSelect.value === fromValue) {
                 toSelect.value = '';
+            }
+        }
+    }
+    
+    // Qayerdan selectni filterlash (Qayerga tanlangan joyni berkitish)
+    function filterFromLocation() {
+        const toValue = document.getElementById('toLocation').value;
+        const fromSelect = document.getElementById('fromLocation');
+        
+        // Barcha optionlarni yoqish
+        Array.from(fromSelect.options).forEach(option => {
+            option.disabled = false;
+            option.style.color = '';
+        });
+        
+        // Tanlangan qayerga ni berkitish
+        if (toValue) {
+            Array.from(fromSelect.options).forEach(option => {
+                if (option.value === toValue) {
+                    option.disabled = true;
+                    option.style.color = '#ccc';
+                }
+            });
+            
+            // Agar qayerdan da qayerga bilan bir xil tanlangan bo'lsa, tozalash
+            if (fromSelect.value === toValue) {
+                fromSelect.value = '';
+                // Mahsulotlarni tozalash
+                document.getElementById('productsTableBody').innerHTML = '<tr><td colspan="4" class="empty-state"><div>📦</div><div>Joylashuvni tanlang</div></td></tr>';
             }
         }
     }
