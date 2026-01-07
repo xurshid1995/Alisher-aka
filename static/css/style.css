@@ -221,7 +221,10 @@ body {
     left: 0;
     right: 0;
     height: 70px;
-    background: linear-gradient(135deg, #f39c12, #f1c40f);
+    background-image: url('/static/images/login-bg.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
     display: flex;
     justify-content: space-between;
     align-items: center;
