@@ -477,18 +477,17 @@
         const fromValue = document.getElementById('fromLocation').value;
         const toSelect = document.getElementById('toLocation');
         
-        // Barcha optionlarni yoqish
+        // Barcha optionlarni ko'rsatish
         Array.from(toSelect.options).forEach(option => {
             option.disabled = false;
-            option.style.color = '';
+            option.style.display = '';
         });
         
-        // Tanlangan qayerdan ni berkitish
+        // Tanlangan qayerdan ni yashirish
         if (fromValue) {
             Array.from(toSelect.options).forEach(option => {
                 if (option.value === fromValue) {
-                    option.disabled = true;
-                    option.style.color = '#ccc';
+                    option.style.display = 'none';
                 }
             });
             
@@ -504,18 +503,17 @@
         const toValue = document.getElementById('toLocation').value;
         const fromSelect = document.getElementById('fromLocation');
         
-        // Barcha optionlarni yoqish
+        // Barcha optionlarni ko'rsatish
         Array.from(fromSelect.options).forEach(option => {
             option.disabled = false;
-            option.style.color = '';
+            option.style.display = '';
         });
         
-        // Tanlangan qayerga ni berkitish
+        // Tanlangan qayerga ni yashirish
         if (toValue) {
             Array.from(fromSelect.options).forEach(option => {
                 if (option.value === toValue) {
-                    option.disabled = true;
-                    option.style.color = '#ccc';
+                    option.style.display = 'none';
                 }
             });
             
