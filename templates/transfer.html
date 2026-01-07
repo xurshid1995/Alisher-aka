@@ -683,12 +683,12 @@
         currentProduct = { 
             id: item.id, 
             name: item.name, 
-            available: quantity + item.quantity, // Joriy transfer miqdorini qaytarish
+            available: quantity, // Faqat stokdagi haqiqiy miqdor
             price: item.price || 0
         };
         
         document.getElementById('modalProductName').textContent = item.name;
-        document.getElementById('modalAvailable').value = quantity + item.quantity;
+        document.getElementById('modalAvailable').value = quantity;
         document.getElementById('modalQuantity').value = item.quantity;
         
         document.getElementById('quantityModal').style.display = 'flex';
