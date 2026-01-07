@@ -1065,10 +1065,12 @@
             warningDiv.style.display = 'block';
             warningText.textContent = `Stokda faqat ${available} dona mavjud!`;
             quantityInput.style.borderColor = '#dc3545';
+            quantityInput.style.backgroundColor = '#ffe6e6';
         } else if (quantity <= 0) {
             warningDiv.style.display = 'block';
             warningText.textContent = 'Miqdor 0 dan katta bo\'lishi kerak!';
             quantityInput.style.borderColor = '#dc3545';
+            quantityInput.style.backgroundColor = '#ffe6e6';
         } else {
             // Agar narx validatsiyasi bo'lmasa, warningni yashirish
             const priceUSD = parseFloat(document.getElementById('modalPriceUSD').value) || 0;
@@ -1079,6 +1081,7 @@
             }
             
             quantityInput.style.borderColor = '#ced4da';
+            quantityInput.style.backgroundColor = '#ffffff';
         }
     }
     
@@ -1098,15 +1101,29 @@
             warningDiv.style.display = 'block';
             warningText.textContent = 'Bu narxda sotib bo\'lmaydi, narx juda past!';
             
-            // Input border'ini qizil qilish
+            // Input border va background'ini qizil qilish
             document.getElementById('modalPriceUSD').style.borderColor = '#dc3545';
+            document.getElementById('modalPriceUSD').style.backgroundColor = '#ffe6e6';
             document.getElementById('modalPriceUZS').style.borderColor = '#dc3545';
+            document.getElementById('modalPriceUZS').style.backgroundColor = '#ffe6e6';
+        } else if (priceUSD <= 0) {
+            // Narx 0 yoki manfiy bo'lsa
+            warningDiv.style.display = 'block';
+            warningText.textContent = 'Narx 0 dan katta bo\'lishi kerak!';
+            
+            // Input border va background'ini qizil qilish
+            document.getElementById('modalPriceUSD').style.borderColor = '#dc3545';
+            document.getElementById('modalPriceUSD').style.backgroundColor = '#ffe6e6';
+            document.getElementById('modalPriceUZS').style.borderColor = '#dc3545';
+            document.getElementById('modalPriceUZS').style.backgroundColor = '#ffe6e6';
         } else {
             warningDiv.style.display = 'none';
             
-            // Input border'ini normal holatga qaytarish
+            // Input border va background'ini normal holatga qaytarish
             document.getElementById('modalPriceUSD').style.borderColor = '#ced4da';
+            document.getElementById('modalPriceUSD').style.backgroundColor = '#ffffff';
             document.getElementById('modalPriceUZS').style.borderColor = '#ced4da';
+            document.getElementById('modalPriceUZS').style.backgroundColor = '#ffffff';
         }
     }
     
@@ -1122,10 +1139,23 @@
             warningDiv.style.display = 'none';
         }
         
-        // Input border'larini tozalash
+        // Input border va background'larini tozalash
         const quantityInput = document.getElementById('modalQuantity');
         if (quantityInput) {
             quantityInput.style.borderColor = '#ced4da';
+            quantityInput.style.backgroundColor = '#ffffff';
+        }
+        
+        const usdPriceInput = document.getElementById('modalPriceUSD');
+        if (usdPriceInput) {
+            usdPriceInput.style.borderColor = '#ced4da';
+            usdPriceInput.style.backgroundColor = '#ffffff';
+        }
+        
+        const uzsPriceInput = document.getElementById('modalPriceUZS');
+        if (uzsPriceInput) {
+            uzsPriceInput.style.borderColor = '#ced4da';
+            uzsPriceInput.style.backgroundColor = '#ffffff';
         }
         
         // Fokusni universal qidiruv maydoniga qaytarish
