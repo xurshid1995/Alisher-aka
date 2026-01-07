@@ -1058,7 +1058,7 @@
         // Narx tan narxdan past yoki teng bo'lsa
         if (priceUSD <= costPrice && priceUSD > 0) {
             warningDiv.style.display = 'block';
-            warningText.textContent = `Narx juda past! Tan narx: $${costPrice.toFixed(2)} - bu narxda sotib bo'lmaydi!`;
+            warningText.textContent = 'Bu narxda sotib bo\'lmaydi!';
             
             // Input border'ini qizil qilish
             document.getElementById('modalPriceUSD').style.borderColor = '#dc3545';
@@ -1105,9 +1105,7 @@
             if (priceUSD <= costPrice && priceUSD > 0) {
                 const confirmation = confirm(
                     `⚠️ OGOHLANTIRISH!\n\n` +
-                    `Kiritilgan narx: $${priceUSD.toFixed(2)}\n` +
-                    `Tan narx: $${costPrice.toFixed(2)}\n\n` +
-                    `Narx juda past! Bu narxda sotish zarar keltirishingiz mumkin.\n\n` +
+                    `Bu narxda sotib bo'lmaydi!\n\n` +
                     `Rostdan ham davom etmoqchimisiz?`
                 );
                 
