@@ -868,7 +868,7 @@
             const result = await response.json();
             console.log('📥 Server javobi:', result);
             
-            if (result.success) {
+            if (response.ok || result.message) {
                 alert('✅ Transfer muvaffaqiyatli yakunlandi!');
                 
                 // Reset
@@ -877,7 +877,7 @@
                 loadProducts();
             } else {
                 console.error('❌ Server xatosi:', result);
-                alert('❌ Xatolik: ' + (result.error || 'Transfer amalga oshmadi'));
+                alert('❌ Xatolik: ' + (result.error || result.message || 'Transfer amalga oshmadi'));
             }
         } catch (error) {
             console.error('Transfer xatosi:', error);
