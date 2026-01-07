@@ -304,16 +304,6 @@
                     <label for="fromLocation">Qayerdan:</label>
                     <select id="fromLocation" onchange="loadProducts()">
                         <option value="">Tanlang...</option>
-                        <optgroup label="Omborlar">
-                            {% for warehouse in warehouses %}
-                            <option value="warehouse_{{ warehouse.id }}">{{ warehouse.name }}</option>
-                            {% endfor %}
-                        </optgroup>
-                        <optgroup label="Do'konlar">
-                            {% for store in stores %}
-                            <option value="store_{{ store.id }}">{{ store.name }}</option>
-                            {% endfor %}
-                        </optgroup>
                     </select>
                 </div>
                 
@@ -321,16 +311,6 @@
                     <label for="toLocation">Qayerga:</label>
                     <select id="toLocation">
                         <option value="">Tanlang...</option>
-                        <optgroup label="Omborlar">
-                            {% for warehouse in warehouses %}
-                            <option value="warehouse_{{ warehouse.id }}">{{ warehouse.name }}</option>
-                            {% endfor %}
-                        </optgroup>
-                        <optgroup label="Do'konlar">
-                            {% for store in stores %}
-                            <option value="store_{{ store.id }}">{{ store.name }}</option>
-                            {% endfor %}
-                        </optgroup>
                     </select>
                 </div>
             </div>
@@ -412,6 +392,64 @@
     let transferList = [];
     let currentProduct = null;
     let allProducts = [];
+    let locations = [];
+
+    // Joylashuvlarni yuklash
+    async function loadLocations() {
+        try {
+            const response = await fetch('/api/locations');
+            const data = await response.json();
+            
+            if (data.success) {
+                locations = data.locations || [];
+                populateLocationSelects();
+                console.log(`✅ ${locations.length} ta joylashuv yuklandi`);
+            } else {
+                console.error('Joylashuvlarni yuklashda xatolik:', data.error);
+            }
+        } catch (error) {
+            console.error('Joylashuvlarni yuklashda xatolik:', error);
+        }
+    }
+
+    // Location selectlarini to'ldirish
+    function populateLocationSelects() {
+        const fromSelect = document.getElementById('fromLocation');
+        const toSelect = document.getElementById('toLocation');
+        
+        // Omborlar
+        const warehouses = locations.filter(loc => loc.type === 'warehouse');
+        // Do'konlar
+        const stores = locations.filter(loc => loc.type === 'store');
+        
+        // Omborlar optgroup
+        if (warehouses.length > 0) {
+            const warehouseGroup = document.createElement('optgroup');
+            warehouseGroup.label = 'Omborlar';
+            warehouses.forEach(wh => {
+                const option = document.createElement('option');
+                option.value = `warehouse_${wh.id}`;
+                option.textContent = wh.name;
+                warehouseGroup.appendChild(option);
+            });
+            fromSelect.appendChild(warehouseGroup.cloneNode(true));
+            toSelect.appendChild(warehouseGroup.cloneNode(true));
+        }
+        
+        // Do'konlar optgroup
+        if (stores.length > 0) {
+            const storeGroup = document.createElement('optgroup');
+            storeGroup.label = "Do'konlar";
+            stores.forEach(store => {
+                const option = document.createElement('option');
+                option.value = `store_${store.id}`;
+                option.textContent = store.name;
+                storeGroup.appendChild(option);
+            });
+            fromSelect.appendChild(storeGroup.cloneNode(true));
+            toSelect.appendChild(storeGroup);
+        }
+    }
 
     // Mahsulotlarni yuklash
     async function loadProducts() {
@@ -678,6 +716,7 @@
 
     // Sahifa yuklanganda
     document.addEventListener('DOMContentLoaded', function() {
+        loadLocations();
         console.log('✅ Transfer sahifasi tayyor');
     });
 </script>
