@@ -849,6 +849,12 @@
         }
         
         try {
+            console.log('📤 Transfer yuborilmoqda:', {
+                from_location: fromLocation,
+                to_location: toLocation,
+                products: transferList
+            });
+            
             const response = await fetch('/api/transfer', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -860,6 +866,7 @@
             });
             
             const result = await response.json();
+            console.log('📥 Server javobi:', result);
             
             if (result.success) {
                 alert('✅ Transfer muvaffaqiyatli yakunlandi!');
@@ -869,6 +876,7 @@
                 updateTransferListDisplay();
                 loadProducts();
             } else {
+                console.error('❌ Server xatosi:', result);
                 alert('❌ Xatolik: ' + (result.error || 'Transfer amalga oshmadi'));
             }
         } catch (error) {
