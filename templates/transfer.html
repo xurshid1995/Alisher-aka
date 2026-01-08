@@ -525,6 +525,9 @@
             if (toSelect.value === fromValue) {
                 toSelect.value = '';
             }
+            
+            // Fokusni qayerga selectiga berish
+            setTimeout(() => toSelect.focus(), 50);
         }
     }
     
@@ -552,6 +555,10 @@
                 fromSelect.value = '';
                 // Mahsulotlarni tozalash
                 document.getElementById('productsTableBody').innerHTML = '<tr><td colspan="4" class="empty-state"><div>📦</div><div>Joylashuvni tanlang</div></td></tr>';
+            } else {
+                // Agar qayerga tanlangan bo'lsa va qayerdan ham to'g'ri bo'lsa, qidiruv maydoniga fokus
+                const productSearch = document.getElementById('productSearch');
+                setTimeout(() => productSearch.focus(), 50);
             }
         }
     }
@@ -1215,6 +1222,10 @@
         loadLocations();
         
         const productSearch = document.getElementById('productSearch');
+        const fromLocation = document.getElementById('fromLocation');
+        
+        // Sahifa yuklanganda qayerdan selectiga fokus
+        setTimeout(() => fromLocation.focus(), 100);
         
         // Input hodisasi - filterProducts va barcode detection
         productSearch.addEventListener('input', function() {
