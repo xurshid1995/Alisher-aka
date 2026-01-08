@@ -159,8 +159,8 @@
 {% block content %}
 <!-- Content Header -->
 <div class="content-header" style="display: flex; justify-content: space-between; align-items: center;">
-    <div style="flex: 1;">
-        <h1 style="margin: 0 0 8px 0;">🏬 {{ store.name }}</h1>
+    <div style="display: flex; align-items: center; gap: 30px; flex-wrap: wrap; flex: 1;">
+        <h1 style="margin: 0;">🏬 {{ store.name }}</h1>
         <div style="display: flex; flex-wrap: wrap; gap: 15px; font-size: 13px; color: #666;">
             <span style="display: flex; align-items: center; gap: 5px;">
                 <span style="color: #3498db;">📍</span>{{ store.address or 'Manzil belgilanmagan' }}
