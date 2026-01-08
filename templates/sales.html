@@ -1051,6 +1051,25 @@
     // Validatsiyalarni o'rnatish - event listener'lar sahifa yuklanganda qo'yilgan
     // Bu funksiya faqat dastlabki validatsiyalarni ishga tushirish uchun
     function setupValidation() {
+        // Eski event listener'larni olib tashlash (clone qilish orqali)
+        const usdInput = document.getElementById('modalPriceUSD');
+        const uzsInput = document.getElementById('modalPriceUZS');
+        const qtyInput = document.getElementById('modalQuantity');
+        
+        // Element'larni clone qilish barcha eski listener'larni olib tashlaydi
+        const newUsdInput = usdInput.cloneNode(true);
+        const newUzsInput = uzsInput.cloneNode(true);
+        const newQtyInput = qtyInput.cloneNode(true);
+        
+        usdInput.parentNode.replaceChild(newUsdInput, usdInput);
+        uzsInput.parentNode.replaceChild(newUzsInput, uzsInput);
+        qtyInput.parentNode.replaceChild(newQtyInput, qtyInput);
+        
+        // Yangi event listener'lar qo'shish
+        document.getElementById('modalPriceUSD').addEventListener('input', updateUZSPrice);
+        document.getElementById('modalPriceUZS').addEventListener('input', updateUSDPrice);
+        document.getElementById('modalQuantity').addEventListener('input', validateQuantity);
+        
         // Dastlabki validatsiyalarni ishga tushirish
         validatePrice();
         validateQuantity();
@@ -2277,15 +2296,6 @@
         } else {
             console.error('❌ customerSearch elementi topilmadi!');
         }
-        
-        // USD narx o'zgarganda avtomatik UZS hisoblash va validatsiya
-        document.getElementById('modalPriceUSD').addEventListener('input', updateUZSPrice);
-        
-        // UZS narx o'zgarganda avtomatik USD hisoblash va validatsiya
-        document.getElementById('modalPriceUZS').addEventListener('input', updateUSDPrice);
-        
-        // Miqdor o'zgarganda validatsiya
-        document.getElementById('modalQuantity').addEventListener('input', validateQuantity);
         
         // To'lov modal oynasida USD dan UZS ga avtomatik konversiya
         document.getElementById('paymentCashUSD').addEventListener('input', function() {
