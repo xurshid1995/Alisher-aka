@@ -1487,6 +1487,42 @@ def check_product_name():
     except Exception as e:
         return jsonify({'error': str(e)}), 400
 
+
+# API endpoint - barcode mavjudligini tekshirish
+@app.route('/api/check-barcode', methods=['POST'])
+def check_barcode():
+    """Barcode mavjudligini tekshirish"""
+    try:
+        data = request.get_json()
+        barcode = data.get('barcode', '').strip()
+        exclude_id = data.get('exclude_id')
+
+        if not barcode:
+            return jsonify({'exists': False, 'product': None})
+
+        # Bir xil barcodeli mahsulot borligini tekshirish (exclude_id dan tashqari)
+        query = Product.query.filter_by(barcode=barcode)
+        if exclude_id:
+            query = query.filter(Product.id != exclude_id)
+
+        existing_product = query.first()
+
+        if existing_product:
+            return jsonify({
+                'exists': True,
+                'product': {
+                    'id': existing_product.id,
+                    'name': existing_product.name,
+                    'barcode': existing_product.barcode
+                }
+            })
+        
+        return jsonify({'exists': False, 'product': None})
+
+    except Exception as e:
+        logger.error(f"❌ Barcode tekshirish xatosi: {e}")
+        return jsonify({'error': str(e)}), 400
+
 # API endpoint - yangi mahsulot qo'shish
 
 
@@ -1509,6 +1545,19 @@ def api_add_product():
                 if sell_price < cost_price:
                     return jsonify({'error': 'Sotish narxi tan narxidan past '
                                     f'bo\'lishi mumkin emas! ({product_data["name"]})'}), 400
+
+                # Barcode validatsiyasi
+                barcode = product_data.get('barcode', None)
+                if barcode:
+                    barcode = barcode.strip()
+                    # Barcode mavjudligini tekshirish (faqat yangi mahsulot uchun)
+                    existing_barcode_product = Product.query.filter_by(barcode=barcode).first()
+                    if existing_barcode_product:
+                        # Agar mavjud mahsulot bilan bir xil nom bo'lmasa, xato qaytarish
+                        if existing_barcode_product.name != product_data['name']:
+                            return jsonify({
+                                'error': f'Barcode {barcode} allaqachon "{existing_barcode_product.name}" mahsulotida mavjud!'
+                            }), 400
 
                 # Mahsulot yaratish yoki topish
                 existing_product = Product.query.filter_by(
@@ -1654,7 +1703,14 @@ def api_add_product():
 
     except Exception as e:
         db.session.rollback()
-        return jsonify({'error': str(e)}), 400
+        error_msg = str(e)
+        
+        # Check for duplicate barcode error
+        if 'unique constraint' in error_msg.lower() and 'barcode' in error_msg.lower():
+            return jsonify({'error': 'Bu barcode allaqachon boshqa mahsulotda mavjud!'}), 400
+        
+        logger.error(f"❌ Mahsulot qo'shish xatosi: {e}")
+        return jsonify({'error': error_msg}), 400
 
 
 # Batch mahsulotlar qo'shish API
@@ -1687,6 +1743,16 @@ def api_batch_products():
             logger.info(f"   Asl tan narx (lastBatchCost): ${last_batch_cost}")
             logger.info(f"   Sotish narx: ${sell_price}")
             logger.info(f"   Miqdor: {quantity}")
+
+            # Barcode validatsiyasi
+            if barcode:
+                barcode = barcode.strip()
+                # Barcode mavjudligini tekshirish
+                existing_barcode_product = Product.query.filter_by(barcode=barcode).first()
+                if existing_barcode_product and existing_barcode_product.name != name:
+                    return jsonify({
+                        'error': f'Barcode {barcode} allaqachon "{existing_barcode_product.name}" mahsulotida mavjud!'
+                    }), 400
 
             # Mahsulot mavjudligini tekshirish
             product = Product.query.filter_by(name=name).first()

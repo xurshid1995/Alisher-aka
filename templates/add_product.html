@@ -1,4 +1,4 @@
-﻿{% extends "base.html" %}
+{% extends "base.html" %}
 
 {% block title %}Mahsulot Qo'shish - DOKON{% endblock %}
 
@@ -591,7 +591,7 @@
 
                     <!-- Tugmalar -->
                     <div style="margin-top: 2rem;">
-                        <button type="button" onclick="addToTempList()" class="btn btn-primary btn-large">
+                        <button type="button" id="addToListBtn" onclick="addToTempList()" class="btn btn-primary btn-large">
                             ➕ Ro'yxatga qo'shish
                         </button>
                     </div>
@@ -1016,6 +1016,80 @@
                     autoGenerateBtn.style.cursor = 'pointer';
                     autoGenerateBtn.title = 'Avtomatik barcode yaratish';
                 }
+            });
+            
+            // Barcode real-time validation
+            const barcodeInput = document.getElementById('barcode');
+            let barcodeCheckTimeout;
+            
+            barcodeInput.addEventListener('input', function() {
+                const barcode = this.value.trim();
+                
+                // Clear previous timeout
+                clearTimeout(barcodeCheckTimeout);
+                
+                // Reset styling
+                this.style.borderColor = '#28a745';
+                
+                // Remove previous error message
+                const existingError = this.parentElement.querySelector('.barcode-error-msg');
+                if (existingError) {
+                    existingError.remove();
+                }
+                
+                // Check if barcode is empty
+                if (!barcode) {
+                    return;
+                }
+                
+                // Debounce - wait 500ms after user stops typing
+                barcodeCheckTimeout = setTimeout(() => {
+                    // Check if barcode exists
+                    fetch('/api/check-barcode', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ barcode: barcode })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.exists) {
+                            // Barcode already exists
+                            barcodeInput.style.borderColor = '#dc3545';
+                            
+                            // Show error message
+                            const errorMsg = document.createElement('div');
+                            errorMsg.className = 'barcode-error-msg';
+                            errorMsg.style.color = '#dc3545';
+                            errorMsg.style.fontSize = '12px';
+                            errorMsg.style.marginTop = '4px';
+                            errorMsg.style.fontWeight = 'bold';
+                            errorMsg.innerHTML = `⚠️ Bu barcode "${data.product.name}" mahsulotida mavjud!`;
+                            
+                            barcodeInput.parentElement.appendChild(errorMsg);
+                            
+                            // Disable add to list button
+                            const addToListBtn = document.getElementById('addToListBtn');
+                            if (addToListBtn) {
+                                addToListBtn.disabled = true;
+                                addToListBtn.style.opacity = '0.5';
+                                addToListBtn.style.cursor = 'not-allowed';
+                            }
+                        } else {
+                            // Barcode is unique - enable button
+                            const addToListBtn = document.getElementById('addToListBtn');
+                            if (addToListBtn) {
+                                addToListBtn.disabled = false;
+                                addToListBtn.style.opacity = '1';
+                                addToListBtn.style.cursor = 'pointer';
+                            }
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Barcode tekshirish xatosi:', error);
+                    });
+                }, 500);
             });
             
             // Mahsulot nomi maydoniga blur event qo'shish
@@ -1543,6 +1617,15 @@
             if (!productName) {
                 alert('❌ Mahsulot nomini kiriting!');
                 return;
+            }
+            
+            // Barcode tekshiruvi - agar kiritilgan bo'lsa va duplicate bo'lsa
+            if (barcode) {
+                const barcodeError = document.querySelector('.barcode-error-msg');
+                if (barcodeError) {
+                    alert('❌ Bu barcode allaqachon boshqa mahsulotda mavjud!');
+                    return;
+                }
             }
             
             if (!finalCostPrice || finalCostPrice <= 0) {
