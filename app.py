@@ -1124,21 +1124,21 @@ def api_products():
             ).order_by(
                 desc(case((subquery.c.total_sold == None, 0), else_=subquery.c.total_sold)),
                 # Natural sort - raqamli qismni ajratib saralash
-                text("REGEXP_REPLACE(products.name, '[^0-9]', '', 'g')::int"),
+                text("COALESCE(NULLIF(REGEXP_REPLACE(products.name, '[^0-9]', '', 'g'), '')::int, 0)"),
                 Product.name
             )
         except (ValueError, IndexError, AttributeError):
             # Xatolik bo'lsa, natural sort bilan saralash
             from sqlalchemy import text
             query = query.order_by(
-                text("REGEXP_REPLACE(products.name, '[^0-9]', '', 'g')::int"),
+                text("COALESCE(NULLIF(REGEXP_REPLACE(products.name, '[^0-9]', '', 'g'), '')::int, 0)"),
                 Product.name
             )
     else:
         # Joylashuv tanlanmagan bo'lsa, natural sort bilan saralash
         from sqlalchemy import text
         query = query.order_by(
-            text("REGEXP_REPLACE(products.name, '[^0-9]', '', 'g')::int"),
+            text("COALESCE(NULLIF(REGEXP_REPLACE(products.name, '[^0-9]', '', 'g'), '')::int, 0)"),
             Product.name
         )
 
