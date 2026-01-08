@@ -228,6 +228,7 @@
         <table id="stock-table" style="width: 100%; border-collapse: collapse; font-size: 14px;">
             <thead>
                 <tr style="background-color: #f8f9fa;">
+                    <th style="padding: 12px; text-align: center; border-bottom: 2px solid #dee2e6; border-right: 1px solid #2196F3; font-weight: 600;">Barcode</th>
                     <th style="padding: 12px; text-align: left; border-bottom: 2px solid #dee2e6; border-right: 1px solid #2196F3; font-weight: 600;">Mahsulot nomi</th>
                     <th style="padding: 12px; text-align: center; border-bottom: 2px solid #dee2e6; border-right: 1px solid #2196F3; font-weight: 600;">Miqdor</th>
                     <th style="padding: 12px; text-align: right; border-bottom: 2px solid #dee2e6; border-right: 1px solid #2196F3; font-weight: 600;">Asl tan narx</th>
@@ -241,7 +242,7 @@
             </thead>
             <tbody>
                 <tr>
-                    <td colspan="9" style="text-align: center; color: #666; padding: 2rem;">
+                    <td colspan="10" style="text-align: center; color: #666; padding: 2rem;">
                         <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
                             <div style="width: 20px; height: 20px; border: 2px solid #f3f3f3; border-top: 2px solid #3498db; border-radius: 50%; animation: spin 1s linear infinite;"></div>
                             Ma'lumotlar yuklanmoqda...
@@ -380,6 +381,7 @@
             
             return `
             <tr class="stock-row" data-status="${item.status}" style="border-bottom: 1px solid #dee2e6;">
+                <td style="padding: 12px; text-align: center; border-right: 1px solid #2196F3; color: #666; font-family: monospace;">${item.stock.product.barcode || '-'}</td>
                 <td style="padding: 12px; text-align: left; border-right: 1px solid #2196F3;"><strong>${highlightedName}</strong></td>
                 <td style="padding: 12px; text-align: center; border-right: 1px solid #2196F3; font-weight: bold;">${item.stock.quantity}</td>
                 <td style="padding: 12px; text-align: right; border-right: 1px solid #2196F3; font-weight: bold; color: #9b59b6;">$${item.stock.product.last_batch_cost ? item.stock.product.last_batch_cost.toFixed(2) : '0.00'}</td>
