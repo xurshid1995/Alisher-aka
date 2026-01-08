@@ -641,6 +641,9 @@
 
     // Klaviatura navigatsiyasi
     function handleProductSearchKeydown(event) {
+        const searchInput = document.getElementById('productSearch');
+        const cursorPosition = searchInput.selectionStart;
+        const inputLength = searchInput.value.length;
         const tbody = document.getElementById('productsTableBody');
         const visibleRows = Array.from(tbody.querySelectorAll('tr')).filter(row => 
             row.style.display !== 'none' && !row.querySelector('.empty-state')
@@ -650,15 +653,21 @@
 
         switch(event.key) {
             case 'ArrowDown':
-                event.preventDefault();
-                selectedProductIndex = Math.min(selectedProductIndex + 1, visibleRows.length - 1);
-                highlightRow(visibleRows);
+                // Faqat cursor oxirida yoki input bo'sh bo'lsa
+                if (cursorPosition === inputLength) {
+                    event.preventDefault();
+                    selectedProductIndex = Math.min(selectedProductIndex + 1, visibleRows.length - 1);
+                    highlightRow(visibleRows);
+                }
                 break;
 
             case 'ArrowUp':
-                event.preventDefault();
-                selectedProductIndex = Math.max(selectedProductIndex - 1, 0);
-                highlightRow(visibleRows);
+                // Faqat cursor boshida yoki input bo'sh bo'lsa
+                if (cursorPosition === 0) {
+                    event.preventDefault();
+                    selectedProductIndex = Math.max(selectedProductIndex - 1, 0);
+                    highlightRow(visibleRows);
+                }
                 break;
 
             case 'Enter':
