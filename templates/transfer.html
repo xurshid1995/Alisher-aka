@@ -296,23 +296,16 @@
     <div class="transfer-layouts">
         <!-- Chap layout - Mahsulot tanlash -->
         <div class="transfer-layout">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 15px; border-radius: 8px;">
-                <div style="color: white; font-weight: 600; font-size: 16px;">📦 Mahsulot tanlash</div>
-                <div style="display: flex; gap: 15px; flex: 1; max-width: 500px; margin-left: 20px;">
-                    <div style="flex: 1;">
-                        <label for="fromLocation" style="display: block; color: white; font-size: 12px; margin-bottom: 5px;">Qayerdan:</label>
-                        <select id="fromLocation" onchange="loadProducts()" style="width: 100%; padding: 8px; border: none; border-radius: 4px; font-size: 13px;">
-                            <option value="">Tanlang...</option>
-                        </select>
-                    </div>
-                    
-                    <div style="flex: 1;">
-                        <label for="toLocation" style="display: block; color: white; font-size: 12px; margin-bottom: 5px;">Qayerga:</label>
-                        <select id="toLocation" style="width: 100%; padding: 8px; border: none; border-radius: 4px; font-size: 13px;">
-                            <option value="">Tanlang...</option>
-                        </select>
-                    </div>
-                </div>
+            <div style="display: grid; grid-template-columns: auto 1fr auto 1fr; gap: 10px; align-items: center; margin-bottom: 15px; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6;">
+                <label for="fromLocation" style="font-weight: 600; color: #495057; white-space: nowrap;">Qayerdan:</label>
+                <select id="fromLocation" onchange="loadProducts()" style="padding: 8px 12px; border: 1px solid #ced4da; border-radius: 4px; font-size: 14px;">
+                    <option value="">Tanlang...</option>
+                </select>
+                
+                <label for="toLocation" style="font-weight: 600; color: #495057; white-space: nowrap;">Qayerga:</label>
+                <select id="toLocation" style="padding: 8px 12px; border: 1px solid #ced4da; border-radius: 4px; font-size: 14px;">
+                    <option value="">Tanlang...</option>
+                </select>
             </div>
 
             <div style="margin-bottom: 0;">
