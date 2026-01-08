@@ -475,6 +475,9 @@
                     </div>
                 </div>
                 
+                <!-- Excel fayl tanlash input (yashirin) -->
+                <input type="file" id="excelFileInput" accept=".xlsx,.xls" style="display: none;" onchange="handleExcelFile(event)">
+                
                 <form id="productForm">
                     <!-- 1-qator: Joylashuv va Excel Import -->
                     <div class="form-row">
@@ -485,10 +488,11 @@
                             </select>
                         </div>
                         <div class="form-group" style="flex: 1;">
-                            <label for="excelFileInput" style="display: block; margin-bottom: 0.3rem; font-weight: 600; color: #495057;">📊 Excel Import:</label>
-                            <input type="file" id="excelFileInput" accept=".xlsx,.xls" class="form-control" 
-                                   style="padding: 0.6rem; cursor: pointer; border: 2px solid #28a745;" 
-                                   onchange="handleExcelFile(event)">
+                            <label style="display: block; margin-bottom: 0.3rem; font-weight: 600; color: #495057;">📊 Excel Import:</label>
+                            <button type="button" class="btn btn-success" onclick="openExcelImport()" 
+                                    style="width: 100%; padding: 0.75rem; background: linear-gradient(135deg, #28a745, #20c997); border: none; color: white; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);">
+                                📊 Excel dan Import
+                            </button>
                         </div>
                     </div>
 
