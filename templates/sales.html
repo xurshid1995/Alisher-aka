@@ -949,8 +949,10 @@
         
         console.log('💱 Konversiya (USD→UZS):', usdPrice, 'USD ×', exchangeRate, '=', Math.round(uzsPrice), 'UZS');
         
-        // Narx validatsiyasini ishga tushirish
-        validatePrice();
+        // Narx validatsiyasini ishga tushirish (faqat modal ochiq bo'lsa)
+        if (currentProduct) {
+            validatePrice();
+        }
     }
     
     // UZS dan USD ga avtomatik konversiya
@@ -969,8 +971,10 @@
         
         console.log('💱 Konversiya (UZS→USD):', uzsPrice, 'UZS ÷', exchangeRate, '=', usdPrice.toFixed(2), 'USD');
         
-        // Narx validatsiyasini ishga tushirish
-        validatePrice();
+        // Narx validatsiyasini ishga tushirish (faqat modal ochiq bo'lsa)
+        if (currentProduct) {
+            validatePrice();
+        }
     }
     
     // Modal ochish
@@ -1031,21 +1035,12 @@
         updateCart();
     }
     
-    // Validatsiyalarni o'rnatish
+    // Validatsiyalarni o'rnatish - event listener'lar sahifa yuklanganda qo'yilgan
+    // Bu funksiya faqat dastlabki validatsiyalarni ishga tushirish uchun
     function setupValidation() {
-        const usdInput = document.getElementById('modalPriceUSD');
-        const uzsInput = document.getElementById('modalPriceUZS');
-        const quantityInput = document.getElementById('modalQuantity');
-        
-        // Event listener'larni o'chirish (duplikat qo'shilmasligi uchun)
-        usdInput.removeEventListener('input', validatePrice);
-        uzsInput.removeEventListener('input', validatePrice);
-        quantityInput.removeEventListener('input', validateQuantity);
-        
-        // Yangi event listener'larni qo'shish
-        usdInput.addEventListener('input', validatePrice);
-        uzsInput.addEventListener('input', validatePrice);
-        quantityInput.addEventListener('input', validateQuantity);
+        // Dastlabki validatsiyalarni ishga tushirish
+        validatePrice();
+        validateQuantity();
     }
     
     // Miqdorni validatsiya qilish
@@ -2267,11 +2262,14 @@
             console.error('❌ customerSearch elementi topilmadi!');
         }
         
-        // USD narx o'zgarganda avtomatik UZS hisoblash
+        // USD narx o'zgarganda avtomatik UZS hisoblash va validatsiya
         document.getElementById('modalPriceUSD').addEventListener('input', updateUZSPrice);
         
-        // UZS narx o'zgarganda avtomatik USD hisoblash
+        // UZS narx o'zgarganda avtomatik USD hisoblash va validatsiya
         document.getElementById('modalPriceUZS').addEventListener('input', updateUSDPrice);
+        
+        // Miqdor o'zgarganda validatsiya
+        document.getElementById('modalQuantity').addEventListener('input', validateQuantity);
         
         // To'lov modal oynasida USD dan UZS ga avtomatik konversiya
         document.getElementById('paymentCashUSD').addEventListener('input', function() {
