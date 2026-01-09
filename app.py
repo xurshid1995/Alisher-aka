@@ -2256,10 +2256,20 @@ def api_check_stock_locations():
         warehouses = Warehouse.query.all()
         warehouses_data = [{'id': w.id, 'name': w.name} for w in warehouses]
 
+        # Faol tekshiruvlar bor joylashuvlarni olish
+        active_sessions = StockCheckSession.query.filter_by(status='active').all()
+        active_locations = []
+        for session in active_sessions:
+            active_locations.append({
+                'type': session.location_type,
+                'id': session.location_id
+            })
+
         return jsonify({
             'success': True,
             'stores': stores_data,
-            'warehouses': warehouses_data
+            'warehouses': warehouses_data,
+            'active_locations': active_locations
         })
     except Exception as e:
         logger.error(f"Error loading locations: {e}")

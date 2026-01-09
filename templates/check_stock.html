@@ -162,8 +162,11 @@ document.addEventListener('DOMContentLoaded', function() {
     loadActiveSessions();
     loadCompletedSessions();
     
-    // Har 10 sekundda faol sessiyalarni yangilash
-    setInterval(loadActiveSessions, 10000);
+    // Har 10 sekundda faol sessiyalarni va joylashuvlarni yangilash
+    setInterval(() => {
+        loadActiveSessions();
+        loadLocations(); // Joylashuvlar ro'yxatini ham yangilash
+    }, 10000);
     // Har 30 sekundda tugatilgan sessiyalarni yangilash
     setInterval(loadCompletedSessions, 30000);
 });
@@ -177,17 +180,26 @@ async function loadLocations() {
         const select = document.getElementById('locationSelect');
         select.innerHTML = '<option value="">Joylashuvni tanlang...</option>';
         
+        // Faol tekshiruvlar bor joylashuvlar ro'yxati
+        const activeLocationKeys = (data.active_locations || []).map(loc => `${loc.type}_${loc.id}`);
+        
         // Do'konlarni qo'shish
         if (data.stores && data.stores.length > 0) {
             const storeGroup = document.createElement('optgroup');
             storeGroup.label = 'Do\'konlar';
             data.stores.forEach(store => {
-                const option = document.createElement('option');
-                option.value = 'store_' + store.id;
-                option.textContent = store.name;
-                storeGroup.appendChild(option);
+                const locationKey = `store_${store.id}`;
+                // Faol tekshiruv bo'lmasa ko'rsatish
+                if (!activeLocationKeys.includes(locationKey)) {
+                    const option = document.createElement('option');
+                    option.value = locationKey;
+                    option.textContent = store.name;
+                    storeGroup.appendChild(option);
+                }
             });
-            select.appendChild(storeGroup);
+            if (storeGroup.children.length > 0) {
+                select.appendChild(storeGroup);
+            }
         }
         
         // Omborlarni qo'shish
@@ -195,12 +207,18 @@ async function loadLocations() {
             const warehouseGroup = document.createElement('optgroup');
             warehouseGroup.label = 'Omborlar';
             data.warehouses.forEach(warehouse => {
-                const option = document.createElement('option');
-                option.value = 'warehouse_' + warehouse.id;
-                option.textContent = warehouse.name;
-                warehouseGroup.appendChild(option);
+                const locationKey = `warehouse_${warehouse.id}`;
+                // Faol tekshiruv bo'lmasa ko'rsatish
+                if (!activeLocationKeys.includes(locationKey)) {
+                    const option = document.createElement('option');
+                    option.value = locationKey;
+                    option.textContent = warehouse.name;
+                    warehouseGroup.appendChild(option);
+                }
             });
-            select.appendChild(warehouseGroup);
+            if (warehouseGroup.children.length > 0) {
+                select.appendChild(warehouseGroup);
+            }
         }
     } catch (error) {
         console.error('Joylashuvlarni yuklashda xatolik:', error);
