@@ -24,6 +24,83 @@
             </div>
         </div>
     </div>
+
+    <!-- Ikkita jadval - Transfer kabi -->
+    <div style="display: grid; grid-template-columns: 665px 665px; gap: 20px; justify-content: center; padding: 20px; align-items: start;">
+        <!-- Chap jadval - Mahsulotlar ro'yxati -->
+        <div style="background: white; border-radius: 8px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); width: 665px; box-sizing: border-box;">
+            <div style="background: linear-gradient(135deg, #5B9BD5, #4A90D9); padding: 15px; border-radius: 8px; margin-bottom: 10px; height: 54px; display: flex; align-items: center;">
+                <div style="color: white; font-weight: 600; font-size: 16px;">📦 Mahsulotlar ro'yxati</div>
+            </div>
+
+            <div style="margin-bottom: 10px;">
+                <input type="text" 
+                       id="productSearch" 
+                       placeholder="🔍 Mahsulot / Barcode qidirish..." 
+                       style="width: 100%; padding: 10px 12px; border: 2px solid #28a745; border-radius: 25px; font-size: 14px;"
+                       autofocus>
+            </div>
+
+            <div style="border: 1px solid #dee2e6; border-radius: 4px; margin-top: 10px; overflow-x: hidden;">
+                <table style="width: 625px !important; min-width: 625px !important; border-collapse: collapse;">
+                    <thead style="position: sticky; top: 0; background: linear-gradient(135deg, #5B9BD5, #4A90D9); z-index: 10;">
+                        <tr>
+                            <th style="width: 365px; color: white; padding: 10px; text-align: left; border-bottom: 2px solid #dee2e6; font-weight: 600; font-size: 13px;">Mahsulot</th>
+                            <th style="width: 100px; text-align: center; color: white; padding: 10px; border-bottom: 2px solid #dee2e6; font-weight: 600; font-size: 13px;">Narx</th>
+                            <th style="width: 85px; text-align: center; color: white; padding: 10px; border-bottom: 2px solid #dee2e6; font-weight: 600; font-size: 13px;">Mavjud</th>
+                            <th style="width: 75px; text-align: center; color: white; padding: 10px; border-bottom: 2px solid #dee2e6; font-weight: 600; font-size: 13px;">Amal</th>
+                        </tr>
+                    </thead>
+                    <tbody id="productsTableBody">
+                        <tr>
+                            <td colspan="4" style="text-align: center; padding: 40px 20px; color: #999;">
+                                <div style="font-size: 48px; margin-bottom: 10px; opacity: 0.5;">📦</div>
+                                <div>Qidirish orqali mahsulot tanlang</div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- O'ng jadval - Tekshirilgan mahsulotlar -->
+        <div style="background: white; border-radius: 8px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); width: 665px; box-sizing: border-box;">
+            <div style="background: linear-gradient(135deg, #5B9BD5, #4A90D9); padding: 15px; border-radius: 8px; margin-bottom: 10px; height: 54px; display: flex; align-items: center; justify-content: space-between;">
+                <div style="color: white; font-weight: 600; font-size: 16px;">✅ Tekshirilgan mahsulotlar</div>
+                <div style="color: white; font-size: 16px;">
+                    <span id="checkedCount" style="background: rgba(255,255,255,0.25); padding: 2px 8px; border-radius: 10px; font-weight: 600;">0</span> ta
+                </div>
+            </div>
+
+            <div style="margin-bottom: 10px;">
+                <input type="text" 
+                       id="checkedSearch" 
+                       placeholder="🔍 Tekshirilganlardan qidirish..." 
+                       style="width: 100%; padding: 10px 12px; border: 1px solid #ced4da; border-radius: 25px; font-size: 14px;">
+            </div>
+
+            <div style="border: 1px solid #dee2e6; border-radius: 4px; margin-top: 10px; overflow-x: hidden;">
+                <table style="width: 625px !important; min-width: 625px !important; border-collapse: collapse;">
+                    <thead style="position: sticky; top: 0; background: linear-gradient(135deg, #5B9BD5, #4A90D9); z-index: 10;">
+                        <tr>
+                            <th style="width: 365px; color: white; padding: 10px; text-align: left; border-bottom: 2px solid #dee2e6; font-weight: 600; font-size: 13px;">Mahsulot</th>
+                            <th style="width: 100px; text-align: center; color: white; padding: 10px; border-bottom: 2px solid #dee2e6; font-weight: 600; font-size: 13px;">Tizimda</th>
+                            <th style="width: 85px; text-align: center; color: white; padding: 10px; border-bottom: 2px solid #dee2e6; font-weight: 600; font-size: 13px;">Haqiqiy</th>
+                            <th style="width: 75px; text-align: center; color: white; padding: 10px; border-bottom: 2px solid #dee2e6; font-weight: 600; font-size: 13px;">Farq</th>
+                        </tr>
+                    </thead>
+                    <tbody id="checkedTableBody">
+                        <tr>
+                            <td colspan="4" style="text-align: center; padding: 40px 20px; color: #999;">
+                                <div style="font-size: 48px; margin-bottom: 10px; opacity: 0.5;">📋</div>
+                                <div>Hali mahsulot tekshirilmagan</div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 </div>
 
 <style>
