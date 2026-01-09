@@ -214,9 +214,9 @@ let checkedProducts = [];
 let allProducts = [];
 
 // Sahifa yuklanganda mahsulotlarni yuklash
-document.addEventListener('DOMContentLoaded', function() {
-    loadAllProducts();
-    loadCheckedProducts(); // Database'dan tekshirilgan mahsulotlarni yuklash
+document.addEventListener('DOMContentLoaded', async function() {
+    await loadAllProducts();
+    await loadCheckedProducts(); // Barcha mahsulotlar yuklangandan keyin tekshirilganlarni yuklash
 });
 
 // Tekshirilgan mahsulotlarni database'dan yuklash
@@ -229,9 +229,8 @@ async function loadCheckedProducts() {
             checkedProducts = data.items;
             
             // Tekshirilgan mahsulotlarni chap jadvaldan o'chirish
-            data.items.forEach(checkedItem => {
-                allProducts = allProducts.filter(p => p.id !== checkedItem.id);
-            });
+            const checkedIds = data.items.map(item => item.id);
+            allProducts = allProducts.filter(p => !checkedIds.includes(p.id));
             
             displayProducts(allProducts);
             updateCheckedTable();
