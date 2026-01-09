@@ -2370,24 +2370,30 @@ def api_check_stock_products():
         if not location_type or not location_id:
             return jsonify({'success': False, 'message': 'Joylashuv parametrlari to\'liq emas'}), 400
 
-        # Joylashuvdagi barcha mahsulotlarni olish
+        # Joylashuvdagi barcha mahsulotlarni olish (optimizatsiya bilan)
         if location_type == 'store':
-            stocks = StoreStock.query.filter_by(store_id=location_id).all()
+            # JOIN qilib bir marta query - N+1 problem hal qilindi
+            stocks = db.session.query(StoreStock, Product)\
+                .join(Product, StoreStock.product_id == Product.id)\
+                .filter(StoreStock.store_id == location_id)\
+                .filter(StoreStock.quantity > 0)\
+                .all()
         else:
-            stocks = WarehouseStock.query.filter_by(warehouse_id=location_id).all()
+            stocks = db.session.query(WarehouseStock, Product)\
+                .join(Product, WarehouseStock.product_id == Product.id)\
+                .filter(WarehouseStock.warehouse_id == location_id)\
+                .filter(WarehouseStock.quantity > 0)\
+                .all()
 
         products_data = []
-        for stock in stocks:
-            if stock.quantity > 0:  # Faqat mavjud mahsulotlar
-                product = Product.query.get(stock.product_id)
-                if product:
-                    products_data.append({
-                        'id': product.id,
-                        'name': product.name,
-                        'barcode': product.barcode,
-                        'price': float(product.sell_price) if product.sell_price else 0,
-                        'system_quantity': float(stock.quantity)
-                    })
+        for stock, product in stocks:
+            products_data.append({
+                'id': product.id,
+                'name': product.name,
+                'barcode': product.barcode,
+                'price': float(product.sell_price) if product.sell_price else 0,
+                'system_quantity': float(stock.quantity)
+            })
 
         return jsonify({
             'success': True,
