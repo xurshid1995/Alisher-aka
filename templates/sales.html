@@ -2,6 +2,11 @@
 
 {% block title %}Savdo - Dokon Boshqaruv Tizimi{% endblock %}
 
+{% block extra_head %}
+<!-- Quagga2 Barcode Scanner -->
+<script src="https://cdn.jsdelivr.net/npm/@ericblade/quagga2/dist/quagga.min.js"></script>
+{% endblock %}
+
 {% block extra_css %}
 <style>
     .sales-container {
@@ -161,10 +166,29 @@
                            id="universalSearch" 
                            placeholder="Barcode skanerlang yoki mahsulot nomini kiriting..." 
                            autocomplete="off"
-                           style="width: 100%; padding: 10px 10px 10px 40px; border: 2px solid #28a745; border-radius: 6px; font-size: 14px; background: white;">
-                    <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 18px;">📷</span>
+                           style="width: 100%; padding: 10px 45px 10px 10px; border: 2px solid #28a745; border-radius: 6px; font-size: 14px; background: white;">
+                    <button id="cameraScanBtn" type="button" style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: #28a745; border: none; border-radius: 4px; padding: 6px 10px; cursor: pointer; font-size: 18px; color: white; transition: background 0.3s;" onmouseover="this.style.background='#218838'" onmouseout="this.style.background='#28a745'" title="Kamerada barcode skaner qilish">
+                        📷
+                    </button>
                     <div id="searchStatus" style="display: none; position: absolute; top: 100%; left: 0; right: 0; margin-top: 5px; padding: 8px; background: #d4edda; border: 1px solid #c3e6cb; border-radius: 4px; font-size: 12px; color: #155724; z-index: 100;">
                         ✓ Mahsulot topildi!
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Barcode Scanner Modal -->
+            <div id="barcodeScannerModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; justify-content: center; align-items: center;">
+                <div style="position: relative; background: white; border-radius: 10px; padding: 20px; max-width: 640px; width: 90%;">
+                    <button id="closeScannerBtn" type="button" style="position: absolute; top: 10px; right: 10px; background: #dc3545; color: white; border: none; border-radius: 50%; width: 35px; height: 35px; font-size: 20px; cursor: pointer; z-index: 10000;" title="Yopish">×</button>
+                    <h3 style="text-align: center; margin-bottom: 15px; color: #333;">📷 Barcode Skaner</h3>
+                    <div id="barcodeScannerContainer" style="position: relative; width: 100%; height: 400px; background: #000; border-radius: 8px; overflow: hidden;">
+                        <div id="barcodeScanner" style="width: 100%; height: 100%;"></div>
+                        <div id="scannerOverlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;">
+                            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 70%; height: 40%; border: 2px solid #28a745; border-radius: 8px; box-shadow: 0 0 0 9999px rgba(0,0,0,0.5);"></div>
+                        </div>
+                    </div>
+                    <div id="scannerStatus" style="margin-top: 15px; text-align: center; font-size: 14px; color: #666;">
+                        Barcode ni skaner qilish uchun markaz chizig'iga joylashtiring...
                     </div>
                 </div>
             </div>
@@ -695,6 +719,107 @@
         }
     }
     
+    // ==================== BARCODE SCANNER ====================
+    let scannerActive = false;
+
+    function startBarcodeScanner() {
+        const modal = document.getElementById('barcodeScannerModal');
+        const statusDiv = document.getElementById('scannerStatus');
+        
+        modal.style.display = 'flex';
+        scannerActive = true;
+        
+        Quagga.init({
+            inputStream: {
+                name: "Live",
+                type: "LiveStream",
+                target: document.querySelector('#barcodeScanner'),
+                constraints: {
+                    width: 640,
+                    height: 480,
+                    facingMode: "environment" // Orqa kamera
+                },
+            },
+            decoder: {
+                readers: [
+                    "code_128_reader",
+                    "ean_reader",
+                    "ean_8_reader",
+                    "code_39_reader",
+                    "code_39_vin_reader",
+                    "codabar_reader",
+                    "upc_reader",
+                    "upc_e_reader",
+                    "i2of5_reader"
+                ]
+            },
+        }, function(err) {
+            if (err) {
+                console.error('❌ Scanner xatosi:', err);
+                statusDiv.textContent = '❌ Kamerani ishga tushirishda xatolik: ' + err.message;
+                statusDiv.style.color = '#dc3545';
+                return;
+            }
+            console.log('✅ Scanner ishga tushdi');
+            statusDiv.textContent = '✅ Skaner ishlayapti - barcodeni markaz chizig'iga joylashtiring';
+            statusDiv.style.color = '#28a745';
+            Quagga.start();
+        });
+
+        Quagga.onDetected(function(result) {
+            if (!scannerActive) return;
+            
+            const code = result.codeResult.code;
+            console.log('📷 Barcode topildi:', code);
+            
+            // Input maydoniga yozish
+            document.getElementById('universalSearch').value = code;
+            
+            // Scanner yopish
+            stopBarcodeScanner();
+            
+            // Statusni ko'rsatish
+            statusDiv.textContent = '✅ Barcode o\'qildi: ' + code;
+            statusDiv.style.color = '#28a745';
+            
+            // Qidiruvni avtomatik ishga tushirish
+            setTimeout(() => {
+                const event = new Event('input', { bubbles: true });
+                document.getElementById('universalSearch').dispatchEvent(event);
+            }, 300);
+        });
+    }
+
+    function stopBarcodeScanner() {
+        scannerActive = false;
+        const modal = document.getElementById('barcodeScannerModal');
+        
+        if (Quagga) {
+            Quagga.stop();
+        }
+        
+        modal.style.display = 'none';
+        console.log('🛑 Scanner to\'xtatildi');
+    }
+
+    // Scanner tugmasi event listener
+    document.getElementById('cameraScanBtn').addEventListener('click', function() {
+        console.log('📷 Camera scan button bosildi');
+        startBarcodeScanner();
+    });
+
+    // Yopish tugmasi
+    document.getElementById('closeScannerBtn').addEventListener('click', function() {
+        stopBarcodeScanner();
+    });
+
+    // Modal tashqarisiga bosganda yopish
+    document.getElementById('barcodeScannerModal').addEventListener('click', function(e) {
+        if (e.target.id === 'barcodeScannerModal') {
+            stopBarcodeScanner();
+        }
+    });
+
     // Universal qidiruv maydoni (Barcode + Mahsulot)
     document.addEventListener('DOMContentLoaded', function() {
         const universalSearch = document.getElementById('universalSearch');
