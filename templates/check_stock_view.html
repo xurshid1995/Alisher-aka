@@ -4,6 +4,13 @@
 
 {% block extra_css %}
 <style>
+    /* Main content wrapper padding for sidebar */
+    .view-container {
+        padding: 20px;
+        margin-left: 70px; /* Sidebar uchun joy */
+        transition: margin-left 0.3s ease;
+    }
+
     .page-header-view {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
@@ -92,7 +99,7 @@
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid">
+<div class="view-container">
     <!-- Sahifa sarlavhasi -->
     <div class="page-header-view">
         <div style="display: flex; justify-content: space-between; align-items: center;">
