@@ -8,8 +8,6 @@
         padding: 20px;
         background: #f8f9fa;
         min-height: 100vh;
-        max-width: 100vw;
-        box-sizing: border-box;
     }
 
     .page-header {
@@ -27,16 +25,14 @@
         font-size: 24px;
     }
 
-    /* Ikkita layout uchun grid - ekranga moslashuvchi */
+    /* Ikkita layout uchun grid */
     .transfer-layouts {
         display: grid;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: 665px 665px;
         gap: 20px;
-        padding: 0;
+        justify-content: center;
+        padding: 20px;
         align-items: start;
-        width: 100%;
-        max-width: 100%;
-        box-sizing: border-box;
     }
 
     .transfer-layout {
@@ -44,16 +40,8 @@
         border-radius: 8px;
         padding: 20px;
         box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        width: 665px;
         box-sizing: border-box;
-        width: 100%;
-    }
-    
-    .transfer-layouts > div:first-child {
-        width: 100%;
-    }
-    
-    .transfer-layouts > div:nth-child(2) {
-        width: 100%;
     }
 
     .layout-header {
@@ -100,15 +88,13 @@
         border: 1px solid #dee2e6;
         border-radius: 4px;
         margin-top: 10px;
-        overflow-x: auto;
-        max-width: 100%;
+        overflow-x: hidden;
     }
 
     .transfer-product-table {
-        width: 100%; /* Layout kengligiga to'liq moslashadi */
-        max-width: 100%;
+        width: 625px !important; /* 365 + 100 + 85 + 75 = 625px */
+        min-width: 625px !important;
         border-collapse: collapse;
-        table-layout: fixed; /* Ustun kengliklari foizlarga bo'ysunadi */
     }
 
     .products-table thead {
@@ -119,20 +105,18 @@
     }
 
     .products-table th {
-        padding: 6px;
+        padding: 10px;
         text-align: left;
         border-bottom: 2px solid #dee2e6;
         font-weight: 600;
         font-size: 13px;
         color: #555;
-        box-sizing: border-box;
     }
 
     .products-table td {
-        padding: 6px 8px;
+        padding: 8px 10px;
         border-bottom: 1px solid #f0f0f0;
         font-size: 14px;
-        box-sizing: border-box;
     }
 
     .products-table tbody tr:hover {
@@ -273,17 +257,11 @@
     }
 
     /* Responsive */
-    @media (max-width: 1200px) {
+    @media (max-width: 1400px) {
         .transfer-layouts {
             grid-template-columns: 1fr;
-            max-width: 580px;
+            max-width: 665px;
             margin: 0 auto;
-        }
-        
-        .transfer-layout,
-        .transfer-layouts > div:first-child,
-        .transfer-layouts > div:nth-child(2) {
-            width: 100% !important;
         }
     }
 
@@ -348,10 +326,10 @@
                 <table class="products-table transfer-product-table">
                     <thead>
                         <tr>
-                            <th style="width: 42%; color: white;">Mahsulot</th>
-                            <th style="width: 15%; text-align: center; color: white;">Narx</th>
-                            <th style="width: 13%; text-align: center; color: white;">Mavjud</th>
-                            <th style="width: 10%; text-align: center; color: white;">Amal</th>
+                            <th style="width: 365px; color: white;">Mahsulot</th>
+                            <th style="width: 100px; text-align: center; color: white;">Narx</th>
+                            <th style="width: 85px; text-align: center; color: white;">Mavjud</th>
+                            <th style="width: 75px; text-align: center; color: white;">Amal</th>
                         </tr>
                     </thead>
                     <tbody id="productsTableBody">
@@ -388,10 +366,10 @@
                 <table class="products-table transfer-product-table" id="transferListTable">
                     <thead>
                         <tr>
-                            <th style="width: 42%; color: white;">Mahsulot</th>
-                            <th style="width: 15%; text-align: center; color: white;">Narx</th>
-                            <th style="width: 13%; text-align: center; color: white;">Miqdor</th>
-                            <th style="width: 10%; text-align: center; color: white;">Amal</th>
+                            <th style="width: 365px; color: white;">Mahsulot</th>
+                            <th style="width: 100px; text-align: center; color: white;">Narx</th>
+                            <th style="width: 85px; text-align: center; color: white;">Miqdor</th>
+                            <th style="width: 75px; text-align: center; color: white;">Amal</th>
                         </tr>
                     </thead>
                     <tbody id="transferList">
