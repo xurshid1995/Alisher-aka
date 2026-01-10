@@ -274,7 +274,7 @@ async function loadActiveSessions() {
             row.innerHTML = `
                 <td style="text-align: center;">${index + 1}</td>
                 <td style="text-align: center;">${locationIcon} <strong>${session.location_name}</strong></td>
-                <td style="text-align: center;"><i class="fas fa-user"></i> ${session.user_name}</td>
+                <td style="text-align: center;">${session.user_name}</td>
                 <td style="text-align: center;">${session.started_at}</td>
                 <td style="text-align: center;">${session.updated_at}</td>
                 <td style="text-align: center;">
