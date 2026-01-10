@@ -25,12 +25,11 @@
         font-size: 24px;
     }
 
-    /* Ikkita layout uchun grid - optimized 1120px */
+    /* Ikkita layout uchun grid - katta ekranlarda avtomatik moslashuvchi */
     .transfer-layouts {
         display: grid;
-        grid-template-columns: 520px 580px;
+        grid-template-columns: minmax(520px, 1fr) minmax(580px, 1.15fr);
         gap: 20px;
-        justify-content: center;
         padding: 20px;
         align-items: start;
     }
@@ -41,14 +40,17 @@
         padding: 20px;
         box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         box-sizing: border-box;
+        width: 100%;
     }
     
     .transfer-layouts > div:first-child {
-        width: 520px;
+        width: 100%;
+        min-width: 520px;
     }
     
     .transfer-layouts > div:nth-child(2) {
-        width: 580px;
+        width: 100%;
+        min-width: 580px;
     }
 
     .layout-header {
@@ -99,8 +101,9 @@
     }
 
     .transfer-product-table {
-        width: 500px; /* Optimized */
-        min-width: 500px;
+        width: 100%; /* Katta ekranlarda avtomatik kengayadi */
+        min-width: 500px; /* Minimal o'lcham */
+        max-width: 100%;
         border-collapse: collapse;
     }
 
