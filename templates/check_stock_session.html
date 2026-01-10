@@ -82,16 +82,16 @@
                        style="flex: 1; padding: 10px 12px; border: 1px solid #ced4da; border-radius: 25px; font-size: 14px;">
                 <div style="display: flex; gap: 5px;">
                     <button onclick="filterChecked('all')" id="filterAll" 
-                            style="background: #007bff; color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600;">
-                        📊 Hammasi
+                            style="background: #007bff; color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; white-space: nowrap;">
+                        📊 Hammasi <span id="allCount" style="background: rgba(255,255,255,0.3); padding: 2px 6px; border-radius: 10px; margin-left: 4px;">0</span>
                     </button>
                     <button onclick="filterChecked('error')" id="filterError" 
-                            style="background: #dc3545; color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600;">
-                        ⚠️ Xatolik
+                            style="background: #dc3545; color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; white-space: nowrap;">
+                        ⚠️ Xatolik <span id="errorCount" style="background: rgba(255,255,255,0.3); padding: 2px 6px; border-radius: 10px; margin-left: 4px;">0</span>
                     </button>
                     <button onclick="filterChecked('correct')" id="filterCorrect" 
-                            style="background: #28a745; color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600;">
-                        ✅ To'g'ri
+                            style="background: #28a745; color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; white-space: nowrap;">
+                        ✅ To'g'ri <span id="correctCount" style="background: rgba(255,255,255,0.3); padding: 2px 6px; border-radius: 10px; margin-left: 4px;">0</span>
                     </button>
                 </div>
             </div>
@@ -697,6 +697,18 @@ async function removeFromChecked(productId) {
 // Tekshirilganlar sonini yangilash
 function updateCheckedCount() {
     document.getElementById('checkedCount').textContent = checkedProducts.length;
+    updateFilterCounts();
+}
+
+// Filtr sonlarini yangilash
+function updateFilterCounts() {
+    const allCount = checkedProducts.length;
+    const errorCount = checkedProducts.filter(p => p.difference !== 0).length;
+    const correctCount = checkedProducts.filter(p => p.difference === 0).length;
+    
+    document.getElementById('allCount').textContent = allCount;
+    document.getElementById('errorCount').textContent = errorCount;
+    document.getElementById('correctCount').textContent = correctCount;
 }
 
 // Tekshiruvni yakunlash
