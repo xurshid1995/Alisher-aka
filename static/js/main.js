@@ -294,12 +294,14 @@ function toggleMobileNav() {
             sidebar.classList.remove('active');
             overlay.classList.remove('active');
             toggleBtn.innerHTML = '<i class="fas fa-bars"></i>';
-            document.body.style.overflow = '';
+            // Body overflow'ni auto qilish, hidden emas
+            document.body.style.overflow = 'auto';
         } else {
             // Opening animation
             sidebar.classList.add('active');
             overlay.classList.add('active');
             toggleBtn.innerHTML = '<i class="fas fa-times"></i>';
+            // Faqat sidebar ochiq bo'lganda scroll o'chirish
             document.body.style.overflow = 'hidden';
         }
         
@@ -320,7 +322,8 @@ function closeMobileNav() {
         sidebar.classList.remove('active');
         overlay.classList.remove('active');
         toggleBtn.innerHTML = '<i class="fas fa-bars"></i>';
-        document.body.style.overflow = '';
+        // Body overflow'ni auto qilish
+        document.body.style.overflow = 'auto';
     }
 }
 
@@ -343,8 +346,8 @@ function enableMobileTableScroll() {
 window.addEventListener('resize', function() {
     if (window.innerWidth > 768) {
         closeMobileNav();
-        // Desktop modega o'tganda mobile stillarni tozalash
-        document.body.style.overflow = '';
+        // Desktop modega o'tganda body overflow'ni auto qilish
+        document.body.style.overflow = 'auto';
     }
 });
 
