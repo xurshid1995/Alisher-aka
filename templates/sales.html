@@ -925,6 +925,7 @@
         });
         
         // Klaviaturadan kiritish (Bluetooth scanner uchun)
+        let searchTimeout = null;
         universalSearch.addEventListener('input', function(e) {
             const value = e.target.value.trim();
             
@@ -940,8 +941,11 @@
                     }
                 }, 100); // 100ms kutish - scanner tez yozadi
             } else {
-                // Matn kiritilsa - mahsulot qidirish
-                filterProducts();
+                // Matn kiritilsa - mahsulot qidirish (debounce bilan)
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    filterProducts();
+                }, 500); // 500ms kutish - foydalanuvchi yozishni to'xtatgandan keyin qidirish
             }
         });
         
@@ -2103,97 +2107,123 @@
     }
     */
     
-    // Mahsulot qidirish funksiyasi
-    function filterProducts() {
-        const searchText = document.getElementById('universalSearch').value.toLowerCase().trim();
+    // Mahsulot qidirish funksiyasi - serverdan qidirish
+    async function filterProducts() {
+        const searchText = document.getElementById('universalSearch').value.trim();
+        const locationSelect = document.getElementById('locationSelect');
         const tbody = document.getElementById('productsTable');
-        const rows = tbody.getElementsByTagName('tr');
         
         console.log('🔍 Qidiruv matni:', searchText);
         
-        // Bo'sh qidiruv - barchasini ko'rsat, highlight yo'q
+        // Bo'sh qidiruv - barcha mahsulotlarni qayta yuklash
         if (!searchText) {
-            for (let i = 0; i < rows.length; i++) {
-                const productNameCell = rows[i].getElementsByTagName('td')[0];
-                if (productNameCell) {
-                    // Highlight ni olib tashlash
-                    const originalText = productNameCell.getAttribute('data-original-text') || productNameCell.textContent;
-                    productNameCell.innerHTML = originalText;
-                }
-                rows[i].style.display = '';
-            }
+            await loadProducts();
             return;
         }
         
-        // Regex maxsus belgilarini escape qilish
-        function escapeRegex(str) {
-            return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const locationValue = locationSelect.value;
+        if (!locationValue) {
+            tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; padding: 30px; color: #999;">Joylashuvni tanlang</td></tr>';
+            return;
         }
         
-        // Qidiruv so'zlarini ajratish (bo'shliq bilan)
-        const searchWords = searchText.split(/\s+/).filter(word => word.length > 0);
-        console.log('🔍 Qidiruv so\'zlari:', searchWords);
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 30px; color: #999;">⏳ Qidirilmoqda...</td></tr>';
         
-        let foundCount = 0;
-        let notFoundProducts = [];
-        
-        for (let i = 0; i < rows.length; i++) {
-            const row = rows[i];
-            const productNameCell = row.getElementsByTagName('td')[0];
+        try {
+            // Serverdan qidiruv so'rovi yuborish
+            const response = await fetch(`/api/products?location=${locationValue}&search=${encodeURIComponent(searchText)}`);
+            const data = await response.json();
             
-            if (productNameCell) {
-                // Original textni saqlash
-                if (!productNameCell.getAttribute('data-original-text')) {
-                    productNameCell.setAttribute('data-original-text', productNameCell.textContent);
-                }
-                
-                const originalText = productNameCell.getAttribute('data-original-text');
-                const textValue = originalText.toLowerCase();
-                
-                // Barcha so'zlar topilishi kerak
-                const allWordsFound = searchWords.every(word => textValue.indexOf(word) > -1);
-                
-                if (allWordsFound) {
-                    foundCount++;
-                    row.style.display = '';
-                    
-                    // Highlight qilish - barcha so'zlarni bir vaqtda
-                    let highlightedText = originalText;
-                    
-                    // Barcha so'zlarni alternation bilan birlashtirib bir marta replace qilish
-                    if (searchWords.length > 0) {
-                        const escapedWords = searchWords.map(word => escapeRegex(word));
-                        const combinedPattern = escapedWords.join('|');
-                        const regex = new RegExp(`(${combinedPattern})`, 'gi');
-                        highlightedText = highlightedText.replace(regex, '<span style="background-color: #ffeb3b; padding: 2px 4px; border-radius: 2px;">$1</span>');
-                    }
-                    
-                    productNameCell.innerHTML = highlightedText;
-                } else {
-                    row.style.display = 'none';
-                    // Birinchi 3 ta topilmagan mahsulotni saqlash
-                    if (notFoundProducts.length < 3) {
-                        notFoundProducts.push({
-                            name: originalText,
-                            nameLower: textValue,
-                            missingWords: searchWords.filter(word => textValue.indexOf(word) === -1)
-                        });
-                    }
-                }
+            console.log('🔍 Qidiruv natijasi:', data);
+            
+            const products = Array.isArray(data) ? data : (data.products || []);
+            
+            if (products.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 30px; color: #999;">❌ Hech narsa topilmadi</td></tr>';
+                console.log(`❌ "${searchText}" bo'yicha mahsulot topilmadi`);
+                return;
             }
-        }
-        
-        console.log(`✅ Topildi: ${foundCount} ta mahsulot`);
-        if (foundCount === 0 && notFoundProducts.length > 0) {
-            console.log('❌ Topilmagan mahsulotlardan birinchi 3 tasi:');
-            notFoundProducts.forEach(p => {
-                console.log(`  - "${p.name}" (lower: "${p.nameLower}")`);
-                console.log(`    Topilmagan so'zlar: ${p.missingWords.join(', ')}`);
+            
+            // Regex maxsus belgilarini escape qilish
+            function escapeRegex(str) {
+                return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            }
+            
+            // Qidiruv so'zlarini ajratish (highlight uchun)
+            const searchWords = searchText.toLowerCase().split(/\s+/).filter(word => word.length > 0);
+            
+            tbody.innerHTML = '';
+            products.forEach(product => {
+                // Quantity va selling price ni olish
+                let quantity = 0;
+                let sellingPrice = product.sell_price || product.price || 0;
+                
+                // Agar stocks mavjud bo'lsa, locationga mos keladiganini topish
+                if (product.stocks && product.stocks.length > 0) {
+                    const [type, id] = locationValue.split('_');
+                    const locationId = parseInt(id);
+                    
+                    const matchingStock = product.stocks.find(stock => {
+                        if (type === 'warehouse') {
+                            return stock.warehouse_id === locationId;
+                        } else if (type === 'store') {
+                            return stock.store_id === locationId;
+                        }
+                        return false;
+                    });
+                    
+                    if (matchingStock) {
+                        quantity = matchingStock.quantity || 0;
+                    }
+                }
+                
+                const row = document.createElement('tr');
+                row.style.borderBottom = '1px solid #f0f0f0';
+                row.setAttribute('data-product-id', product.id);
+                const productName = product.name || `Mahsulot #${product.id}`;
+                const safeProductName = productName.replace(/'/g, "\\'");
+                const costPrice = product.cost_price || 0;
+                
+                // Highlight qilish - qidiruv so'zlarini
+                let highlightedName = productName;
+                if (searchWords.length > 0) {
+                    const escapedWords = searchWords.map(word => escapeRegex(word));
+                    const combinedPattern = escapedWords.join('|');
+                    const regex = new RegExp(`(${combinedPattern})`, 'gi');
+                    highlightedName = highlightedName.replace(regex, '<span style="background-color: #ffeb3b; padding: 2px 4px; border-radius: 2px;">$1</span>');
+                }
+                
+                // Miqdori 0 bo'lsa qizil ranglar
+                const quantityBadgeColor = quantity <= 0 ? '#dc3545' : '#28a745';
+                const buttonEmoji = quantity <= 0 ? '⛔' : '➡️';
+                const buttonDisabled = quantity <= 0 ? 'disabled' : '';
+                const cursorStyle = quantity <= 0 ? 'not-allowed' : 'pointer';
+                const opacity = quantity <= 0 ? '0.8' : '1';
+                
+                row.innerHTML = `
+                    <td style="padding: 12px 8px; font-size: 16px; color: #333;" data-original-text="${productName}" title="${productName}">${highlightedName}</td>
+                    <td style="padding: 12px 8px; text-align: left; font-size: 14px;">
+                        <span style="background: ${quantityBadgeColor}; color: white; padding: 4px 8px; border-radius: 0; font-weight: 500; display: inline-block;">${quantity}</span>
+                    </td>
+                    <td style="padding: 12px 8px; text-align: left; font-size: 14px;">
+                        <span style="background: #ffc107; color: white; padding: 4px 8px; border-radius: 0; font-weight: 500; margin-right: 6px; display: inline-block;">$${formatPrice(sellingPrice)}</span>
+                        <span style="background: #5cb3ff; color: white; padding: 4px 8px; border-radius: 0; font-weight: 500; display: inline-block;">${formatPrice(sellingPrice * exchangeRate)} so'm</span>
+                    </td>
+                    <td style="padding: 2px; text-align: center; font-size: 14px;">
+                        <button onclick="addToCart(${product.id}, '${safeProductName}', ${quantity}, ${sellingPrice}, ${costPrice})" ${buttonDisabled} style="background: transparent; color: #333; border: none; padding: 4px 8px; cursor: ${cursorStyle}; font-size: 18px; opacity: ${opacity};">${buttonEmoji}</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
             });
+            
+            console.log(`✅ Topildi: ${products.length} ta mahsulot`);
+            
+            // Ko'rinadigan qatorlarni yangilash
+            updateVisibleProductRows();
+        } catch (error) {
+            console.error('Qidirishda xatolik:', error);
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 30px; color: #dc3545;">⚠️ Xatolik yuz berdi</td></tr>';
         }
-        
-        // Ko'rinadigan qatorlarni yangilash
-        updateVisibleProductRows();
     }
     
     // Ko'rinadigan mahsulot qatorlarini yangilash
