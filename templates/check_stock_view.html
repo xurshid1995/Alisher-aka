@@ -99,12 +99,12 @@
             <div>
                 <h2><i class="fas fa-clipboard-check"></i> Tekshiruv tafsilotlari</h2>
                 <div style="margin-top: 10px; display: flex; gap: 20px; flex-wrap: wrap; font-size: 14px;">
-                    <div><strong>Sana va vaqt:</strong> {{ session.started_at.strftime('%d.%m.%Y - %H:%M') }}</div>
-                    <div><strong>Boshlagan:</strong> {{ session.user.first_name }} {{ session.user.last_name }}</div>
-                    {% if session.completed_by %}
-                    <div><strong>Tugatgan:</strong> {{ session.completed_by.first_name }} {{ session.completed_by.last_name }}</div>
+                    <div><strong>Sana va vaqt:</strong> {{ check_session.started_at.strftime('%d.%m.%Y - %H:%M') }}</div>
+                    <div><strong>Boshlagan:</strong> {{ check_session.user.first_name }} {{ check_session.user.last_name }}</div>
+                    {% if check_session.completed_by %}
+                    <div><strong>Tugatgan:</strong> {{ check_session.completed_by.first_name }} {{ check_session.completed_by.last_name }}</div>
                     {% endif %}
-                    <div><strong>Joylashuv:</strong> {{ '🏪' if session.location_type == 'store' else '📦' }} {{ session.location_name }}</div>
+                    <div><strong>Joylashuv:</strong> {{ '🏪' if check_session.location_type == 'store' else '📦' }} {{ check_session.location_name }}</div>
                 </div>
             </div>
             <div>
@@ -223,9 +223,9 @@
 </div>
 
 <script>
-const sessionId = {{ session.id }};
-const locationType = '{{ session.location_type }}';
-const locationId = {{ session.location_id }};
+const sessionId = {{ check_session.id }};
+const locationType = '{{ check_session.location_type }}';
+const locationId = {{ check_session.location_id }};
 
 // Session debugging - development mode
 console.log('🔍 Check Stock View Debug Info:');

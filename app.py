@@ -2564,12 +2564,12 @@ def check_stock_view(session_id):
         return redirect(url_for('login'))
 
     try:
-        session = StockCheckSession.query.get(session_id)
-        if not session:
+        check_session = StockCheckSession.query.get(session_id)
+        if not check_session:
             flash('Tekshiruv sessiyasi topilmadi', 'error')
             return redirect(url_for('check_stock'))
         
-        return render_template('check_stock_view.html', session=session)
+        return render_template('check_stock_view.html', check_session=check_session)
     except Exception as e:
         logger.error(f"Error loading check stock view: {e}")
         abort(404)
