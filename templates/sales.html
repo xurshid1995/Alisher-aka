@@ -2125,6 +2125,7 @@
         console.log('🔍 Qidiruv so\'zlari:', searchWords);
         
         let foundCount = 0;
+        let notFoundProducts = [];
         
         for (let i = 0; i < rows.length; i++) {
             const row = rows[i];
@@ -2160,11 +2161,26 @@
                     productNameCell.innerHTML = highlightedText;
                 } else {
                     row.style.display = 'none';
+                    // Birinchi 3 ta topilmagan mahsulotni saqlash
+                    if (notFoundProducts.length < 3) {
+                        notFoundProducts.push({
+                            name: originalText,
+                            nameLower: textValue,
+                            missingWords: searchWords.filter(word => textValue.indexOf(word) === -1)
+                        });
+                    }
                 }
             }
         }
         
         console.log(`✅ Topildi: ${foundCount} ta mahsulot`);
+        if (foundCount === 0 && notFoundProducts.length > 0) {
+            console.log('❌ Topilmagan mahsulotlardan birinchi 3 tasi:');
+            notFoundProducts.forEach(p => {
+                console.log(`  - "${p.name}" (lower: "${p.nameLower}")`);
+                console.log(`    Topilmagan so'zlar: ${p.missingWords.join(', ')}`);
+            });
+        }
         
         // Ko'rinadigan qatorlarni yangilash
         updateVisibleProductRows();
