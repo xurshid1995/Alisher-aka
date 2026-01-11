@@ -2244,19 +2244,49 @@ def check_stock():
 @app.route('/api/check_stock_locations')
 @role_required('admin', 'kassir', 'sotuvchi')
 def api_check_stock_locations():
-    """Qoldiqni tekshirish uchun barcha do'konlar va omborlarni qaytarish"""
+    """Qoldiqni tekshirish uchun ruxsat etilgan joylashuvlarni qaytarish"""
     try:
         current_user = get_current_user()
         if not current_user:
             return jsonify({'error': 'Unauthorized'}), 401
 
-        # Do'konlarni olish
-        stores = Store.query.all()
-        stores_data = [{'id': s.id, 'name': s.name} for s in stores]
+        logger.debug(f"🔍 Check Stock Locations - User: {current_user.username}, Role: {current_user.role}")
+        
+        # Foydalanuvchi huquqlarini tekshirish
+        if current_user.role == 'admin':
+            # Admin barcha joylashuvlarni ko'radi
+            allowed_store_ids = None
+            allowed_warehouse_ids = None
+            logger.debug("✅ Admin user - showing all stock check locations")
+        else:
+            # Oddiy foydalanuvchilar faqat allowed_locations dan ruxsat etilgan joylashuvlarni ko'radi
+            allowed_locations = current_user.allowed_locations or []
+            logger.debug(f"📍 User allowed_locations: {allowed_locations}")
+            
+            # Helper funksiya bilan ID'larni olish (eski va yangi formatlar uchun)
+            allowed_store_ids = extract_location_ids(allowed_locations, 'store')
+            allowed_warehouse_ids = extract_location_ids(allowed_locations, 'warehouse')
+            
+            logger.debug(f"🏪 Filtered store IDs: {allowed_store_ids}")
+            logger.debug(f"🏭 Filtered warehouse IDs: {allowed_warehouse_ids}")
 
-        # Omborlarni olish
-        warehouses = Warehouse.query.all()
+        # Do'konlarni olish - faqat ruxsat etilganlar
+        if allowed_store_ids is None:
+            stores = Store.query.all()
+        else:
+            stores = Store.query.filter(Store.id.in_(allowed_store_ids)).all() if allowed_store_ids else []
+        
+        stores_data = [{'id': s.id, 'name': s.name} for s in stores]
+        logger.debug(f"🏪 Stores to return: {len(stores_data)}")
+
+        # Omborlarni olish - faqat ruxsat etilganlar
+        if allowed_warehouse_ids is None:
+            warehouses = Warehouse.query.all()
+        else:
+            warehouses = Warehouse.query.filter(Warehouse.id.in_(allowed_warehouse_ids)).all() if allowed_warehouse_ids else []
+        
         warehouses_data = [{'id': w.id, 'name': w.name} for w in warehouses]
+        logger.debug(f"🏭 Warehouses to return: {len(warehouses_data)}")
 
         # Faol tekshiruvlar bor joylashuvlarni olish
         active_sessions = StockCheckSession.query.filter_by(status='active').all()
