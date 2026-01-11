@@ -2099,6 +2099,8 @@
         const tbody = document.getElementById('productsTable');
         const rows = tbody.getElementsByTagName('tr');
         
+        console.log('🔍 Qidiruv matni:', searchText);
+        
         // Bo'sh qidiruv - barchasini ko'rsat, highlight yo'q
         if (!searchText) {
             for (let i = 0; i < rows.length; i++) {
@@ -2120,6 +2122,9 @@
         
         // Qidiruv so'zlarini ajratish (bo'shliq bilan)
         const searchWords = searchText.split(/\s+/).filter(word => word.length > 0);
+        console.log('🔍 Qidiruv so\'zlari:', searchWords);
+        
+        let foundCount = 0;
         
         for (let i = 0; i < rows.length; i++) {
             const row = rows[i];
@@ -2138,6 +2143,7 @@
                 const allWordsFound = searchWords.every(word => textValue.indexOf(word) > -1);
                 
                 if (allWordsFound) {
+                    foundCount++;
                     row.style.display = '';
                     
                     // Highlight qilish - barcha so'zlarni bir vaqtda
@@ -2157,6 +2163,8 @@
                 }
             }
         }
+        
+        console.log(`✅ Topildi: ${foundCount} ta mahsulot`);
         
         // Ko'rinadigan qatorlarni yangilash
         updateVisibleProductRows();
