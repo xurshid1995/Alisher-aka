@@ -444,15 +444,20 @@
     // Joylashuvlarni yuklash
     async function loadLocations() {
         try {
-            const response = await fetch('/api/locations');
+            console.log('🔄 Transfer uchun joylashuvlar yuklanmoqda...');
+            const response = await fetch('/api/transfer-locations');
             const data = await response.json();
             
+            console.log('📦 API javob:', data);
+            
             // API locations arrayini to'g'ridan-to'g'ri qaytaradi
-            locations = Array.isArray(data) ? data : [];
+            locations = data.locations || [];
+            console.log(`📍 ${locations.length} ta transfer joylashuvi topildi:`, locations);
+            
             populateLocationSelects();
             console.log(`✅ ${locations.length} ta joylashuv yuklandi`);
         } catch (error) {
-            console.error('Joylashuvlarni yuklashda xatolik:', error);
+            console.error('❌ Joylashuvlarni yuklashda xatolik:', error);
         }
     }
 
