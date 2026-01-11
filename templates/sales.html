@@ -403,15 +403,32 @@
             const locationSelect = document.getElementById('locationSelect');
             locationSelect.innerHTML = '<option value="">Tanlang...</option>';
             
+            // Foydalanuvchining default store_id'sini olish
+            const userStoreId = {{ session.store_id if session.store_id else 'null' }};
+            
             locations.forEach(location => {
                 const option = document.createElement('option');
                 option.value = `${location.type}_${location.id}`;
                 const locationType = location.type === 'warehouse' ? '🏭 Ombor' : '🏪 Do\'kon';
                 option.textContent = `${locationType}: ${location.name}`;
+                
+                // Agar user'ning default store'i bo'lsa va bu location mos kelsa, avtomatik tanlash
+                if (userStoreId && location.type === 'store' && location.id === userStoreId) {
+                    option.selected = true;
+                    selectedLocationId = location.id;
+                    selectedLocationType = 'store';
+                    console.log(`🎯 Avtomatik tanlandi: ${location.name} (ID: ${location.id})`);
+                }
+                
                 locationSelect.appendChild(option);
             });
             
             console.log(`✅ ${locations.length} ta joylashuv yuklandi`);
+            
+            // Agar joylashuv avtomatik tanlangan bo'lsa, mahsulotlarni yuklash
+            if (userStoreId) {
+                await loadProducts();
+            }
         } catch (error) {
             console.error('Joylashuvlarni yuklashda xatolik:', error);
         }
