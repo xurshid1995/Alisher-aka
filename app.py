@@ -2098,7 +2098,7 @@ def customers():
 
 
 @app.route('/debts')
-@role_required('admin', 'kassir')
+@role_required('admin', 'kassir', 'sotuvchi')
 def debts():
     """Qarzlar sahifasi"""
     return render_template(
@@ -2108,7 +2108,7 @@ def debts():
 
 
 @app.route('/debts/customer/<int:customer_id>')
-@role_required('admin', 'kassir')
+@role_required('admin', 'kassir', 'sotuvchi')
 def customer_debt_detail(customer_id):
     """Mijoz qarz tafsilotlari sahifasi"""
     return render_template(
@@ -3866,7 +3866,7 @@ def users():
 
 # Qarzlar API
 @app.route('/api/debts')
-@role_required('admin', 'kassir')
+@role_required('admin', 'kassir', 'sotuvchi')
 def api_debts():
     """Barcha qarzlar ro'yxati"""
     try:
@@ -3926,7 +3926,7 @@ def api_debts():
 
 
 @app.route('/api/debts/paid')
-@role_required('admin', 'kassir')
+@role_required('admin', 'kassir', 'sotuvchi')
 def api_paid_debts():
     """To'langan qarzlar tarixi - faqat qarz to'lash orqali to'langan savdolar"""
     try:
@@ -3979,7 +3979,7 @@ def api_paid_debts():
 
 
 @app.route('/api/debts/<int:customer_id>')
-@role_required('admin', 'kassir')
+@role_required('admin', 'kassir', 'sotuvchi')
 def api_debt_details(customer_id):
     """Mijozning batafsil qarz ma'lumotlari"""
     try:
@@ -4049,7 +4049,7 @@ def api_debt_details(customer_id):
 
 
 @app.route('/api/debts/payment', methods=['POST'])
-@role_required('admin', 'kassir')
+@role_required('admin', 'kassir', 'sotuvchi')
 def api_debt_payment():
     """Qarzga to'lov qilish"""
     try:
