@@ -1161,6 +1161,11 @@
                 const safeProductName = productName.replace(/'/g, "\\'");
                 const costPrice = product.cost_price || 0;
                 
+                // Mahsulot nomlarini console ga chiqarish (faqat birinchi marta)
+                if (!window.productsLogged) {
+                    console.log(`📦 Mahsulot: "${productName}"`);
+                }
+                
                 // Miqdori 0 bo'lsa qizil ranglar
                 const quantityBadgeColor = quantity <= 0 ? '#dc3545' : '#28a745';
                 const buttonEmoji = quantity <= 0 ? '⛔' : '➡️';
@@ -1183,6 +1188,11 @@
                 `;
                 tbody.appendChild(row);
             });
+            
+            // Mahsulotlar nomini faqat birinchi marta chiqarish
+            if (!window.productsLogged) {
+                window.productsLogged = true;
+            }
             
             console.log(`✅ ${products.length} ta mahsulot yuklandi`);
         } catch (error) {
