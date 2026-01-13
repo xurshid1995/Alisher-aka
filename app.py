@@ -6197,12 +6197,19 @@ def api_sales_history():
         if payment_status and payment_status == 'pending':
             # Faqat tasdiqlanmagan savdolar
             query = Sale.query.filter(Sale.payment_status == 'pending')
+        elif payment_status and payment_status == 'completed':
+            # Faqat to'langan savdolar
+            query = Sale.query.filter(Sale.payment_status == 'completed')
+        elif payment_status and payment_status == 'partial':
+            # Faqat qisman to'langan savdolar
+            query = Sale.query.filter(Sale.payment_status == 'partial')
         elif payment_status and payment_status != 'all':
             # Belgilangan status bo'yicha filtrlash
             query = Sale.query.filter(Sale.payment_status == payment_status)
         else:
-            # Default: faqat to'langan savdolar (pending bo'lmaganlar)
-            query = Sale.query.filter(Sale.payment_status != 'pending')
+            # Default: barcha tasdiqlangan savdolar (pending emas)
+            # Bu qarz savdolarni ham o'z ichiga oladi
+            query = Sale.query.filter(Sale.payment_status.in_(['completed', 'partial']))
 
         # Sotuvchi uchun joylashuv filterlash
         if current_user.role == 'sotuvchi':
