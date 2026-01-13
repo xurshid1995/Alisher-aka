@@ -825,14 +825,6 @@
                 }
             });
             
-            // Real-time mahsulot qidiruv
-            universalSearch.addEventListener('input', function(e) {
-                const value = e.target.value.trim();
-                if (value.length >= 2) {
-                    searchProductsRealtime(value);
-                }
-            });
-            
             // Focus bo'lganda placeholder o'zgartirish
             universalSearch.addEventListener('focus', function() {
                 this.placeholder = 'Mahsulot yoki barcode kiriting...';
