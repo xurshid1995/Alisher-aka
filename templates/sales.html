@@ -3225,19 +3225,19 @@
                 console.log('✅ Mahsulotlar yuklandi');
                 
                 // 3. MIJOZNI TO'LDIRISH
-                const customerSearchInput = document.getElementById('customerSearch');
-                const selectedCustomerIdInput = document.getElementById('selectedCustomerId');
+                const customerSearchInput = getActiveTabElement('customerSearch');
+                const selectedCustomerIdInput = getActiveTabElement('selectedCustomerId');
                 console.log('👤 customerSearch element:', customerSearchInput);
                 console.log('👤 selectedCustomerId element:', selectedCustomerIdInput);
                 
                 // Mijoz ma'lumotlarini o'rnatish
                 if (sale.customer_id && sale.customer_name) {
                     const displayText = sale.customer_phone ? `${sale.customer_name} - ${sale.customer_phone}` : sale.customer_name;
-                    customerSearchInput.value = displayText;
-                    selectedCustomerIdInput.value = sale.customer_id;
+                    if (customerSearchInput) customerSearchInput.value = displayText;
+                    if (selectedCustomerIdInput) selectedCustomerIdInput.value = sale.customer_id;
                     
                     // Korzina sarlavhasida mijoz ko'rsatish
-                    const cartCustomerInfo = document.getElementById('cartCustomerInfo');
+                    const cartCustomerInfo = getActiveTabElement('cartCustomerInfo');
                     const customerDisplay = sale.customer_phone ? `👤 ${sale.customer_name} ${sale.customer_phone}` : `👤 ${sale.customer_name}`;
                     cartCustomerInfo.innerHTML = `<h3 style="margin: 0; color: #333; font-size: 15px; font-weight: 600;">${customerDisplay}</h3>`;
                     
@@ -3333,13 +3333,18 @@
                 // Mijozni to'ldirish (ID bilan)
                 if (sale.customer_id && sale.customer_name) {
                     const displayText = sale.customer_phone ? `${sale.customer_name} - ${sale.customer_phone}` : sale.customer_name;
-                    document.getElementById('customerSearch').value = displayText;
-                    document.getElementById('selectedCustomerId').value = sale.customer_id;
+                    const customerSearchInput = getActiveTabElement('customerSearch');
+                    const selectedCustomerIdInput = getActiveTabElement('selectedCustomerId');
+                    
+                    if (customerSearchInput) customerSearchInput.value = displayText;
+                    if (selectedCustomerIdInput) selectedCustomerIdInput.value = sale.customer_id;
                     
                     // Korzina sarlavhasida mijoz ko'rsatish
-                    const cartCustomerInfo = document.getElementById('cartCustomerInfo');
-                    const customerDisplay = sale.customer_phone ? `👤 ${sale.customer_name} ${sale.customer_phone}` : `👤 ${sale.customer_name}`;
-                    cartCustomerInfo.innerHTML = `<h3 style="margin: 0; color: #333; font-size: 15px; font-weight: 600;">${customerDisplay}</h3>`;
+                    const cartCustomerInfo = getActiveTabElement('cartCustomerInfo');
+                    if (cartCustomerInfo) {
+                        const customerDisplay = sale.customer_phone ? `👤 ${sale.customer_name} ${sale.customer_phone}` : `👤 ${sale.customer_name}`;
+                        cartCustomerInfo.innerHTML = `<h3 style="margin: 0; color: #333; font-size: 15px; font-weight: 600;">${customerDisplay}</h3>`;
+                    }
                     
                     console.log(`✅ Mijoz to'ldirildi: ${sale.customer_name} (ID: ${sale.customer_id})`);
                 } else {
@@ -3578,8 +3583,8 @@
         }
         
         // Mijoz maydonini tozalash
-        const customerSearch = document.getElementById('customerSearch');
-        const selectedCustomerId = document.getElementById('selectedCustomerId');
+        const customerSearch = getActiveTabElement('customerSearch');
+        const selectedCustomerId = getActiveTabElement('selectedCustomerId');
         if (customerSearch) {
             customerSearch.value = '';
         }
@@ -3622,7 +3627,8 @@
         }
         
         // Savdo ma'lumotlarini tayyorlash
-        const customerId = document.getElementById('selectedCustomerId').value || null;
+        const selectedCustomerIdElement = getActiveTabElement('selectedCustomerId');
+        const customerId = selectedCustomerIdElement ? selectedCustomerIdElement.value || null : null;
         let totalUSD = 0;
         cart.forEach(item => {
             totalUSD += item.priceUSD * item.quantity;
@@ -3710,7 +3716,8 @@
             return;
         }
         
-        const customerId = document.getElementById('selectedCustomerId').value || null;
+        const selectedCustomerIdElement = getActiveTabElement('selectedCustomerId');
+        const customerId = selectedCustomerIdElement ? selectedCustomerIdElement.value || null : null;
         
         if (!selectedLocationId || !selectedLocationType) {
             alert('Joylashuvni tanlang!');
@@ -3804,9 +3811,9 @@
                 updateCart();
                 
                 // Mijozni tozalash (elementlar mavjudligini tekshirish)
-                const customerIdInput = document.getElementById('selectedCustomerId');
-                const customerNameDisplay = document.getElementById('customerNameDisplay');
-                const customerPhoneDisplay = document.getElementById('customerPhoneDisplay');
+                const customerIdInput = getActiveTabElement('selectedCustomerId');
+                const customerNameDisplay = getActiveTabElement('customerNameDisplay');
+                const customerPhoneDisplay = getActiveTabElement('customerPhoneDisplay');
                 
                 if (customerIdInput) customerIdInput.value = '';
                 if (customerNameDisplay) customerNameDisplay.textContent = 'Mijoz tanlanmagan';
@@ -3827,7 +3834,8 @@
             return;
         }
         
-        const customerId = document.getElementById('selectedCustomerId').value || null;
+        const selectedCustomerIdElement = getActiveTabElement('selectedCustomerId');
+        const customerId = selectedCustomerIdElement ? selectedCustomerIdElement.value || null : null;
         
         // Jami summani hisoblash
         let totalUSD = 0;
@@ -3838,22 +3846,37 @@
         const totalUZS = totalUSD * exchangeRate;
         
         // To'lov modal oynasini ochish
-        document.getElementById('paymentModalTotalUSD').textContent = `$${totalUSD.toFixed(2)}`;
-        document.getElementById('paymentModalTotalUZS').textContent = `${Math.round(totalUZS).toLocaleString('uz-UZ')} so'm`;
-        document.getElementById('paymentCashUSD').value = totalUSD.toFixed(2);
-        document.getElementById('paymentCashUZS').value = Math.round(totalUZS);
-        document.getElementById('paymentClickUSD').value = '';
-        document.getElementById('paymentClickUZS').value = '';
-        document.getElementById('paymentTerminalUSD').value = '';
-        document.getElementById('paymentTerminalUZS').value = '';
-        document.getElementById('paymentDebtUSD').value = '';
-        document.getElementById('paymentDebtUZS').value = '';
-        document.getElementById('paymentModal').style.display = 'flex';
+        const paymentModalTotalUSD = getActiveTabElement('paymentModalTotalUSD');
+        const paymentModalTotalUZS = getActiveTabElement('paymentModalTotalUZS');
+        const paymentCashUSD = getActiveTabElement('paymentCashUSD');
+        const paymentCashUZS = getActiveTabElement('paymentCashUZS');
+        const paymentClickUSD = getActiveTabElement('paymentClickUSD');
+        const paymentClickUZS = getActiveTabElement('paymentClickUZS');
+        const paymentTerminalUSD = getActiveTabElement('paymentTerminalUSD');
+        const paymentTerminalUZS = getActiveTabElement('paymentTerminalUZS');
+        const paymentDebtUSD = getActiveTabElement('paymentDebtUSD');
+        const paymentDebtUZS = getActiveTabElement('paymentDebtUZS');
+        const paymentModal = getActiveTabElement('paymentModal');
+        
+        if (paymentModalTotalUSD) paymentModalTotalUSD.textContent = `$${totalUSD.toFixed(2)}`;
+        if (paymentModalTotalUZS) paymentModalTotalUZS.textContent = `${Math.round(totalUZS).toLocaleString('uz-UZ')} so'm`;
+        if (paymentCashUSD) paymentCashUSD.value = totalUSD.toFixed(2);
+        if (paymentCashUZS) paymentCashUZS.value = Math.round(totalUZS);
+        if (paymentClickUSD) paymentClickUSD.value = '';
+        if (paymentClickUZS) paymentClickUZS.value = '';
+        if (paymentTerminalUSD) paymentTerminalUSD.value = '';
+        if (paymentTerminalUZS) paymentTerminalUZS.value = '';
+        if (paymentDebtUSD) paymentDebtUSD.value = '';
+        if (paymentDebtUZS) paymentDebtUZS.value = '';
+        if (paymentModal) paymentModal.style.display = 'flex';
         
         // Fokusni Naxt so'm maydoniga berish
         setTimeout(() => {
-            document.getElementById('paymentCashUZS').focus();
-            document.getElementById('paymentCashUZS').select();
+            const cashUZS = getActiveTabElement('paymentCashUZS');
+            if (cashUZS) {
+                cashUZS.focus();
+                cashUZS.select();
+            }
         }, 100);
         
         console.log('💳 To\'lov modali ochildi');
@@ -3861,9 +3884,11 @@
     
     // To'lov modal oynasini yopish
     function closePaymentModal() {
-        document.getElementById('paymentModal').style.display = 'none';
+        const paymentModal = getActiveTabElement('paymentModal');
+        if (paymentModal) paymentModal.style.display = 'none';
+        
         // Ogohlantirishni yashirish
-        const paymentWarning = document.getElementById('paymentWarning');
+        const paymentWarning = getActiveTabElement('paymentWarning');
         if (paymentWarning) {
             paymentWarning.style.display = 'none';
             paymentWarning.textContent = '';
@@ -3884,10 +3909,15 @@
         console.log('💱 Exchange rate:', exchangeRate);
         
         // Hozirgi to'lovlarni hisoblash (faqat USD qiymatlardan, UZS dan emas)
-        const cashUSD = parseFloat(document.getElementById('paymentCashUSD').value) || 0;
-        const clickUSD = parseFloat(document.getElementById('paymentClickUSD').value) || 0;
-        const terminalUSD = parseFloat(document.getElementById('paymentTerminalUSD').value) || 0;
-        const debtUSD = parseFloat(document.getElementById('paymentDebtUSD').value) || 0;
+        const paymentCashUSD = getActiveTabElement('paymentCashUSD');
+        const paymentClickUSD = getActiveTabElement('paymentClickUSD');
+        const paymentTerminalUSD = getActiveTabElement('paymentTerminalUSD');
+        const paymentDebtUSD = getActiveTabElement('paymentDebtUSD');
+        
+        const cashUSD = paymentCashUSD ? parseFloat(paymentCashUSD.value) || 0 : 0;
+        const clickUSD = paymentClickUSD ? parseFloat(paymentClickUSD.value) || 0 : 0;
+        const terminalUSD = paymentTerminalUSD ? parseFloat(paymentTerminalUSD.value) || 0 : 0;
+        const debtUSD = paymentDebtUSD ? parseFloat(paymentDebtUSD.value) || 0 : 0;
         
         console.log('💵 Hozirgi to\'lovlar (faqat USD):', { cashUSD, clickUSD, terminalUSD, debtUSD });
         
@@ -3898,7 +3928,13 @@
         console.log('📊 Qolgan:', remaining);
         
         // Aqlli mantiq: kam to'langan yoki ortiq to'langan bo'lsa ham to'g'ri ishlaydi
-        const currentFieldValue = parseFloat(document.getElementById(fieldId).value) || 0;
+        const fieldElement = getActiveTabElement(fieldId);
+        if (!fieldElement) {
+            console.error('❌ Field element topilmadi:', fieldId);
+            return;
+        }
+        
+        const currentFieldValue = parseFloat(fieldElement.value) || 0;
         let newUSDValue;
         
         if (remaining === 0) {
@@ -3915,15 +3951,16 @@
         }
         
         // USD maydonini yangilash
-        document.getElementById(fieldId).value = newUSDValue.toFixed(2);
+        fieldElement.value = newUSDValue.toFixed(2);
         
         // UZS maydonini ham yangilash
         const uzsFieldId = fieldId.replace('USD', 'UZS');
         console.log('🔄 UZS maydon ID:', uzsFieldId);
         
-        if (document.getElementById(uzsFieldId)) {
+        const uzsFieldElement = getActiveTabElement(uzsFieldId);
+        if (uzsFieldElement) {
             const newUZSValue = Math.round(newUSDValue * exchangeRate);
-            document.getElementById(uzsFieldId).value = newUZSValue;
+            uzsFieldElement.value = newUZSValue;
             console.log(`✅ ${fieldId}: $${newUSDValue.toFixed(2)} (${newUZSValue.toLocaleString()} so'm)`);
         } else {
             console.error('❌ UZS maydoni topilmadi:', uzsFieldId);
@@ -3933,19 +3970,30 @@
     // To'lovni tasdiqlash
     async function confirmPayment() {
         // Ogohlantirishni yashirish
-        const paymentWarning = document.getElementById('paymentWarning');
-        paymentWarning.style.display = 'none';
-        paymentWarning.textContent = '';
+        const paymentWarning = getActiveTabElement('paymentWarning');
+        if (paymentWarning) {
+            paymentWarning.style.display = 'none';
+            paymentWarning.textContent = '';
+        }
         
-        const cashUSD = parseFloat(document.getElementById('paymentCashUSD').value) || 0;
-        const clickUSD = parseFloat(document.getElementById('paymentClickUSD').value) || 0;
-        const terminalUSD = parseFloat(document.getElementById('paymentTerminalUSD').value) || 0;
-        const debtUSD = parseFloat(document.getElementById('paymentDebtUSD').value) || 0;
+        const paymentCashUSD = getActiveTabElement('paymentCashUSD');
+        const paymentClickUSD = getActiveTabElement('paymentClickUSD');
+        const paymentTerminalUSD = getActiveTabElement('paymentTerminalUSD');
+        const paymentDebtUSD = getActiveTabElement('paymentDebtUSD');
+        const paymentCashUZS = getActiveTabElement('paymentCashUZS');
+        const paymentClickUZS = getActiveTabElement('paymentClickUZS');
+        const paymentTerminalUZS = getActiveTabElement('paymentTerminalUZS');
+        const paymentDebtUZS = getActiveTabElement('paymentDebtUZS');
         
-        const cashUZS = parseFloat(document.getElementById('paymentCashUZS').value) || 0;
-        const clickUZS = parseFloat(document.getElementById('paymentClickUZS').value) || 0;
-        const terminalUZS = parseFloat(document.getElementById('paymentTerminalUZS').value) || 0;
-        const debtUZS = parseFloat(document.getElementById('paymentDebtUZS').value) || 0;
+        const cashUSD = paymentCashUSD ? parseFloat(paymentCashUSD.value) || 0 : 0;
+        const clickUSD = paymentClickUSD ? parseFloat(paymentClickUSD.value) || 0 : 0;
+        const terminalUSD = paymentTerminalUSD ? parseFloat(paymentTerminalUSD.value) || 0 : 0;
+        const debtUSD = paymentDebtUSD ? parseFloat(paymentDebtUSD.value) || 0 : 0;
+        
+        const cashUZS = paymentCashUZS ? parseFloat(paymentCashUZS.value) || 0 : 0;
+        const clickUZS = paymentClickUZS ? parseFloat(paymentClickUZS.value) || 0 : 0;
+        const terminalUZS = paymentTerminalUZS ? parseFloat(paymentTerminalUZS.value) || 0 : 0;
+        const debtUZS = paymentDebtUZS ? parseFloat(paymentDebtUZS.value) || 0 : 0;
         
         // Faqat USD qiymatlardan foydalanish (UZS avtomatik sinxronlashgan)
         const totalPayment = cashUSD + clickUSD + terminalUSD + debtUSD;
@@ -3957,23 +4005,28 @@
         });
         
         // Mijoz tanlanganligini tekshirish (agar qarz bo'lsa)
-        const customerId = document.getElementById('selectedCustomerId').value;
+        const selectedCustomerIdElement = getActiveTabElement('selectedCustomerId');
+        const customerId = selectedCustomerIdElement ? selectedCustomerIdElement.value : null;
         if (debtUSD > 0 && !customerId) {
-            paymentWarning.textContent = '⚠️ Qarzga sotish uchun mijoz tanlanishi shart!';
-            paymentWarning.style.display = 'block';
+            if (paymentWarning) {
+                paymentWarning.textContent = '⚠️ Qarzga sotish uchun mijoz tanlanishi shart!';
+                paymentWarning.style.display = 'block';
+            }
             return;
         }
         
         // To'lov tekshiruvi
         if (Math.abs(totalPayment - totalUSD) > 0.01) {
-            paymentWarning.textContent = `⚠️ Jami to'lov ($${totalPayment.toFixed(2)}) savdo summasiga ($${totalUSD.toFixed(2)}) teng emas!`;
-            paymentWarning.style.display = 'block';
+            if (paymentWarning) {
+                paymentWarning.textContent = `⚠️ Jami to'lov ($${totalPayment.toFixed(2)}) savdo summasiga ($${totalUSD.toFixed(2)}) teng emas!`;
+                paymentWarning.style.display = 'block';
+            }
             return;
         }
         
         // Savdoni backend'ga yuborish uchun ma'lumotlarni tayyorlash
         const saleData = {
-            customer_id: parseInt(document.getElementById('selectedCustomerId').value),
+            customer_id: customerId ? parseInt(customerId) : null,
             location_id: selectedLocationId,
             location_type: selectedLocationType,
             items: cart.map(item => ({
@@ -4075,9 +4128,13 @@
             closePaymentModal();
             
             // Mijoz ma'lumotlarini tozalash
-            document.getElementById('customerSearch').value = '';
-            document.getElementById('selectedCustomerId').value = '';
-            document.getElementById('cartCustomerInfo').innerHTML = '<h3 style="margin: 0; color: #333;">🛒 Savdo Korzinasi</h3>';
+            const customerSearch = getActiveTabElement('customerSearch');
+            const selectedCustomerId = getActiveTabElement('selectedCustomerId');
+            const cartCustomerInfo = getActiveTabElement('cartCustomerInfo');
+            
+            if (customerSearch) customerSearch.value = '';
+            if (selectedCustomerId) selectedCustomerId.value = '';
+            if (cartCustomerInfo) cartCustomerInfo.innerHTML = '<h3 style="margin: 0; color: #333;">🛒 Savdo Korzinasi</h3>';
             
             // Mahsulotlar jadvalini yangilash
             await loadProducts();
