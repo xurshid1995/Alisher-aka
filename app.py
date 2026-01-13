@@ -6244,9 +6244,11 @@ def api_sales_history():
                             pass
                 
                 if location_conditions:
-                    # Faqat ruxsat berilgan joylashuvlardagi savdolar
+                    # Ruxsat berilgan joylashuvlardagi savdolar + NULL location'li savdolar
+                    # NULL location'li savdolar ham qo'shiladi (eski savdolar uchun)
+                    location_conditions.append(Sale.location_id == None)
                     query = query.filter(db.or_(*location_conditions))
-                    logger.info(f"🔍 Sotuvchi uchun {len(location_conditions)} ta joylashuv bo'yicha filtrlash")
+                    logger.info(f"🔍 Sotuvchi uchun {len(location_conditions)-1} ta joylashuv + NULL location bo'yicha filtrlash")
                 else:
                     # Hech qaysi joylashuv ruxsat berilmagan
                     query = query.filter(Sale.id == -1)
