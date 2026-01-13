@@ -4300,31 +4300,43 @@
                 // Faqat 1 ta tab ochiq - to'liq yangilash
                 console.log('🔄 Yagona tab - ma\'lumotlarni tozalash');
                 
-                // Savatni tozalash
+                // Global o'zgaruvchilarni tozalash
                 cart = [];
-                updateCart();
-                closePaymentModal();
-                
-                // Mijoz ma'lumotlarini tozalash
-                const customerSearch = getActiveTabElement('customerSearch');
-                const selectedCustomerId = getActiveTabElement('selectedCustomerId');
-                const cartCustomerInfo = getActiveTabElement('cartCustomerInfo');
-                
-                if (customerSearch) customerSearch.value = '';
-                if (selectedCustomerId) selectedCustomerId.value = '';
-                if (cartCustomerInfo) cartCustomerInfo.innerHTML = '<h3 style="margin: 0; color: #333;">🛒 Savdo Korzinasi</h3>';
+                currentProduct = null;
+                selectedLocationId = null;
+                selectedLocationType = null;
+                editingSaleId = null;
+                currentPendingSaleId = null;
                 
                 // Tab state'ni tozalash
                 const tabState = getTabState();
                 if (tabState) {
                     tabState.cart = [];
                     tabState.currentProduct = null;
+                    tabState.selectedLocationId = null;
+                    tabState.selectedLocationType = null;
                     tabState.editingSaleId = null;
                     tabState.currentPendingSaleId = null;
                 }
                 
-                // Mahsulotlar jadvalini yangilash
-                await loadProducts();
+                // UI elementlarni tozalash
+                const locationSelect = getActiveTabElement('locationSelect');
+                const customerSearch = getActiveTabElement('customerSearch');
+                const selectedCustomerId = getActiveTabElement('selectedCustomerId');
+                const cartCustomerInfo = getActiveTabElement('cartCustomerInfo');
+                const productsTable = getActiveTabElement('productsTable');
+                
+                if (locationSelect) locationSelect.value = '';
+                if (customerSearch) customerSearch.value = '';
+                if (selectedCustomerId) selectedCustomerId.value = '';
+                if (cartCustomerInfo) cartCustomerInfo.innerHTML = '<h3 style="margin: 0; color: #333;">🛒 Savdo Korzinasi</h3>';
+                if (productsTable) productsTable.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 30px; color: #999;">Joylashuvni tanlang</td></tr>';
+                
+                // Savatni yangilash
+                updateCart();
+                closePaymentModal();
+                
+                console.log('✅ Tab to\'liq tozalandi');
                 
             } else {
                 // Ko'p tab ochiq - hozirgi tabni yopish
