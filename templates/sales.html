@@ -825,6 +825,24 @@
                 }
             });
             
+            // Input event - mahsulot qidirish
+            let searchTimeout = null;
+            universalSearch.addEventListener('input', function(e) {
+                const value = e.target.value.trim();
+                
+                // Debounce - 300ms kutish
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    // Agar faqat raqamlar bo'lsa va 8+ belgi - barcode
+                    if (/^\d+$/.test(value) && value.length >= 8) {
+                        searchProductByBarcode(value);
+                    } else {
+                        // Aks holda mahsulot qidirish
+                        filterProducts();
+                    }
+                }, 300);
+            });
+            
             // Focus bo'lganda placeholder o'zgartirish
             universalSearch.addEventListener('focus', function() {
                 this.placeholder = 'Mahsulot yoki barcode kiriting...';
@@ -2783,9 +2801,16 @@
     
     // Mahsulot qidirish funksiyasi - serverdan qidirish
     async function filterProducts() {
-        const searchText = document.getElementById('universalSearch').value.trim();
-        const locationSelect = document.getElementById('locationSelect');
-        const tbody = document.getElementById('productsTable');
+        // Faol tabdagi elementlarni topish
+        const activeTab = document.querySelector('.sales-tab.active');
+        if (!activeTab) return;
+        const tabId = activeTab.dataset.tabId;
+        
+        const searchText = document.getElementById(`universalSearch_tab${tabId}`).value.trim();
+        const locationSelect = document.getElementById(`locationSelect_tab${tabId}`);
+        const tbody = document.getElementById(`productsTable_tab${tabId}`);
+        
+        if (!locationSelect || !tbody) return;
         
         console.log('🔍 Qidiruv matni:', searchText);
         
@@ -2902,7 +2927,13 @@
     
     // Ko'rinadigan mahsulot qatorlarini yangilash
     function updateVisibleProductRows() {
-        const tbody = document.getElementById('productsTable');
+        // Faol tabdagi jadval
+        const activeTab = document.querySelector('.sales-tab.active');
+        if (!activeTab) return;
+        const tabId = activeTab.dataset.tabId;
+        const tbody = document.getElementById(`productsTable_tab${tabId}`);
+        if (!tbody) return;
+        
         const allRows = Array.from(tbody.getElementsByTagName('tr'));
         
         visibleProductRows = allRows.filter(row => {
@@ -2929,6 +2960,13 @@
         }
         
         highlightSelectedRow();
+    }
+    
+    // Hozirgi tanlangan mahsulotni savatga qo'shish
+    function selectCurrentProduct() {
+        if (currentSelectedRowIndex >= 0 && visibleProductRows[currentSelectedRowIndex]) {
+            selectProductFromTable(visibleProductRows[currentSelectedRowIndex]);
+        }
     }
     
     // Tanlangan qatorni highlight qilish
