@@ -1561,11 +1561,15 @@
             if (!scannerActive) return;
             const code = result.codeResult.code;
             if (navigator.vibrate) navigator.vibrate(200);
-            document.getElementById('universalSearch').value = code;
+            const universalSearch = getActiveTabElement('universalSearch');
+            if (universalSearch) universalSearch.value = code;
             stopBarcodeScanner();
             setTimeout(() => {
-                const event = new Event('input', { bubbles: true });
-                document.getElementById('universalSearch').dispatchEvent(event);
+                const universalSearch = getActiveTabElement('universalSearch');
+                if (universalSearch) {
+                    const event = new Event('input', { bubbles: true });
+                    universalSearch.dispatchEvent(event);
+                }
             }, 100);
         });
     }
@@ -2183,7 +2187,7 @@
         
         // Fokusni universal qidiruv maydoniga qaytarish
         setTimeout(() => {
-            const universalSearch = document.getElementById('universalSearch');
+            const universalSearch = getActiveTabElement('universalSearch');
             if (universalSearch) {
                 universalSearch.focus();
             }
@@ -3043,7 +3047,8 @@
             addToCart(parseInt(productId), productName, quantity, price);
             
             // Qidiruvni tozalash
-            document.getElementById('universalSearch').value = '';
+            const universalSearch = getActiveTabElement('universalSearch');
+            if (universalSearch) universalSearch.value = '';
             filterProducts();
             clearProductSelection();
         } else if (productId && quantity <= 0) {
@@ -3449,11 +3454,7 @@
             }
         });
         
-        // Sahifa yuklanganda mahsulot qidirish maydoniga fokus berish
-        const universalSearch = document.getElementById('universalSearch');
-        if (universalSearch) {
-            setTimeout(() => universalSearch.focus(), 200);
-        }
+        // Event listener'lar har bir tab uchun setupTabEventListeners'da o'rnatiladi
         
         console.log('✅ Sales sahifasi tayyor');
     });
