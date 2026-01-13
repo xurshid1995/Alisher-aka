@@ -985,14 +985,17 @@
         if (!skipConfirmation) {
             const tabState = tabStates[tabId];
             const cart = (tabState && tabState.cart) || [];
+            
+            // Tasdiqlash xabari
+            let confirmMessage = '⚠️ Bu tabni yopmoqchimisiz?\n\n';
             if (cart.length > 0) {
-                const confirmClose = confirm(
-                    `⚠️ Bu tabda ${cart.length} ta mahsulot bor!\n\n` +
-                    'Tabni yopsangiz, barcha ma\'lumotlar o\'chadi.\n\n' +
-                    'Davom etasizmi?'
-                );
-                if (!confirmClose) return;
+                confirmMessage = `⚠️ Bu tabda ${cart.length} ta mahsulot bor!\n\n` +
+                    'Tabni yopsangiz, barcha ma\'lumotlar o\'chadi.\n\n';
             }
+            confirmMessage += 'Davom etasizmi?';
+            
+            const confirmClose = confirm(confirmMessage);
+            if (!confirmClose) return;
         }
         
         // Tabni o'chirish
