@@ -1872,6 +1872,7 @@
                 const row = document.createElement('tr');
                 row.style.borderBottom = '1px solid #f0f0f0';
                 row.setAttribute('data-product-id', product.id);
+                row.setAttribute('data-cost-price', costPrice || 0);
                 const productName = product.name || `Mahsulot #${product.id}`;
                 const safeProductName = productName.replace(/'/g, "\\'");
                 const costPrice = product.cost_price || 0;
@@ -2913,6 +2914,7 @@
                 const row = document.createElement('tr');
                 row.style.borderBottom = '1px solid #f0f0f0';
                 row.setAttribute('data-product-id', product.id);
+                row.setAttribute('data-cost-price', costPrice || 0);
                 const productName = product.name || `Mahsulot #${product.id}`;
                 const safeProductName = productName.replace(/'/g, "\\'");
                 const costPrice = product.cost_price || 0;
@@ -3028,6 +3030,7 @@
         // Mahsulot ma'lumotlarini olish
         const productName = cells[0].getAttribute('data-original-text') || cells[0].textContent.trim();
         const productId = row.getAttribute('data-product-id');
+        const costPrice = parseFloat(row.getAttribute('data-cost-price')) || 0;
         
         // Miqdorni span ichidan olish (cells[1] = Mavjud)
         const quantitySpan = cells[1].querySelector('span');
@@ -3041,10 +3044,10 @@
             price = parseFloat(priceText) || 0;
         }
         
-        console.log('🔍 Tanlangan mahsulot:', { productId, productName, quantity, price });
+        console.log('🔍 Tanlangan mahsulot:', { productId, productName, quantity, price, costPrice });
         
         if (productId && quantity > 0 && price > 0) {
-            addToCart(parseInt(productId), productName, quantity, price);
+            addToCart(parseInt(productId), productName, quantity, price, costPrice);
             
             // Qidiruvni tozalash
             const universalSearch = getActiveTabElement('universalSearch');
