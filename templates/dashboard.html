@@ -512,6 +512,12 @@ async function loadSalesChart(locationId = null, period = null, locationType = n
                                 return '';  // Bo'sh qator qo'shish
                             },
                             label: function(context) {
+                                // Faqat birinchi dataset uchun barcha ma'lumotlarni ko'rsatish
+                                // Ikkinchi dataset (qarzlar) uchun bo'sh qaytarish
+                                if (context.datasetIndex !== 0) {
+                                    return null;
+                                }
+                                
                                 const dataIndex = context.dataIndex;
                                 
                                 // Debug ma'lumotlari
@@ -523,7 +529,7 @@ async function loadSalesChart(locationId = null, period = null, locationType = n
                                 });
                                 
                                 const savdoSoni = currentSalesData && currentSalesData.values ? currentSalesData.values[dataIndex] : 0;
-                                const savdoSummasi = context.parsed.y;
+                                const savdoSummasi = currentSalesData && currentSalesData.amounts ? currentSalesData.amounts[dataIndex] : 0;
                                 const savdoFoydasi = currentSalesData && currentSalesData.profits ? currentSalesData.profits[dataIndex] : 0;
                                 const qarzSummasi = currentSalesData && currentSalesData.debts ? currentSalesData.debts[dataIndex] : 0;
                                 
