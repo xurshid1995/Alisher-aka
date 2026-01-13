@@ -8971,6 +8971,7 @@ def api_sales_chart():
         values = []
         amounts = []
         profits = []
+        debts = []  # Qarzlar ro'yxati
 
         if period == 'today':
             # Bugun filtri uchun 24 soatli ma'lumot yaratish
@@ -8995,10 +8996,12 @@ def api_sales_chart():
                     values.append(hourly_data[hour]['sales'])
                     amounts.append(hourly_data[hour]['amount'])
                     profits.append(hourly_data[hour]['profit'])
+                    debts.append(hourly_data[hour]['debt'])
                 else:
                     values.append(0)
                     amounts.append(0.0)
                     profits.append(0.0)
+                    debts.append(0.0)
         else:
             # Hafta/oy filtri uchun kunlik ma'lumot
             for row in results:
@@ -9008,6 +9011,8 @@ def api_sales_chart():
                                else 0.0)  # savdo summasi
                 profits.append(float(row[3]) if row[3]
                                else 0.0)  # savdo foydasi
+                debts.append(float(row[7]) if len(row) > 7 and row[7]
+                            else 0.0)  # qarz summasi
 
         # To'lov turlarini hisoblash
         payment_totals = {
@@ -9022,6 +9027,7 @@ def api_sales_chart():
             'values': values,
             'amounts': amounts,
             'profits': profits,
+            'debts': debts,
             'payment_totals': payment_totals
         })
 
