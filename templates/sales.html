@@ -2583,8 +2583,18 @@
             // Avtomatik pending savdo yangilash
             await autoSavePending();
             
-            // Mahsulotlar jadvalini yangilamaslik - tezroq ishlash uchun
-            // await loadProducts();
+            // Mahsulotlar jadvalini yangilash (cache tozalash orqali)
+            const activeTab = document.querySelector('.sales-tab.active');
+            if (activeTab) {
+                const tabId = activeTab.dataset.tabId;
+                const locationSelect = document.getElementById(`locationSelect_tab${tabId}`);
+                if (locationSelect) {
+                    const cacheKey = `${locationSelect.value}_${currentPage}`;
+                    productsCache.delete(cacheKey);
+                    await loadProducts(currentPage);
+                    console.log('🔄 Tahrirlash: mahsulotlar jadvali yangilandi');
+                }
+            }
             
             console.log('✏️ Savat elementi tahrirlandi');
             return;
