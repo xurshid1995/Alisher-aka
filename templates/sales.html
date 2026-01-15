@@ -4328,6 +4328,9 @@
             
             console.log('✅ Savdo muvaffaqiyatli saqlandi:', result);
             
+            // Chek chiqarish ma'lumotlarini global o'zgaruvchida saqlash
+            let pendingReceiptData = null;
+            
             // Chek chiqarish opsiyalarini tekshirish (tab context'dan)
             const printUSD = getActiveTabElement('printReceiptUSD');
             const printUZS = getActiveTabElement('printReceiptUZS');
@@ -4339,24 +4342,17 @@
             console.log('   - printUZS.checked:', printUZS ? printUZS.checked : 'element topilmadi');
             
             if ((printUSD && printUSD.checked) || (printUZS && printUZS.checked)) {
-                console.log('✅ Chek chiqarish boshlandi...');
+                console.log('✅ Chek chiqarish belgilangan, modal yopilgandan keyin chiqariladi');
                 
-                // Popup blocker'dan qochish uchun darhol window ochish
-                const receiptWindow = window.open('', '_blank', 'width=400,height=600');
+                // Mijoz ma'lumotlarini olish
+                const customerSearchInput = getActiveTabElement('customerSearch');
+                const customerName = customerId && customerSearchInput ? customerSearchInput.value : 'Naqd mijoz';
                 
-                if (!receiptWindow) {
-                    alert('⚠️ Popup blocker chekni blokladi! Brauzer sozlamalarida popup\'larga ruxsat bering.');
-                    console.error('❌ window.open() null qaytardi - popup blocker faol');
-                } else {
-                    // Mijoz ma'lumotlarini olish
-                    const customerSearchInput = getActiveTabElement('customerSearch');
-                    const customerName = customerId && customerSearchInput ? customerSearchInput.value : 'Naqd mijoz';
-                    
-                    // Qaysi valyuta tanlangani aniqlash
-                    const selectedCurrency = (printUSD && printUSD.checked && printUZS && printUZS.checked) ? 'both' 
-                                          : (printUZS && printUZS.checked) ? 'uzs' 
-                                          : 'usd';
-                
+                // Qaysi valyuta tanlangani aniqlash
+                const selectedCurrency = (printUSD && printUSD.checked && printUZS && printUZS.checked) ? 'both' 
+                                      : (printUZS && printUZS.checked) ? 'uzs' 
+                                      : 'usd';
+            
                 // To'lov turlarini tanlangan valyutada formatlash
                 const paymentDetails = [];
                 // Global exchangeRate o'zgaruvchisidan foydalanish
@@ -4381,13 +4377,6 @@
                 // Savdo ma'lumotlarini tayyorlash
                 const sellerName = '{{ session.get("user_name", session.get("username", "Sotuvchi")) }}';
                 const sellerPhone = '{{ session.get("user_phone", "") }}';
-                console.log('🔍 Debug - Seller info:', {
-                    sellerName: sellerName,
-                    sellerPhone: sellerPhone,
-                    sessionUsername: '{{ session.get("username", "None") }}',
-                    sessionUserName: '{{ session.get("user_name", "None") }}',
-                    sessionUserId: '{{ session.get("user_id", "None") }}'
-                });
                 
                 const saleForPrint = {
                     id: result.sale_id || result.id,
@@ -4406,10 +4395,11 @@
                     }))
                 };
                 
-                // Tanlangan valyuta bo'yicha chek chiqarish (receiptWindow allaqachon ochilgan)
-                console.log('🖨️ Chek chiqarish, valyuta:', selectedCurrency);
-                generatePrintableReceiptToWindow(receiptWindow, saleForPrint, selectedCurrency);
-                }
+                // Chek ma'lumotlarini saqlash - modal yopilganda chiqariladi
+                pendingReceiptData = {
+                    sale: saleForPrint,
+                    currency: selectedCurrency
+                };
             } else {
                 console.log('ℹ️ Chek chiqarish belgilanmagan');
             }
@@ -4428,7 +4418,24 @@
                 currentPendingSaleId = null;
             }
             
+            // Modalni yopish
+            closePaymentModal();
+            
+            // Alert'dan keyin chek chiqarish
             alert('✅ Savdo muvaffaqiyatli yakunlandi!');
+            
+            // Chek chiqarish (agar belgilangan bo'lsa)
+            if (pendingReceiptData) {
+                console.log('🖨️ Chek chiqarish boshlandi...');
+                const receiptWindow = window.open('', '_blank', 'width=400,height=600');
+                
+                if (!receiptWindow) {
+                    alert('⚠️ Popup blocker chekni blokladi! Brauzer sozlamalarida popup\'larga ruxsat bering.');
+                    console.error('❌ window.open() null qaytardi - popup blocker faol');
+                } else {
+                    generatePrintableReceiptToWindow(receiptWindow, pendingReceiptData.sale, pendingReceiptData.currency);
+                }
+            }
             
             // Tab strategiyasi: 1 ta tab bo'lsa yangilash, ko'p bo'lsa yopish
             if (salesTabs.length === 1) {
@@ -4480,14 +4487,12 @@
                 
                 // Savatni yangilash
                 updateCart();
-                closePaymentModal();
                 
                 console.log('✅ Tab to\'liq tozalandi');
                 
             } else {
                 // Ko'p tab ochiq - hozirgi tabni yopish
                 console.log('❌ Ko\'p tab - hozirgi tabni yopish');
-                closePaymentModal();
                 
                 // Aktiv tabni yopish (tasdiqlashsiz)
                 if (activeTabId) {
