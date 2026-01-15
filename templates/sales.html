@@ -4326,12 +4326,31 @@
                 const customerSearchInput = getActiveTabElement('customerSearch');
                 const customerName = customerId && customerSearchInput ? customerSearchInput.value : 'Naqd mijoz';
                 
-                // To'lov turlarini formatlash
+                // Qaysi valyuta tanlangani aniqlash
+                const selectedCurrency = (printUSD && printUSD.checked && printUZS && printUZS.checked) ? 'both' 
+                                      : (printUZS && printUZS.checked) ? 'uzs' 
+                                      : 'usd';
+                
+                // To'lov turlarini tanlangan valyutada formatlash
                 const paymentDetails = [];
-                if (cashUSD > 0) paymentDetails.push('Naqd: $' + cashUSD.toFixed(2));
-                if (clickUSD > 0) paymentDetails.push('Click: $' + clickUSD.toFixed(2));
-                if (terminalUSD > 0) paymentDetails.push('Terminal: $' + terminalUSD.toFixed(2));
-                if (debtUSD > 0) paymentDetails.push('Qarz: $' + debtUSD.toFixed(2));
+                const exchangeRate = 12700;
+                
+                if (selectedCurrency === 'uzs') {
+                    if (cashUSD > 0) paymentDetails.push('Naqd: ' + Math.round(cashUSD * exchangeRate).toLocaleString('uz-UZ') + ' som');
+                    if (clickUSD > 0) paymentDetails.push('Click: ' + Math.round(clickUSD * exchangeRate).toLocaleString('uz-UZ') + ' som');
+                    if (terminalUSD > 0) paymentDetails.push('Terminal: ' + Math.round(terminalUSD * exchangeRate).toLocaleString('uz-UZ') + ' som');
+                    if (debtUSD > 0) paymentDetails.push('Qarz: ' + Math.round(debtUSD * exchangeRate).toLocaleString('uz-UZ') + ' som');
+                } else if (selectedCurrency === 'both') {
+                    if (cashUSD > 0) paymentDetails.push('Naqd: $' + cashUSD.toFixed(2) + ' / ' + Math.round(cashUSD * exchangeRate).toLocaleString('uz-UZ') + ' som');
+                    if (clickUSD > 0) paymentDetails.push('Click: $' + clickUSD.toFixed(2) + ' / ' + Math.round(clickUSD * exchangeRate).toLocaleString('uz-UZ') + ' som');
+                    if (terminalUSD > 0) paymentDetails.push('Terminal: $' + terminalUSD.toFixed(2) + ' / ' + Math.round(terminalUSD * exchangeRate).toLocaleString('uz-UZ') + ' som');
+                    if (debtUSD > 0) paymentDetails.push('Qarz: $' + debtUSD.toFixed(2) + ' / ' + Math.round(debtUSD * exchangeRate).toLocaleString('uz-UZ') + ' som');
+                } else {
+                    if (cashUSD > 0) paymentDetails.push('Naqd: $' + cashUSD.toFixed(2));
+                    if (clickUSD > 0) paymentDetails.push('Click: $' + clickUSD.toFixed(2));
+                    if (terminalUSD > 0) paymentDetails.push('Terminal: $' + terminalUSD.toFixed(2));
+                    if (debtUSD > 0) paymentDetails.push('Qarz: $' + debtUSD.toFixed(2));
+                }
                 
                 // Savdo ma'lumotlarini tayyorlash
                 const saleForPrint = {
@@ -4351,27 +4370,11 @@
                     }))
                 };
                 
-                // Ikkala checkbox belgilangan bo'lsa - bitta chekda ikkalasini ham ko'rsatish
-                if (printUSD && printUSD.checked && printUZS && printUZS.checked) {
-                    console.log('🖨️ USD va UZS ikkala qiymat bilan bitta chek chiqarish');
-                    setTimeout(() => {
-                        generatePrintableReceipt(saleForPrint, 'both');
-                    }, 800);
-                }
-                // Faqat USD
-                else if (printUSD && printUSD.checked) {
-                    console.log('🖨️ Faqat USD chek chiqarish');
-                    setTimeout(() => {
-                        generatePrintableReceipt(saleForPrint, 'usd');
-                    }, 800);
-                }
-                // Faqat UZS
-                else if (printUZS && printUZS.checked) {
-                    console.log('🖨️ Faqat UZS chek chiqarish');
-                    setTimeout(() => {
-                        generatePrintableReceipt(saleForPrint, 'uzs');
-                    }, 800);
-                }
+                // Tanlangan valyuta bo'yicha chek chiqarish
+                console.log('🖨️ Chek chiqarish, valyuta:', selectedCurrency);
+                setTimeout(() => {
+                    generatePrintableReceipt(saleForPrint, selectedCurrency);
+                }, 800);
             } else {
                 console.log('ℹ️ Chek chiqarish belgilanmagan');
             }
