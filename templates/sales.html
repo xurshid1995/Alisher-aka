@@ -2016,6 +2016,7 @@
                 
                 const productName = product.name || `Mahsulot #${product.id}`;
                 const safeProductName = productName.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"');
+                const htmlSafeProductName = productName.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
                 const costPrice = product.cost_price || 0;
                 
                 const row = document.createElement('tr');
@@ -2036,7 +2037,7 @@
                 const opacity = quantity <= 0 ? '0.8' : '1';
                 
                 row.innerHTML = `
-                    <td style="padding: 12px 8px; font-size: 16px; color: #333;" data-original-text="${productName}" title="${productName}">${productName}</td>
+                    <td style="padding: 12px 8px; font-size: 16px; color: #333;" data-original-text="${htmlSafeProductName}" title="${htmlSafeProductName}">${htmlSafeProductName}</td>
                     <td style="padding: 12px 8px; text-align: left; font-size: 14px;">
                         <span style="background: ${quantityBadgeColor}; color: white; padding: 4px 8px; border-radius: 0; font-weight: 500; display: inline-block;">${quantity}</span>
                     </td>
@@ -3182,6 +3183,7 @@
                 
                 const productName = product.name || `Mahsulot #${product.id}`;
                 const safeProductName = productName.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"');
+                const htmlSafeProductName = productName.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
                 const costPrice = product.cost_price || 0;
                 
                 const row = document.createElement('tr');
@@ -3190,7 +3192,7 @@
                 row.setAttribute('data-cost-price', costPrice || 0);
                 
                 // Highlight qilish - qidiruv so'zlarini
-                let highlightedName = productName;
+                let highlightedName = htmlSafeProductName;
                 if (searchWords.length > 0) {
                     const escapedWords = searchWords.map(word => escapeRegex(word));
                     const combinedPattern = escapedWords.join('|');
@@ -3206,7 +3208,7 @@
                 const opacity = quantity <= 0 ? '0.8' : '1';
                 
                 row.innerHTML = `
-                    <td style="padding: 12px 8px; font-size: 16px; color: #333;" data-original-text="${productName}" title="${productName}">${highlightedName}</td>
+                    <td style="padding: 12px 8px; font-size: 16px; color: #333;" data-original-text="${htmlSafeProductName}" title="${htmlSafeProductName}">${highlightedName}</td>
                     <td style="padding: 12px 8px; text-align: left; font-size: 14px;">
                         <span style="background: ${quantityBadgeColor}; color: white; padding: 4px 8px; border-radius: 0; font-weight: 500; display: inline-block;">${quantity}</span>
                     </td>
