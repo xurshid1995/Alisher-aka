@@ -2999,8 +2999,18 @@
         // Avtomatik pending savdo yangilash
         await autoSavePending();
         
-        // Chap tomondagi mahsulotlar jadvalini yangilash
-        await loadProducts();
+        // Mahsulotlar jadvalini yangilash (cache tozalash orqali)
+        const activeTab = document.querySelector('.sales-tab.active');
+        if (activeTab) {
+            const tabId = activeTab.dataset.tabId;
+            const locationSelect = document.getElementById(`locationSelect_tab${tabId}`);
+            if (locationSelect) {
+                const cacheKey = `${locationSelect.value}_${currentPage}`;
+                productsCache.delete(cacheKey);
+                await loadProducts(currentPage);
+                console.log('🔄 Miqdor o\'zgartirildi: mahsulotlar jadvali yangilandi');
+            }
+        }
         
         console.log('📝 Miqdor yangilandi:', quantity);
     }
