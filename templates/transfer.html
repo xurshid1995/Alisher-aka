@@ -1132,6 +1132,14 @@
             return;
         }
         
+        // Agar mahsulot allaqachon ro'yxatda bo'lsa, tasdiqlash so'rash
+        const existingItem = transferList.find(item => item.id === productId);
+        if (existingItem) {
+            if (!confirm(`"${product.name}" allaqachon transfer ro'yxatida (${existingItem.quantity} dona).\n\nMiqdorni tahrirlash uchun OK tugmasini bosing.`)) {
+                return; // Bekor qilindi
+            }
+        }
+        
         // Joylashuv stockini hisoblash
         let quantity = 0;
         if (product.stocks && product.stocks.length > 0) {
