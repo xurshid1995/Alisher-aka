@@ -4552,10 +4552,10 @@
                     <div class="receipt-info">
                         <div>Chek #${sale.id}</div>
                         <div>${new Date(sale.sale_date).toLocaleString('uz-UZ', { timeZone: 'Asia/Tashkent' })}</div>
-                        <div>Sotuvchi: ${sale.seller_name || 'Admin'}</div>
+                        <div>Sotuvchi: ${sale.seller_name || 'Sotuvchi'}</div>
                         <div style="margin-top: 2mm; border-top: 1px dashed #ccc; padding-top: 2mm;">
                             <div><strong>Mijoz:</strong> ${sale.customer_name || 'Naqd mijoz'}</div>
-                            ${sale.payment_details ? '<div style="margin-top: 1mm;"><strong>To\'lov:</strong> ' + sale.payment_details + '</div>' : ''}
+                            ${sale.customer_phone ? '<div>' + sale.customer_phone + '</div>' : ''}
                         </div>
                     </div>
                 </div>
@@ -4593,6 +4593,8 @@
                         </tbody>
                     </table>
                 </div>
+                
+                ${sale.payment_details ? '<div style="margin-top: 3mm; padding: 2mm; background: #f8f9fa; border-radius: 2mm; font-size: 11px;"><strong>To\'lov:</strong> ' + sale.payment_details + '</div>' : ''}
                 
                 <div class="totals" style="margin-top: 3mm;">
                     <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 14px; border-top: 1px solid #000; padding-top: 2mm;">
