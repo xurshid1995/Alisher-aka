@@ -4333,12 +4333,12 @@
                 
                 // USD chek chiqarish
                 if (printUSD && printUSD.checked) {
-                    setTimeout(() => generatePrintableReceipt(saleForPrint, 'usd'), 300);
+                    setTimeout(() => generatePrintableReceipt(saleForPrint, 'usd'), 800);
                 }
                 
                 // UZS chek chiqarish
                 if (printUZS && printUZS.checked) {
-                    setTimeout(() => generatePrintableReceipt(saleForPrint, 'uzs'), 600);
+                    setTimeout(() => generatePrintableReceipt(saleForPrint, 'uzs'), 1600);
                 }
             }
             
@@ -4566,9 +4566,11 @@
         receiptWindow.document.write(receiptHTML);
         receiptWindow.document.close();
         
+        // Window'ni ko'rsatish va print dialog ochish
         setTimeout(() => {
+            receiptWindow.focus();
             receiptWindow.print();
-        }, 500);
+        }, 1000);
     }
     
 </script>
