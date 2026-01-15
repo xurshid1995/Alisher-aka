@@ -5575,6 +5575,70 @@ def manual_cleanup_transfers():
         return jsonify({'error': str(e)}), 500
 
 
+@app.route('/api/transfer-history')
+@role_required('admin', 'kassir', 'sotuvchi')
+def get_transfer_history_formatted():
+    """Transfer tarixini formatlangan ko'rinishda qaytarish"""
+    try:
+        limit = request.args.get('limit', 50, type=int)
+        limit = min(limit, 200)  # Maximum 200
+        
+        # So'nggi transferlarni olish
+        transfers = Transfer.query.order_by(
+            Transfer.created_at.desc()
+        ).limit(limit).all()
+        
+        history_list = []
+        for transfer in transfers:
+            # Joylashuv nomlarini olish
+            from_location_name = "N/A"
+            to_location_name = "N/A"
+            
+            if transfer.from_location_type == 'warehouse':
+                warehouse = Warehouse.query.get(transfer.from_location_id)
+                from_location_name = warehouse.name if warehouse else f"Ombor #{transfer.from_location_id}"
+            elif transfer.from_location_type == 'store':
+                store = Store.query.get(transfer.from_location_id)
+                from_location_name = store.name if store else f"Dokon #{transfer.from_location_id}"
+            
+            if transfer.to_location_type == 'warehouse':
+                warehouse = Warehouse.query.get(transfer.to_location_id)
+                to_location_name = warehouse.name if warehouse else f"Ombor #{transfer.to_location_id}"
+            elif transfer.to_location_type == 'store':
+                store = Store.query.get(transfer.to_location_id)
+                to_location_name = store.name if store else f"Dokon #{transfer.to_location_id}"
+            
+            # Mahsulot ma'lumotlarini olish
+            product = Product.query.get(transfer.product_id)
+            product_name = product.name if product else f"Mahsulot #{transfer.product_id}"
+            
+            # Guruh mahsulotlari bir xil transfer uchun birlashtirib ko'rsatish
+            # Lekin hozircha har bir transferni alohida ko'rsatamiz
+            history_list.append({
+                'id': transfer.id,
+                'created_at': transfer.created_at.isoformat() if transfer.created_at else None,
+                'from_location': from_location_name,
+                'to_location': to_location_name,
+                'products': [
+                    {
+                        'name': product_name,
+                        'quantity': transfer.quantity
+                    }
+                ],
+                'user_name': transfer.user_name or 'N/A'
+            })
+        
+        # Bir xil vaqtdagi transferlarni birlashtirishni keyinroq qo'shamiz
+        return jsonify({
+            'transfers': history_list,
+            'count': len(history_list)
+        })
+        
+    except Exception as e:
+        logger.error(f"Transfer tarixini olishda xatolik: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+
 @app.route('/api/product/<int:product_id>', methods=['DELETE'])
 def delete_product(product_id):
     """Mahsulotni o'chirish"""
