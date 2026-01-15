@@ -1089,63 +1089,82 @@
     }
     
     // ============================================
+    // GLOBAL CACHE - Ma'lumotlarni qayta yuklamaslik uchun
+    // ============================================
+    let locationsCache = null;
+    let customersCache = null;
+    let currencyRateCache = null;
+    
+    // ============================================
     // ESKI KOD - Bu yerdan davom etadi
     // ============================================
     
-    // Joylashuvlarni yuklash
+    // Joylashuvlarni yuklash (caching bilan)
     async function loadLocations() {
         try {
+            // Agar cache mavjud bo'lsa, uni ishlatish
+            if (locationsCache) {
+                console.log('📦 Joylashuvlar cache\'dan olinmoqda...');
+                populateLocationSelect(locationsCache);
+                return;
+            }
+            
             console.log('🔄 Joylashuvlarni yuklash boshlandi...');
             const response = await fetch('/api/locations');
             const locations = await response.json();
             
+            // Cache'ga saqlash
+            locationsCache = locations;
+            
             console.log(`📍 API'dan ${locations.length} ta joylashuv olinadi:`, locations);
+            populateLocationSelect(locations);
             
-            // Faol tabdagi locationSelect'ni topish
-            const activeTab = document.querySelector('.sales-tab.active');
-            if (!activeTab) {
-                console.warn('⚠️ Faol tab topilmadi');
-                return;
-            }
-            const tabId = activeTab.dataset.tabId;
-            const locationSelect = document.getElementById(`locationSelect_tab${tabId}`);
-            if (!locationSelect) {
-                console.warn('⚠️ locationSelect elementi topilmadi tab', tabId);
-                return;
-            }
-            console.log(`📍 Tab ${tabId} uchun joylashuvlar yuklanmoqda`);
-            locationSelect.innerHTML = '<option value="">Tanlang...</option>';
-            
-            // Foydalanuvchining default store_id'sini olish
-            const userStoreId = {{ session.store_id if session.store_id else 'null' }};
-            console.log('👤 Foydalanuvchining default store ID:', userStoreId);
-            
-            locations.forEach(location => {
-                const option = document.createElement('option');
-                option.value = `${location.type}_${location.id}`;
-                const locationType = location.type === 'warehouse' ? '🏭 Ombor' : '🏪 Do\'kon';
-                option.textContent = `${locationType}: ${location.name}`;
-                
-                // Agar user'ning default store'i bo'lsa va bu location mos kelsa, avtomatik tanlash
-                if (userStoreId && location.type === 'store' && location.id === userStoreId) {
-                    option.selected = true;
-                    selectedLocationId = location.id;
-                    selectedLocationType = 'store';
-                    console.log(`🎯 Avtomatik tanlandi: ${location.name} (ID: ${location.id})`);
-                }
-                
-                locationSelect.appendChild(option);
-            });
-            
-            console.log(`✅ ${locations.length} ta joylashuv yuklandi va select'ga qo'shildi`);
-            
-            // Agar joylashuv avtomatik tanlangan bo'lsa, mahsulotlarni yuklash
-            if (userStoreId) {
-                console.log('📦 Mahsulotlar yuklanmoqda...');
-                await loadProducts();
-            }
         } catch (error) {
             console.error('❌ Joylashuvlarni yuklashda xatolik:', error);
+        }
+    }
+    
+    // Location select'ni to'ldirish (alohida funksiya)
+    function populateLocationSelect(locations) {
+        // Faol tabdagi locationSelect'ni topish
+        const activeTab = document.querySelector('.sales-tab.active');
+        if (!activeTab) {
+            console.warn('⚠️ Faol tab topilmadi');
+            return;
+        }
+        const tabId = activeTab.dataset.tabId;
+        const locationSelect = document.getElementById(`locationSelect_tab${tabId}`);
+        if (!locationSelect) {
+            console.warn('⚠️ locationSelect elementi topilmadi tab', tabId);
+            return;
+        }
+        console.log(`📍 Tab ${tabId} uchun joylashuvlar yuklanmoqda`);
+        locationSelect.innerHTML = '<option value="">Tanlang...</option>';
+        
+        // Foydalanuvchining default store_id'sini olish
+        const userStoreId = {{ session.store_id if session.store_id else 'null' }};
+        
+        locations.forEach(location => {
+            const option = document.createElement('option');
+            option.value = `${location.type}_${location.id}`;
+            const locationType = location.type === 'warehouse' ? '🏭 Ombor' : '🏪 Do\'kon';
+            option.textContent = `${locationType}: ${location.name}`;
+            
+            // Agar user'ning default store'i bo'lsa va bu location mos kelsa, avtomatik tanlash
+            if (userStoreId && location.type === 'store' && location.id === userStoreId) {
+                option.selected = true;
+                selectedLocationId = location.id;
+                selectedLocationType = 'store';
+            }
+            
+            locationSelect.appendChild(option);
+        });
+        
+        console.log(`✅ ${locations.length} ta joylashuv select'ga qo'shildi`);
+        
+        // Agar joylashuv avtomatik tanlangan bo'lsa, mahsulotlarni yuklash
+        if (userStoreId && selectedLocationId) {
+            loadProducts();
         }
     }
     
@@ -1768,6 +1787,14 @@
     
     async function loadCustomers() {
         try {
+            // Agar cache mavjud bo'lsa, uni ishlatish
+            if (customersCache) {
+                console.log('📦 Mijozlar cache\'dan olinmoqda...');
+                allCustomers = customersCache;
+                console.log(`✅ ${allCustomers.length} ta mijoz cache'dan yuklandi`);
+                return;
+            }
+            
             console.log('🔄 Mijozlarni yuklash boshlandi...');
             const response = await fetch('/api/customers');
             console.log('📡 API response status:', response.status);
@@ -1779,6 +1806,10 @@
             console.log('📦 API response data:', data);
             // API to'g'ridan-to'g'ri array qaytaradi
             allCustomers = Array.isArray(data) ? data : (data.customers || []);
+            
+            // Cache'ga saqlash
+            customersCache = allCustomers;
+            
             console.log(`✅ ${allCustomers.length} ta mijoz yuklandi`, allCustomers);
         } catch (error) {
             console.error('❌ Mijozlarni yuklashda xatolik:', error);
@@ -2201,15 +2232,23 @@
     // Valyuta kursi (global o'zgaruvchi)
     let exchangeRate = 12700; // Default kurs
     
-    // Valyuta kursini olish
+    // Valyuta kursini olish (caching bilan)
     async function loadExchangeRate() {
         try {
+            // Agar cache mavjud bo'lsa, uni ishlatish
+            if (currencyRateCache) {
+                exchangeRate = currencyRateCache;
+                console.log('📦 Valyuta kursi cache\'dan olinmoqda:', exchangeRate);
+                return;
+            }
+            
             const response = await fetch('/api/currency-rate');
             const data = await response.json();
             if (data.success && data.rate && data.rate.rate) {
                 const newRate = parseFloat(data.rate.rate);
                 if (!isNaN(newRate) && newRate > 0) {
                     exchangeRate = newRate;
+                    currencyRateCache = newRate; // Cache'ga saqlash
                     console.log('✅ Valyuta kursi yuklandi:', exchangeRate);
                 } else {
                     console.warn('⚠️ Noto\'g\'ri kurs qiymati, default ishlatiladi:', exchangeRate);
