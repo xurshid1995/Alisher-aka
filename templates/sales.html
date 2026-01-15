@@ -916,6 +916,18 @@
             console.log('✅ customerSearch event listenerlar qo\'shildi');
         }
         
+        // Camera scan button
+        const cameraScanBtn = document.getElementById(`cameraScanBtn_tab${tabId}`);
+        if (cameraScanBtn) {
+            cameraScanBtn.addEventListener('click', function() {
+                console.log('📷 Tab', tabId, 'camera scan button bosildi');
+                startBarcodeScanner();
+            });
+            console.log('✅ cameraScanBtn event listener qo\'shildi');
+        } else {
+            console.warn('⚠️ cameraScanBtn topilmadi tab', tabId);
+        }
+        
         // Dropdown tashqarisiga bosish
         document.addEventListener('click', function(e) {
             const dropdown = document.getElementById(`customerDropdown_tab${tabId}`);
@@ -1708,16 +1720,7 @@
         console.log('🛑 Scanner to\'xtatildi');
     }
 
-    // Scanner tugmasi event listener
-    const cameraScanBtn = document.getElementById('cameraScanBtn');
-    if (cameraScanBtn) {
-        cameraScanBtn.addEventListener('click', function() {
-            console.log('📷 Camera scan button bosildi');
-            startBarcodeScanner();
-        });
-    }
-
-    // Yopish tugmasi
+    // Yopish tugmasi - global (barcha tablar uchun bitta modal)
     const closeScannerBtn = document.getElementById('closeScannerBtn');
     if (closeScannerBtn) {
         closeScannerBtn.addEventListener('click', function() {
