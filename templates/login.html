@@ -272,6 +272,11 @@
                 <p>Login va parolingizni kiriting</p>
             </div>
 
+            <!-- Session tugash xabari -->
+            <div id="sessionExpiredAlert" class="alert" style="display: none; background-color: #fff3cd; border: 1px solid #ffc107; color: #856404;">
+                <span>⏰ Session muddati tugadi. Iltimos, qayta kirish qiling.</span>
+            </div>
+            
             <!-- Xatolik xabari -->
             <div id="errorAlert" class="alert alert-error" style="display: none;">
                 <span id="errorMessage"></span>
@@ -333,6 +338,31 @@
         const loginBtn = document.getElementById('loginBtn');
         const errorAlert = document.getElementById('errorAlert');
         const errorMessage = document.getElementById('errorMessage');
+        const sessionExpiredAlert = document.getElementById('sessionExpiredAlert');
+
+        // Session tugash parametrini tekshirish
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('session_expired') === 'true') {
+            sessionExpiredAlert.style.display = 'block';
+            
+            // Saqlangan sahifa ma'lumotlarini localStorage'dan olish
+            const savedData = localStorage.getItem('session_backup');
+            if (savedData) {
+                try {
+                    const pageData = JSON.parse(savedData);
+                    console.log('💾 Saqlangan ma\'lumotlar:', pageData);
+                    
+                    // URL'dan return_url parametrini olish
+                    const returnUrl = urlParams.get('return_url');
+                    if (returnUrl) {
+                        // Login muvaffaqiyatli bo'lgandan keyin qaytish uchun saqlash
+                        sessionStorage.setItem('return_url', returnUrl);
+                    }
+                } catch (e) {
+                    console.error('Ma\'lumotlarni o\'qishda xatolik:', e);
+                }
+            }
+        }
 
         form.addEventListener('submit', handleLogin);
     });

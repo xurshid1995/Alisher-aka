@@ -362,7 +362,230 @@
                     e.preventDefault();
                 }, { passive: false });
             }
+            
+            // Session monitoring tizimini ishga tushirish
+            setupSessionMonitoring();
         });
+        
+        // ========================================
+        // SESSION MONITORING TIZIMI
+        // ========================================
+        
+        function setupSessionMonitoring() {
+            console.log('🔐 Session monitoring tizimi ishga tushdi');
+            
+            // 1. Global fetch wrapper - barcha API so'rovlarini tutib oladi
+            const originalFetch = window.fetch;
+            let isRedirecting = false;
+            
+            window.fetch = async function(...args) {
+                try {
+                    const response = await originalFetch.apply(this, args);
+                    
+                    // Session tugagan bo'lsa (401 Unauthorized)
+                    if (response.status === 401 && !isRedirecting) {
+                        const contentType = response.headers.get('content-type');
+                        
+                        // JSON javobni tekshirish
+                        if (contentType && contentType.includes('application/json')) {
+                            const clonedResponse = response.clone();
+                            try {
+                                const data = await clonedResponse.json();
+                                
+                                if (data.error === 'Login required' || data.error === 'Access denied') {
+                                    console.warn('⚠️ Session tugadi. Login sahifasiga yo\'naltirilmoqda...');
+                                    
+                                    // Joriy sahifa ma'lumotlarini saqlash
+                                    saveCurrentPageData();
+                                    
+                                    // Login sahifasiga yo'naltirish
+                                    isRedirecting = true;
+                                    setTimeout(() => {
+                                        window.location.href = '/login?session_expired=true&return_url=' + encodeURIComponent(window.location.pathname);
+                                    }, 500);
+                                }
+                            } catch (jsonError) {
+                                console.error('JSON parse xatosi:', jsonError);
+                            }
+                        }
+                    }
+                    
+                    return response;
+                } catch (error) {
+                    console.error('❌ Fetch xatosi:', error);
+                    throw error;
+                }
+            };
+            
+            // 2. Session tugashidan 2 daqiqa oldin ogohlantirish
+            // 12 soat = 43200 soniya, 2 daqiqa oldin = 43080 soniya (11 soat 58 daqiqa)
+            let sessionWarningShown = false;
+            const warningTime = (12 * 60 * 60 - 2 * 60) * 1000; // 11 soat 58 daqiqa (ms)
+            
+            setTimeout(() => {
+                if (!sessionWarningShown) {
+                    sessionWarningShown = true;
+                    showSessionWarning();
+                }
+            }, warningTime);
+            
+            // 3. Heartbeat - sessionni faol ushlab turish
+            // Har 5 daqiqada bir marta session mavjudligini tekshirish
+            setInterval(async () => {
+                try {
+                    const response = await originalFetch('/api/health-check', {
+                        method: 'GET',
+                        credentials: 'same-origin'
+                    });
+                    
+                    if (response.status === 401) {
+                        console.warn('⚠️ Heartbeat: Session tugagan');
+                        // Global fetch wrapper buni tutib oladi
+                    } else if (response.ok) {
+                        console.log('✅ Heartbeat: Session faol');
+                    }
+                } catch (error) {
+                    console.error('❌ Heartbeat xatosi:', error);
+                }
+            }, 5 * 60 * 1000); // 5 daqiqa
+        }
+        
+        // Joriy sahifa ma'lumotlarini localStorage'ga saqlash
+        function saveCurrentPageData() {
+            try {
+                const pageData = {
+                    url: window.location.href,
+                    pathname: window.location.pathname,
+                    timestamp: new Date().toISOString(),
+                    // Formalardan ma'lumotlarni saqlash
+                    formData: extractFormData()
+                };
+                
+                localStorage.setItem('session_backup', JSON.stringify(pageData));
+                console.log('💾 Sahifa ma'lumotlari saqlandi:', pageData);
+            } catch (error) {
+                console.error('❌ Ma\'lumotlarni saqlashda xatolik:', error);
+            }
+        }
+        
+        // Form ma'lumotlarini olish
+        function extractFormData() {
+            const formData = {};
+            const forms = document.querySelectorAll('form');
+            
+            forms.forEach((form, index) => {
+                const inputs = form.querySelectorAll('input, select, textarea');
+                const data = {};
+                
+                inputs.forEach(input => {
+                    if (input.type !== 'password' && input.name) {
+                        data[input.name] = input.value;
+                    }
+                });
+                
+                if (Object.keys(data).length > 0) {
+                    formData[`form_${index}`] = data;
+                }
+            });
+            
+            return formData;
+        }
+        
+        // Session tugashidan oldin ogohlantirish ko'rsatish
+        function showSessionWarning() {
+            const warning = document.createElement('div');
+            warning.id = 'session-warning';
+            warning.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
+                color: white;
+                padding: 20px 25px;
+                border-radius: 12px;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+                z-index: 10000;
+                max-width: 400px;
+                animation: slideIn 0.5s ease-out;
+                border: 2px solid rgba(255, 255, 255, 0.3);
+            `;
+            
+            warning.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <span style="font-size: 2rem;">⏰</span>
+                    <div style="flex: 1;">
+                        <div style="font-weight: bold; font-size: 1.1rem; margin-bottom: 5px;">Session tugash arafasida!</div>
+                        <div style="font-size: 0.95rem; opacity: 0.95;">Session 2 daqiqadan keyin tugaydi. Iltimos, ma'lumotlaringizni saqlang!</div>
+                        <div style="margin-top: 10px;">
+                            <button onclick="dismissWarning()" style="
+                                background: rgba(255, 255, 255, 0.3);
+                                border: 1px solid rgba(255, 255, 255, 0.5);
+                                color: white;
+                                padding: 8px 16px;
+                                border-radius: 6px;
+                                cursor: pointer;
+                                font-weight: 500;
+                                transition: all 0.3s;
+                            ">Tushundim</button>
+                        </div>
+                    </div>
+                    <button onclick="dismissWarning()" style="
+                        background: none;
+                        border: none;
+                        color: white;
+                        font-size: 1.5rem;
+                        cursor: pointer;
+                        padding: 0;
+                        width: 30px;
+                        height: 30px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                    ">×</button>
+                </div>
+            `;
+            
+            document.body.appendChild(warning);
+            
+            // Auto-dismiss after 30 seconds
+            setTimeout(() => dismissWarning(), 30000);
+        }
+        
+        // Ogohlantirishni yopish
+        window.dismissWarning = function() {
+            const warning = document.getElementById('session-warning');
+            if (warning) {
+                warning.style.animation = 'slideOut 0.5s ease-in';
+                setTimeout(() => warning.remove(), 500);
+            }
+        };
+        
+        // Animation styles
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+            
+            @keyframes slideOut {
+                from {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+                to {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
     </script>
 
     {% block extra_js %}{% endblock %}

@@ -8677,6 +8677,24 @@ def get_currency_rate():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
+# ================== HEALTH CHECK API ==================
+@app.route('/api/health-check', methods=['GET'])
+@role_required('admin', 'kassir', 'sotuvchi')
+def health_check():
+    """Session heartbeat - sessionni faol ushlab turish"""
+    try:
+        return jsonify({
+            'success': True,
+            'status': 'active',
+            'timestamp': get_tashkent_time().isoformat(),
+            'user_id': session.get('user_id'),
+            'username': session.get('username')
+        }), 200
+    except Exception as e:
+        logger.error(f"Health check error: {str(e)}")
+        return jsonify({'error': 'Health check failed'}), 500
+
+
 @app.route('/api/currency-rate', methods=['POST'])
 @role_required('admin', 'kassir', 'sotuvchi')
 def update_currency_rate():
