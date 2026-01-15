@@ -4309,9 +4309,9 @@
             
             console.log('✅ Savdo muvaffaqiyatli saqlandi:', result);
             
-            // Chek chiqarish opsiyalarini tekshirish
-            const printUSD = document.getElementById('printReceiptUSD');
-            const printUZS = document.getElementById('printReceiptUZS');
+            // Chek chiqarish opsiyalarini tekshirish (tab context'dan)
+            const printUSD = getActiveTabElement('printReceiptUSD');
+            const printUZS = getActiveTabElement('printReceiptUZS');
             
             console.log('🖨️ Chek chiqarish tekshiruvi:');
             console.log('   - printUSD element:', printUSD);
