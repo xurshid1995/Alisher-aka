@@ -719,15 +719,28 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                ${sale.items.map(item => `
+                                ${sale.items.map(item => {
+                                    const unitPriceUSD = parseFloat(item.unit_price || 0);
+                                    const totalPriceUSD = parseFloat(item.total_price || 0);
+                                    const exchangeRate = 12700; // Default kurs
+                                    const unitPriceUZS = Math.round(unitPriceUSD * exchangeRate);
+                                    const totalPriceUZS = Math.round(totalPriceUSD * exchangeRate);
+                                    
+                                    return `
                                     <tr>
                                         <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">${item.product_name}</td>
                                         <td style="padding: 8px; border-bottom: 1px solid #dee2e6;">${item.location_name}</td>
                                         <td style="padding: 8px; text-align: center; border-bottom: 1px solid #dee2e6;">${item.quantity}</td>
-                                        <td style="padding: 8px; text-align: right; border-bottom: 1px solid #dee2e6;">$${parseFloat(item.unit_price || 0).toFixed(2)}</td>
-                                        <td style="padding: 8px; text-align: right; border-bottom: 1px solid #dee2e6; font-weight: 600;">$${parseFloat(item.total_price || 0).toFixed(2)}</td>
+                                        <td style="padding: 8px; text-align: right; border-bottom: 1px solid #dee2e6;">
+                                            <div>$${unitPriceUSD.toFixed(2)}</div>
+                                            <div style="font-size: 11px; color: #666;">${unitPriceUZS.toLocaleString('uz-UZ')} so'm</div>
+                                        </td>
+                                        <td style="padding: 8px; text-align: right; border-bottom: 1px solid #dee2e6; font-weight: 600;">
+                                            <div>$${totalPriceUSD.toFixed(2)}</div>
+                                            <div style="font-size: 11px; color: #666;">${totalPriceUZS.toLocaleString('uz-UZ')} so'm</div>
+                                        </td>
                                     </tr>
-                                `).join('')}
+                                `}).join('')}
                             </tbody>
                         </table>
                         
