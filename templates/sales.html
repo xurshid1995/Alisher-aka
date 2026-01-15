@@ -4358,7 +4358,7 @@
                     sale_date: new Date().toISOString(),
                     customer_name: customerName,
                     customer_phone: '',
-                    seller_name: '{{ current_user.full_name if current_user and current_user.full_name else current_user.username if current_user else "Sotuvchi" }}',
+                    seller_name: '{{ (current_user.first_name + " " + current_user.last_name) if current_user and current_user.first_name else current_user.username if current_user else "Sotuvchi" }}',
                     seller_phone: '{{ current_user.phone if current_user and current_user.phone else "" }}',
                     store_name: selectedLocationId ? (document.querySelector('#locationSelect option:checked')?.text || 'Do\'kon') : 'Do\'kon',
                     total_amount: totalUSD,
