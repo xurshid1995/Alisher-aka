@@ -1498,16 +1498,31 @@
         const modal = document.getElementById('barcodeScannerModal');
         const statusDiv = document.getElementById('scannerStatus');
         
-        // HTTPS tekshiruvi
-        if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-            alert('⚠️ Kamera skaner faqat HTTPS protokolida ishlaydi!');
-            return;
-        }
+        console.log('📷 Camera scan funksiyasi boshlandi');
+        console.log('   Protocol:', window.location.protocol);
+        console.log('   Hostname:', window.location.hostname);
+        
+        // HTTPS tekshiruvi - localhost va server IP uchun istisno
+        const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        const isServerIP = window.location.hostname === '139.59.154.185'; // Server IP
+        const isHTTPS = window.location.protocol === 'https:';
         
         // getUserMedia tekshiruvi
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-            alert('⚠️ Brauzer kamerani qo\'llab-quvvatlamaydi!');
+            console.error('❌ Brauzer kamerani qo\'llab-quvvatlamaydi');
+            alert('⚠️ Kamera ishlamayapti!\n\nSabab: Brauzer kamerani qo\'llab-quvvatlamaydi\n\n✅ Yechim:\n• Chrome yoki Firefox brauzerni ishlating\n• Barcode ni qo\'lda kiriting');
             return;
+        }
+        
+        if (!isHTTPS && !isLocalhost && !isServerIP) {
+            console.warn('⚠️ HTTPS yo\'q - kamera ishlamaydi');
+            alert('⚠️ Kamera HTTP orqali ishlamaydi!\n\n✅ Yechim:\n1. Barcode ni qo\'lda kiriting\n2. Yoki administrator HTTPS o\'rnatsin\n\n💡 Hozir: Barcode raqamini input maydoniga kiriting');
+            return;
+        }
+        
+        // Chrome'da HTTP uchun o'zgacha muammo
+        if (!isHTTPS && !isLocalhost) {
+            console.warn('⚠️ HTTP orqali ishlash - kameraga ruxsat berilmasligi mumkin');
         }
         
         modal.style.display = 'block';
