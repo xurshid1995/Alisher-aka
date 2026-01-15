@@ -1909,7 +1909,8 @@
     // Pagination o'zgaruvchilari
     let currentPage = 1;
     const itemsPerPage = 30;
-    let allProducts = [];
+    let totalProducts = 0;
+    let productsCache = new Map(); // Sahifalarni cache qilish
 
     async function loadProducts(page = 1) {
         currentPage = page;
@@ -1936,6 +1937,7 @@
             selectedLocationId = null;
             selectedLocationType = null;
             document.getElementById(`productsPagination_tab${tabId}`).innerHTML = '';
+            productsCache.clear();
             return;
         }
         
@@ -1955,15 +1957,29 @@
         tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 30px; color: #999;">⏳ Yuklanmoqda...</td></tr>';
         
         try {
-            // Barcha mahsulotlarni olish uchun katta per_page berish
-            const response = await fetch(`/api/products?location=${locationValue}&per_page=20000`);
-            const data = await response.json();
+            // Cache'dan tekshirish
+            const cacheKey = `${locationValue}_${page}`;
+            let data, products;
             
-            console.log('API response:', data);
-            
-            // API dan kelgan ma'lumotni tekshirish
-            const products = Array.isArray(data) ? data : (data.products || []);
-            allProducts = products;
+            if (productsCache.has(cacheKey)) {
+                // Cache'dan olish
+                const cached = productsCache.get(cacheKey);
+                products = cached.products;
+                totalProducts = cached.total;
+                console.log('✅ Cache'dan yuklandi:', products.length, 'ta mahsulot');
+            } else {
+                // Backend'dan sahifa-sahifa yuklash
+                const response = await fetch(`/api/products?location=${locationValue}&page=${page}&per_page=${itemsPerPage}`);
+                data = await response.json();
+                
+                // API dan kelgan ma'lumotni tekshirish
+                products = Array.isArray(data) ? data : (data.products || []);
+                totalProducts = data.total || products.length;
+                
+                // Cache'ga saqlash
+                productsCache.set(cacheKey, { products, total: totalProducts });
+                console.log('🌐 Serverdan yuklandi:', products.length, 'ta mahsulot');
+            }
             
             if (products.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 30px; color: #999;">Mahsulotlar topilmadi</td></tr>';
@@ -1971,14 +1987,9 @@
                 return;
             }
             
-            // Pagination hisoblash
-            const totalPages = Math.ceil(products.length / itemsPerPage);
-            const startIndex = (currentPage - 1) * itemsPerPage;
-            const endIndex = startIndex + itemsPerPage;
-            const currentProducts = products.slice(startIndex, endIndex);
-            
-            tbody.innerHTML = '';
-            currentProducts.forEach(product => {
+            // Tezkor render qilish
+            const fragment = document.createDocumentFragment();
+            products.forEach(product => {
                 // Quantity va selling price ni olish
                 let quantity = 0;
                 let sellingPrice = product.sell_price || product.price || 0;
@@ -2037,8 +2048,11 @@
                         <button onclick="addToCart(${product.id}, '${safeProductName}', ${quantity}, ${sellingPrice}, ${costPrice})" ${buttonDisabled} style="background: transparent; color: #333; border: none; padding: 4px 8px; cursor: ${cursorStyle}; font-size: 18px; opacity: ${opacity};">${buttonEmoji}</button>
                     </td>
                 `;
-                tbody.appendChild(row);
+                fragment.appendChild(row);
             });
+            
+            // Fragment'ni bir vaqtda DOM'ga qo'shish (tezroq)
+            tbody.appendChild(fragment);
             
             // Mahsulotlar nomini faqat birinchi marta chiqarish
             if (!window.productsLogged) {
@@ -2046,9 +2060,10 @@
             }
             
             // Pagination yaratish
+            const totalPages = Math.ceil(totalProducts / itemsPerPage);
             const paginationDiv = document.getElementById(`productsPagination_tab${tabId}`);
             if (totalPages > 1) {
-                let paginationHTML = `<span style="color: #666; font-size: 14px;">${products.length} ta mahsulot (${currentPage} / ${totalPages} bet)</span>`;
+                let paginationHTML = `<span style="color: #666; font-size: 14px;">${totalProducts} ta mahsulot (${currentPage} / ${totalPages} bet)</span>`;
                 
                 // Oldingi tugma
                 if (currentPage > 1) {
@@ -2087,10 +2102,10 @@
                 
                 paginationDiv.innerHTML = paginationHTML;
             } else {
-                paginationDiv.innerHTML = `<span style="color: #666; font-size: 14px;">${products.length} ta mahsulot</span>`;
+                paginationDiv.innerHTML = `<span style="color: #666; font-size: 14px;">${totalProducts} ta mahsulot</span>`;
             }
             
-            console.log(`✅ ${currentProducts.length} / ${products.length} ta mahsulot yuklandi (${currentPage}-bet)`);
+            console.log(`✅ ${products.length} ta mahsulot ko'rsatildi (${currentPage}-bet / ${totalPages} bet)`);
         } catch (error) {
             console.error('Mahsulotlarni yuklashda xatolik:', error);
             tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 30px; color: #dc3545;">⚠️ Xatolik yuz berdi</td></tr>';
@@ -2504,8 +2519,8 @@
             // Avtomatik pending savdo yangilash
             await autoSavePending();
             
-            // Chap tomondagi mahsulotlar jadvalini yangilash
-            await loadProducts();
+            // Mahsulotlar jadvalini yangilamaslik - tezroq ishlash uchun
+            // await loadProducts();
             
             console.log('✏️ Savat elementi tahrirlandi');
             return;
@@ -2593,8 +2608,8 @@
         // Avtomatik pending savdo yaratish/yangilash
         await autoSavePending();
         
-        // Chap tomondagi mahsulotlar jadvalini yangilash
-        await loadProducts();
+        // Mahsulotlar jadvalini yangilamaslik - tezroq ishlash uchun
+        // await loadProducts();
         
         // Fokusni universal qidiruv maydoniga qaytarish
         setTimeout(() => {
