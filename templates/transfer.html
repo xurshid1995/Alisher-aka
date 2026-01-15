@@ -725,10 +725,30 @@
                 }
             }
             
+            // Transfer ro'yxatida borligini tekshirish
+            const isInTransferList = transferList.some(item => item.id === product.id);
+            
             const row = document.createElement('tr');
             const sellingPrice = product.sell_price || product.price || 0;
             const badgeColor = quantity <= 0 ? '#dc3545' : '#007bff';
-            const buttonEmoji = quantity <= 0 ? '⛔' : '➡️';
+            
+            // Agar allaqachon ro'yxatda bo'lsa, belgini o'zgartirish
+            let buttonEmoji, buttonDisabled, rowBackground;
+            if (quantity <= 0) {
+                buttonEmoji = '⛔';
+                buttonDisabled = true;
+                rowBackground = '';
+            } else if (isInTransferList) {
+                buttonEmoji = '✓';
+                buttonDisabled = false;
+                rowBackground = '#d4edda'; // Yashil background
+            } else {
+                buttonEmoji = '➡️';
+                buttonDisabled = false;
+                rowBackground = '';
+            }
+            
+            row.style.background = rowBackground;
             row.innerHTML = `
                 <td style="color: #333; font-weight: 500;">${product.name || `Mahsulot #${product.id}`}</td>
                 <td style="text-align: center; color: #333; font-weight: 500;">
@@ -739,8 +759,9 @@
                 </td>
                 <td style="text-align: center;">
                     <button onclick="openModalById(${product.id})" 
-                            style="background: none; border: none; cursor: ${quantity <= 0 ? 'not-allowed' : 'pointer'}; font-size: 24px; padding: 4px 8px; opacity: ${quantity <= 0 ? '0.8' : '1'};"
-                            ${quantity <= 0 ? 'disabled' : ''}>
+                            style="background: none; border: none; cursor: ${buttonDisabled ? 'not-allowed' : 'pointer'}; font-size: 24px; padding: 4px 8px;"
+                            title="${isInTransferList ? 'Ro\'yxatda bor (miqdorni tahrirlash)' : buttonDisabled ? 'Stokda yo\'q' : 'Transfer ro\'yxatiga qo\'shish'}"
+                            ${buttonDisabled ? 'disabled' : ''}>
                         ${buttonEmoji}
                     </button>
                 </td>
@@ -1140,9 +1161,13 @@
     function openModal(productId, productName, available, price) {
         currentProduct = { id: productId, name: productName, available: available, price: price || 0 };
         
+        // Agar mahsulot allaqachon ro'yxatda bo'lsa, joriy miqdorni ko'rsatish
+        const existingItem = transferList.find(item => item.id === productId);
+        const currentQuantity = existingItem ? existingItem.quantity : 1;
+        
         document.getElementById('modalProductName').textContent = productName;
         document.getElementById('modalAvailable').value = available;
-        document.getElementById('modalQuantity').value = 1;
+        document.getElementById('modalQuantity').value = currentQuantity;
         document.getElementById('modalQuantity').max = available;
         
         // Validatsiya xabarni yashirish
@@ -1258,6 +1283,10 @@
         }
         
         updateTransferListDisplay();
+        
+        // Mahsulotlar jadvalini yangilash (yashil background ko'rsatish uchun)
+        renderCurrentPage();
+        
         closeModal();
         
         // Fokusni qidiruv maydoniga qaytarish va barcha matnni belgilash
@@ -1381,6 +1410,9 @@
         if (confirm('Ushbu mahsulotni o\'chirmoqchimisiz?')) {
             transferList.splice(index, 1);
             updateTransferListDisplay();
+            
+            // Mahsulotlar jadvalini yangilash (yashil background olib tashlash uchun)
+            renderCurrentPage();
         }
     }
 
@@ -1394,6 +1426,9 @@
         if (confirm('Barcha mahsulotlarni o\'chirmoqchimisiz?')) {
             transferList = [];
             updateTransferListDisplay();
+            
+            // Mahsulotlar jadvalini yangilash (yashil backgroundlarni olib tashlash uchun)
+            renderCurrentPage();
         }
     }
 
