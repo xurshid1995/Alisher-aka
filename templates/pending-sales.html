@@ -2643,22 +2643,29 @@ function formatPaymentDetails(paymentDetails, currency = 'uzs') {
     // Agar object bo'lsa, parse qilib formatlash
     if (typeof paymentDetails === 'object' && paymentDetails !== null) {
         const formatted = [];
+        const cashUSD = paymentDetails.cash || 0;
+        const clickUSD = paymentDetails.click || 0;
+        const terminalUSD = paymentDetails.terminal || 0;
+        const debtUSD = paymentDetails.debt || 0;
         
         if (currency === 'uzs') {
-            if (paymentDetails.cash > 0) formatted.push('Naqd: ' + Math.round(paymentDetails.cash * exchangeRate).toLocaleString('uz-UZ') + ' som');
-            if (paymentDetails.click > 0) formatted.push('Click: ' + Math.round(paymentDetails.click * exchangeRate).toLocaleString('uz-UZ') + ' som');
-            if (paymentDetails.terminal > 0) formatted.push('Terminal: ' + Math.round(paymentDetails.terminal * exchangeRate).toLocaleString('uz-UZ') + ' som');
-            if (paymentDetails.debt > 0) formatted.push('Qarz: ' + Math.round(paymentDetails.debt * exchangeRate).toLocaleString('uz-UZ') + ' som');
+            // Faqat UZS qiymat ko'rsatish
+            if (cashUSD > 0) formatted.push('Naqd: ' + Math.round(cashUSD * exchangeRate).toLocaleString('uz-UZ') + ' som');
+            if (clickUSD > 0) formatted.push('Click: ' + Math.round(clickUSD * exchangeRate).toLocaleString('uz-UZ') + ' som');
+            if (terminalUSD > 0) formatted.push('Terminal: ' + Math.round(terminalUSD * exchangeRate).toLocaleString('uz-UZ') + ' som');
+            if (debtUSD > 0) formatted.push('Qarz: ' + Math.round(debtUSD * exchangeRate).toLocaleString('uz-UZ') + ' som');
         } else if (currency === 'both') {
-            if (paymentDetails.cash > 0) formatted.push('Naqd: $' + paymentDetails.cash.toFixed(2) + ' / ' + Math.round(paymentDetails.cash * exchangeRate).toLocaleString('uz-UZ') + ' som');
-            if (paymentDetails.click > 0) formatted.push('Click: $' + paymentDetails.click.toFixed(2) + ' / ' + Math.round(paymentDetails.click * exchangeRate).toLocaleString('uz-UZ') + ' som');
-            if (paymentDetails.terminal > 0) formatted.push('Terminal: $' + paymentDetails.terminal.toFixed(2) + ' / ' + Math.round(paymentDetails.terminal * exchangeRate).toLocaleString('uz-UZ') + ' som');
-            if (paymentDetails.debt > 0) formatted.push('Qarz: $' + paymentDetails.debt.toFixed(2) + ' / ' + Math.round(paymentDetails.debt * exchangeRate).toLocaleString('uz-UZ') + ' som');
+            // Ikkala valyutani ham ko'rsatish
+            if (cashUSD > 0) formatted.push('Naqd: $' + cashUSD.toFixed(2) + ' / ' + Math.round(cashUSD * exchangeRate).toLocaleString('uz-UZ') + ' som');
+            if (clickUSD > 0) formatted.push('Click: $' + clickUSD.toFixed(2) + ' / ' + Math.round(clickUSD * exchangeRate).toLocaleString('uz-UZ') + ' som');
+            if (terminalUSD > 0) formatted.push('Terminal: $' + terminalUSD.toFixed(2) + ' / ' + Math.round(terminalUSD * exchangeRate).toLocaleString('uz-UZ') + ' som');
+            if (debtUSD > 0) formatted.push('Qarz: $' + debtUSD.toFixed(2) + ' / ' + Math.round(debtUSD * exchangeRate).toLocaleString('uz-UZ') + ' som');
         } else {
-            if (paymentDetails.cash > 0) formatted.push('Naqd: $' + paymentDetails.cash.toFixed(2));
-            if (paymentDetails.click > 0) formatted.push('Click: $' + paymentDetails.click.toFixed(2));
-            if (paymentDetails.terminal > 0) formatted.push('Terminal: $' + paymentDetails.terminal.toFixed(2));
-            if (paymentDetails.debt > 0) formatted.push('Qarz: $' + paymentDetails.debt.toFixed(2));
+            // Faqat USD qiymat ko'rsatish
+            if (cashUSD > 0) formatted.push('Naqd: $' + cashUSD.toFixed(2));
+            if (clickUSD > 0) formatted.push('Click: $' + clickUSD.toFixed(2));
+            if (terminalUSD > 0) formatted.push('Terminal: $' + terminalUSD.toFixed(2));
+            if (debtUSD > 0) formatted.push('Qarz: $' + debtUSD.toFixed(2));
         }
         
         return formatted.join('<br>');
