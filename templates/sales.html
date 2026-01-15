@@ -1501,6 +1501,7 @@
         console.log('📷 Camera scan funksiyasi boshlandi');
         console.log('   Protocol:', window.location.protocol);
         console.log('   Hostname:', window.location.hostname);
+        console.log('   getUserMedia support:', !!navigator.mediaDevices?.getUserMedia);
         
         // HTTPS tekshiruvi - localhost va server IP uchun istisno
         const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
@@ -1520,11 +1521,7 @@
             return;
         }
         
-        // Chrome'da HTTP uchun o'zgacha muammo
-        if (!isHTTPS && !isLocalhost) {
-            console.warn('⚠️ HTTP orqali ishlash - kameraga ruxsat berilmasligi mumkin');
-        }
-        
+        console.log('✅ Kamera ochilmoqda...');
         modal.style.display = 'block';
         scannerActive = true;
         statusDiv.innerHTML = '🔄 Kamera ochilmoqda...';
@@ -1537,7 +1534,7 @@
                 constraints: {
                     width: { min: 640, ideal: 1920, max: 1920 },
                     height: { min: 480, ideal: 1080, max: 1080 },
-                    facingMode: { exact: "environment" }, // Orqa kamera majburiy
+                    facingMode: "environment", // Orqa kamera (lekin majburiy emas)
                     aspectRatio: { ideal: 16/9 }
                 },
                 area: { // Faqat markaziy qismni scan qilish - TEZROQ
@@ -1567,21 +1564,26 @@
         }, function(err) {
             if (err) {
                 console.error('❌ Scanner xatosi:', err);
+                console.error('Xato tafsilotlari:', err.name, err.message);
                 let errorMsg = '❌ ';
                 
                 if (err.name === 'NotAllowedError') {
-                    errorMsg += 'Kamera ruxsati berilmadi';
-                } else if (err.name === 'NotFoundError' || err.name === 'OverconstrainedError') {
-                    // Orqa kamera topilmasa, istalgan kamerani ishlatish
-                    console.log('Orqa kamera topilmadi, standart kamera ishlatilmoqda...');
+                    errorMsg += 'Kameraga ruxsat berilmadi!\n\n✅ Yechim:\n1. Brauzer sozlamalarida kameraga ruxsat bering\n2. Sahifani yangilang va "Allow" bosing';
+                    alert(errorMsg);
+                } else if (err.name === 'NotFoundError') {
+                    errorMsg += 'Kamera topilmadi!\n\n✅ Yechim:\n1. Qurilmangizda kamera borligini tekshiring\n2. Boshqa brauzerda sinab ko\'ring';
+                    alert(errorMsg);
+                } else if (err.name === 'OverconstrainedError') {
+                    // Orqa kamera topilmasa, standart kamerani ishlatish
+                    console.log('⚠️ Orqa kamera topilmadi, standart kamera ishlatilmoqda...');
                     startBarcodeScannerWithFallback();
                     return;
                 } else {
-                    errorMsg += 'Kamera ochilmadi';
+                    errorMsg += 'Kamera ochilmadi: ' + err.message;
+                    alert(errorMsg);
                 }
                 
                 statusDiv.innerHTML = errorMsg;
-                alert(errorMsg);
                 stopBarcodeScanner();
                 return;
             }
