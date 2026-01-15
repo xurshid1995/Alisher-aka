@@ -195,6 +195,34 @@
         background: #218838;
     }
 
+    /* Qidiruv maydoni */
+    .search-container {
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .search-input {
+        flex: 1;
+        max-width: 400px;
+        padding: 10px 15px;
+        border: 2px solid #dee2e6;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: all 0.3s ease;
+    }
+
+    .search-input:focus {
+        outline: none;
+        border-color: #17a2b8;
+        box-shadow: 0 0 0 3px rgba(23, 162, 184, 0.1);
+    }
+
+    .search-input::placeholder {
+        color: #999;
+    }
+
     /* Modal */
     .modal {
         display: none;
@@ -411,6 +439,9 @@
         <h2 style="margin-bottom: 15px; color: #dc3545; display: flex; align-items: center; gap: 10px;">
             <span>💳 Qarzli mijozlar</span>
         </h2>
+        <div class="search-container">
+            <input type="text" id="debtSearchInput" class="search-input" placeholder="🔍 Mijoz nomi yoki telefon raqamini kiriting..." oninput="searchDebts()">
+        </div>
         <table class="debts-table">
             <thead>
                 <tr>
@@ -572,6 +603,45 @@
             section.scrollIntoView({ behavior: 'smooth' });
         } else {
             section.style.display = 'none';
+        }
+    }
+
+    // Qarzlarni qidirish
+    function searchDebts() {
+        const searchTerm = document.getElementById('debtSearchInput').value.toLowerCase().trim();
+        const rows = document.querySelectorAll('#debtsTableBody tr');
+        
+        let visibleCount = 0;
+        rows.forEach(row => {
+            const nameCell = row.querySelector('td:nth-child(2)');
+            const phoneCell = row.querySelector('td:nth-child(3)');
+            
+            if (nameCell && phoneCell) {
+                const name = nameCell.textContent.toLowerCase();
+                const phone = phoneCell.textContent.toLowerCase();
+                
+                if (name.includes(searchTerm) || phone.includes(searchTerm)) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            }
+        });
+        
+        // Agar hech narsa topilmasa
+        if (visibleCount === 0 && searchTerm !== '') {
+            const noResultRow = document.querySelector('#debtsTableBody .no-result');
+            if (!noResultRow) {
+                const tbody = document.getElementById('debtsTableBody');
+                const tr = document.createElement('tr');
+                tr.className = 'no-result';
+                tr.innerHTML = '<td colspan="8" class="no-data">🔍 Hech narsa topilmadi</td>';
+                tbody.appendChild(tr);
+            }
+        } else {
+            const noResultRow = document.querySelector('#debtsTableBody .no-result');
+            if (noResultRow) noResultRow.remove();
         }
     }
 
