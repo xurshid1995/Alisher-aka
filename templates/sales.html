@@ -1916,6 +1916,29 @@
         }
     }
     
+    // Mahsulot miqdorini yangilash - cache'ni tozalab jadvalni qayta yuklash
+    async function updateProductQuantityInTable(productId, soldQuantity) {
+        try {
+            const activeTab = document.querySelector('.sales-tab.active');
+            if (!activeTab) return;
+            const tabId = activeTab.dataset.tabId;
+            const locationSelect = document.getElementById(`locationSelect_tab${tabId}`);
+            const locationValue = locationSelect?.value;
+            if (!locationValue) return;
+            
+            // Joriy sahifaning cache'ini tozalash
+            const cacheKey = `${locationValue}_${currentPage}`;
+            productsCache.delete(cacheKey);
+            
+            // Jadvalni yangilash (cache'siz, backend'dan yangi ma'lumot oladi)
+            await loadProducts(currentPage);
+            
+            console.log(`🔄 Mahsulotlar jadvali yangilandi (cache tozalandi)`);
+        } catch (error) {
+            console.error('Jadvalni yangilashda xatolik:', error);
+        }
+    }
+    
     // Event delegation handler - mahsulot buttonlari uchun
     function handleProductClick(event) {
         const btn = event.target.closest('.add-to-cart-btn');
@@ -2649,8 +2672,8 @@
         // Avtomatik pending savdo yaratish/yangilash
         await autoSavePending();
         
-        // Mahsulotlar jadvalini yangilamaslik - tezroq ishlash uchun
-        // await loadProducts();
+        // Mahsulotlar jadvalida faqat o'sha mahsulotning miqdorini yangilash (tezroq)
+        updateProductQuantityInTable(addedProduct.id, quantity);
         
         // Fokusni universal qidiruv maydoniga qaytarish
         setTimeout(() => {
