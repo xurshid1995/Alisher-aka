@@ -4598,7 +4598,7 @@
                     </table>
                 </div>
                 
-                ${sale.payment_details ? '<div style="margin-top: 3mm; padding: 2mm; background: #f8f9fa; border-radius: 2mm; font-size: 11px;"><strong>To\'lov:</strong> ' + sale.payment_details + '</div>' : ''}
+                ${sale.payment_details ? '<div style="margin-top: 3mm; padding: 2mm; background: #f8f9fa; border-radius: 2mm; font-size: 11px;"><strong>To\'lov:</strong><br>' + sale.payment_details.replace(/, /g, ',<br>') + '</div>' : ''}
                 
                 <div class="totals" style="margin-top: 3mm;">
                     <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 14px; border-top: 1px solid #000; padding-top: 2mm;">
