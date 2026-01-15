@@ -17,6 +17,7 @@
         margin-bottom: 20px;
         padding-bottom: 15px;
         border-bottom: 2px solid #dee2e6;
+        gap: 15px;
     }
 
     .page-header h1 {
@@ -223,6 +224,37 @@
         color: #999;
     }
 
+    /* Location filter */
+    .location-filter {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-left: auto;
+    }
+
+    .location-filter label {
+        font-weight: 600;
+        color: #495057;
+        font-size: 14px;
+    }
+
+    .location-filter select {
+        padding: 8px 15px;
+        border: 2px solid #dee2e6;
+        border-radius: 8px;
+        font-size: 14px;
+        background: white;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        min-width: 200px;
+    }
+
+    .location-filter select:focus {
+        outline: none;
+        border-color: #17a2b8;
+        box-shadow: 0 0 0 3px rgba(23, 162, 184, 0.1);
+    }
+
     /* Modal */
     .modal {
         display: none;
@@ -417,6 +449,12 @@
 <div class="debts-container">
     <div class="page-header">
         <h1>💰 Qarzlar</h1>
+        <div class="location-filter">
+            <label>🏪 Joylashuv:</label>
+            <select id="locationFilter" onchange="filterByLocation()">
+                <option value="all">Hammasi</option>
+            </select>
+        </div>
         <a href="/paid-debts-history" class="btn btn-primary" style="padding: 10px 20px; border-radius: 8px; font-weight: 500; text-decoration: none; color: white;">
             <i class="fas fa-history"></i> Mijozlarni qarz to'lash tarixi
         </a>
@@ -595,8 +633,49 @@
 
 <script>
     let debts = [];
+    let allDebts = []; // Barcha qarzlar (filter uchun)
+    let allPaidDebts = []; // Barcha to'langan qarzlar (filter uchun)
     let currentCustomerId = null;
     let exchangeRate = 13000;
+    let selectedLocation = 'all';
+
+    // Locationlarni yuklash
+    async function loadLocations() {
+        try {
+            const response = await fetch('/api/locations');
+            const locations = await response.json();
+            
+            const select = document.getElementById('locationFilter');
+            select.innerHTML = '<option value="all">Hammasi</option>';
+            
+            locations.forEach(loc => {
+                const option = document.createElement('option');
+                option.value = loc.id;
+                option.textContent = `${loc.emoji} ${loc.name}`;
+                select.appendChild(option);
+            });
+        } catch (error) {
+            console.error('Locationlarni yuklashda xatolik:', error);
+        }
+    }
+
+    // Location bo'yicha filter qilish
+    function filterByLocation() {
+        selectedLocation = document.getElementById('locationFilter').value;
+        
+        // Qarzlarni filter qilish
+        if (selectedLocation === 'all') {
+            debts = [...allDebts];
+        } else {
+            debts = allDebts.filter(debt => debt.location_id == selectedLocation);
+        }
+        
+        updateStats();
+        renderDebtsTable();
+        
+        // To'langan qarzlarni ham filter qilish
+        loadPaidDebts();
+    }
 
     // To'langan qarzlar tarixini ko'rsatish/yashirish
     function togglePaidDebtsHistory() {
@@ -696,12 +775,11 @@
             if (!response.ok) throw new Error('Ma\'lumotlarni yuklashda xatolik');
             
             const data = await response.json();
-            debts = data.debts || [];
+            allDebts = data.debts || [];
+            debts = [...allDebts];
             exchangeRate = data.exchange_rate || 13000;
             
-            updateStats();
-            renderDebtsTable();
-            loadPaidDebts(); // To'langan qarzlarni yuklash
+            filterByLocation(); // Location filter qo'llash
         } catch (error) {
             console.error('Xatolik:', error);
             document.getElementById('debtsTableBody').innerHTML = 
@@ -712,7 +790,12 @@
     // To'langan qarzlarni yuklash
     async function loadPaidDebts() {
         try {
-            const response = await fetch('/api/debts/paid');
+            let url = '/api/debts/paid';
+            if (selectedLocation !== 'all') {
+                url += `?location_id=${selectedLocation}`;
+            }
+            
+            const response = await fetch(url);
             if (!response.ok) throw new Error('Ma\'lumotlarni yuklashda xatolik');
             
             const data = await response.json();
@@ -1084,11 +1167,8 @@
 
     // Sahifa yuklanganda ma'lumotlarni yuklash
     document.addEventListener('DOMContentLoaded', function() {
+        loadLocations(); // Locationlarni yuklash
         loadDebts();
-        
-        // Qidiruv maydoni uchun real-time qidiruv
-        document.getElementById('searchInput').addEventListener('input', applyFilters);
-        document.getElementById('statusFilter').addEventListener('change', applyFilters);
     });
 </script>
 {% endblock %}
