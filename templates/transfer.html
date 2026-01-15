@@ -256,6 +256,58 @@
         box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
     }
 
+    /* Pagination styles */
+    .pagination-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px;
+        background: #f8f9fa;
+        border-top: 1px solid #dee2e6;
+    }
+
+    .pagination-info {
+        font-size: 13px;
+        color: #666;
+        font-weight: 500;
+    }
+
+    .pagination-controls {
+        display: flex;
+        gap: 5px;
+        align-items: center;
+    }
+
+    .pagination-btn {
+        padding: 6px 12px;
+        border: 1px solid #dee2e6;
+        background: white;
+        color: #333;
+        cursor: pointer;
+        border-radius: 4px;
+        font-size: 13px;
+        font-weight: 500;
+        transition: all 0.2s;
+    }
+
+    .pagination-btn:hover:not(:disabled) {
+        background: #667eea;
+        color: white;
+        border-color: #667eea;
+    }
+
+    .pagination-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        background: #e9ecef;
+    }
+
+    .pagination-btn.active {
+        background: #667eea;
+        color: white;
+        border-color: #667eea;
+    }
+
     /* Responsive */
     @media (max-width: 1400px) {
         .transfer-layouts {
@@ -341,6 +393,16 @@
                         </tr>
                     </tbody>
                 </table>
+                <div class="pagination-container" id="paginationContainer" style="display: none;">
+                    <div class="pagination-info" id="paginationInfo">1-30 dan 0 ta</div>
+                    <div class="pagination-controls">
+                        <button class="pagination-btn" onclick="goToFirstPage()" id="btnFirst">⏮️</button>
+                        <button class="pagination-btn" onclick="previousPage()" id="btnPrev">◀️</button>
+                        <span id="pageNumbers" style="display: flex; gap: 3px;"></span>
+                        <button class="pagination-btn" onclick="nextPage()" id="btnNext">▶️</button>
+                        <button class="pagination-btn" onclick="goToLastPage()" id="btnLast">⏭️</button>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -432,6 +494,11 @@
     let currentProduct = null;
     let allProducts = [];
     let locations = [];
+    
+    // Pagination o'zgaruvchilari
+    let currentPage = 1;
+    let itemsPerPage = 30;
+    let filteredProducts = [];
     
     // Barcode scanner uchun
     let barcodeBuffer = '';
@@ -598,17 +665,39 @@
         }
     }
 
-    // Mahsulotlarni ko'rsatish
+    // Mahsulotlarni ko'rsatish (pagination bilan)
     function renderProducts(products) {
+        filteredProducts = products;
+        currentPage = 1;
+        renderCurrentPage();
+    }
+
+    // Joriy sahifani render qilish
+    function renderCurrentPage() {
         const tbody = document.getElementById('productsTableBody');
+        const paginationContainer = document.getElementById('paginationContainer');
         
-        if (products.length === 0) {
+        if (filteredProducts.length === 0) {
             tbody.innerHTML = '<tr><td colspan="4" class="empty-state"><div>📦</div><div>Mahsulotlar topilmadi</div></td></tr>';
+            paginationContainer.style.display = 'none';
             return;
         }
         
+        // Pagination ko'rsatish
+        const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+        if (totalPages > 1) {
+            paginationContainer.style.display = 'flex';
+        } else {
+            paginationContainer.style.display = 'none';
+        }
+        
+        // Joriy sahifa mahsulotlarini olish
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = Math.min(startIndex + itemsPerPage, filteredProducts.length);
+        const pageProducts = filteredProducts.slice(startIndex, endIndex);
+        
         tbody.innerHTML = '';
-        products.forEach(product => {
+        pageProducts.forEach(product => {
             let quantity = 0;
             
             if (product.stocks && product.stocks.length > 0) {
@@ -652,37 +741,103 @@
             `;
             tbody.appendChild(row);
         });
+        
+        // Pagination kontrollari yangilash
+        updatePaginationControls();
+    }
+
+    // Pagination kontrollari yangilash
+    function updatePaginationControls() {
+        const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+        const startIndex = (currentPage - 1) * itemsPerPage + 1;
+        const endIndex = Math.min(currentPage * itemsPerPage, filteredProducts.length);
+        
+        // Info yangilash
+        document.getElementById('paginationInfo').textContent = 
+            `${startIndex}-${endIndex} dan ${filteredProducts.length} ta`;
+        
+        // Tugmalar holatini yangilash
+        document.getElementById('btnFirst').disabled = currentPage === 1;
+        document.getElementById('btnPrev').disabled = currentPage === 1;
+        document.getElementById('btnNext').disabled = currentPage === totalPages;
+        document.getElementById('btnLast').disabled = currentPage === totalPages;
+        
+        // Sahifa raqamlarini yaratish
+        const pageNumbers = document.getElementById('pageNumbers');
+        pageNumbers.innerHTML = '';
+        
+        // Maksimal 5 ta sahifa raqamini ko'rsatish
+        let startPage = Math.max(1, currentPage - 2);
+        let endPage = Math.min(totalPages, startPage + 4);
+        
+        if (endPage - startPage < 4) {
+            startPage = Math.max(1, endPage - 4);
+        }
+        
+        for (let i = startPage; i <= endPage; i++) {
+            const btn = document.createElement('button');
+            btn.className = 'pagination-btn' + (i === currentPage ? ' active' : '');
+            btn.textContent = i;
+            btn.onclick = () => goToPage(i);
+            pageNumbers.appendChild(btn);
+        }
+    }
+
+    // Sahifaga o'tish
+    function goToPage(page) {
+        const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+        if (page >= 1 && page <= totalPages) {
+            currentPage = page;
+            renderCurrentPage();
+        }
+    }
+
+    // Birinchi sahifaga o'tish
+    function goToFirstPage() {
+        goToPage(1);
+    }
+
+    // Oxirgi sahifaga o'tish
+    function goToLastPage() {
+        const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+        goToPage(totalPages);
+    }
+
+    // Keyingi sahifa
+    function nextPage() {
+        goToPage(currentPage + 1);
+    }
+
+    // Oldingi sahifa
+    function previousPage() {
+        goToPage(currentPage - 1);
     }
 
     // Mahsulotlarni filterlash
     let selectedProductIndex = -1; // Klaviatura navigatsiyasi uchun
 
-    // Mahsulotlarni qidirish (client-side filtering)
+    // Mahsulotlarni qidirish (client-side filtering with pagination)
     function filterProducts() {
         const searchInput = document.getElementById('productSearch');
         const searchText = searchInput.value.toLowerCase().trim();
-        const tbody = document.getElementById('productsTableBody');
-        const rows = tbody.querySelectorAll('tr');
         
         // Tanlovni tozalash
         clearProductSelection();
         
-        let visibleCount = 0;
-        
-        for (let row of rows) {
-            const cells = row.cells;
-            if (cells.length < 4) continue; // Empty state qatorini o'tkazib yuborish
-            
-            const productName = cells[0].textContent.toLowerCase();
-            
-            if (!searchText || productName.includes(searchText)) {
-                row.style.display = '';
-                visibleProductRows.push(row);
-                visibleCount++;
-            } else {
-                row.style.display = 'none';
-            }
+        // Qidiruv matni bo'lsa, filterlash
+        if (searchText) {
+            filteredProducts = allProducts.filter(product => {
+                const productName = (product.name || '').toLowerCase();
+                const barcode = (product.barcode || '').toString().toLowerCase();
+                return productName.includes(searchText) || barcode.includes(searchText);
+            });
+        } else {
+            filteredProducts = allProducts;
         }
+        
+        // Birinchi sahifadan boshlash
+        currentPage = 1;
+        renderCurrentPage();
         
         // Agar barcode formatida kiritilayotgan bo'lsa (faqat raqamlar)
         if (/^\d+$/.test(searchText)) {
@@ -695,7 +850,7 @@
         }
     }
 
-    // Klaviatura navigatsiyasi - soddaroq yondashuv
+    // Klaviatura navigatsiyasi - pagination bilan
     function handleProductSearchKeydown(event) {
         const searchInput = document.getElementById('productSearch');
         const searchValue = searchInput.value.trim();
@@ -711,13 +866,29 @@
             return;
         }
         
+        // PageDown / PageUp - sahifalar orasida navigatsiya
+        else if (event.key === 'PageDown') {
+            event.preventDefault();
+            nextPage();
+            return;
+        } else if (event.key === 'PageUp') {
+            event.preventDefault();
+            previousPage();
+            return;
+        }
+        
         // Enter - tanlangan mahsulotni qo'shish yoki barcode qidirish
         if (event.key === 'Enter') {
             event.preventDefault();
             
             // Agar mahsulot tanlangan bo'lsa, uni transfer ro'yxatiga qo'shish
-            if (currentSelectedRowIndex >= 0 && visibleProductRows[currentSelectedRowIndex]) {
-                const addButton = visibleProductRows[currentSelectedRowIndex].querySelector('button');
+            const tbody = document.getElementById('productsTableBody');
+            const rows = Array.from(tbody.querySelectorAll('tr')).filter(row => 
+                !row.querySelector('.empty-state')
+            );
+            
+            if (currentSelectedRowIndex >= 0 && currentSelectedRowIndex < rows.length) {
+                const addButton = rows[currentSelectedRowIndex].querySelector('button');
                 if (addButton && !addButton.disabled) {
                     addButton.click();
                 }
@@ -731,13 +902,8 @@
             }
             
             // Yoki faqat 1 ta natija bo'lsa
-            const tbody = document.getElementById('productsTableBody');
-            const visibleRows = Array.from(tbody.querySelectorAll('tr')).filter(row => 
-                row.style.display !== 'none' && !row.querySelector('.empty-state')
-            );
-            
-            if (visibleRows.length === 1) {
-                const addButton = visibleRows[0].querySelector('button');
+            if (rows.length === 1) {
+                const addButton = rows[0].querySelector('button');
                 if (addButton && !addButton.disabled) {
                     addButton.click();
                 }
@@ -753,50 +919,85 @@
         }
     }
     
-    // Mahsulotlar orasida navigatsiya
+    // Mahsulotlar orasida navigatsiya (pagination bilan)
     function navigateProductTable(direction) {
-        // Agar visibleProductRows bo'sh bo'lsa, uni to'ldirish
-        if (visibleProductRows.length === 0) {
-            const tbody = document.getElementById('productsTableBody');
-            const rows = tbody.querySelectorAll('tr');
-            
-            for (let row of rows) {
-                const cells = row.cells;
-                if (cells.length >= 4 && row.style.display !== 'none' && !row.querySelector('.empty-state')) {
-                    visibleProductRows.push(row);
-                }
-            }
-            
-            // Hali ham bo'sh bo'lsa, chiqish
-            if (visibleProductRows.length === 0) return;
-        }
+        const tbody = document.getElementById('productsTableBody');
+        const rows = Array.from(tbody.querySelectorAll('tr')).filter(row => 
+            !row.querySelector('.empty-state')
+        );
+        
+        // Hali ham bo'sh bo'lsa, chiqish
+        if (rows.length === 0) return;
         
         // Oldingi tanlovni olib tashlash
-        if (currentSelectedRowIndex >= 0 && visibleProductRows[currentSelectedRowIndex]) {
-            visibleProductRows[currentSelectedRowIndex].style.background = '';
+        if (currentSelectedRowIndex >= 0 && currentSelectedRowIndex < rows.length) {
+            rows[currentSelectedRowIndex].style.background = '';
         }
         
         // Yangi indeksni hisoblash
         if (direction === 'down') {
-            currentSelectedRowIndex = (currentSelectedRowIndex + 1) % visibleProductRows.length;
+            currentSelectedRowIndex++;
+            // Agar oxirgi qatorga yetdik va keyingi sahifa bor bo'lsa
+            if (currentSelectedRowIndex >= rows.length) {
+                const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+                if (currentPage < totalPages) {
+                    nextPage();
+                    currentSelectedRowIndex = 0;
+                    setTimeout(() => {
+                        const newRows = Array.from(tbody.querySelectorAll('tr')).filter(row => 
+                            !row.querySelector('.empty-state')
+                        );
+                        if (newRows[0]) {
+                            newRows[0].style.background = '#e3f2fd';
+                            newRows[0].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                        }
+                    }, 100);
+                    return;
+                } else {
+                    currentSelectedRowIndex = 0; // Boshiga qaytish
+                }
+            }
         } else if (direction === 'up') {
-            currentSelectedRowIndex = currentSelectedRowIndex <= 0 ? visibleProductRows.length - 1 : currentSelectedRowIndex - 1;
+            currentSelectedRowIndex--;
+            // Agar birinchi qatordan yuqori borayotgan bo'lsak va oldingi sahifa bor bo'lsa
+            if (currentSelectedRowIndex < 0) {
+                if (currentPage > 1) {
+                    previousPage();
+                    setTimeout(() => {
+                        const newRows = Array.from(tbody.querySelectorAll('tr')).filter(row => 
+                            !row.querySelector('.empty-state')
+                        );
+                        currentSelectedRowIndex = newRows.length - 1;
+                        if (newRows[currentSelectedRowIndex]) {
+                            newRows[currentSelectedRowIndex].style.background = '#e3f2fd';
+                            newRows[currentSelectedRowIndex].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                        }
+                    }, 100);
+                    return;
+                } else {
+                    currentSelectedRowIndex = rows.length - 1; // Oxiriga qaytish
+                }
+            }
         }
         
         // Yangi tanlovni belgilash
-        if (visibleProductRows[currentSelectedRowIndex]) {
-            visibleProductRows[currentSelectedRowIndex].style.background = '#e3f2fd';
-            visibleProductRows[currentSelectedRowIndex].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        if (rows[currentSelectedRowIndex]) {
+            rows[currentSelectedRowIndex].style.background = '#e3f2fd';
+            rows[currentSelectedRowIndex].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
         }
     }
     
     // Tanlovni tozalash
     function clearProductSelection() {
-        if (currentSelectedRowIndex >= 0 && visibleProductRows[currentSelectedRowIndex]) {
-            visibleProductRows[currentSelectedRowIndex].style.background = '';
+        const tbody = document.getElementById('productsTableBody');
+        const rows = Array.from(tbody.querySelectorAll('tr')).filter(row => 
+            !row.querySelector('.empty-state')
+        );
+        
+        if (currentSelectedRowIndex >= 0 && currentSelectedRowIndex < rows.length) {
+            rows[currentSelectedRowIndex].style.background = '';
         }
         currentSelectedRowIndex = -1;
-        visibleProductRows = [];
     }
     
     // Barcode orqali mahsulot qidirish
