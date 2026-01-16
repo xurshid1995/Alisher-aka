@@ -585,6 +585,7 @@
                     id="confirmInput" 
                     placeholder="Mijoz nomini kiriting..."
                     autocomplete="off"
+                    autofocus
                 >
             </div>
         </div>
@@ -890,12 +891,17 @@
         confirmInput.value = '';
         confirmBtn.disabled = true;
         confirmBtn.classList.remove('enabled');
+        confirmInput.classList.remove('error');
         
         modal.classList.add('active');
         console.log('✅ Modal ochildi, active class qo\'shildi');
         
-        // Input'ga fokus
-        setTimeout(() => confirmInput.focus(), 300);
+        // Input'ga fokus - darhol va qaytadan
+        confirmInput.focus();
+        setTimeout(() => {
+            confirmInput.focus();
+            confirmInput.select();
+        }, 100);
     }
 
     // Close delete modal
