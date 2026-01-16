@@ -8022,7 +8022,16 @@ def get_sale(sale_id):
         # Sotuvchi uchun joylashuv ruxsatini tekshirish
         if current_user.role == 'sotuvchi':
             allowed_locations = current_user.allowed_locations or []
-            if sale.store_id not in allowed_locations:
+            
+            # Savdo qaysi joyda amalga oshirilganini aniqlash
+            sale_location_id = sale.store_id if sale.store_id else sale.warehouse_id
+            sale_location_type = 'store' if sale.store_id else 'warehouse'
+            
+            # Ruxsat etilgan joylashuvlardan ID larni ajratib olish
+            allowed_location_ids = extract_location_ids(allowed_locations, sale_location_type)
+            
+            # Agar sotuvchiga bu joylashuvda savdo qilish ruxsati bo'lmasa
+            if sale_location_id not in allowed_location_ids:
                 return jsonify({
                     'success': False,
                     'error': 'Bu savdoni ko\'rish uchun ruxsatingiz yo\'q'
@@ -8060,7 +8069,16 @@ def update_sale(sale_id):
         # Sotuvchi uchun joylashuv ruxsatini tekshirish
         if current_user.role == 'sotuvchi':
             allowed_locations = current_user.allowed_locations or []
-            if sale.store_id not in allowed_locations:
+            
+            # Savdo qaysi joyda amalga oshirilganini aniqlash
+            sale_location_id = sale.store_id if sale.store_id else sale.warehouse_id
+            sale_location_type = 'store' if sale.store_id else 'warehouse'
+            
+            # Ruxsat etilgan joylashuvlardan ID larni ajratib olish
+            allowed_location_ids = extract_location_ids(allowed_locations, sale_location_type)
+            
+            # Agar sotuvchiga bu joylashuvda savdo qilish ruxsati bo'lmasa
+            if sale_location_id not in allowed_location_ids:
                 return jsonify({
                     'success': False,
                     'error': 'Bu savdoni tahrirlash uchun ruxsatingiz yo\'q'
@@ -8199,7 +8217,16 @@ def delete_sale_with_stock_return(sale_id):
         # Sotuvchi uchun joylashuv ruxsatini tekshirish
         if current_user.role == 'sotuvchi':
             allowed_locations = current_user.allowed_locations or []
-            if sale.store_id not in allowed_locations:
+            
+            # Savdo qaysi joyda amalga oshirilganini aniqlash
+            sale_location_id = sale.store_id if sale.store_id else sale.warehouse_id
+            sale_location_type = 'store' if sale.store_id else 'warehouse'
+            
+            # Ruxsat etilgan joylashuvlardan ID larni ajratib olish
+            allowed_location_ids = extract_location_ids(allowed_locations, sale_location_type)
+            
+            # Agar sotuvchiga bu joylashuvda savdo qilish ruxsati bo'lmasa
+            if sale_location_id not in allowed_location_ids:
                 return jsonify({
                     'success': False,
                     'error': 'Bu savdoni o\'chirish uchun ruxsatingiz yo\'q'
