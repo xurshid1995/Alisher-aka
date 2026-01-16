@@ -357,6 +357,19 @@ async function loadLocations() {
         });
         
         console.log('✅ Barcha joylashuvlar yuklandi!');
+        
+        // Sotuvchi roli uchun birinchi joylashuvni avtomatik tanlash
+        {% if current_user.role == 'sotuvchi' %}
+        if (locations.length > 0) {
+            const firstLocation = locations[0];
+            const firstButton = buttonsContainer.querySelector(`[data-location="${firstLocation.id}"]`);
+            if (firstButton) {
+                console.log('🎯 Sotuvchi uchun birinchi joylashuvni avtomatik tanlash:', firstLocation.name);
+                selectLocation(firstButton, firstLocation.id, firstLocation.type);
+            }
+        }
+        {% endif %}
+        
     } catch (error) {
         console.error('❌ Joylashuvlarni yuklashda xatolik:', error);
         console.error('❌ Xatolik detallaridokon:', error.stack);
