@@ -196,6 +196,30 @@
         background: #218838;
     }
 
+    .btn-sms {
+        background: #25D366;
+        color: white;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 500;
+        transition: all 0.3s;
+        white-space: nowrap;
+    }
+
+    .btn-sms:hover {
+        background: #128C7E;
+        transform: translateY(-2px);
+    }
+
+    .btn-sms:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+        transform: none;
+    }
+
     /* Qidiruv maydoni */
     .search-container {
         margin-bottom: 15px;
@@ -476,15 +500,20 @@
 <div class="debts-container">
     <div class="page-header">
         <h1>💰 Qarzlar</h1>
-        <!-- Joylashuv tugmalari -->
-        <div id="locationButtons" style="margin: 15px 0;">
-            <button class="btn btn-sm me-2 mb-2 location-btn active" data-location="" onclick="selectLocation(this, '')">
-                🏢 Barchasi
+        <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+            <!-- Joylashuv tugmalari -->
+            <div id="locationButtons" style="margin: 15px 0;">
+                <button class="btn btn-sm me-2 mb-2 location-btn active" data-location="" onclick="selectLocation(this, '')">
+                    🏢 Barchasi
+                </button>
+            </div>
+            <button onclick="sendBulkDebtSMS()" class="btn-sms" style="padding: 10px 20px; border-radius: 8px; font-weight: 500;">
+                📱 Barchaga SMS yuborish
             </button>
+            <a href="/paid-debts-history" class="btn btn-primary" style="padding: 10px 20px; border-radius: 8px; font-weight: 500; text-decoration: none; color: white;">
+                <i class="fas fa-history"></i> Mijozlarni qarz to'lash tarixi
+            </a>
         </div>
-        <a href="/paid-debts-history" class="btn btn-primary" style="padding: 10px 20px; border-radius: 8px; font-weight: 500; text-decoration: none; color: white;">
-            <i class="fas fa-history"></i> Mijozlarni qarz to'lash tarixi
-        </a>
     </div>
 
     <!-- Statistika kartochkalari -->
@@ -942,6 +971,7 @@
                         <div class="action-buttons">
                             <a href="/debts/customer/${debt.customer_id}" class="btn-view" style="text-decoration: none;">👁️ Ko'rish</a>
                             ${remainingDebt > 0 ? `<button class="btn-pay" onclick="openPaymentModal(${debt.customer_id})">💳 To'lov</button>` : ''}
+                            ${remainingDebt > 0 && debt.customer_phone ? `<button class="btn-sms" onclick="sendDebtSMS(${debt.customer_id}, '${debt.customer_name}', ${remainingDebt})">📱 SMS</button>` : ''}
                         </div>
                     </td>
                 </tr>
@@ -1005,6 +1035,7 @@
                         <div class="action-buttons">
                             <a href="/debts/customer/${debt.customer_id}" class="btn-view" style="text-decoration: none;">👁️ Ko'rish</a>
                             ${remainingDebt > 0 ? `<button class="btn-pay" onclick="openPaymentModal(${debt.customer_id})">💳 To'lov</button>` : ''}
+                            ${remainingDebt > 0 && debt.customer_phone ? `<button class="btn-sms" onclick="sendDebtSMS(${debt.customer_id}, '${debt.customer_name}', ${remainingDebt})">📱 SMS</button>` : ''}
                         </div>
                     </td>
                 </tr>
@@ -1219,6 +1250,92 @@
         } catch (error) {
             console.error('Xatolik:', error);
             alert('❌ To\'lovni amalga oshirishda xatolik yuz berdi');
+        }
+    }
+
+    // SMS yuborish funksiyasi
+    async function sendDebtSMS(customerId, customerName, debtAmount) {
+        if (!confirm(`${customerName}ga qarz eslatmasi SMS yuborilsinmi?\n\nQarz: $${debtAmount.toFixed(2)}`)) {
+            return;
+        }
+
+        const button = event.target;
+        const originalText = button.innerHTML;
+        button.disabled = true;
+        button.innerHTML = '⏳ Yuborilmoqda...';
+
+        try {
+            const response = await fetch('/api/sms/send-debt-reminder', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({customer_id: customerId})
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                alert(`✅ SMS muvaffaqiyatli yuborildi!\n\n📱 Telefon: ${result.phone}\n🆔 Message ID: ${result.message_id || 'N/A'}`);
+            } else {
+                alert(`❌ SMS yuborishda xatolik:\n${result.error}`);
+            }
+        } catch (error) {
+            console.error('SMS xatolik:', error);
+            alert(`❌ SMS yuborishda xatolik yuz berdi:\n${error.message}`);
+        } finally {
+            button.disabled = false;
+            button.innerHTML = originalText;
+        }
+    }
+
+    // Barcha qarzlilarga SMS yuborish
+    async function sendBulkDebtSMS() {
+        const minDebt = prompt('Minimal qarz miqdorini kiriting (USD):', '10');
+        if (!minDebt || isNaN(minDebt)) return;
+
+        if (!confirm(`$${minDebt} dan ortiq qarzli barcha mijozlarga SMS yuborilsinmi?`)) {
+            return;
+        }
+
+        const loadingDiv = document.createElement('div');
+        loadingDiv.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;padding:30px;border-radius:15px;box-shadow:0 8px 32px rgba(0,0,0,0.3);z-index:10000;text-align:center;min-width:300px;';
+        loadingDiv.innerHTML = '<div style="font-size:48px;margin-bottom:15px;">📱</div><div style="font-size:18px;color:#333;margin-bottom:10px;">SMS yuborilmoqda...</div><div style="font-size:14px;color:#666;">Iltimos kuting</div>';
+        document.body.appendChild(loadingDiv);
+
+        try {
+            const response = await fetch('/api/sms/send-bulk-reminders', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({min_debt: parseFloat(minDebt)})
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                let message = `✅ SMS yuborish yakunlandi!\n\n`;
+                message += `📊 Statistika:\n`;
+                message += `✔️  Yuborildi: ${result.sent}\n`;
+                message += `❌ Xatolik: ${result.failed}\n`;
+
+                if (result.errors && result.errors.length > 0) {
+                    message += `\n⚠️  Xatoliklar:\n`;
+                    result.errors.slice(0, 5).forEach(e => {
+                        message += `- ${e.customer}: ${e.error}\n`;
+                    });
+                    if (result.errors.length > 5) {
+                        message += `... va yana ${result.errors.length - 5} ta xatolik`;
+                    }
+                }
+
+                alert(message);
+                loadDebts(); // Ma'lumotlarni yangilash
+            } else {
+                alert(`❌ Xatolik:\n${result.error}`);
+            }
+        } catch (error) {
+            console.error('Bulk SMS xatolik:', error);
+            alert(`❌ SMS yuborishda xatolik:\n${error.message}`);
+        } finally {
+            document.body.removeChild(loadingDiv);
         }
     }
 
