@@ -10277,6 +10277,221 @@ def shutdown_session(exception=None):
     except Exception as e:
         # Cleanup jarayonida xato bo'lsa, log qilish lekin crash qilmaslik
         app.logger.error(f"Session cleanup error: {e}")
+# =====================================================================
+# SMS API ENDPOINTS (ESKIZ.UZ)
+# =====================================================================
+
+try:
+    from sms_eskiz import eskiz_sms
+    SMS_ENABLED = True
+except ImportError:
+    SMS_ENABLED = False
+    logger.warning("⚠️ SMS xizmati o'rnatilmagan. sms_eskiz.py faylini yarating.")
+
+@app.route('/api/sms/send-debt-reminder', methods=['POST'])
+@role_required('admin', 'kassir')
+def api_send_debt_sms():
+    """Qarzli mijozga SMS eslatmasi yuborish"""
+    if not SMS_ENABLED:
+        return jsonify({'success': False, 'error': 'SMS xizmati faol emas'}), 503
+    
+    try:
+        data = request.get_json()
+        customer_id = data.get('customer_id')
+        
+        if not customer_id:
+            return jsonify({'success': False, 'error': 'Mijoz ID kiritilmagan'}), 400
+        
+        # Mijoz ma'lumotlarini olish
+        customer = Customer.query.get(customer_id)
+        if not customer:
+            return jsonify({'success': False, 'error': 'Mijoz topilmadi'}), 404
+        
+        if not customer.phone:
+            return jsonify({'success': False, 'error': 'Mijozda telefon raqam yo\'q'}), 400
+        
+        # Qarz miqdorini hisoblash
+        debt_usd = db.session.query(
+            db.func.sum(Sale.debt_usd)
+        ).filter(
+            Sale.customer_id == customer_id,
+            Sale.debt_usd > 0
+        ).scalar() or 0
+        
+        if debt_usd <= 0:
+            return jsonify({'success': False, 'error': 'Mijozda qarz yo\'q'}), 400
+        
+        # Kurs olish
+        rate = CurrencyRate.query.order_by(CurrencyRate.id.desc()).first()
+        exchange_rate = float(rate.rate) if rate else 13000
+        
+        # SMS yuborish
+        result = eskiz_sms.send_debt_reminder(
+            customer.phone,
+            customer.name,
+            float(debt_usd),
+            exchange_rate
+        )
+        
+        # Log yozish
+        if result.get('success'):
+            logger.info(f"✅ Qarz SMS yuborildi: {customer.name} ({customer.phone})")
+        else:
+            logger.error(f"❌ SMS xatolik: {customer.name} - {result.get('error')}")
+        
+        return jsonify(result)
+        
+    except Exception as e:
+        logger.error(f"SMS yuborishda xatolik: {str(e)}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/sms/send-payment-confirmation', methods=['POST'])
+@role_required('admin', 'kassir')
+def api_send_payment_sms():
+    """To'lov tasdiqlash SMS yuborish"""
+    if not SMS_ENABLED:
+        return jsonify({'success': False, 'error': 'SMS xizmati faol emas'}), 503
+    
+    try:
+        data = request.get_json()
+        customer_id = data.get('customer_id')
+        paid_amount_usd = float(data.get('paid_amount_usd', 0))
+        
+        if not customer_id or paid_amount_usd <= 0:
+            return jsonify({'success': False, 'error': 'Noto\'g\'ri ma\'lumotlar'}), 400
+        
+        # Mijoz ma'lumotlari
+        customer = Customer.query.get(customer_id)
+        if not customer or not customer.phone:
+            return jsonify({'success': False, 'error': 'Telefon raqam topilmadi'}), 400
+        
+        # Qolgan qarzni hisoblash
+        remaining_debt = db.session.query(
+            db.func.sum(Sale.debt_usd)
+        ).filter(
+            Sale.customer_id == customer_id,
+            Sale.debt_usd > 0
+        ).scalar() or 0
+        
+        # Kurs
+        rate = CurrencyRate.query.order_by(CurrencyRate.id.desc()).first()
+        exchange_rate = float(rate.rate) if rate else 13000
+        
+        # SMS yuborish
+        result = eskiz_sms.send_payment_confirmation(
+            customer.phone,
+            customer.name,
+            paid_amount_usd,
+            float(remaining_debt),
+            exchange_rate
+        )
+        
+        # Log
+        if result.get('success'):
+            logger.info(f"✅ To'lov SMS yuborildi: {customer.name} ({customer.phone})")
+        
+        return jsonify(result)
+        
+    except Exception as e:
+        logger.error(f"To'lov SMS xatolik: {str(e)}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/sms/balance', methods=['GET'])
+@role_required('admin')
+def api_sms_balance():
+    """SMS balansni tekshirish"""
+    if not SMS_ENABLED:
+        return jsonify({'success': False, 'error': 'SMS xizmati faol emas'}), 503
+    
+    try:
+        balance = eskiz_sms.get_balance()
+        
+        if balance:
+            return jsonify({
+                'success': True,
+                'balance': balance
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'error': 'Balansni olishda xatolik'
+            }), 500
+        
+    except Exception as e:
+        logger.error(f"Balans tekshirishda xatolik: {str(e)}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/sms/send-bulk-reminders', methods=['POST'])
+@role_required('admin')
+def api_send_bulk_sms():
+    """Barcha qarzli mijozlarga SMS yuborish"""
+    if not SMS_ENABLED:
+        return jsonify({'success': False, 'error': 'SMS xizmati faol emas'}), 503
+    
+    try:
+        data = request.get_json()
+        min_debt = float(data.get('min_debt', 10))  # Minimal qarz (USD)
+        
+        # Kurs
+        rate = CurrencyRate.query.order_by(CurrencyRate.id.desc()).first()
+        exchange_rate = float(rate.rate) if rate else 13000
+        
+        # Qarzli mijozlarni olish
+        query = text("""
+            SELECT 
+                c.id, c.name, c.phone,
+                COALESCE(SUM(s.debt_usd), 0) as total_debt_usd
+            FROM customers c
+            LEFT JOIN sales s ON c.id = s.customer_id AND s.debt_usd > 0
+            WHERE c.phone IS NOT NULL AND c.phone != ''
+            GROUP BY c.id, c.name, c.phone
+            HAVING COALESCE(SUM(s.debt_usd), 0) >= :min_debt
+            ORDER BY total_debt_usd DESC
+        """)
+        
+        results = db.session.execute(query, {'min_debt': min_debt})
+        
+        sent_count = 0
+        failed_count = 0
+        errors = []
+        
+        for row in results:
+            result = eskiz_sms.send_debt_reminder(
+                row.phone, 
+                row.name, 
+                float(row.total_debt_usd),
+                exchange_rate
+            )
+            
+            if result.get('success'):
+                sent_count += 1
+            else:
+                failed_count += 1
+                errors.append({
+                    'customer': row.name,
+                    'phone': row.phone,
+                    'error': result.get('error')
+                })
+            
+            # Rate limiting
+            import time
+            time.sleep(0.5)
+        
+        logger.info(f"📊 Bulk SMS: {sent_count} yuborildi, {failed_count} xatolik")
+        
+        return jsonify({
+            'success': True,
+            'sent': sent_count,
+            'failed': failed_count,
+            'errors': errors
+        })
+        
+    except Exception as e:
+        logger.error(f"Bulk SMS xatolik: {str(e)}")
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 
 if __name__ == '__main__':
