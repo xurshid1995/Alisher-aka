@@ -2761,6 +2761,14 @@
             return;
         }
         
+        // Mahsulot allaqachon savatda borligini tekshirish
+        const existingItem = cart.find(item => item.id === currentProduct.id);
+        if (existingItem) {
+            alert('⚠️ Bu mahsulot allaqachon savatda mavjud!\n\nAgar miqdorini o\'zgartirmoqchi bo\'lsangiz, savatdagi "✏️ Tahrirlash" tugmasini bosing.');
+            closeModal();
+            return;
+        }
+        
         if (quantity <= 0 || quantity > currentProduct.available) {
             alert('Noto\'g\'ri miqdor!');
             return;
@@ -2797,25 +2805,15 @@
             return;
         }
         
-        // Savat ichida mahsulot bormi tekshirish
-        const existingItem = cart.find(item => item.id === currentProduct.id);
-        
-        if (existingItem) {
-            const oldQuantity = existingItem.quantity;
-            existingItem.quantity += quantity;
-            existingItem.priceUSD = priceUSD;
-            existingItem.priceUZS = priceUZS;
-            console.log(`📦 Mavjud mahsulot miqdori oshirildi: ${oldQuantity} + ${quantity} = ${existingItem.quantity}`);
-        } else {
-            cart.push({
-                id: currentProduct.id,
-                name: currentProduct?.name || `Mahsulot #${currentProduct?.id || 'Unknown'}`,
-                priceUSD: priceUSD,
-                priceUZS: priceUZS,
-                quantity: quantity
-            });
-            console.log(`➕ Yangi mahsulot qo'shildi: ${quantity} dona`);
-        }
+        // Savatga yangi mahsulot qo'shish (duplicate allaqachon tekshirilgan)
+        cart.push({
+            id: currentProduct.id,
+            name: currentProduct?.name || `Mahsulot #${currentProduct?.id || 'Unknown'}`,
+            priceUSD: priceUSD,
+            priceUZS: priceUZS,
+            quantity: quantity
+        });
+        console.log(`➕ Yangi mahsulot qo'shildi: ${quantity} dona`);
         
         // Tab state'ni yangilash
         const tabState = getTabState();
