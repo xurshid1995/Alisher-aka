@@ -63,16 +63,6 @@
         text-align: center;
         position: relative;
         z-index: 1;
-        animation: smoothRotate 20s linear infinite;
-    }
-    
-    @keyframes smoothRotate {
-        0% {
-            transform: rotate(0deg);
-        }
-        100% {
-            transform: rotate(360deg);
-        }
     }
 
     /* Traktor animatsiyasi */
@@ -96,14 +86,14 @@
     .tractor {
         display: inline-block;
         font-size: 40px;
-        filter: hue-rotate(0deg) saturate(2);
+        filter: hue-rotate(330deg) saturate(3) brightness(1.1);
     }
 
     .trailer {
         display: inline-block;
         font-size: 35px;
         margin-left: 5px;
-        filter: hue-rotate(0deg) saturate(2);
+        filter: hue-rotate(330deg) saturate(3) brightness(1.1);
     }
 
     .login-header {
@@ -307,7 +297,8 @@
 <body>
     <!-- Traktor animatsiyasi -->
     <div class="tractor-container">
-        <span class="tractor">🚜</span><span style="margin: 0 -10px;">━</span><span class="trailer">📦</span>
+        <span class="tractor">🚜</span>
+        <span class="trailer">🚛</span>
     </div>
 
     <div class="login-container">
