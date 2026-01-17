@@ -907,38 +907,40 @@ class OperationHistory(db.Model):
         return f'<OperationHistory {self.operation_type} by {self.username}>'
 
 
-# Foydalanuvchi session'lari modeli - vaqtincha disabled
-# class UserSession(db.Model):
-#     __tablename__ = 'user_sessions'
+# Foydalanuvchi session'lari modeli
+class UserSession(db.Model):
+    __tablename__ = 'user_sessions'
 
-#     id = db.Column(db.Integer, primary_key=True)
-#     user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
-#     session_id = db.Column(db.String(255), unique=True, nullable=False)
-#     login_time = db.Column(db.DateTime, default=db.func.current_timestamp())
-#     last_activity = db.Column(db.DateTime, default=db.func.current_timestamp())
-#     ip_address = db.Column(db.String(45))
-#     user_agent = db.Column(db.Text)
-#     is_active = db.Column(db.Boolean, default=True, nullable=False)
-#     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
+    session_id = db.Column(db.String(255), unique=True, nullable=False, index=True)
+    login_time = db.Column(db.DateTime, default=get_tashkent_time)
+    last_activity = db.Column(db.DateTime, default=get_tashkent_time)
+    ip_address = db.Column(db.String(45))
+    user_agent = db.Column(db.Text)
+    is_active = db.Column(db.Boolean, default=True, nullable=False, index=True)
+    created_at = db.Column(db.DateTime, default=get_tashkent_time)
 
-#     # Relationships
-#     user = db.relationship('User', backref='sessions')
+    # Relationships
+    user = db.relationship('User', backref='sessions')
 
-#     def __repr__(self):
-#         return f'<UserSession {self.id}: User {self.user_id} - {self.session_id[:8]}...>'
+    def __repr__(self):
+        return f'<UserSession {self.id}: User {self.user_id} - {self.session_id[:8]}...>'
 
-#     def to_dict(self):
-#         return {
-#             'id': self.id,
-#             'user_id': self.user_id,
-#             'session_id': self.session_id,
-#             'login_time': self.login_time.isoformat() if self.login_time else None,
-#             'last_activity': self.last_activity.isoformat() if self.last_activity else None,
-#             'ip_address': self.ip_address,
-#             'user_agent': self.user_agent,
-#             'is_active': self.is_active,
-#             'created_at': self.created_at.isoformat() if self.created_at else None
-#         }
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'username': self.user.username if self.user else None,
+            'full_name': self.user.full_name if self.user else None,
+            'session_id': self.session_id,
+            'login_time': self.login_time.isoformat() if self.login_time else None,
+            'last_activity': self.last_activity.isoformat() if self.last_activity else None,
+            'ip_address': self.ip_address,
+            'user_agent': self.user_agent,
+            'is_active': self.is_active,
+            'created_at': self.created_at.isoformat() if self.created_at else None
+        }
 
 
 # Sozlamalar modeli
@@ -6857,6 +6859,41 @@ def toggle_user_status(user_id):
         return jsonify({'error': str(e)}), 500
 
 
+@app.route('/api/active-sessions', methods=['GET'])
+@role_required('admin', 'kassir')
+def get_active_sessions():
+    """Aktiv foydalanuvchi seanslarini olish"""
+    try:
+        # Aktiv seanslarni olish
+        active_sessions = UserSession.query.filter_by(is_active=True).order_by(UserSession.login_time.desc()).all()
+        
+        sessions_data = []
+        for session_obj in active_sessions:
+            session_dict = session_obj.to_dict()
+            # User relationship orqali store_name qo'shish
+            if session_obj.user and session_obj.user.store_id:
+                store = Store.query.get(session_obj.user.store_id)
+                session_dict['store_name'] = store.name if store else 'Noma\'lum'
+            else:
+                session_dict['store_name'] = 'Barcha dokonlar'
+            
+            # User role qo'shish
+            if session_obj.user:
+                session_dict['role'] = session_obj.user.role
+            
+            sessions_data.append(session_dict)
+        
+        return jsonify({
+            'success': True,
+            'sessions': sessions_data,
+            'total': len(sessions_data)
+        })
+        
+    except Exception as e:
+        app.logger.error(f"Aktiv seanslarni olishda xatolik: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+
 @app.route('/api/users/<int:user_id>', methods=['GET'])
 # @role_required('admin', 'kassir')  # Test uchun vaqtincha o'chirilgan
 def get_user(user_id):
@@ -9631,34 +9668,35 @@ def api_login():
         session['user_phone'] = user.phone or ''
         session['store_id'] = user.store_id
 
-        # Session tracking - database'da session yaratish - vaqtincha disabled
-        # try:
-        #     session_id = str(uuid.uuid4())
+        # Session tracking - database'da session yaratish
+        try:
+            import uuid
+            session_id = str(uuid.uuid4())
 
-        #     # Eski session'larni deactivate qilish
-        #     UserSession.query.filter_by(user_id=user.id, is_active=True).update({'is_active': False})
+            # Eski session'larni deactivate qilish
+            UserSession.query.filter_by(user_id=user.id, is_active=True).update({'is_active': False})
 
-        #     # Yangi session yaratish
-        #     user_session = UserSession(
-        #         user_id=user.id,
-        #         session_id=session_id,
-        #         ip_address=request.remote_addr,
-        #         user_agent=request.headers.get('User-Agent', '')[:500],  # Truncate if too long
-        #         is_active=True
-        #     )
+            # Yangi session yaratish
+            user_session = UserSession(
+                user_id=user.id,
+                session_id=session_id,
+                ip_address=request.remote_addr,
+                user_agent=request.headers.get('User-Agent', '')[:500],  # Truncate if too long
+                is_active=True
+            )
 
-        #     db.session.add(user_session)
-        #     db.session.commit()
+            db.session.add(user_session)
+            db.session.commit()
 
-        #     # Session'ga session_id qo'shish
-        #     session['session_id'] = session_id
+            # Session'ga session_id qo'shish
+            session['session_id'] = session_id
 
-        #     app.logger.info(f"🔐 Yangi session yaratildi: User {user.username} (ID: {user.id}), Session: {session_id[:8]}...")
+            app.logger.info(f"🔐 Yangi session yaratildi: User {user.username} (ID: {user.id}), Session: {session_id[:8]}...")
 
-        # except Exception as e:
-        #     app.logger.error(f"Session tracking xatosi: {e}")
-        #     # Session tracking xato bo'lsa ham login'ga ruxsat berish
-        #     pass
+        except Exception as e:
+            app.logger.error(f"Session tracking xatosi: {e}")
+            # Session tracking xato bo'lsa ham login'ga ruxsat berish
+            pass
 
         # Session'ni har doim permanent qilish (8 soat)
         session.permanent = True
