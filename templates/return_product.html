@@ -413,9 +413,7 @@
         if (e.target !== searchInput && !suggestions.contains(e.target)) {
             suggestions.style.display = 'none';
         }
-    });   document.getElementById('saleIdInput').value = saleId;
-        searchSale();
-    }
+    });
 
     function getPaymentStatusBadge(status) {
         const badges = {
