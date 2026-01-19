@@ -1198,6 +1198,29 @@ class Sale(db.Model):
         except Exception as e:
             app.logger.error(f"Error getting returned products for sale {self.id}: {str(e)}")
             return []
+    
+    def _get_payment_refunds(self):
+        """Qaytarilgan to'lovlarni operation_history dan topish"""
+        try:
+            refund_ops = OperationHistory.query.filter_by(
+                record_id=self.id,
+                operation_type='payment_refund'
+            ).all()
+            
+            refunds = []
+            for op in refund_ops:
+                if op.new_data and isinstance(op.new_data, dict):
+                    refunds.append({
+                        'payment_type': op.new_data.get('payment_type'),
+                        'refund_amount_usd': op.new_data.get('refund_amount_usd', 0),
+                        'refund_amount_uzs': op.new_data.get('refund_amount_uzs', 0),
+                        'refund_date': op.created_at.isoformat() if op.created_at else None
+                    })
+            
+            return refunds
+        except Exception as e:
+            app.logger.error(f"Error getting payment refunds for sale {self.id}: {str(e)}")
+            return []
 
     def to_dict(self):
         # Mijoz nomini aniqlash
@@ -1252,6 +1275,7 @@ class Sale(db.Model):
             'items': [
                 item.to_dict() for item in self.items] if self.items else [],
             'returned_products': self._get_returned_products(),
+            'payment_refunds': self._get_payment_refunds(),
             'debt_payments': [
                 {
                     'id': dp.id,
@@ -2891,8 +2915,106 @@ def api_return_product():
             sale.total_amount -= total_returned_usd
             logger.info(f"Savdo #{sale_id} jami summasi yangilandi: -${total_returned_usd}")
             
-            # To'lovlarni hozircha avtomatik o'zgartirmaymiz
-            # Faqat mahsulot qaytarilganini yozib qo'yamiz
+            # To'lovlarni avtomatik qaytarish (avval naqd, keyin click, keyin terminal)
+            remaining_to_refund = total_returned_usd
+            returned_uzs = total_returned_usd * sale.currency_rate
+            
+            # Savdodagi barcha to'lovlarni olish
+            payments = DebtPayment.query.filter_by(sale_id=sale_id).all()
+            
+            refund_details = []  # Qaytarilgan to'lovlar ro'yxati
+            
+            # 1. Avval naqd puldan qaytarish
+            cash_total = sum(Decimal(str(p.cash_usd or 0)) for p in payments)
+            if cash_total > 0 and remaining_to_refund > 0:
+                refund_cash = min(cash_total, remaining_to_refund)
+                logger.info(f"Naqd puldan qaytariladi: ${refund_cash}")
+                
+                # Har bir to'lovdan proporsional kamaytirish
+                for payment in payments:
+                    if payment.cash_usd and payment.cash_usd > 0 and remaining_to_refund > 0:
+                        old_cash = Decimal(str(payment.cash_usd))
+                        deduct = min(old_cash, remaining_to_refund)
+                        payment.cash_usd = float(old_cash - deduct)
+                        remaining_to_refund -= deduct
+                        logger.info(f"Payment #{payment.id} cash: ${old_cash} -> ${payment.cash_usd}")
+                
+                refund_details.append({
+                    'type': 'cash',
+                    'amount_usd': float(refund_cash),
+                    'amount_uzs': float(refund_cash * sale.currency_rate)
+                })
+            
+            # 2. Click dan qaytarish
+            click_total = sum(Decimal(str(p.click_usd or 0)) for p in payments)
+            if click_total > 0 and remaining_to_refund > 0:
+                refund_click = min(click_total, remaining_to_refund)
+                logger.info(f"Click dan qaytariladi: ${refund_click}")
+                
+                for payment in payments:
+                    if payment.click_usd and payment.click_usd > 0 and remaining_to_refund > 0:
+                        old_click = Decimal(str(payment.click_usd))
+                        deduct = min(old_click, remaining_to_refund)
+                        payment.click_usd = float(old_click - deduct)
+                        remaining_to_refund -= deduct
+                        logger.info(f"Payment #{payment.id} click: ${old_click} -> ${payment.click_usd}")
+                
+                refund_details.append({
+                    'type': 'click',
+                    'amount_usd': float(refund_click),
+                    'amount_uzs': float(refund_click * sale.currency_rate)
+                })
+            
+            # 3. Terminal dan qaytarish
+            terminal_total = sum(Decimal(str(p.terminal_usd or 0)) for p in payments)
+            if terminal_total > 0 and remaining_to_refund > 0:
+                refund_terminal = min(terminal_total, remaining_to_refund)
+                logger.info(f"Terminal dan qaytariladi: ${refund_terminal}")
+                
+                for payment in payments:
+                    if payment.terminal_usd and payment.terminal_usd > 0 and remaining_to_refund > 0:
+                        old_terminal = Decimal(str(payment.terminal_usd))
+                        deduct = min(old_terminal, remaining_to_refund)
+                        payment.terminal_usd = float(old_terminal - deduct)
+                        remaining_to_refund -= deduct
+                        logger.info(f"Payment #{payment.id} terminal: ${old_terminal} -> ${payment.terminal_usd}")
+                
+                refund_details.append({
+                    'type': 'terminal',
+                    'amount_usd': float(refund_terminal),
+                    'amount_uzs': float(refund_terminal * sale.currency_rate)
+                })
+            
+            # Sale dagi to'lov summasini ham yangilash
+            sale.cash_usd = sum(Decimal(str(p.cash_usd or 0)) for p in payments)
+            sale.click_usd = sum(Decimal(str(p.click_usd or 0)) for p in payments)
+            sale.terminal_usd = sum(Decimal(str(p.terminal_usd or 0)) for p in payments)
+            
+            # Qaytarilgan to'lovlarni operation_history'ga yozish
+            if refund_details:
+                for refund in refund_details:
+                    refund_operation = OperationHistory(
+                        operation_type='payment_refund',
+                        table_name='debt_payments',
+                        record_id=sale_id,
+                        user_id=session.get('user_id'),
+                        username=session.get('username'),
+                        description=f"To'lov qaytarildi: {refund['type'].upper()} - ${refund['amount_usd']:.2f} (Savdo #{sale_id})",
+                        old_data=None,
+                        new_data={
+                            'sale_id': sale_id,
+                            'payment_type': refund['type'],
+                            'refund_amount_usd': refund['amount_usd'],
+                            'refund_amount_uzs': refund['amount_uzs']
+                        },
+                        ip_address=request.remote_addr,
+                        location_id=location_id,
+                        location_type=location_type,
+                        location_name=location_name,
+                        amount=-refund['amount_uzs']  # Manfiy summa (qaytarilgan)
+                    )
+                    db.session.add(refund_operation)
+            
             logger.info(f"Mahsulot qaytarildi: {len(returned_items)} ta, summa: ${total_returned_usd}")
         
         # Agar sale'da mahsulot qolmasa, savdoni bekor qilish
