@@ -1014,16 +1014,9 @@
 
             const sale = data.sale;
             
-            // Debug: API dan kelgan ma'lumotlarni console'ga chiqarish
-            console.log('Sale data:', sale);
-            console.log('Returned products (full):', JSON.stringify(sale.returned_products, null, 2));
-            console.log('Payment refunds:', sale.payment_refunds);
-            
             // Qaytarilgan mahsulotlar ID larini olish
             const returnedProducts = sale.returned_products || [];
             const returnedProductIds = returnedProducts.map(rp => rp.product_id);
-            
-            console.log('Returned product IDs:', returnedProductIds);
             
             // Qaytarilgan to'lovlar
             const paymentRefunds = sale.payment_refunds || [];
@@ -1079,32 +1072,28 @@
                                 <tbody>`;
             
             sale.items.forEach(item => {
-                // Debug: Har bir mahsulotni console'ga chiqarish
-                console.log('Item product_id:', item.product_id, 'Type:', typeof item.product_id);
-                console.log('Checking if', item.product_id, 'is in', returnedProductIds);
-                
-                // Qaytarilgan mahsulotni aniqlash
-                const isReturned = returnedProductIds.includes(item.product_id);
-                const returnedItem = returnedProducts.find(rp => rp.product_id === item.product_id);
-                const returnedQty = returnedItem ? returnedItem.returned_quantity : 0;
-                
-                console.log('Is returned:', isReturned, 'Returned qty:', returnedQty);
-                
-                const rowStyle = isReturned ? 'background: #ffe6e6;' : '';
-                const textColor = isReturned ? 'color: #dc3545;' : '';
-                
                 modalHTML += `
-                                    <tr style="${rowStyle}">
-                                        <td style="padding: 10px; border-bottom: 1px solid #f0f0f0; ${textColor}">
+                                    <tr>
+                                        <td style="padding: 10px; border-bottom: 1px solid #f0f0f0;">${item.product_name}</td>
+                                        <td style="padding: 10px; text-align: center; border-bottom: 1px solid #f0f0f0; font-weight: 600;">${item.quantity}</td>
+                                        <td style="padding: 10px; text-align: right; border-bottom: 1px solid #f0f0f0;">$${parseFloat(item.unit_price).toFixed(2)}</td>
+                                        <td style="padding: 10px; text-align: right; border-bottom: 1px solid #f0f0f0; font-weight: 600;">$${parseFloat(item.total_price).toFixed(2)}</td>
+                                    </tr>`;
+            });
+            
+            // Qaytarilgan mahsulotlarni qizil rangda ko'rsatish
+            returnedProducts.forEach(item => {
+                modalHTML += `
+                                    <tr style="background: #ffe6e6;">
+                                        <td style="padding: 10px; border-bottom: 1px solid #f0f0f0; color: #dc3545;">
                                             ${item.product_name}
-                                            ${isReturned ? '<span style="color: #dc3545; font-weight: 600; margin-left: 8px;">↩️ Qaytarilgan</span>' : ''}
+                                            <span style="color: #dc3545; font-weight: 600; margin-left: 8px;">↩️ Qaytarilgan</span>
                                         </td>
-                                        <td style="padding: 10px; text-align: center; border-bottom: 1px solid #f0f0f0; font-weight: 600; ${textColor}">
-                                            ${item.quantity}
-                                            ${isReturned ? `<span style="font-size: 11px; color: #dc3545;"> (-${returnedQty})</span>` : ''}
+                                        <td style="padding: 10px; text-align: center; border-bottom: 1px solid #f0f0f0; font-weight: 600; color: #dc3545;">
+                                            ${item.returned_quantity}
                                         </td>
-                                        <td style="padding: 10px; text-align: right; border-bottom: 1px solid #f0f0f0; ${textColor}">$${parseFloat(item.unit_price).toFixed(2)}</td>
-                                        <td style="padding: 10px; text-align: right; border-bottom: 1px solid #f0f0f0; font-weight: 600; ${textColor}">$${parseFloat(item.total_price).toFixed(2)}</td>
+                                        <td style="padding: 10px; text-align: right; border-bottom: 1px solid #f0f0f0; color: #dc3545;">$${parseFloat(item.unit_price).toFixed(2)}</td>
+                                        <td style="padding: 10px; text-align: right; border-bottom: 1px solid #f0f0f0; font-weight: 600; color: #dc3545;">-$${parseFloat(item.total_price).toFixed(2)}</td>
                                     </tr>`;
             });
 
