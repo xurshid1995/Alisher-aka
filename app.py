@@ -2709,7 +2709,6 @@ def api_return_product():
         
         if not sale_id or not items:
             return jsonify({'success': False, 'error': 'Savdo ID va mahsulotlar talab qilinadi'}), 400
-            return jsonify({'success': False, 'error': 'Savdo ID va mahsulotlar talab qilinadi'}), 400
         
         # Savdoni tekshirish
         sale = Sale.query.get(sale_id)
