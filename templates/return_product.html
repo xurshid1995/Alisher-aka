@@ -292,10 +292,15 @@
         clearTimeout(searchTimeout);
         searchTimeout = setTimeout(async () => {
             try {
-                // Joylashuv parametrlarini qo'shish
-                const url = `/api/products?search=${encodeURIComponent(searchTerm)}&limit=20&location_type=${returnLocationType}&location_id=${returnLocationId}`;
+                // Joylashuv parametrini to'g'ri formatda yuborish
+                const locationParam = `${returnLocationType}_${returnLocationId}`;
+                const url = `/api/products?search=${encodeURIComponent(searchTerm)}&limit=20&location=${encodeURIComponent(locationParam)}`;
+                console.log('Mahsulot qidiruv URL:', url);
+                
                 const response = await fetch(url);
                 const data = await response.json();
+
+                console.log('Mahsulot qidiruv natijasi:', data);
 
                 if (data.success && data.products) {
                     displayProductSuggestions(data.products);
