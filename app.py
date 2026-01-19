@@ -2685,13 +2685,19 @@ def return_product():
 def api_return_product():
     """Mahsulotni qaytarish API"""
     try:
+        logger.info("=== RETURN PRODUCT API called ===")
         data = request.json
+        logger.info(f"Request data: {data}")
+        
         sale_id = data.get('sale_id')
         items = data.get('items', [])
         location_id = data.get('location_id')
         location_type = data.get('location_type')
         
+        logger.info(f"sale_id={sale_id}, items count={len(items)}, location_id={location_id}, location_type={location_type}")
+        
         if not sale_id or not items:
+            return jsonify({'success': False, 'error': 'Savdo ID va mahsulotlar talab qilinadi'}), 400
             return jsonify({'success': False, 'error': 'Savdo ID va mahsulotlar talab qilinadi'}), 400
         
         # Savdoni tekshirish
@@ -2851,7 +2857,10 @@ def api_return_product():
         
     except Exception as e:
         db.session.rollback()
+        import traceback
+        error_traceback = traceback.format_exc()
         logger.error(f"Mahsulot qaytarishda xatolik: {str(e)}")
+        logger.error(f"Traceback: {error_traceback}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
