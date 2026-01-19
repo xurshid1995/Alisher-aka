@@ -300,9 +300,18 @@
                 const data = await response.json();
 
                 console.log('Mahsulot qidiruv natijasi:', data);
+                console.log('data.success:', data.success);
+                console.log('data.products:', data.products);
+                console.log('data.products uzunligi:', data.products ? data.products.length : 'undefined');
 
-                if (data.success && data.products) {
+                // API har doim products array qaytaradi, success property bo'lmasligi mumkin
+                if (data.products && Array.isArray(data.products)) {
                     displayProductSuggestions(data.products);
+                } else if (data.success && data.products) {
+                    displayProductSuggestions(data.products);
+                } else {
+                    console.warn('⚠️ Mahsulotlar topilmadi yoki noto\'g\'ri format');
+                    displayProductSuggestions([]);
                 }
             } catch (error) {
                 console.error('Mahsulotlarni qidirishda xatolik:', error);
