@@ -2707,7 +2707,7 @@ def api_return_product():
         
         # Har bir mahsulotni qaytarish
         returned_items = []
-        total_returned_usd = Decimal('0')
+        total_returned_uzs = Decimal('0')
         
         for item in items:
             product_id = item.get('product_id')
@@ -2741,9 +2741,11 @@ def api_return_product():
             old_quantity = sale_item.quantity
             sale_item.quantity -= return_quantity
             
-            # Qaytariladigan summa (bu sale_item narxida)
+            # Qaytariladigan summa (unit_price USD da, UZS ga o'tkazish kerak)
             returned_usd = sale_item.unit_price * Decimal(str(return_quantity))
-            total_returned_usd += returned_usd
+            returned_uzs = returned_usd * sale.currency_rate
+            total_returned_uzs += returned_uzs
+            logger.info(f"Qaytarildi: {product.name} x{return_quantity} = ${returned_usd} = {returned_uzs} UZS")
             
             # Agar miqdor 0 bo'lsa, SaleItem ni o'chirish
             if sale_item.quantity <= 0:
@@ -2797,7 +2799,7 @@ def api_return_product():
                 'quantity': return_quantity,
                 'old_quantity': old_quantity,
                 'new_quantity': sale_item.quantity if sale_item.quantity > 0 else 0,
-                'returned_usd': float(returned_usd)
+                'returned_uzs': float(returned_uzs)
             })
             
             # Amaliyotlar tarixiga yozish (har bir mahsulot uchun)
@@ -2831,17 +2833,14 @@ def api_return_product():
                 location_id=location_id,
                 location_type=location_type,
                 location_name=location_name,
-                amount=returned_usd
+                amount=returned_uzs
             )
             db.session.add(operation)
         
         # Sale jami summasini yangilash
-        if total_returned_usd > 0:
-            # total_amount UZS da, qaytariladigan summa USD da
-            returned_uzs = total_returned_usd * sale.currency_rate
-            sale.total_amount -= returned_uzs
-            sale.total_cost -= returned_uzs  # Cost ham kamayadi
-            logger.info(f"Savdo #{sale_id} jami summasi yangilandi: -{returned_uzs} UZS (${total_returned_usd})")
+        if total_returned_uzs > 0:
+            sale.total_amount -= total_returned_uzs
+            logger.info(f"Savdo #{sale_id} jami summasi yangilandi: -{total_returned_uzs} UZS")
         
         # Agar sale'da mahsulot qolmasa, savdoni bekor qilish
         remaining_items = SaleItem.query.filter_by(sale_id=sale_id).count()
@@ -8272,7 +8271,7 @@ def create_sale():
             # product_id ni id yoki product_id dan olish
             product_id = item.get('product_id') or item.get('id')
             quantity = int(item.get('quantity', 0))
-            unit_price = float(item.get('unit_price') or item.get('price', 0))
+            unit_price_usd = float(item.get('unit_price') or item.get('price', 0))
 
             logger.debug(f" Processing item: {item}")
             logger.debug(f" Product ID: {product_id} (type: {type(product_id)})")
@@ -8410,10 +8409,13 @@ def create_sale():
                     "ℹ️ Warehouse stock dan ayirilmaydi (allaqachon rezerv qilingan)")
 
             # Savdo summasini hisoblash
-            total_amount = unit_price * quantity
-            unit_cost_price = float(product.cost_price)  # Birlik tan narxi
-            total_cost_price = unit_cost_price * quantity  # Jami tan narx
-            profit = total_amount - total_cost_price
+            # unit_price_usd ni UZS ga o'tkazib hisoblash (Sale.total_amount UZS da)
+            unit_price_uzs = unit_price_usd * float(current_rate)
+            total_amount_uzs = unit_price_uzs * quantity
+            
+            unit_cost_price = float(product.cost_price)  # Birlik tan narxi (UZS)
+            total_cost_price = unit_cost_price * quantity  # Jami tan narx (UZS)
+            profit = total_amount_uzs - total_cost_price
 
             # Location ma'lumotini yaratish
             if item_location_type == 'warehouse':
@@ -8428,10 +8430,10 @@ def create_sale():
                 sale_id=current_sale.id,  # Yangi yoki tahrirlangan sale ID
                 product_id=product_id,
                 quantity=quantity,
-                unit_price=Decimal(str(unit_price)),
-                total_price=Decimal(str(total_amount)),
-                cost_price=Decimal(str(unit_cost_price)),
-                profit=Decimal(str(profit)),
+                unit_price=Decimal(str(unit_price_usd)),  # USD da saqlanadi
+                total_price=Decimal(str(unit_price_usd * quantity)),  # USD da
+                cost_price=Decimal(str(unit_cost_price)),  # UZS da
+                profit=Decimal(str(profit)),  # UZS da
                 source_type=item_location_type,
                 source_id=item_location_id,
                 notes=f'{product.name} | {location_info}'
@@ -8439,7 +8441,7 @@ def create_sale():
 
             db.session.add(sale_item)
             total_profit += profit
-            total_revenue += total_amount
+            total_revenue += total_amount_uzs  # UZS da
             total_cost += total_cost_price
 
         # Savdo jami summasini yangilash (ham yangi, ham tahrirlash uchun)
