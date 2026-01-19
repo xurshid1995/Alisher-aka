@@ -2875,6 +2875,13 @@
             const customerName = customerSearch.value;
             if (customerName) {
                 cartCustomerInfo.innerHTML = `<h3 style="margin: 0; color: #333; font-size: 15px; font-weight: 600;">👤 ${customerName}</h3>`;
+                
+                // Tab sarlavhasida ham mijoz ko'rsatish
+                const tabTitle = activeTab.querySelector('.tab-title');
+                if (tabTitle) {
+                    tabTitle.textContent = customerName;
+                    tabTitle.title = customerName; // Tooltip uchun
+                }
             } else {
                 cartCustomerInfo.innerHTML = '';
             }
@@ -3726,6 +3733,18 @@
                     const customerDisplay = sale.customer_phone ? `👤 ${sale.customer_name} ${sale.customer_phone}` : `👤 ${sale.customer_name}`;
                     cartCustomerInfo.innerHTML = `<h3 style="margin: 0; color: #333; font-size: 15px; font-weight: 600;">${customerDisplay}</h3>`;
                     
+                    // Tab sarlavhasida mijoz ma'lumotlarini ko'rsatish
+                    const activeTab = document.querySelector('.sales-tab.active');
+                    if (activeTab) {
+                        const tabTitle = activeTab.querySelector('.tab-title');
+                        if (tabTitle) {
+                            const tabText = sale.customer_phone ? `${sale.customer_name} - ${sale.customer_phone}` : sale.customer_name;
+                            tabTitle.textContent = tabText;
+                            tabTitle.title = displayText; // Tooltip uchun to'liq ma'lumot
+                            console.log(`✅ Tab sarlavhasi yangilandi: ${tabText}`);
+                        }
+                    }
+                    
                     console.log(`✅ Mijoz to'ldirildi: ${sale.customer_name} (ID: ${sale.customer_id})`);
                 } else {
                     console.warn('⚠️ Mijoz ma\'lumotlari topilmadi');
@@ -3829,6 +3848,18 @@
                     if (cartCustomerInfo) {
                         const customerDisplay = sale.customer_phone ? `👤 ${sale.customer_name} ${sale.customer_phone}` : `👤 ${sale.customer_name}`;
                         cartCustomerInfo.innerHTML = `<h3 style="margin: 0; color: #333; font-size: 15px; font-weight: 600;">${customerDisplay}</h3>`;
+                    }
+                    
+                    // Tab sarlavhasida mijoz ma'lumotlarini ko'rsatish
+                    const activeTab = document.querySelector('.sales-tab.active');
+                    if (activeTab) {
+                        const tabTitle = activeTab.querySelector('.tab-title');
+                        if (tabTitle) {
+                            const tabText = sale.customer_phone ? `${sale.customer_name} - ${sale.customer_phone}` : sale.customer_name;
+                            tabTitle.textContent = tabText;
+                            tabTitle.title = displayText; // Tooltip uchun to'liq ma'lumot
+                            console.log(`✅ Tab sarlavhasi yangilandi: ${tabText}`);
+                        }
                     }
                     
                     console.log(`✅ Mijoz to'ldirildi: ${sale.customer_name} (ID: ${sale.customer_id})`);
