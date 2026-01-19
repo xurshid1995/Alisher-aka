@@ -10,27 +10,37 @@
         </h1>
     </div>
 
-    <!-- Savdo ID orqali qidirish -->
+    <!-- Mahsulot qidirish -->
     <div class="search-section" style="background: white; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-        <h3 style="margin-bottom: 15px; color: #333;">🔍 Savdoni qidirish</h3>
+        <h3 style="margin-bottom: 15px; color: #333;">🔍 Mahsulotni qidirish</h3>
         <div style="display: flex; gap: 10px; align-items: end;">
-            <div style="flex: 1;">
-                <label style="display: block; margin-bottom: 5px; color: #666; font-weight: 500;">Savdo ID:</label>
-                <input type="number" id="saleIdInput" placeholder="Savdo ID ni kiriting..." 
+            <div style="flex: 1; position: relative;">
+                <label style="display: block; margin-bottom: 5px; color: #666; font-weight: 500;">Mahsulot nomi yoki barkodi:</label>
+                <input type="text" id="productSearchInput" placeholder="Mahsulot nomini kiriting..." 
+                       autocomplete="off"
+                       oninput="searchProducts()"
                        style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 15px;">
+                <div id="productSuggestions" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #ddd; border-radius: 4px; max-height: 300px; overflow-y: auto; z-index: 1000; box-shadow: 0 4px 8px rgba(0,0,0,0.1);"></div>
             </div>
-            <button onclick="searchSale()" style="padding: 10px 30px; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 15px; font-weight: 500;">
-                Qidirish
-            </button>
-            <button onclick="loadRecentSales()" style="padding: 10px 30px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 15px; font-weight: 500;">
-                📋 Oxirgi savdolar
+        </div>
+    </div>
+
+    <!-- Tanlangan mahsulot ma'lumoti -->
+    <div id="selectedProductInfo" style="display: none; background: #e3f2fd; border-radius: 8px; padding: 15px; margin-bottom: 20px; border-left: 4px solid #2196f3;">
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div>
+                <strong style="font-size: 16px; color: #1976d2;">Tanlangan mahsulot:</strong>
+                <span id="selectedProductName" style="margin-left: 10px; font-size: 16px; color: #333;"></span>
+            </div>
+            <button onclick="clearProductSelection()" style="padding: 6px 12px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 13px;">
+                ✕ Bekor qilish
             </button>
         </div>
     </div>
 
-    <!-- Oxirgi savdolar jadvali -->
+    <!-- Mahsulot bor savdolar jadvali -->
     <div id="recentSalesSection" style="display: none; background: white; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-        <h3 style="margin-bottom: 15px; color: #333;">📊 Oxirgi savdolar</h3>
+        <h3 style="margin-bottom: 15px; color: #333;">📊 Bu mahsulot bor savdolar</h3>
         <div style="overflow-x: auto;">
             <table style="width: 100%; border-collapse: collapse;">
                 <thead>
@@ -38,6 +48,8 @@
                         <th style="padding: 12px; text-align: left; font-weight: 600;">ID</th>
                         <th style="padding: 12px; text-align: left; font-weight: 600;">Mijoz</th>
                         <th style="padding: 12px; text-align: center; font-weight: 600;">Sana</th>
+                        <th style="padding: 12px; text-align: center; font-weight: 600;">Miqdor</th>
+                        <th style="padding: 12px; text-align: right; font-weight: 600;">Narx</th>
                         <th style="padding: 12px; text-align: right; font-weight: 600;">Summa</th>
                         <th style="padding: 12px; text-align: center; font-weight: 600;">Holat</th>
                         <th style="padding: 12px; text-align: center; font-weight: 600;">Amal</th>
@@ -170,21 +182,91 @@
 </style>
 
 <script>
-    let currentSale = null;
-    let returnItems = [];
+    let selectedProduct = null;
+    let productsCache = [];
+    let searchTimeout = null;
 
-    // Sahifa yuklanganda oxirgi savdolarni yuklash
-    document.addEventListener('DOMContentLoaded', function() {
-        loadRecentSales();
-    });
+    // Mahsulotlarni qidirish
+    async function searchProducts() {
+        const searchTerm = document.getElementById('productSearchInput').value.trim();
+        
+        if (searchTerm.length < 2) {
+            document.getElementById('productSuggestions').style.display = 'none';
+            return;
+        }
 
-    async function loadRecentSales() {
+        // Debounce: 300ms kutish
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(async () => {
+            try {
+                const response = await fetch(`/api/products?search=${encodeURIComponent(searchTerm)}&limit=20`);
+                const data = await response.json();
+
+                if (data.success && data.products) {
+                    displayProductSuggestions(data.products);
+                }
+            } catch (error) {
+                console.error('Mahsulotlarni qidirishda xatolik:', error);
+            }
+        }, 300);
+    }
+
+    function displayProductSuggestions(products) {
+        const suggestionsDiv = document.getElementById('productSuggestions');
+        
+        if (products.length === 0) {
+            suggestionsDiv.innerHTML = '<div style="padding: 15px; text-align: center; color: #666;">Mahsulot topilmadi</div>';
+            suggestionsDiv.style.display = 'block';
+            return;
+        }
+
+        let html = '';
+        products.forEach(product => {
+            html += `
+                <div onclick="selectProduct(${product.id}, '${product.name.replace(/'/g, "\\'")}', '${product.barcode || ''}')" 
+                     style="padding: 12px; border-bottom: 1px solid #f0f0f0; cursor: pointer; transition: background 0.2s;"
+                     onmouseover="this.style.background='#f8f9fa'" 
+                     onmouseout="this.style.background='white'">
+                    <div style="font-weight: 600; color: #333;">${product.name}</div>
+                    ${product.barcode ? `<div style="font-size: 12px; color: #666; margin-top: 4px;">Barkod: ${product.barcode}</div>` : ''}
+                </div>
+            `;
+        });
+
+        suggestionsDiv.innerHTML = html;
+        suggestionsDiv.style.display = 'block';
+    }
+
+    async function selectProduct(productId, productName, barcode) {
+        selectedProduct = { id: productId, name: productName, barcode: barcode };
+        
+        // Input va suggestions'ni yashirish
+        document.getElementById('productSearchInput').value = productName;
+        document.getElementById('productSuggestions').style.display = 'none';
+        
+        // Tanlangan mahsulot ma'lumotini ko'rsatish
+        document.getElementById('selectedProductName').textContent = productName;
+        document.getElementById('selectedProductInfo').style.display = 'block';
+        
+        // Bu mahsulot bor savdolarni yuklash
+        await loadSalesByProduct(productId);
+    }
+
+    function clearProductSelection() {
+        selectedProduct = null;
+        document.getElementById('productSearchInput').value = '';
+        document.getElementById('selectedProductInfo').style.display = 'none';
+        document.getElementById('recentSalesSection').style.display = 'none';
+        document.getElementById('saleDetails').style.display = 'none';
+    }
+
+    async function loadSalesByProduct(productId) {
         try {
-            const response = await fetch('/api/sales-history?limit=20');
+            const response = await fetch(`/api/sales-by-product/${productId}`);
             const data = await response.json();
 
             if (!data.success || !data.sales) {
-                showMessage('❌ Savdolarni yuklashda xatolik!', 'error');
+                showMessage('❌ Bu mahsulot bor savdolar topilmadi!', 'warning');
                 return;
             }
 
@@ -192,7 +274,7 @@
             let html = '';
 
             if (data.sales.length === 0) {
-                html = '<tr><td colspan="6" style="text-align: center; padding: 20px; color: #666;">Savdolar topilmadi</td></tr>';
+                html = '<tr><td colspan="8" style="text-align: center; padding: 20px; color: #666;">Bu mahsulot hech bir savdoda ishtirok etmagan</td></tr>';
             } else {
                 data.sales.forEach(sale => {
                     const saleDate = new Date(sale.created_at).toLocaleString('uz-UZ', {
@@ -203,20 +285,21 @@
                         minute: '2-digit'
                     });
                     
-                    const totalAmount = sale.total_usd || 0;
                     const statusBadge = getPaymentStatusBadge(sale.payment_status);
 
                     html += `
                         <tr style="border-bottom: 1px solid #f0f0f0;">
                             <td style="padding: 12px; font-weight: 600;">#${sale.id}</td>
-                            <td style="padding: 12px;">${sale.customer_name || 'Noma\'lum'}</td>
+                            <td style="padding: 12px;">${sale.customer_name}</td>
                             <td style="padding: 12px; text-align: center;">${saleDate}</td>
-                            <td style="padding: 12px; text-align: right; font-weight: 600;">$${totalAmount.toFixed(2)}</td>
+                            <td style="padding: 12px; text-align: center; font-weight: 600;">${sale.product_quantity}</td>
+                            <td style="padding: 12px; text-align: right;">$${sale.product_price.toFixed(2)}</td>
+                            <td style="padding: 12px; text-align: right; font-weight: 600;">$${sale.total_usd.toFixed(2)}</td>
                             <td style="padding: 12px; text-align: center;">${statusBadge}</td>
                             <td style="padding: 12px; text-align: center;">
-                                <button onclick="selectSale(${sale.id})" 
+                                <button onclick="selectSaleForReturn(${sale.id}, ${sale.product_quantity})" 
                                         style="padding: 6px 15px; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 13px;">
-                                    Tanlash
+                                    Qaytarish
                                 </button>
                             </td>
                         </tr>
@@ -233,8 +316,104 @@
         }
     }
 
-    function selectSale(saleId) {
-        document.getElementById('saleIdInput').value = saleId;
+    async function selectSaleForReturn(saleId, productQuantity) {
+        try {
+            const response = await fetch(`/api/sales/${saleId}`);
+            const data = await response.json();
+
+            if (!data.success) {
+                showMessage('❌ Savdo topilmadi!', 'error');
+                return;
+            }
+
+            currentSale = data.sale;
+            
+            // Faqat tanlangan mahsulotni ko'rsatish
+            displaySaleDetailsForProduct(productQuantity);
+            document.getElementById('saleDetails').style.display = 'block';
+            
+        } catch (error) {
+            console.error('Xatolik:', error);
+            showMessage('❌ Server bilan bog\'lanishda xatolik!', 'error');
+        }
+    }
+
+    function displaySaleDetailsForProduct(productQuantity) {
+        // Savdo ma'lumotlarini ko'rsatish
+        const saleDate = new Date(currentSale.sale_date).toLocaleString('uz-UZ');
+        const infoHtml = `
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">Savdo ID:</div>
+                    <div class="info-value">#${currentSale.id}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Mijoz:</div>
+                    <div class="info-value">${currentSale.customer_name || 'Noma\'lum'}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Sana:</div>
+                    <div class="info-value">${saleDate}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">To'lov holati:</div>
+                    <div class="info-value">${getPaymentStatusText(currentSale.payment_status)}</div>
+                </div>
+            </div>
+        `;
+        document.getElementById('saleInfoContent').innerHTML = infoHtml;
+
+        // Faqat tanlangan mahsulotni ko'rsatish
+        let productsHtml = '';
+        returnItems = [];
+
+        const item = currentSale.items.find(i => i.product_id === selectedProduct.id);
+        if (item) {
+            returnItems.push({
+                product_id: item.product_id,
+                product_name: item.product_name,
+                sold_quantity: item.quantity,
+                unit_price: item.unit_price,
+                return_quantity: 0
+            });
+
+            const totalPrice = (item.quantity * item.unit_price).toFixed(2);
+            productsHtml = `
+                <tr style="border-bottom: 1px solid #f0f0f0;">
+                    <td style="padding: 12px;">${item.product_name}</td>
+                    <td style="padding: 12px; text-align: center; font-weight: 600;">${item.quantity}</td>
+                    <td style="padding: 12px; text-align: right;">$${item.unit_price.toFixed(2)}</td>
+                    <td style="padding: 12px; text-align: right; font-weight: 600;">$${totalPrice}</td>
+                    <td style="padding: 12px; text-align: center;">
+                        <input type="number" 
+                               class="return-input" 
+                               id="return_0"
+                               min="0" 
+                               max="${item.quantity}" 
+                               value="0"
+                               onchange="updateReturnQuantity(0, this.value)">
+                    </td>
+                    <td style="padding: 12px; text-align: center;">
+                        <button onclick="setFullReturn(0)" 
+                                style="padding: 6px 12px; background: #17a2b8; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 13px;">
+                            Hammasi
+                        </button>
+                    </td>
+                </tr>
+            `;
+        }
+
+        document.getElementById('productsTableBody').innerHTML = productsHtml;
+    }
+
+    // Click tashqarisiga bosilganda suggestions yopish
+    document.addEventListener('click', function(e) {
+        const searchInput = document.getElementById('productSearchInput');
+        const suggestions = document.getElementById('productSuggestions');
+        if (e.target !== searchInput && !suggestions.contains(e.target)) {
+            suggestions.style.display = 'none';
+        }
+    });   document.getElementById('saleIdInput').value = saleId;
         searchSale();
     }
 

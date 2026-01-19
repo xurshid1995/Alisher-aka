@@ -2761,6 +2761,58 @@ def api_return_product():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
+@app.route('/api/sales-by-product/<int:product_id>')
+@role_required('admin', 'kassir', 'sotuvchi')
+def api_sales_by_product(product_id):
+    """Mahsulot bo'yicha savdolarni topish"""
+    try:
+        # Mahsulotni tekshirish
+        product = Product.query.get(product_id)
+        if not product:
+            return jsonify({'success': False, 'error': 'Mahsulot topilmadi'}), 404
+        
+        # Bu mahsulot bor savdolarni topish (oxirgi 50 ta)
+        sales = db.session.query(Sale).join(SaleItem).filter(
+            SaleItem.product_id == product_id,
+            Sale.payment_status.in_(['paid', 'partial', 'debt'])  # Faqat to'langan yoki qarzda savdolar
+        ).order_by(Sale.created_at.desc()).limit(50).all()
+        
+        sales_list = []
+        for sale in sales:
+            # Bu savdodagi shu mahsulotni topish
+            sale_item = SaleItem.query.filter_by(
+                sale_id=sale.id,
+                product_id=product_id
+            ).first()
+            
+            if sale_item:
+                sales_list.append({
+                    'id': sale.id,
+                    'customer_name': sale.customer.full_name if sale.customer else 'Noma\'lum',
+                    'created_at': sale.created_at.isoformat() if sale.created_at else None,
+                    'payment_status': sale.payment_status,
+                    'location_id': sale.location_id,
+                    'location_type': sale.location_type,
+                    'product_quantity': sale_item.quantity,
+                    'product_price': float(sale_item.unit_price),
+                    'total_usd': float(sale_item.total_price)
+                })
+        
+        return jsonify({
+            'success': True,
+            'product': {
+                'id': product.id,
+                'name': product.name,
+                'barcode': product.barcode
+            },
+            'sales': sales_list
+        })
+        
+    except Exception as e:
+        logger.error(f"Mahsulot bo'yicha savdolarni topishda xatolik: {str(e)}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
 @app.route('/operations-history')
 @role_required('admin', 'kassir')
 def operations_history():
