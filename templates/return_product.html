@@ -472,12 +472,163 @@
                 return;
             }
 
-            currentSale = data.sale;
+            const sale = data.sale;
             
-            // Faqat tanlangan mahsulotni ko'rsatish
-            displaySaleDetailsForProduct(productQuantity);
-            document.getElementById('saleDetails').style.display = 'block';
+            // Sana formati
+            const saleDate = new Date(sale.sale_date).toLocaleString('uz-UZ', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+
+            // Modal yaratish
+            let modalHTML = `
+                <div id="returnProductModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; display: flex; align-items: center; justify-content: center;">
+                    <div style="background: white; border-radius: 10px; padding: 30px; max-width: 1200px; width: 90%; max-height: 90vh; overflow-y: auto; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #f0f0f0; padding-bottom: 15px;">
+                            <h2 style="margin: 0; color: #333;">↩️ Mahsulotni qaytarish - Savdo #${sale.id}</h2>
+                            <button onclick="closeReturnModal()" style="background: #dc3545; color: white; border: none; border-radius: 50%; width: 35px; height: 35px; cursor: pointer; font-size: 20px;">×</button>
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 20px;">
+                            <div style="background: #f8f9fa; padding: 12px; border-radius: 6px;">
+                                <div style="font-size: 12px; color: #666; margin-bottom: 4px;">Sana va vaqt</div>
+                                <div style="font-weight: 600; color: #333;">${saleDate}</div>
+                            </div>
+                            <div style="background: #f8f9fa; padding: 12px; border-radius: 6px;">
+                                <div style="font-size: 12px; color: #666; margin-bottom: 4px;">Mijoz</div>
+                                <div style="font-weight: 600; color: #333;">${sale.customer_name || 'Noma\'lum'}</div>
+                            </div>
+                            <div style="background: #f8f9fa; padding: 12px; border-radius: 6px;">
+                                <div style="font-size: 12px; color: #666; margin-bottom: 4px;">Sotuvchi</div>
+                                <div style="font-weight: 600; color: #333;">${sale.seller_name || 'Admin'}</div>
+                            </div>
+                            <div style="background: #f8f9fa; padding: 12px; border-radius: 6px;">
+                                <div style="font-size: 12px; color: #666; margin-bottom: 4px;">Holat</div>
+                                <div>${getPaymentStatusBadge(sale)}</div>
+                            </div>
+                        </div>
+
+                        <h3 style="margin: 20px 0 10px 0; color: #333; font-size: 16px;">📦 Mahsulotlar</h3>
+                        <div style="overflow-x: auto; margin-bottom: 20px;">
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <thead>
+                                    <tr style="background: #f8f9fa;">
+                                        <th style="padding: 10px; text-align: left; border-bottom: 2px solid #dee2e6;">Mahsulot</th>
+                                        <th style="padding: 10px; text-align: center; border-bottom: 2px solid #dee2e6;">Miqdor</th>
+                                        <th style="padding: 10px; text-align: right; border-bottom: 2px solid #dee2e6;">Narx</th>
+                                        <th style="padding: 10px; text-align: right; border-bottom: 2px solid #dee2e6;">Summa</th>
+                                        <th style="padding: 10px; text-align: center; border-bottom: 2px solid #dee2e6;">Amal</th>
+                                    </tr>
+                                </thead>
+                                <tbody>`;
             
+            sale.items.forEach(item => {
+                const isSelectedProduct = item.quantity === productQuantity && item.product_id === selectedProduct.id;
+                const bgColor = isSelectedProduct ? '#e3f2fd' : 'white';
+                
+                modalHTML += `
+                    <tr style="background: ${bgColor};">
+                        <td style="padding: 10px; border-bottom: 1px solid #f0f0f0;">${item.product_name}</td>
+                        <td style="padding: 10px; text-align: center; border-bottom: 1px solid #f0f0f0; font-weight: 600;">${item.quantity}</td>
+                        <td style="padding: 10px; text-align: right; border-bottom: 1px solid #f0f0f0;">$${parseFloat(item.unit_price).toFixed(2)}</td>
+                        <td style="padding: 10px; text-align: right; border-bottom: 1px solid #f0f0f0; font-weight: 600;">$${parseFloat(item.total_price).toFixed(2)}</td>
+                        <td style="padding: 10px; text-align: center; border-bottom: 1px solid #f0f0f0;">`;
+                
+                if (isSelectedProduct && item.quantity > 0) {
+                    modalHTML += `
+                        <div style="display: flex; gap: 5px; align-items: center; justify-content: center;">
+                            <input type="number" id="returnQty_${item.product_id}" min="1" max="${item.quantity}" value="${item.quantity}" 
+                                   style="width: 70px; padding: 5px; border: 1px solid #ddd; border-radius: 4px; text-align: center;">
+                            <button onclick="confirmReturn(${sale.id}, ${item.product_id}, '${item.product_name.replace(/'/g, "\\'")}', ${item.quantity})" 
+                                    style="padding: 5px 12px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 13px;">
+                                ↩️ Qaytarish
+                            </button>
+                        </div>`;
+                } else {
+                    modalHTML += `<span style="color: #999;">-</span>`;
+                }
+                
+                modalHTML += `</td></tr>`;
+            });
+
+            modalHTML += `
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div style="background: #fff3cd; padding: 15px; border-radius: 6px; border-left: 4px solid #ffc107;">
+                            <div style="font-weight: 600; color: #856404; margin-bottom: 5px;">⚠️ Diqqat:</div>
+                            <div style="color: #856404; font-size: 14px;">Mahsulot qaytarilganda to'lovlar avtomatik qaytariladi: Avval qarzdan, keyin naqd, click, terminal.</div>
+                        </div>
+                    </div>
+                </div>`;
+
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+            
+        } catch (error) {
+            console.error('Xatolik:', error);
+            showMessage('❌ Server bilan bog\'lanishda xatolik!', 'error');
+        }
+    }
+
+    function closeReturnModal() {
+        const modal = document.getElementById('returnProductModal');
+        if (modal) {
+            modal.remove();
+        }
+    }
+
+    async function confirmReturn(saleId, productId, productName, maxQuantity) {
+        const qtyInput = document.getElementById(`returnQty_${productId}`);
+        const returnQty = parseInt(qtyInput.value);
+
+        if (!returnQty || returnQty <= 0) {
+            showMessage('❌ Qaytarish miqdorini kiriting!', 'error');
+            return;
+        }
+
+        if (returnQty > maxQuantity) {
+            showMessage(`❌ Maksimal ${maxQuantity} dona qaytarish mumkin!`, 'error');
+            return;
+        }
+
+        if (!confirm(`${productName} mahsulotidan ${returnQty} dona qaytarilsinmi?`)) {
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/return-product', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    sale_id: saleId,
+                    items: [{
+                        product_id: productId,
+                        quantity: returnQty
+                    }],
+                    location_id: returnLocationId,
+                    location_type: returnLocationType
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                showMessage('✅ Mahsulot muvaffaqiyatli qaytarildi!', 'success');
+                closeReturnModal();
+                
+                // Savdolarni qayta yuklash
+                if (selectedProduct) {
+                    await loadSalesByProduct(selectedProduct.id);
+                }
+            } else {
+                showMessage(`❌ Xatolik: ${data.error}`, 'error');
+            }
         } catch (error) {
             console.error('Xatolik:', error);
             showMessage('❌ Server bilan bog\'lanishda xatolik!', 'error');
