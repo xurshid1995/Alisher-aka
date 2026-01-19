@@ -424,7 +424,8 @@
                     const minutes = String(date.getMinutes()).padStart(2, '0');
                     const saleDate = `${day}/${month}/${year}<br>${hours}:${minutes}`;
                     
-                    const statusBadge = getPaymentStatusBadge(sale.payment_status);
+                    // Holat badge'ini yaratish (qarz holatini tekshirib)
+                    const statusBadge = getPaymentStatusBadge(sale);
                     
                     // Savdodagi jami mahsulot turlarini hisoblash
                     const totalProductTypes = sale.total_items || 0;
@@ -556,14 +557,40 @@
         }
     });
 
-    function getPaymentStatusBadge(status) {
-        const badges = {
-            'paid': '<span style="background: #28a745; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px;">✅ To\'langan</span>',
-            'partial': '<span style="background: #ffc107; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px;">⚠️ Qisman</span>',
-            'pending': '<span style="background: #6c757d; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px;">⏳ Kutilmoqda</span>',
-            'debt': '<span style="background: #dc3545; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px;">💳 Qarzda</span>'
-        };
-        return badges[status] || status;
+    function getPaymentStatusBadge(sale) {
+        // Agar sale obyekt bo'lmasa (eski format), oddiy statusni qaytarish
+        if (typeof sale === 'string') {
+            const badges = {
+                'paid': '<span style="background: #28a745; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px;">✅ To\'langan</span>',
+                'partial': '<span style="background: #ffc107; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px;">⚠️ Qisman</span>',
+                'pending': '<span style="background: #6c757d; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px;">⏳ Kutilmoqda</span>',
+                'debt': '<span style="background: #dc3545; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px;">💳 Qarzda</span>'
+            };
+            return badges[sale] || sale;
+        }
+        
+        // To'lov ma'lumotlarini olish
+        const totalAmount = parseFloat(sale.total_amount || 0);
+        const debtUSD = parseFloat(sale.debt_usd || 0);
+        const cashUSD = parseFloat(sale.cash_usd || 0);
+        const clickUSD = parseFloat(sale.click_usd || 0);
+        const terminalUSD = parseFloat(sale.terminal_usd || 0);
+        const paidAmount = cashUSD + clickUSD + terminalUSD;
+        
+        // Holat aniqlash
+        if (sale.payment_status === 'paid' || debtUSD === 0) {
+            return '<span style="background: #28a745; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px;">✅ To\'langan</span>';
+        } else if (debtUSD > 0 && paidAmount > 0) {
+            // Qisman qarz - bir qism to'langan, bir qism qarzda
+            return '<span style="background: #ffc107; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px;">⚠️ Qisman qarz</span>';
+        } else if (debtUSD > 0 && paidAmount === 0) {
+            // To'liq qarz - hech narsa to'lanmagan
+            return '<span style="background: #dc3545; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px;">❌ To\'liq qarz</span>';
+        } else if (sale.payment_status === 'cancelled') {
+            return '<span style="background: #6c757d; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px;">🚫 Bekor qilingan</span>';
+        }
+        
+        return '<span style="background: #6c757d; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px;">❓ Noma\'lum</span>';
     }
 
     async function searchSale() {

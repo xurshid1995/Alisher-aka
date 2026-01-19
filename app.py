@@ -3077,6 +3077,13 @@ def api_sales_by_product(product_id):
                     # Savdodagi jami mahsulot turlarini hisoblash
                     total_items_count = SaleItem.query.filter_by(sale_id=sale.id).count()
                     
+                    # To'lov ma'lumotlarini qo'shish
+                    total_amount = float(sale.total_amount or 0)
+                    debt_usd = float(sale.debt_usd or 0)
+                    cash_usd = float(sale.cash_usd or 0)
+                    click_usd = float(sale.click_usd or 0)
+                    terminal_usd = float(sale.terminal_usd or 0)
+                    
                     sales_list.append({
                         'id': sale.id,
                         'customer_name': customer_name,
@@ -3087,7 +3094,12 @@ def api_sales_by_product(product_id):
                         'product_quantity': sale_item.quantity,
                         'product_price': float(sale_item.unit_price),
                         'total_usd': float(sale_item.total_price),
-                        'total_items': total_items_count
+                        'total_items': total_items_count,
+                        'total_amount': total_amount,
+                        'debt_usd': debt_usd,
+                        'cash_usd': cash_usd,
+                        'click_usd': click_usd,
+                        'terminal_usd': terminal_usd
                     })
             except Exception as se:
                 logger.error(f"Savdo {sale.id} ni qayta ishlashda xatolik: {str(se)}")
