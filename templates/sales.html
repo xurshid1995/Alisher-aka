@@ -3069,8 +3069,18 @@
         // Avtomatik pending savdo yangilash
         await autoSavePending();
         
-        // Chap tomondagi mahsulotlar jadvalini yangilash
-        await loadProducts();
+        // Chap tomondagi mahsulotlar jadvalini yangilash (cache tozalash orqali)
+        const activeTab = document.querySelector('.sales-tab.active');
+        if (activeTab) {
+            const tabId = activeTab.dataset.tabId;
+            const locationSelect = document.getElementById(`locationSelect_tab${tabId}`);
+            if (locationSelect) {
+                const cacheKey = `${locationSelect.value}_${currentPage}`;
+                productsCache.delete(cacheKey);
+                await loadProducts(currentPage);
+                console.log('🔄 O\'chirish: mahsulotlar jadvali yangilandi');
+            }
+        }
         
         console.log('✅ Savatdan o\'chirish tugadi');
     }
