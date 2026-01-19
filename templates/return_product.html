@@ -292,9 +292,8 @@
         clearTimeout(searchTimeout);
         searchTimeout = setTimeout(async () => {
             try {
-                // Joylashuv parametrini to'g'ri formatda yuborish
-                const locationParam = `${returnLocationType}_${returnLocationId}`;
-                const url = `/api/products?search=${encodeURIComponent(searchTerm)}&limit=20&location=${encodeURIComponent(locationParam)}`;
+                // Joylashuv parametrlarini alohida yuborish
+                const url = `/api/products?search=${encodeURIComponent(searchTerm)}&limit=20&location_type=${returnLocationType}&location_id=${returnLocationId}`;
                 console.log('Mahsulot qidiruv URL:', url);
                 
                 const response = await fetch(url);

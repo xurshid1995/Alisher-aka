@@ -1361,8 +1361,10 @@ def api_products():
     # Search parameter
     search = request.args.get('search', '', type=str).strip()
 
-    # Location filter parameters
+    # Location filter parameters - eski va yangi formatlarni qo'llab-quvvatlash
     location_filter = request.args.get('location', '', type=str).strip()
+    location_type = request.args.get('location_type', '', type=str).strip()
+    location_id = request.args.get('location_id', type=int)
 
     # Base query with eager loading to avoid N+1 problem
     query = Product.query.options(
@@ -1380,24 +1382,40 @@ def api_products():
             if word:  # Bo'sh so'zlarni o'tkazib yuborish
                 query = query.filter(Product.name.ilike(f'%{word}%'))
 
-    # Location filter
-    if location_filter and location_filter != 'all':
+    # Location filter - yangi format (location_type va location_id)
+    if location_type and location_id:
+        if location_type == 'warehouse':
+            # Filter products that have stock in specific warehouse
+            query = query.filter(
+                Product.warehouse_stocks.any(
+                    WarehouseStock.warehouse_id == location_id
+                )
+            )
+        elif location_type == 'store':
+            # Filter products that have stock in specific store
+            query = query.filter(
+                Product.store_stocks.any(
+                    StoreStock.store_id == location_id
+                )
+            )
+    # Location filter - eski format (location)
+    elif location_filter and location_filter != 'all':
         try:
-            location_type, location_id = location_filter.split('_')
-            location_id = int(location_id)
+            loc_type, loc_id = location_filter.split('_')
+            loc_id = int(loc_id)
 
-            if location_type == 'warehouse':
+            if loc_type == 'warehouse':
                 # Filter products that have stock in specific warehouse
                 query = query.filter(
                     Product.warehouse_stocks.any(
-                        WarehouseStock.warehouse_id == location_id
+                        WarehouseStock.warehouse_id == loc_id
                     )
                 )
-            elif location_type == 'store':
+            elif loc_type == 'store':
                 # Filter products that have stock in specific store
                 query = query.filter(
                     Product.store_stocks.any(
-                        StoreStock.store_id == location_id
+                        StoreStock.store_id == loc_id
                     )
                 )
         except (ValueError, IndexError):
