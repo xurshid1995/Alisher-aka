@@ -10,6 +10,7 @@ import random
 from datetime import datetime
 from decimal import Decimal
 from typing import Optional, List, Dict
+from sqlalchemy import text
 from telegram import Bot, Update, InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove
 from telegram.ext import Application, CommandHandler, ContextTypes, CallbackQueryHandler, MessageHandler, filters
 from telegram.error import TelegramError
@@ -51,6 +52,57 @@ class DebtTelegramBot:
             logger.warning("⚠️ TELEGRAM_ADMIN_CHAT_IDS noto'g'ri formatda")
             return []
     
+    def _get_payment_details_sync(self, customer_id: int) -> str:
+        """
+        Mijozning qarzli savdolari bo'yicha to'lov turlarini olish (sync versiya)
+        
+        Args:
+            customer_id: Mijoz ID
+            
+        Returns:
+            str: To'lov turlari HTML formati
+        """
+        try:
+            if not self.db:
+                return ""
+            
+            result = self.db.session.execute(
+                text("""
+                    SELECT 
+                        COALESCE(SUM(cash_usd), 0) as total_cash,
+                        COALESCE(SUM(click_usd), 0) as total_click,
+                        COALESCE(SUM(terminal_usd), 0) as total_terminal
+                    FROM sales
+                    WHERE customer_id = :customer_id AND debt_usd > 0
+                """),
+                {"customer_id": customer_id}
+            ).fetchone()
+            
+            if not result:
+                return ""
+            
+            cash = float(result[0] or 0)
+            click = float(result[1] or 0)
+            terminal = float(result[2] or 0)
+            
+            # To'lov turlarini formatlash
+            payments = []
+            if cash > 0:
+                payments.append(f"💵 Naqd: ${cash:,.2f}")
+            if click > 0:
+                payments.append(f"📱 Click: ${click:,.2f}")
+            if terminal > 0:
+                payments.append(f"💳 Terminal: ${terminal:,.2f}")
+            
+            if payments:
+                return "\n\n<b>📊 To'lov turlari:</b>\n" + "\n".join(payments)
+            
+            return ""
+            
+        except Exception as e:
+            logger.error(f"❌ To'lov ma'lumotlarini olishda xatolik: {e}")
+            return ""
+    
     async def _get_payment_details(self, customer_id: int) -> str:
         """
         Mijozning qarzli savdolari bo'yicha to'lov turlarini olish
@@ -63,7 +115,6 @@ class DebtTelegramBot:
         """
         try:
             # Database'dan to'lov ma'lumotlarini olish
-            from sqlalchemy import text
             if not hasattr(self, 'db') or not self.db:
                 return ""
             
@@ -149,7 +200,7 @@ class DebtTelegramBot:
                 f"💰 <b>QARZ ESLATMASI</b>\n\n"
                 f"Hurmatli {customer_name}!\n\n"
                 f"📍 Joylashuv: {location_name}\n"
-                f"� Qarz: ${debt_usd:,.2f}\n"
+                f"💰 Qarz: ${debt_usd:,.2f}\n"
                 f"💸 Qarz: {debt_uzs:,.0f} so'm{date_str}"
                 f"{payment_details}\n\n"
                 f"Iltimos, qarzingizni to'lashni unutmang. Qarz bu omonat.\n"
@@ -214,35 +265,7 @@ class DebtTelegramBot:
             # To'lov turlarini olish
             payment_details = ""
             if customer_id and self.db:
-                try:
-                    from sqlalchemy import text
-                    result = self.db.session.execute(
-                        text("""
-                            SELECT 
-                                COALESCE(SUM(cash_usd), 0) as total_cash,
-                                COALESCE(SUM(click_usd), 0) as total_click,
-                                COALESCE(SUM(terminal_usd), 0) as total_terminal
-                            FROM sales
-                            WHERE customer_id = :customer_id AND debt_usd > 0
-                        """),
-                        {"customer_id": customer_id}
-                    ).fetchone()
-                    
-                    if result:
-                        cash = float(result[0] or 0)
-                        click = float(result[1] or 0)
-                        terminal = float(result[2] or 0)
-                        
-                        if cash > 0 or click > 0 or terminal > 0:
-                            payment_details = "\n\n<b>📊 To'lov turlari:</b>\n"
-                            if cash > 0:
-                                payment_details += f"💵 Naqd: ${cash:,.2f}\n"
-                            if click > 0:
-                                payment_details += f"📱 Click: ${click:,.2f}\n"
-                            if terminal > 0:
-                                payment_details += f"💳 Terminal: ${terminal:,.2f}"
-                except Exception as e:
-                    logger.error(f"Payment details olishda xatolik: {e}")
+                payment_details = self._get_payment_details_sync(customer_id)
             
             # Xabar matni
             message = (
@@ -384,37 +407,7 @@ class DebtTelegramBot:
             # To'lov turlarini olish
             payment_details = ""
             if customer_id and self.db and remaining_usd > 0:
-                try:
-                    result = self.db.session.execute(
-                        text("""
-                            SELECT 
-                                COALESCE(SUM(cash_usd), 0) as cash_usd,
-                                COALESCE(SUM(click_usd), 0) as click_usd,
-                                COALESCE(SUM(terminal_usd), 0) as terminal_usd,
-                                COALESCE(SUM(debt_usd), 0) as debt_usd
-                            FROM sales
-                            WHERE customer_id = :customer_id
-                            AND debt_usd > 0
-                        """),
-                        {"customer_id": customer_id}
-                    ).fetchone()
-                    
-                    if result:
-                        cash = float(result[0] or 0)
-                        click = float(result[1] or 0)
-                        terminal = float(result[2] or 0)
-                        debt = float(result[3] or 0)
-                        
-                        if cash > 0 or click > 0 or terminal > 0:
-                            payment_details = "\n\n📊 <b>To'lov turlari:</b>\n"
-                            if cash > 0:
-                                payment_details += f"💵 Naqd: ${cash:,.2f}\n"
-                            if click > 0:
-                                payment_details += f"📱 Click: ${click:,.2f}\n"
-                            if terminal > 0:
-                                payment_details += f"💳 Terminal: ${terminal:,.2f}\n"
-                except Exception as e:
-                    logger.error(f"Payment details olishda xatolik: {e}")
+                payment_details = self._get_payment_details_sync(customer_id)
             
             if remaining_usd <= 0:
                 # Qarz to'liq to'landi
