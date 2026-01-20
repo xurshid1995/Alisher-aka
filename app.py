@@ -11408,7 +11408,8 @@ def api_send_bulk_telegram():
                     customer_name=row.name,
                     debt_usd=debt_usd,
                     debt_uzs=debt_uzs,
-                    location_name="Do'kon"
+                    location_name="Do'kon",
+                    customer_id=row.id  # Customer ID qo'shamiz
                 )
                 
                 if success:

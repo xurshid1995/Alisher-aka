@@ -24,10 +24,11 @@ verification_codes = {}
 class DebtTelegramBot:
     """Qarz eslatmalari uchun Telegram Bot"""
     
-    def __init__(self):
+    def __init__(self, db=None):
         self.token = os.getenv('TELEGRAM_BOT_TOKEN')
         self.admin_chat_ids = self._parse_admin_ids()
         self.bot = None
+        self.db = db  # Database instance
         
         if not self.token:
             logger.warning("⚠️ TELEGRAM_BOT_TOKEN .env faylida sozlanmagan!")
@@ -50,6 +51,57 @@ class DebtTelegramBot:
             logger.warning("⚠️ TELEGRAM_ADMIN_CHAT_IDS noto'g'ri formatda")
             return []
     
+    async def _get_payment_details(self, customer_id: int) -> str:
+        """
+        Mijozning qarzli savdolari bo'yicha to'lov turlarini olish
+        
+        Args:
+            customer_id: Mijoz ID
+            
+        Returns:
+            str: To'lov turlari HTML formati
+        """
+        try:
+            # Database'dan to'lov ma'lumotlarini olish
+            from sqlalchemy import text
+            if not hasattr(self, 'db') or not self.db:
+                return ""
+            
+            query = text("""
+                SELECT 
+                    COALESCE(SUM(cash_usd), 0) as total_cash,
+                    COALESCE(SUM(click_usd), 0) as total_click,
+                    COALESCE(SUM(terminal_usd), 0) as total_terminal,
+                    COALESCE(SUM(debt_usd), 0) as total_debt
+                FROM sales
+                WHERE customer_id = :customer_id AND debt_usd > 0
+            """)
+            
+            result = self.db.session.execute(query, {'customer_id': customer_id}).fetchone()
+            
+            if not result:
+                return ""
+            
+            # To'lov turlarini formatlash
+            payments = []
+            if result.total_cash > 0:
+                payments.append(f"💵 Naqd: ${result.total_cash:,.2f}")
+            if result.total_click > 0:
+                payments.append(f"📱 Click: ${result.total_click:,.2f}")
+            if result.total_terminal > 0:
+                payments.append(f"💳 Terminal: ${result.total_terminal:,.2f}")
+            if result.total_debt > 0:
+                payments.append(f"📝 Qarz: ${result.total_debt:,.2f}")
+            
+            if payments:
+                return "\n\n<b>📊 To'lov turlari:</b>\n" + "\n".join(payments)
+            
+            return ""
+            
+        except Exception as e:
+            logger.error(f"❌ To'lov ma'lumotlarini olishda xatolik: {e}")
+            return ""
+    
     async def send_debt_reminder(
         self,
         chat_id: int,
@@ -57,7 +109,8 @@ class DebtTelegramBot:
         debt_usd: float,
         debt_uzs: float,
         location_name: str,
-        sale_date: Optional[datetime] = None
+        sale_date: Optional[datetime] = None,
+        customer_id: Optional[int] = None
     ) -> bool:
         """
         Mijozga qarz eslatmasi yuborish
@@ -69,6 +122,7 @@ class DebtTelegramBot:
             debt_uzs: Qarz miqdori (UZS)
             location_name: Do'kon/ombor nomi
             sale_date: Savdo sanasi
+            customer_id: Mijoz ID (to'lov turlarini olish uchun)
             
         Returns:
             bool: Yuborildi/yuborilmadi
@@ -87,13 +141,19 @@ class DebtTelegramBot:
             if sale_date:
                 date_str = f"\n📅 Savdo sanasi: {sale_date.strftime('%d.%m.%Y')}"
             
+            # To'lov turlarini olish (agar customer_id berilgan bo'lsa)
+            payment_details = ""
+            if customer_id:
+                payment_details = await self._get_payment_details(customer_id)
+            
             # Xabar matni
             message = (
                 f"💰 <b>QARZ ESLATMASI</b>\n\n"
                 f"Hurmatli {customer_name}!\n\n"
                 f"📍 Joylashuv: {location_name}\n"
                 f"💵 Qarz: {debt_usd_str}\n"
-                f"💸 Qarz: {debt_uzs_str}{date_str}\n\n"
+                f"💸 Qarz: {debt_uzs_str}{date_str}\n"
+                f"{payment_details}\n"
                 f"Iltimos, qarzingizni to'lashni unutmang.\n"
                 f"Rahmat! 🙏"
             )
@@ -950,11 +1010,14 @@ def create_telegram_app():
 # Singleton instance
 _bot_instance = None
 
-def get_bot_instance() -> DebtTelegramBot:
+def get_bot_instance(db=None) -> DebtTelegramBot:
     """Bot instanceni olish (singleton pattern)"""
     global _bot_instance
     if _bot_instance is None:
-        _bot_instance = DebtTelegramBot()
+        _bot_instance = DebtTelegramBot(db=db)
+    elif db and not _bot_instance.db:
+        # Agar db berilgan bo'lsa, yangilash
+        _bot_instance.db = db
     return _bot_instance
 
 

@@ -34,7 +34,7 @@ class DebtScheduler:
         """
         self.app = app
         self.db = db
-        self.bot = get_bot_instance()
+        self.bot = get_bot_instance(db=db)  # db ni o'tkazamiz
         self.scheduler = AsyncIOScheduler()
         
         # Sozlamalar
@@ -134,7 +134,8 @@ class DebtScheduler:
                     debt_usd=debt['debt_usd'],
                     debt_uzs=debt['debt_uzs'],
                     location_name=debt['location_name'],
-                    sale_date=debt.get('sale_date')
+                    sale_date=debt.get('sale_date'),
+                    customer_id=debt.get('customer_id')  # Customer ID qo'shamiz
                 )
                 
                 if success:
@@ -227,7 +228,8 @@ class DebtScheduler:
         debt_usd: float,
         debt_uzs: float,
         location_name: str,
-        sale_date: Optional[datetime] = None
+        sale_date: Optional[datetime] = None,
+        customer_id: Optional[int] = None
     ) -> bool:
         """
         Sinxron telegram xabar yuborish (Flask route'lar uchun)
@@ -239,6 +241,7 @@ class DebtScheduler:
             debt_uzs: Qarz (UZS)
             location_name: Do'kon/ombor nomi
             sale_date: Savdo sanasi
+            customer_id: Mijoz ID (to'lov turlarini olish uchun)
             
         Returns:
             bool: Yuborildi/yuborilmadi
@@ -255,7 +258,8 @@ class DebtScheduler:
                     debt_usd=debt_usd,
                     debt_uzs=debt_uzs,
                     location_name=location_name,
-                    sale_date=sale_date
+                    sale_date=sale_date,
+                    customer_id=customer_id
                 )
             )
             
