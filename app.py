@@ -5519,7 +5519,7 @@ def api_debt_payment():
             cash_for_this = min(remaining_cash, payment_for_this_sale)
             if cash_for_this > 0:
                 sale.cash_usd = (sale.cash_usd or Decimal('0')) + cash_for_this
-                sale.cash_amount = float(sale.cash_usd) * float(sale.currency_rate)
+                sale.cash_amount = float(sale.cash_usd)  # USD da saqlaymiz
                 remaining_cash -= cash_for_this
                 payment_for_this_sale -= cash_for_this
             
@@ -5527,7 +5527,7 @@ def api_debt_payment():
             click_for_this = min(remaining_click, payment_for_this_sale)
             if click_for_this > 0:
                 sale.click_usd = (sale.click_usd or Decimal('0')) + click_for_this
-                sale.click_amount = float(sale.click_usd) * float(sale.currency_rate)
+                sale.click_amount = float(sale.click_usd)  # USD da saqlaymiz
                 remaining_click -= click_for_this
                 payment_for_this_sale -= click_for_this
             
@@ -5535,7 +5535,7 @@ def api_debt_payment():
             terminal_for_this = min(remaining_terminal, payment_for_this_sale)
             if terminal_for_this > 0:
                 sale.terminal_usd = (sale.terminal_usd or Decimal('0')) + terminal_for_this
-                sale.terminal_amount = float(sale.terminal_usd) * float(sale.currency_rate)
+                sale.terminal_amount = float(sale.terminal_usd)  # USD da saqlaymiz
                 remaining_terminal -= terminal_for_this
                 payment_for_this_sale -= terminal_for_this
             
@@ -5544,7 +5544,7 @@ def api_debt_payment():
 
             # Qarzni kamaytirish
             sale.debt_usd = sale.debt_usd - total_paid
-            sale.debt_amount = float(sale.debt_usd) * float(sale.currency_rate)
+            sale.debt_amount = float(sale.debt_usd)  # USD da saqlaymiz
             
             # Payment statusni yangilash
             if sale.debt_usd == 0:
@@ -8454,17 +8454,17 @@ def create_sale():
         
         print(f"💳 Payment method aniqlandi: {payment_method}")
         
-        # UZS ga konvertatsiya qilish
-        cash_amount = cash_usd * current_rate
-        click_amount = click_usd * current_rate
-        terminal_amount = terminal_usd * current_rate
-        debt_amount = debt_usd * current_rate
+        # USD qiymatlarni saqlaymiz (UZS ga o'girmaymiz)
+        cash_amount = cash_usd
+        click_amount = click_usd
+        terminal_amount = terminal_usd
+        debt_amount = debt_usd
         
-        print(f"💵 UZS summalar:")
-        print(f"   Cash: {cash_amount:,.0f} UZS")
-        print(f"   Click: {click_amount:,.0f} UZS")
-        print(f"   Terminal: {terminal_amount:,.0f} UZS")
-        print(f"   Debt: {debt_amount:,.0f} UZS")
+        print(f"💵 USD summalar:")
+        print(f"   Cash: ${cash_amount}")
+        print(f"   Click: ${click_amount}")
+        print(f"   Terminal: ${terminal_amount}")
+        print(f"   Debt: ${debt_amount}")
 
         # Savdo uchun asosiy joylashuvni aniqlash
         # Multi-location bo'lsa - eng ko'p ishlatiladigan
