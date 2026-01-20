@@ -5618,6 +5618,11 @@ def api_debt_payment():
                 previous_debt_uzs = float(previous_total_debt) * rate
                 remaining_debt_uzs = float(total_remaining_debt) * rate
                 
+                # To'lov turlarini UZS'da hisoblash
+                cash_uzs = float(cash_usd) * rate
+                click_uzs = float(click_usd) * rate
+                terminal_uzs = float(terminal_usd) * rate
+                
                 telegram_result = scheduler.bot.send_payment_confirmation_sync(
                     chat_id=customer.telegram_chat_id,
                     customer_name=customer.name,
@@ -5628,9 +5633,9 @@ def api_debt_payment():
                     remaining_usd=float(total_remaining_debt),
                     remaining_uzs=remaining_debt_uzs,
                     customer_id=customer_id,
-                    cash_usd=float(cash_usd),
-                    click_usd=float(click_usd),
-                    terminal_usd=float(terminal_usd)
+                    cash_uzs=cash_uzs,
+                    click_uzs=click_uzs,
+                    terminal_uzs=terminal_uzs
                 )
                 
                 if telegram_result:
