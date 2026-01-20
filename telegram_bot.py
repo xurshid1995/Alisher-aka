@@ -250,6 +250,90 @@ class DebtTelegramBot:
             logger.error(f"❌ To'lov tasdiq xabarida xatolik: {e}")
             return False
     
+    def send_payment_confirmation_sync(
+        self,
+        chat_id: int,
+        customer_name: str,
+        previous_debt_usd: float,
+        previous_debt_uzs: float,
+        paid_usd: float,
+        paid_uzs: float,
+        remaining_usd: float,
+        remaining_uzs: float
+    ) -> bool:
+        """
+        To'lov tasdiqlash xabarini yuborish (sync versiya - Flask uchun)
+        
+        Args:
+            chat_id: Telegram chat ID
+            customer_name: Mijoz ismi
+            previous_debt_usd: Avvalgi qarz (USD)
+            previous_debt_uzs: Avvalgi qarz (UZS)
+            paid_usd: To'langan summa (USD)
+            paid_uzs: To'langan summa (UZS)
+            remaining_usd: Qolgan qarz (USD)
+            remaining_uzs: Qolgan qarz (UZS)
+            
+        Returns:
+            bool: Yuborildi/yuborilmadi
+        """
+        if not self.token:
+            logger.error("Bot token yo'q")
+            return False
+        
+        try:
+            if remaining_usd <= 0:
+                # Qarz to'liq to'landi
+                message = (
+                    f"✅ <b>TO'LOV QABUL QILINDI</b>\n\n"
+                    f"Hurmatli {customer_name}!\n\n"
+                    f"💰 Avvalgi qarz:\n"
+                    f"   💵 ${previous_debt_usd:,.2f}\n"
+                    f"   💸 {previous_debt_uzs:,.0f} so'm\n\n"
+                    f"✅ To'langan:\n"
+                    f"   💵 ${paid_usd:,.2f}\n"
+                    f"   💸 {paid_uzs:,.0f} so'm\n\n"
+                    f"🎉 <b>Qarzingiz to'liq to'landi!</b>\n\n"
+                    f"Rahmat! 🙏"
+                )
+            else:
+                # Qisman to'lov
+                message = (
+                    f"✅ <b>TO'LOV QABUL QILINDI</b>\n\n"
+                    f"Hurmatli {customer_name}!\n\n"
+                    f"💰 Avvalgi qarz:\n"
+                    f"   💵 ${previous_debt_usd:,.2f}\n"
+                    f"   💸 {previous_debt_uzs:,.0f} so'm\n\n"
+                    f"✅ To'langan:\n"
+                    f"   💵 ${paid_usd:,.2f}\n"
+                    f"   💸 {paid_uzs:,.0f} so'm\n\n"
+                    f"📊 Qolgan qarz:\n"
+                    f"   💵 ${remaining_usd:,.2f}\n"
+                    f"   💸 {remaining_uzs:,.0f} so'm\n\n"
+                    f"Rahmat! 🙏"
+                )
+            
+            # HTTP API orqali yuborish
+            url = f"https://api.telegram.org/bot{self.token}/sendMessage"
+            payload = {
+                'chat_id': chat_id,
+                'text': message,
+                'parse_mode': 'HTML'
+            }
+            
+            response = requests.post(url, json=payload, timeout=10)
+            
+            if response.status_code == 200:
+                logger.info(f"✅ To'lov tasdiq xabari yuborildi: {customer_name} (Chat ID: {chat_id})")
+                return True
+            else:
+                logger.error(f"❌ Telegram API xatosi ({customer_name}): {response.status_code} - {response.text}")
+                return False
+            
+        except Exception as e:
+            logger.error(f"❌ To'lov tasdiq xabarida xatolik ({customer_name}): {e}")
+            return False
+    
     async def send_debt_list_to_admin(self, debts_data: List[Dict]) -> bool:
         """
         Adminlarga qarzlar ro'yxatini yuborish

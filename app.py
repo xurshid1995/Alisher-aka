@@ -5566,6 +5566,9 @@ def api_debt_payment():
                 Sale.debt_usd > 0
             ).scalar() or 0
             
+            # Avvalgi qarzni hisoblash (to'lovdan oldin)
+            previous_total_debt = total_remaining_debt + (payment_usd - remaining_payment)
+            
             # Agar barcha qarzlar to'langan bo'lsa, oxirgi to'lov ma'lumotlarini tozalash
             if total_remaining_debt == 0:
                 customer.last_debt_payment_usd = 0
@@ -5593,6 +5596,38 @@ def api_debt_payment():
         db.session.add(debt_payment)
 
         db.session.commit()
+        
+        # Telegram orqali mijozga xabar yuborish
+        if customer and customer.telegram_chat_id:
+            try:
+                from debt_scheduler import get_scheduler_instance
+                
+                scheduler = get_scheduler_instance(app, db)
+                rate = get_current_currency_rate()
+                
+                # To'langan va qolgan summalarni UZS'da hisoblash
+                paid_uzs = float(payment_usd - remaining_payment) * rate
+                previous_debt_uzs = float(previous_total_debt) * rate
+                remaining_debt_uzs = float(total_remaining_debt) * rate
+                
+                telegram_result = scheduler.bot.send_payment_confirmation_sync(
+                    chat_id=customer.telegram_chat_id,
+                    customer_name=customer.name,
+                    previous_debt_usd=float(previous_total_debt),
+                    previous_debt_uzs=previous_debt_uzs,
+                    paid_usd=float(payment_usd - remaining_payment),
+                    paid_uzs=paid_uzs,
+                    remaining_usd=float(total_remaining_debt),
+                    remaining_uzs=remaining_debt_uzs
+                )
+                
+                if telegram_result:
+                    logger.info(f"✅ To'lov tasdiq xabari yuborildi: {customer.name}")
+                else:
+                    logger.warning(f"⚠️ To'lov tasdiq xabari yuborilmadi: {customer.name}")
+                    
+            except Exception as e:
+                logger.error(f"❌ Telegram xabar yuborishda xatolik: {e}")
 
         return jsonify({
             'success': True,
