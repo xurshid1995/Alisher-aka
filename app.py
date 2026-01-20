@@ -5627,7 +5627,10 @@ def api_debt_payment():
                     paid_uzs=paid_uzs,
                     remaining_usd=float(total_remaining_debt),
                     remaining_uzs=remaining_debt_uzs,
-                    customer_id=customer_id  # Customer ID qo'shamiz
+                    customer_id=customer_id,
+                    cash_usd=float(cash_usd),
+                    click_usd=float(click_usd),
+                    terminal_usd=float(terminal_usd)
                 )
                 
                 if telegram_result:

@@ -380,7 +380,10 @@ class DebtTelegramBot:
         paid_uzs: float,
         remaining_usd: float,
         remaining_uzs: float,
-        customer_id: Optional[int] = None
+        customer_id: Optional[int] = None,
+        cash_usd: float = 0,
+        click_usd: float = 0,
+        terminal_usd: float = 0
     ) -> bool:
         """
         To'lov tasdiqlash xabarini yuborish (sync versiya - Flask uchun)
@@ -395,6 +398,9 @@ class DebtTelegramBot:
             remaining_usd: Qolgan qarz (USD)
             remaining_uzs: Qolgan qarz (UZS)
             customer_id: Mijoz ID (to'lov turlarini ko'rsatish uchun)
+            cash_usd: Naqd to'lov (USD)
+            click_usd: Click to'lov (USD)
+            terminal_usd: Terminal to'lov (USD)
             
         Returns:
             bool: Yuborildi/yuborilmadi
@@ -404,10 +410,16 @@ class DebtTelegramBot:
             return False
         
         try:
-            # To'lov turlarini olish
+            # Aynan shu to'lovning turlarini ko'rsatish
             payment_details = ""
-            if customer_id and self.db and remaining_usd > 0:
-                payment_details = self._get_payment_details_sync(customer_id)
+            if cash_usd > 0 or click_usd > 0 or terminal_usd > 0:
+                payment_details = "\n\n<b>📊 To'lov turlari:</b>\n"
+                if cash_usd > 0:
+                    payment_details += f"💵 Naqd: ${cash_usd:,.2f}\n"
+                if click_usd > 0:
+                    payment_details += f"📱 Click: ${click_usd:,.2f}\n"
+                if terminal_usd > 0:
+                    payment_details += f"💳 Terminal: ${terminal_usd:,.2f}"
             
             if remaining_usd <= 0:
                 # Qarz to'liq to'landi
