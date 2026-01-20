@@ -11144,7 +11144,8 @@ def api_send_debt_sms():
                 customer_name=customer.name,
                 debt_usd=debt_usd,
                 debt_uzs=debt_uzs,
-                location_name=location_name
+                location_name=location_name,
+                customer_id=customer_id  # Customer ID qo'shamiz
             )
             
             if telegram_result:

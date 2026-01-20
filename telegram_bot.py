@@ -179,7 +179,8 @@ class DebtTelegramBot:
         debt_usd: float,
         debt_uzs: float,
         location_name: str,
-        sale_date: Optional[datetime] = None
+        sale_date: Optional[datetime] = None,
+        customer_id: Optional[int] = None
     ) -> bool:
         """
         Mijozga qarz eslatmasi yuborish (sync versiya - Flask uchun)
@@ -191,6 +192,7 @@ class DebtTelegramBot:
             debt_uzs: Qarz miqdori (UZS)
             location_name: Do'kon/ombor nomi
             sale_date: Savdo sanasi
+            customer_id: Mijoz ID (to'lov turlarini ko'rsatish uchun)
             
         Returns:
             bool: Yuborildi/yuborilmadi
@@ -201,6 +203,7 @@ class DebtTelegramBot:
         
         try:
             # Qarz miqdorini formatlash
+            debt_usd_str = f"${debt_usd:,.2f}"
             debt_uzs_str = f"{debt_uzs:,.0f} so'm"
             
             # Sana formatlash
@@ -208,9 +211,38 @@ class DebtTelegramBot:
             if sale_date:
                 date_str = f"\n📅 Savdo sanasi: {sale_date.strftime('%d.%m.%Y')}"
             
-            # Qarz miqdorini formatlash
-            debt_usd_str = f"${debt_usd:,.2f}"
-            debt_uzs_str = f"{debt_uzs:,.0f} so'm"
+            # To'lov turlarini olish
+            payment_details = ""
+            if customer_id and self.db:
+                try:
+                    from sqlalchemy import text
+                    result = self.db.session.execute(
+                        text("""
+                            SELECT 
+                                COALESCE(SUM(cash_usd), 0) as total_cash,
+                                COALESCE(SUM(click_usd), 0) as total_click,
+                                COALESCE(SUM(terminal_usd), 0) as total_terminal
+                            FROM sales
+                            WHERE customer_id = :customer_id AND debt_usd > 0
+                        """),
+                        {"customer_id": customer_id}
+                    ).fetchone()
+                    
+                    if result:
+                        cash = float(result[0] or 0)
+                        click = float(result[1] or 0)
+                        terminal = float(result[2] or 0)
+                        
+                        if cash > 0 or click > 0 or terminal > 0:
+                            payment_details = "\n\n<b>📊 To'lov turlari:</b>\n"
+                            if cash > 0:
+                                payment_details += f"💵 Naqd: ${cash:,.2f}\n"
+                            if click > 0:
+                                payment_details += f"📱 Click: ${click:,.2f}\n"
+                            if terminal > 0:
+                                payment_details += f"💳 Terminal: ${terminal:,.2f}"
+                except Exception as e:
+                    logger.error(f"Payment details olishda xatolik: {e}")
             
             # Xabar matni
             message = (
@@ -218,7 +250,7 @@ class DebtTelegramBot:
                 f"Hurmatli {customer_name}!\n\n"
                 f"📍 Joylashuv: {location_name}\n"
                 f"💎 Qarz: {debt_usd_str}\n"
-                f"💸 Qarz: {debt_uzs_str}{date_str}\n\n"
+                f"💸 Qarz: {debt_uzs_str}{date_str}{payment_details}\n\n"
                 f"Iltimos, qarzingizni to'lashni unutmang. Qarz bu omonat.\n"
                 f"Rahmat! 🙏"
             )
