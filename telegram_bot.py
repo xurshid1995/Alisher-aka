@@ -143,7 +143,6 @@ class DebtTelegramBot:
         
         try:
             # Qarz miqdorini formatlash
-            debt_usd_str = f"${debt_usd:,.2f}"
             debt_uzs_str = f"{debt_uzs:,.0f} so'm"
             
             # Sana formatlash
@@ -156,7 +155,6 @@ class DebtTelegramBot:
                 f"💰 <b>QARZ ESLATMASI</b>\n\n"
                 f"Hurmatli {customer_name}!\n\n"
                 f"📍 Joylashuv: {location_name}\n"
-                f"💵 Qarz: {debt_usd_str}\n"
                 f"💸 Qarz: {debt_uzs_str}{date_str}\n\n"
                 f"Iltimos, qarzingizni to'lashni unutmang.\n"
                 f"Rahmat! 🙏"
@@ -229,10 +227,8 @@ class DebtTelegramBot:
                     f"✅ <b>TO'LOV QABUL QILINDI</b>\n\n"
                     f"Hurmatli {customer_name}!\n\n"
                     f"📍 Joylashuv: {location_name}\n"
-                    f"💵 To'langan: ${paid_usd:,.2f}\n"
-                    f"💸 To'langan: {paid_uzs:,.0f} so'm\n\n"
+                    f"� To'langan: {paid_uzs:,.0f} so'm\n\n"
                     f"📊 <b>Qolgan qarz:</b>\n"
-                    f"💵 ${remaining_usd:,.2f}\n"
                     f"💸 {remaining_uzs:,.0f} so'm\n\n"
                     f"Rahmat! 🙏"
                 )
@@ -287,12 +283,8 @@ class DebtTelegramBot:
                 message = (
                     f"✅ <b>TO'LOV QABUL QILINDI</b>\n\n"
                     f"Hurmatli {customer_name}!\n\n"
-                    f"💰 Avvalgi qarz:\n"
-                    f"   💵 ${previous_debt_usd:,.2f}\n"
-                    f"   💸 {previous_debt_uzs:,.0f} so'm\n\n"
-                    f"✅ To'langan:\n"
-                    f"   💵 ${paid_usd:,.2f}\n"
-                    f"   💸 {paid_uzs:,.0f} so'm\n\n"
+                    f"💰 Avvalgi qarz: {previous_debt_uzs:,.0f} so'm\n\n"
+                    f"✅ To'langan: {paid_uzs:,.0f} so'm\n\n"
                     f"🎉 <b>Qarzingiz to'liq to'landi!</b>\n\n"
                     f"Rahmat! 🙏"
                 )
@@ -301,15 +293,9 @@ class DebtTelegramBot:
                 message = (
                     f"✅ <b>TO'LOV QABUL QILINDI</b>\n\n"
                     f"Hurmatli {customer_name}!\n\n"
-                    f"💰 Avvalgi qarz:\n"
-                    f"   💵 ${previous_debt_usd:,.2f}\n"
-                    f"   💸 {previous_debt_uzs:,.0f} so'm\n\n"
-                    f"✅ To'langan:\n"
-                    f"   💵 ${paid_usd:,.2f}\n"
-                    f"   💸 {paid_uzs:,.0f} so'm\n\n"
-                    f"📊 Qolgan qarz:\n"
-                    f"   💵 ${remaining_usd:,.2f}\n"
-                    f"   💸 {remaining_uzs:,.0f} so'm\n\n"
+                    f"💰 Avvalgi qarz: {previous_debt_uzs:,.0f} so'm\n\n"
+                    f"✅ To'langan: {paid_uzs:,.0f} so'm\n\n"
+                    f"📊 Qolgan qarz: {remaining_uzs:,.0f} so'm\n\n"
                     f"Rahmat! 🙏"
                 )
             
@@ -358,8 +344,7 @@ class DebtTelegramBot:
                 f"📊 <b>QARZLAR HISOBOTI</b>\n"
                 f"📅 Sana: {datetime.now().strftime('%d.%m.%Y %H:%M')}\n\n"
                 f"👥 Jami qarzlar: {len(debts_data)} ta\n"
-                f"💵 Umumiy qarz: ${total_debt_usd:,.2f}\n"
-                f"💸 Umumiy qarz: {total_debt_uzs:,.0f} so'm\n\n"
+                f"� Umumiy qarz: {total_debt_uzs:,.0f} so'm\n\n"
                 f"━━━━━━━━━━━━━━━━━━━\n\n"
             )
             
@@ -368,7 +353,7 @@ class DebtTelegramBot:
                 message += (
                     f"{i}. <b>{debt['customer_name']}</b>\n"
                     f"   📍 {debt['location_name']}\n"
-                    f"   💵 ${debt['debt_usd']:,.2f}\n"
+                    f"   💸 {debt['debt_uzs']:,.0f} so'm\n"
                     f"   📱 {debt.get('phone', 'Telefon yo\'q')}\n\n"
                 )
             
@@ -623,8 +608,7 @@ async def handle_verification_code(update: Update, context: ContextTypes.DEFAULT
                 
                 debt_details.append(
                     f"📍 {location_name}\n"
-                    f"   💵 ${debt_usd:,.2f}\n"
-                    f"   💸 {debt_uzs:,.0f} so'm"
+                    f"   � {debt_uzs:,.0f} so'm"
                 )
             
             message = (
@@ -633,7 +617,6 @@ async def handle_verification_code(update: Update, context: ContextTypes.DEFAULT
                 f"💰 <b>Sizning qarzlaringiz:</b>\n\n"
                 f"{chr(10).join(debt_details)}\n\n"
                 f"📊 <b>Jami qarz:</b>\n"
-                f"💵 ${total_usd:,.2f}\n"
                 f"💸 {total_uzs:,.0f} so'm\n\n"
                 f"Iltimos, qarzingizni to'lashni unutmang.\n"
                 f"Rahmat! 🙏"
@@ -720,8 +703,7 @@ async def check_debt_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 
                 debt_details.append(
                     f"📍 {location_name}\n"
-                    f"   💵 ${debt_usd:,.2f}\n"
-                    f"   💸 {debt_uzs:,.0f} so'm"
+                    f"   � {debt_uzs:,.0f} so'm"
                 )
             
             message = (
@@ -729,7 +711,6 @@ async def check_debt_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 f"💰 <b>Sizning qarzlaringiz:</b>\n\n"
                 f"{chr(10).join(debt_details)}\n\n"
                 f"📊 <b>Jami qarz:</b>\n"
-                f"💵 ${total_usd:,.2f}\n"
                 f"💸 {total_uzs:,.0f} so'm\n\n"
                 f"Iltimos, qarzingizni to'lashni unutmang.\n"
                 f"Rahmat! 🙏"
@@ -882,8 +863,7 @@ async def handle_phone_number(update: Update, context: ContextTypes.DEFAULT_TYPE
                 
                 debt_details.append(
                     f"📍 {location_name}\n"
-                    f"   💵 ${debt_usd:,.2f}\n"
-                    f"   💸 {debt_uzs:,.0f} so'm"
+                    f"   � {debt_uzs:,.0f} so'm"
                 )
             
             message = (
@@ -897,7 +877,6 @@ async def handle_phone_number(update: Update, context: ContextTypes.DEFAULT_TYPE
                 message += (
                     f"\n\n━━━━━━━━━━━━━━━━━━━\n"
                     f"<b>JAMI:</b>\n"
-                    f"💵 ${total_usd:,.2f}\n"
                     f"💸 {total_uzs:,.0f} so'm\n\n"
                 )
             else:
