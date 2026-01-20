@@ -11131,6 +11131,11 @@ def api_send_debt_sms():
         debt_usd = float(sale_with_location.total_debt)
         debt_uzs = float(sale_with_location.total_debt_uzs or 0)
         
+        # Agar debt_uzs 0 yoki juda kichik bo'lsa (USD saqlanib qolgan), kursga ko'paytiramiz
+        if debt_uzs == 0 or debt_uzs < debt_usd * 100:  # UZS kamida 100 barobar katta bo'lishi kerak
+            rate = get_current_currency_rate()
+            debt_uzs = debt_usd * rate
+        
         # Joylashuv nomini olish
         location_name = "Do'kon"
         if sale_with_location.location_type == 'store':
