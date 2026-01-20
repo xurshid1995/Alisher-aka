@@ -8694,9 +8694,8 @@ def create_sale():
             # Savdo summasini hisoblash
             total_amount_usd = unit_price_usd * quantity  # USD da
             
-            # Cost price ni USD ga aylantirish (mahsulot tan narxi UZS da saqlanadi)
-            unit_cost_price_uzs = float(product.cost_price)  # Tan narxi (UZS)
-            unit_cost_price_usd = unit_cost_price_uzs / float(current_rate)  # USD ga o'tkazish
+            # Cost price allaqachon USD da (products jadvalidagi qiymat)
+            unit_cost_price_usd = float(product.cost_price)  # USD da
             total_cost_price_usd = unit_cost_price_usd * quantity  # Jami tan narx (USD)
             
             # Foyda USD da hisoblash
@@ -8928,10 +8927,8 @@ def update_sale(sale_id):
                 quantity = int(item_data['quantity'])
                 unit_price_usd = Decimal(str(item_data['unit_price']))
                 
-                # Cost price ni USD ga aylantirish
-                current_rate = get_current_currency_rate()
-                cost_price_uzs = product.cost_price or Decimal('0')
-                cost_price_usd = cost_price_uzs / Decimal(str(current_rate))
+                # Cost price allaqachon USD da (products jadvalidagi qiymat)
+                cost_price_usd = product.cost_price or Decimal('0')
                 
                 location_id = item_data.get('location_id')
                 location_type = item_data.get('location_type', 'store')
@@ -9281,9 +9278,8 @@ def create_pending_sale(data):
             unit_price_usd = Decimal(str(unit_price))
             total_price_usd = Decimal(str(quantity)) * unit_price_usd
             
-            # Cost price ni USD ga aylantirish
-            cost_price_uzs = product.cost_price or Decimal('0')
-            cost_price_usd = cost_price_uzs / Decimal(str(current_rate))
+            # Cost price allaqachon USD da (products jadvalidagi qiymat)
+            cost_price_usd = product.cost_price or Decimal('0')
             
             # Foyda USD da hisoblash
             profit_usd = total_price_usd - (Decimal(str(quantity)) * cost_price_usd)
