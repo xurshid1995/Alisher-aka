@@ -420,9 +420,10 @@ class DebtTelegramBot:
             if debt_uzs > 0:
                 message += f"⚠️ Qarz: {debt_uzs:,.0f} so'm\n"
             
-            # Jami qarzni hisoblash (database'dan)
+            # Oldingi va jami qarzni hisoblash (database'dan)
             try:
                 if self.db and customer_id:
+                    # Barcha qarzlarni (shu savdogacha) hisoblash
                     total_debt_result = self.db.session.execute(
                         text("""
                             SELECT COALESCE(SUM(debt_amount), 0) as total_debt
@@ -436,8 +437,15 @@ class DebtTelegramBot:
                     
                     total_debt_uzs = float(total_debt_result[0] or 0) if total_debt_result else 0
                     
-                    if total_debt_uzs > 0:
-                        message += f"\n<b>💳 JAMI QARZ: {total_debt_uzs:,.0f} so'm</b>\n"
+                    # Oldingi qarz = Jami qarz - Joriy savdo qarzi
+                    previous_debt_uzs = total_debt_uzs - debt_uzs
+                    
+                    if previous_debt_uzs > 0 or total_debt_uzs > 0:
+                        message += "\n"
+                        if previous_debt_uzs > 0:
+                            message += f"<b>📋 OLDINGI QARZ: {previous_debt_uzs:,.0f} so'm</b>\n"
+                        if total_debt_uzs > 0:
+                            message += f"<b>💳 JAMI QARZ: {total_debt_uzs:,.0f} so'm</b>\n"
             except Exception as db_error:
                 logger.warning(f"⚠️ Jami qarzni olishda xatolik: {db_error}")
             
