@@ -423,19 +423,25 @@ class DebtTelegramBot:
             # Oldingi va jami qarzni hisoblash (database'dan)
             try:
                 if self.db and customer_id:
-                    # Barcha qarzlarni (shu savdogacha) hisoblash
+                    # Joriy kursni olish
+                    from app import Currency
+                    current_currency = Currency.query.filter_by(name='USD').first()
+                    rate = float(current_currency.rate) if current_currency else 12700
+                    
+                    # Barcha qarzlarni (shu savdogacha) hisoblash - debt_usd dan
                     total_debt_result = self.db.session.execute(
                         text("""
-                            SELECT COALESCE(SUM(debt_amount), 0) as total_debt
+                            SELECT COALESCE(SUM(debt_usd), 0) as total_debt_usd
                             FROM sales
                             WHERE customer_id = :customer_id 
                             AND payment_status = 'partial'
-                            AND debt_amount > 0
+                            AND debt_usd > 0
                         """),
                         {"customer_id": customer_id}
                     ).fetchone()
                     
-                    total_debt_uzs = float(total_debt_result[0] or 0) if total_debt_result else 0
+                    total_debt_usd = float(total_debt_result[0] or 0) if total_debt_result else 0
+                    total_debt_uzs = total_debt_usd * rate
                     
                     # Oldingi qarz = Jami qarz - Joriy savdo qarzi
                     previous_debt_uzs = total_debt_uzs - debt_uzs
