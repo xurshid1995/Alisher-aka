@@ -446,13 +446,12 @@ class DebtTelegramBot:
                     # Oldingi qarz = Jami qarz - Joriy savdo qarzi
                     previous_debt_uzs = total_debt_uzs - debt_uzs
                     
-                    if previous_debt_uzs > 0 or total_debt_uzs > 0:
+                    # Qarz bo'lsa ko'rsatish
+                    if debt_uzs > 0:
                         message += "\n"
-                        if previous_debt_uzs > 0:
-                            message += f"<b>📋 OLDINGI QARZ: {previous_debt_uzs:,.0f} so'm</b>\n"
-                        if total_debt_uzs > 0:
-                            message += f"<b>💳 JAMI QARZ: {total_debt_uzs:,.0f} so'm</b>\n"
-                            message += "Qarzingizni vaqtida to'lashni unutmang Qarz bu sizga omonat\n"
+                        message += f"<b>📋 OLDINGI QARZ: {previous_debt_uzs:,.0f} so'm</b>\n"
+                        message += f"<b>💳 JAMI QARZ: {total_debt_uzs:,.0f} so'm</b>\n"
+                        message += "Qarzingizni vaqtida to'lashni unutmang Qarz bu sizga omonat\n"
             except Exception as db_error:
                 logger.warning(f"⚠️ Jami qarzni olishda xatolik: {db_error}")
             
