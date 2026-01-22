@@ -253,57 +253,78 @@
         #paymentModal {
             padding: 5px !important;
             overflow-y: auto !important;
+            align-items: flex-start !important;
         }
         
         .payment-modal-content {
-            width: calc(100vw - 20px) !important;
-            max-width: calc(100vw - 20px) !important;
-            max-height: 90vh !important;
+            width: calc(100vw - 16px) !important;
+            max-width: calc(100vw - 16px) !important;
+            max-height: 92vh !important;
             overflow-y: auto !important;
-            padding: 10px !important;
-            margin: 0 !important;
+            padding: 8px !important;
+            margin: 4px 8px !important;
             box-sizing: border-box !important;
-        }
-        
-        .payment-modal-content h3 {
-            font-size: 14px !important;
-            margin-bottom: 8px !important;
+            border-radius: 4px !important;
         }
         
         .payment-modal-content > div {
-            margin-bottom: 8px !important;
+            margin-bottom: 6px !important;
+            gap: 4px !important;
+            padding: 6px !important;
+        }
+        
+        .payment-modal-content h3 {
+            font-size: 13px !important;
+            margin: 0 0 6px 0 !important;
         }
         
         .payment-modal-content input[type="number"] {
-            padding: 6px 4px !important;
-            font-size: 12px !important;
+            padding: 4px 2px !important;
+            font-size: 11px !important;
+            min-width: 60px !important;
         }
         
         .payment-modal-content button {
-            padding: 6px 4px !important;
-            font-size: 10px !important;
+            padding: 4px 6px !important;
+            font-size: 9px !important;
+            white-space: nowrap !important;
         }
         
         .payment-modal-content label {
-            font-size: 11px !important;
-            min-width: 70px !important;
+            font-size: 10px !important;
+            min-width: 50px !important;
         }
         
-        .payment-modal-content input[type="checkbox"] {
-            width: 14px !important;
-            height: 14px !important;
-        }
-        
-        .payment-modal-content #paymentModalTotal {
-            font-size: 11px !important;
-        }
-        
-        .payment-modal-content #paymentModalTotal > div {
+        .payment-modal-content label span {
             font-size: 10px !important;
         }
         
+        .payment-modal-content input[type="checkbox"] {
+            width: 12px !important;
+            height: 12px !important;
+        }
+        
+        .payment-modal-content #paymentModalTotal {
+            font-size: 10px !important;
+        }
+        
+        .payment-modal-content #paymentModalTotal > div {
+            font-size: 9px !important;
+            margin-bottom: 2px !important;
+        }
+        
         .payment-modal-content #paymentModalTotal span {
-            font-size: 12px !important;
+            font-size: 11px !important;
+        }
+        
+        .payment-modal-content > div:last-child {
+            gap: 6px !important;
+        }
+        
+        .payment-modal-content > div:last-child button {
+            flex: 1 !important;
+            padding: 8px 4px !important;
+            font-size: 11px !important;
         }
     }
     
