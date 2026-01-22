@@ -1707,7 +1707,7 @@
     
     // Native camera scanner (mobile uchun - to'liq ekran native app)
     function startNativeCameraScanner() {
-        const nativeCameraInput = document.getElementById('nativeCameraInput');
+        const nativeCameraInput = getActiveTabElement('nativeCameraInput');
         if (!nativeCameraInput) {
             console.error('❌ nativeCameraInput topilmadi!');
             alert('❌ Kamera ochilmadi!');
