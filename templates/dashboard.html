@@ -305,8 +305,10 @@
 
 @media (max-width: 576px) {
     .stats-horizontal {
-        flex-direction: column;
-        gap: 8px;
+        flex-wrap: wrap;
+        gap: 5px;
+        justify-content: space-around;
+        font-size: 0.85rem;
     }
     
     .stat-separator {
@@ -315,6 +317,15 @@
     
     .stat-item {
         justify-content: center;
+        flex: 0 1 auto;
+    }
+    
+    .stat-label-inline {
+        font-size: 0.75rem;
+    }
+    
+    .stat-number-inline {
+        font-size: 0.9rem;
     }
 }
 
