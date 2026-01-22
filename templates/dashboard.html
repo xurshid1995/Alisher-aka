@@ -117,11 +117,10 @@
 
 #locationButtons {
     display: flex;
-    flex-wrap: nowrap !important;
+    flex-wrap: wrap;
     gap: 5px;
     justify-content: center;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
+    overflow-x: visible;
 }
 
 #locationButtons::-webkit-scrollbar {
@@ -346,22 +345,24 @@
         display: flex;
         flex-wrap: wrap !important;
         gap: 3px;
-        justify-content: flex-start;
+        justify-content: space-between;
         overflow-x: visible;
         width: 100%;
         padding: 2px;
     }
     
     #locationButtons .location-btn {
-        flex: 0 0 auto;
-        font-size: 0.6rem !important;
-        padding: 0.2rem 0.3rem !important;
+        flex: 0 1 calc(32% - 3px);
+        font-size: 0.65rem !important;
+        padding: 0.25rem 0.2rem !important;
         white-space: nowrap;
-        min-width: auto;
-        max-width: none;
+        min-width: 0;
+        max-width: calc(33.33% - 3px);
         line-height: 1.1;
         height: auto;
         border-width: 1px !important;
+        text-overflow: ellipsis;
+        overflow: hidden;
     }
 }
 </style>
