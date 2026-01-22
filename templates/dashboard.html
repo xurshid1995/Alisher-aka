@@ -310,20 +310,21 @@
     /* Mobil filtrlarni bir qatorda qilish */
     #timeFilters {
         display: flex;
-        flex-wrap: wrap;
-        gap: 3px;
-        justify-content: center;
+        flex-wrap: nowrap !important;
+        gap: 2px;
+        justify-content: space-between;
         overflow-x: visible;
-        -webkit-overflow-scrolling: touch;
+        width: 100%;
         padding: 2px;
     }
     
     #timeFilters .time-btn {
-        flex-shrink: 1;
-        font-size: 0.55rem !important;
-        padding: 0.15rem 0.2rem !important;
+        flex: 1 1 auto;
+        font-size: 0.5rem !important;
+        padding: 0.15rem 0.1rem !important;
         white-space: nowrap;
-        min-width: auto;
+        min-width: 0;
+        max-width: 33%;
         line-height: 1;
         height: auto;
         border-width: 1px !important;
@@ -332,16 +333,15 @@
     #locationButtons {
         display: flex;
         flex-wrap: wrap;
-        gap: 3px;
+        gap: 2px;
         justify-content: center;
         overflow-x: visible;
-        -webkit-overflow-scrolling: touch;
         padding: 2px;
     }
     
     #locationButtons .location-btn {
-        flex-shrink: 1;
-        font-size: 0.55rem !important;
+        flex: 0 1 auto;
+        font-size: 0.5rem !important;
         padding: 0.15rem 0.2rem !important;
         white-space: nowrap;
         min-width: auto;
