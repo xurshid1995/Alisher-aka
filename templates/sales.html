@@ -44,71 +44,17 @@
     .sales-layout-box {
         max-width: 100%;
         width: 100%;
-        box-sizing: border-box;
     }
     
     .sales-grid > div:first-child,
     .sales-grid > div:nth-child(2) {
         width: 100%;
-        box-sizing: border-box;
     }
     
     .table-wrapper {
         width: 100%;
         max-width: 100%;
         position: relative;
-        overflow-x: auto;
-        box-sizing: border-box;
-    }
-    
-    .sales-product-table {
-        width: 100%;
-        table-layout: fixed;
-        box-sizing: border-box;
-        border-collapse: collapse;
-    }
-    
-    .sales-product-table thead tr {
-        background: #f8f9fa;
-        border-bottom: 2px solid #dee2e6;
-    }
-    
-    .sales-product-table th {
-        padding: 10px 8px;
-        font-size: 15px;
-        font-weight: 600;
-        color: #495057;
-    }
-    
-    /* Desktop - ustun kengliklarini optimallashtirish */
-    .sales-product-table th:nth-child(1),
-    .sales-product-table td:nth-child(1) {
-        width: 45%;
-        text-align: left;
-        white-space: normal;
-        word-wrap: break-word;
-        word-break: break-word;
-        line-height: 1.4;
-        overflow: hidden;
-    }
-    
-    .sales-product-table th:nth-child(2),
-    .sales-product-table td:nth-child(2) {
-        width: 15%;
-        text-align: center;
-    }
-    
-    .sales-product-table th:nth-child(3),
-    .sales-product-table td:nth-child(3) {
-        width: 30%;
-        text-align: left;
-    }
-    
-    .sales-product-table th:nth-child(4),
-    .sales-product-table td:nth-child(4) {
-        width: 10%;
-        text-align: center;
-        padding: 2px;
     }
     
     /* Scroll indicator removed for better mobile UX */
@@ -194,6 +140,7 @@
         .sales-product-table td:first-child,
         .cart-table th:first-child,
         .cart-table td:first-child {
+            width: auto !important;
             max-width: 140px !important;
             min-width: 90px !important;
             white-space: normal !important;
@@ -207,11 +154,13 @@
         .sales-product-table td:nth-child(2) {
             white-space: nowrap;
             text-align: center;
+            width: auto !important;
         }
         
         .sales-product-table th:nth-child(3),
         .sales-product-table td:nth-child(3) {
             white-space: nowrap;
+            width: auto !important;
         }
         
         .sales-product-table th:nth-child(4),
@@ -677,14 +626,14 @@
             </div>
             
             <!-- Mahsulotlar jadvali -->
-            <div class="table-wrapper">
-                <table class="sales-product-table">
+            <div class="table-wrapper" style="overflow-x: auto;">
+                <table class="sales-product-table" style="width: 100%; border-collapse: collapse;">
                     <thead>
-                        <tr>
-                            <th>Mahsulot</th>
-                            <th>Mavjud</th>
-                            <th>Narx</th>
-                            <th>Amal</th>
+                        <tr style="background: #f8f9fa; border-bottom: 2px solid #dee2e6;">
+                            <th style="padding: 10px 8px; text-align: left; font-size: 15px; font-weight: 600; color: #495057;">Mahsulot</th>
+                            <th style="padding: 10px 8px; text-align: center; font-size: 15px; font-weight: 600; color: #495057;">Mavjud</th>
+                            <th style="padding: 10px 8px; text-align: left; font-size: 15px; font-weight: 600; color: #495057;">Narx</th>
+                            <th style="padding: 2px; text-align: center; font-size: 15px; font-weight: 600; color: #495057;">Amal</th>
                         </tr>
                     </thead>
                     <tbody id="productsTable">
@@ -2469,8 +2418,7 @@
         const locationValue = locationSelect.value;
         
         if (!locationValue) {
-            const colspan = window.innerWidth <= 768 ? 3 : 4;
-            tbody.innerHTML = `<tr><td colspan="${colspan}" style="text-align: center; padding: 30px; color: #999;">Joylashuvni tanlang</td></tr>`;
+            tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; padding: 30px; color: #999;">Joylashuvni tanlang</td></tr>';
             selectedLocationId = null;
             selectedLocationType = null;
             document.getElementById(`productsPagination_tab${tabId}`).innerHTML = '';
@@ -3770,13 +3718,11 @@
         
         const locationValue = locationSelect.value;
         if (!locationValue) {
-            const colspan = window.innerWidth <= 768 ? 3 : 4;
-            tbody.innerHTML = `<tr><td colspan="${colspan}" style="text-align: center; padding: 30px; color: #999;">Joylashuvni tanlang</td></tr>`;
+            tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; padding: 30px; color: #999;">Joylashuvni tanlang</td></tr>';
             return;
         }
         
-        const colspan = window.innerWidth <= 768 ? 3 : 4;
-        tbody.innerHTML = `<tr><td colspan="${colspan}" style="text-align: center; padding: 30px; color: #999;">⏳ Qidirilmoqda...</td></tr>`;
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 30px; color: #999;">⏳ Qidirilmoqda...</td></tr>';
         
         try {
             // Serverdan qidiruv so'rovi yuborish
