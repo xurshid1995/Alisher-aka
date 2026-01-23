@@ -636,7 +636,7 @@
             return;
         }
 
-        const returnQty = parseInt(qtyInput.value);
+        const returnQty = parseFloat(qtyInput.value);
 
         if (!returnQty || returnQty <= 0) {
             showMessage('❌ Qaytarish miqdorini kiriting!', 'error');
@@ -644,7 +644,7 @@
         }
 
         if (returnQty > maxQuantity) {
-            showMessage(`❌ Maksimal ${maxQuantity} dona qaytarish mumkin!`, 'error');
+            showMessage(`❌ Maksimal ${maxQuantity} qaytarish mumkin!`, 'error');
             return;
         }
 
