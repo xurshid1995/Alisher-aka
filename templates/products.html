@@ -951,6 +951,12 @@
                 const stockText = getStockText(totalStock);
                 const locations = getProductLocations(product);
                 
+                // O'lchov birligini aniqlash
+                const unitType = product.unit_type || 'dona';
+                const quantityDisplay = unitType === 'litr' 
+                    ? `${totalStock.toFixed(2)} litr` 
+                    : `${Math.floor(totalStock)} dona`;
+                
                 // Qidiruv matnini highlight qilish
                 const highlightedName = highlightSearchText(product.name, currentSearch);
                 
@@ -968,7 +974,7 @@
                             <span style="background-color: #007bff; color: white; font-size: 0.9rem; margin-left: 0.5rem; padding: 2px 8px; border-radius: 0;">${formatPrice(product.sell_price * currencyRate)} so'm</span>
                         </td>
                         <td class="location-cell">${locations}</td>
-                        <td><span class="quantity-cell">${totalStock}</span></td>
+                        <td><span class="quantity-cell">${quantityDisplay}</span></td>
                         <td><span class="stock-badge ${stockClass}">${stockText}</span></td>
                     </tr>
                 `;
@@ -1135,22 +1141,28 @@
         const activeLocationButton = document.querySelector('.location-button.active');
         const locationFilter = activeLocationButton ? activeLocationButton.dataset.location : 'all';
         
+        // O'lchov birligi
+        const unitType = product.unit_type || 'dona';
+        
         if (product.stocks) {
             product.stocks.forEach(stock => {
+                const qty = stock.quantity || 0;
+                const qtyDisplay = unitType === 'litr' ? qty.toFixed(2) : Math.floor(qty);
+                
                 // Agar "Barcha joylar" tanlangan bo'lsa - hammasi ko'rsatilsin
                 if (locationFilter === 'all') {
                     // Agar warehouse_id mavjud bo'lsa - ombor (sariq fon)
                     if (stock.warehouse_id && stock.warehouse_name) {
                         locations.push(`<span class="location-tag warehouse-tag">
                             <span class="location-name">${stock.warehouse_name}</span>
-                            <span class="location-quantity">${stock.quantity}</span>
+                            <span class="location-quantity">${qtyDisplay}</span>
                         </span>`);
                     }
                     // Agar store_id mavjud bo'lsa - do'kon (yashil fon)
                     if (stock.store_id && stock.store_name) {
                         locations.push(`<span class="location-tag store-tag">
                             <span class="location-name">${stock.store_name}</span>
-                            <span class="location-quantity">${stock.quantity}</span>
+                            <span class="location-quantity">${qtyDisplay}</span>
                         </span>`);
                     }
                 } else {

@@ -440,6 +440,7 @@ class Product(db.Model):
                            nullable=False)  # Sotish narxi
     min_stock = db.Column(db.Integer, default=0,
                           nullable=False)  # Minimal qoldiq
+    unit_type = db.Column(db.String(10), default='dona', nullable=False)  # O'lchov birligi: 'dona' yoki 'litr'
     last_batch_cost = db.Column(db.DECIMAL(precision=10, scale=2))  # Oxirgi partiya tan narxi
     last_batch_date = db.Column(db.DateTime)  # Oxirgi partiya sanasi
     created_at = db.Column(db.DateTime,
@@ -482,6 +483,7 @@ class Product(db.Model):
             'sell_price': float(self.sell_price),
             'price': float(self.sell_price),  # Compatibility uchun
             'min_stock': self.min_stock,
+            'unit_type': self.unit_type,  # O'lchov birligi
             'last_batch_cost': float(self.last_batch_cost) if self.last_batch_cost else None,
             'last_batch_date': self.last_batch_date.isoformat() if self.last_batch_date else None,
             'created_at': self.created_at.isoformat() if self.created_at else None,
@@ -496,7 +498,7 @@ class Order(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     customer_name = db.Column(db.String(100), nullable=False)
     product_name = db.Column(db.String(200), nullable=True)  # Mahsulot nomi
-    quantity = db.Column(db.Integer, default=1, nullable=False)  # Miqdori
+    quantity = db.Column(db.DECIMAL(precision=10, scale=2), default=1, nullable=False)  # Miqdori
     cost_price = db.Column(db.DECIMAL(precision=10, scale=2),
                            nullable=True)  # Tan narxi
     sell_price = db.Column(db.DECIMAL(precision=10, scale=2),
@@ -579,7 +581,7 @@ class WarehouseStock(db.Model):
         db.Integer,
         db.ForeignKey('products.id'),
         nullable=False)
-    quantity = db.Column(db.Integer, nullable=False, default=0)
+    quantity = db.Column(db.DECIMAL(precision=10, scale=2), nullable=False, default=0)
     min_stock = db.Column(db.Integer, default=10)  # Minimal zaxira
     last_updated = db.Column(db.DateTime, default=db.func.current_timestamp())
 
@@ -601,7 +603,7 @@ class WarehouseStock(db.Model):
             'warehouse_id': self.warehouse_id,
             'warehouse_name': self.warehouse.name if self.warehouse else 'Noma\'lum',
             'product_id': self.product_id,
-            'quantity': self.quantity,
+            'quantity': float(self.quantity) if self.quantity else 0,
             'min_stock': self.min_stock,
             'last_updated': self.last_updated.strftime('%Y-%m-%d %H:%M:%S')}
 
@@ -619,7 +621,7 @@ class StoreStock(db.Model):
         db.Integer,
         db.ForeignKey('products.id'),
         nullable=False)
-    quantity = db.Column(db.Integer, nullable=False, default=0)
+    quantity = db.Column(db.DECIMAL(precision=10, scale=2), nullable=False, default=0)
     min_stock = db.Column(db.Integer, default=10)  # Minimal zaxira
     last_updated = db.Column(db.DateTime, default=db.func.current_timestamp())
 
@@ -642,7 +644,7 @@ class StoreStock(db.Model):
             'store_name': self.store.name if self.store else 'Noma\'lum',
             'product_id': self.product_id,
             'product_name': self.product.name if self.product else 'Noma\'lum',
-            'quantity': self.quantity,
+            'quantity': float(self.quantity) if self.quantity else 0,
             'min_stock': self.min_stock,
             'status': 'low' if self.quantity <= self.min_stock else 'normal',
             'last_updated': self.last_updated.strftime('%Y-%m-%d %H:%M')
@@ -664,7 +666,7 @@ class Transfer(db.Model):
     to_location_type = db.Column(db.String(20),
                                  nullable=False)  # 'store' yoki 'warehouse'
     to_location_id = db.Column(db.Integer, nullable=False)
-    quantity = db.Column(db.Integer, nullable=False)
+    quantity = db.Column(db.DECIMAL(precision=10, scale=2), nullable=False)
     user_name = db.Column(db.String(100), default='Admin')
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
 
@@ -707,7 +709,7 @@ class Transfer(db.Model):
             'to_location_type': self.to_location_type,
             'to_location_id': self.to_location_id,
             'to_location_name': self.to_location_name,
-            'quantity': self.quantity,
+            'quantity': float(self.quantity) if self.quantity else 0,
             'user_name': self.user_name,
             'created_at': self.created_at.isoformat()}
 
@@ -1045,7 +1047,7 @@ class SaleItem(db.Model):
         db.Integer,
         db.ForeignKey('products.id'),
         nullable=False)
-    quantity = db.Column(db.Integer, nullable=False)
+    quantity = db.Column(db.DECIMAL(precision=10, scale=2), nullable=False)
     unit_price = db.Column(db.DECIMAL(precision=10, scale=2), nullable=False)
     total_price = db.Column(db.DECIMAL(precision=12, scale=2), nullable=False)
     cost_price = db.Column(db.DECIMAL(precision=10, scale=2), nullable=False)
@@ -1077,7 +1079,7 @@ class SaleItem(db.Model):
             'sale_id': self.sale_id,
             'product_id': self.product_id,
             'product_name': self.product.name if self.product else 'Noma\'lum mahsulot',
-            'quantity': self.quantity if self.quantity is not None else 0,
+            'quantity': float(self.quantity) if self.quantity is not None else 0,
             'unit_price': float(self.unit_price) if self.unit_price is not None else 0.0,
             'total_price': float(self.total_price) if self.total_price is not None else 0.0,
             'cost_price': float(self.cost_price) if self.cost_price is not None else 0.0,
@@ -2133,6 +2135,10 @@ def api_add_product():
                     existing_product.min_stock = product_data.get(
                         'minStock', existing_product.min_stock)
                     
+                    # Unit type yangilash (agar berilgan bo'lsa)
+                    if 'unitType' in product_data:
+                        existing_product.unit_type = product_data['unitType']
+                    
                     # Barcode yangilash (agar kiritilgan bo'lsa)
                     if 'barcode' in product_data and product_data['barcode']:
                         existing_product.barcode = product_data['barcode']
@@ -2148,7 +2154,8 @@ def api_add_product():
                         last_batch_cost=cost_price,  # Birinchi partiya
                         last_batch_date=get_tashkent_time(),
                         stock_quantity=0,  # Global stock 0 ga qo'yamiz
-                        min_stock=product_data.get('minStock', 0)
+                        min_stock=product_data.get('minStock', 0),
+                        unit_type=product_data.get('unitType', 'dona')  # O'lchov birligi
                     )
                     db.session.add(product)
                     db.session.flush()  # ID olish uchun
@@ -2244,7 +2251,8 @@ def api_add_product():
                 cost_price=cost_price,
                 sell_price=sell_price,
                 stock_quantity=data.get('stock_quantity', 0),
-                min_stock=data.get('min_stock', 0)
+                min_stock=data.get('min_stock', 0),
+                unit_type=data.get('unit_type', 'dona')  # O'lchov birligi
             )
 
             db.session.add(new_product)
@@ -2329,7 +2337,8 @@ def api_batch_products():
                     sell_price=sell_price,
                     last_batch_cost=last_batch_cost,  # Frontend'dan kelgan qiymat
                     last_batch_date=get_tashkent_time(),
-                    min_stock=min_stock
+                    min_stock=min_stock,
+                    unit_type=product_data.get('unitType', 'dona')  # O'lchov birligi
                 )
                 db.session.add(product)
                 db.session.flush()  # ID olish uchun
@@ -2347,6 +2356,10 @@ def api_batch_products():
                 # Barcode yangilash (agar kiritilgan bo'lsa)
                 if barcode:
                     product.barcode = barcode
+                
+                # Unit type yangilash (agar berilgan bo'lsa)
+                if 'unitType' in product_data:
+                    product.unit_type = product_data['unitType']
                 
                 # Oxirgi partiya ma'lumotlarini saqlash
                 product.last_batch_cost = last_batch_cost

@@ -626,13 +626,22 @@
                         </div>
                     </div>
 
-                    <!-- 3-qator: Miqdor va Minimal qoldiq -->
+                    <!-- 3-qator: Miqdor, O'lchov birligi va Minimal qoldiq -->
                     <div class="form-row">
                         <div class="form-group">
                             <label for="quantity">📊 Miqdor:</label>
                             <input type="number" id="quantity" name="quantity" class="form-control" 
-                                   placeholder="0" min="0" 
-                                   oninput="calculateProfit();">
+                                   placeholder="0" min="0" step="any"
+                                   oninput="validateQuantityInput(); calculateProfit();">
+                        </div>
+                        <div class="form-group">
+                            <label for="unit_type">📏 O'lchov birligi:</label>
+                            <select id="unit_type" name="unit_type" class="form-control" 
+                                    onchange="updateQuantityStep(); validateQuantityInput();"
+                                    style="padding: 0.75rem; border: 2px solid #ced4da; border-radius: 8px; font-size: 1rem; height: 48px;">
+                                <option value="dona" selected>🔢 Dona</option>
+                                <option value="litr">💧 Litr</option>
+                            </select>
                         </div>
                         <div class="form-group">
                             <label for="min_stock">⚠️ Minimal qoldiq:</label>
@@ -1825,14 +1834,50 @@
             }
         }
 
+        // O'lchov birligiga qarab miqdor inputini yangilash
+        function updateQuantityStep() {
+            const unitType = document.getElementById('unit_type').value;
+            const quantityInput = document.getElementById('quantity');
+            
+            if (unitType === 'litr') {
+                quantityInput.step = '0.1';  // Litr uchun 0.1 qadam
+                quantityInput.placeholder = '0.0';
+            } else {
+                quantityInput.step = '1';    // Dona uchun 1 qadam
+                quantityInput.placeholder = '0';
+            }
+        }
+
+        // Miqdor inputni validatsiya qilish
+        function validateQuantityInput() {
+            const unitType = document.getElementById('unit_type').value;
+            const quantityInput = document.getElementById('quantity');
+            let value = parseFloat(quantityInput.value);
+            
+            if (isNaN(value) || value < 0) {
+                return;
+            }
+            
+            // Dona uchun faqat butun sonlar
+            if (unitType === 'dona') {
+                value = Math.floor(value);
+                quantityInput.value = value;
+            }
+            // Litr uchun 2 raqamgacha decimal
+            else if (unitType === 'litr') {
+                quantityInput.value = value.toFixed(2);
+            }
+        }
+
         // Vaqtinchalik ro'yxatga qo'shish
         function addToTempList() {
             const productName = document.getElementById('product_name').value.trim();
             const barcode = document.getElementById('barcode').value.trim();
+            const unitType = document.getElementById('unit_type').value;
             // Tan narx maydonidagi qiymatni olish (bu ortacha narx bo'lishi mumkin)
             const costPriceFromField = parseFloat(document.getElementById('cost_price').value);
             const sellPrice = parseFloat(document.getElementById('sell_price').value);
-            const quantity = parseInt(document.getElementById('quantity').value);
+            let quantity = parseFloat(document.getElementById('quantity').value);
             const minStock = parseInt(document.getElementById('min_stock').value) || 0;
             const location = document.getElementById('location').value;
             
@@ -1871,9 +1916,16 @@
                 return;
             }
             
+            // Miqdor validatsiyasi - unitType ga qarab
             if (!quantity || quantity <= 0) {
                 alert('❌ To\'g\'ri miqdorni kiriting!');
                 return;
+            }
+            
+            if (unitType === 'dona') {
+                quantity = Math.floor(quantity); // Dona uchun butun son
+            } else if (unitType === 'litr') {
+                quantity = parseFloat(quantity.toFixed(2)); // Litr uchun 2 raqam
             }
             
             if (!location) {
@@ -1898,6 +1950,7 @@
                 last_batch_cost: finalLastBatchCost, // Foydalanuvchi kiritgan asl qiymat
                 sell_price: sellPrice,
                 quantity: quantity,
+                unit_type: unitType, // O'lchov birligi
                 min_stock: minStock,
                 location: location,
                 location_id: location, // Yangi format uchun
@@ -2176,6 +2229,7 @@
                         lastBatchCost: product.last_batch_cost,
                         sell_price: product.sell_price,
                         quantity: product.quantity,
+                        unitType: product.unit_type || 'dona', // O'lchov birligi
                         min_stock: product.min_stock,
                         location_type: locationType,
                         location_id: locationId
