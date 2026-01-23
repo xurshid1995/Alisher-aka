@@ -2960,9 +2960,9 @@ def api_return_product():
             
             returned_items.append({
                 'product_name': product.name,
-                'quantity': return_quantity,
-                'old_quantity': old_quantity,
-                'new_quantity': sale_item.quantity if sale_item.quantity > 0 else 0,
+                'quantity': float(return_quantity),
+                'old_quantity': float(old_quantity),
+                'new_quantity': float(sale_item.quantity) if sale_item.quantity > 0 else 0,
                 'returned_usd': float(returned_usd)
             })
             
@@ -2983,14 +2983,14 @@ def api_return_product():
                 username=session.get('username'),
                 description=f"Qaytarildi: {product.name} - {return_quantity} dona (Savdo #{sale_id})",
                 old_data={
-                    'quantity': old_quantity,
+                    'quantity': float(old_quantity),
                     'total_price': float(sale_item.unit_price * Decimal(str(old_quantity)))
                 },
                 new_data={
                     'product_id': product_id,
                     'product_name': product.name,
-                    'quantity': sale_item.quantity if sale_item.quantity > 0 else 0,
-                    'returned_quantity': return_quantity,
+                    'quantity': float(sale_item.quantity) if sale_item.quantity > 0 else 0,
+                    'returned_quantity': float(return_quantity),
                     'sale_id': sale_id,
                     'amount_usd': float(returned_usd)
                 },
@@ -2998,7 +2998,7 @@ def api_return_product():
                 location_id=location_id,
                 location_type=location_type,
                 location_name=location_name,
-                amount=returned_usd * sale.currency_rate  # Amount UZS da saqlanadi
+                amount=float(returned_usd * sale.currency_rate)  # Amount UZS da saqlanadi
             )
             db.session.add(operation)
         
