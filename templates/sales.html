@@ -55,17 +55,24 @@
         width: 100%;
         max-width: 100%;
         position: relative;
+        overflow-x: auto;
+    }
+    
+    .sales-product-table {
+        width: 100%;
+        table-layout: fixed;
+        box-sizing: border-box;
     }
     
     /* Desktop - ustun kengliklarini optimallashtirish */
     .sales-product-table th:nth-child(1),
     .sales-product-table td:nth-child(1) {
         width: 45%;
-        max-width: 300px;
         white-space: normal;
         word-wrap: break-word;
         word-break: break-word;
         line-height: 1.4;
+        overflow: hidden;
     }
     
     .sales-product-table th:nth-child(2),
