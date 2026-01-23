@@ -62,7 +62,49 @@
     .sales-product-table {
         width: 100%;
         max-width: 100%;
+        border-collapse: collapse;
     }
+    
+    .sales-product-table thead tr {
+        background: #f8f9fa;
+        border-bottom: 2px solid #dee2e6;
+    }
+    
+    .sales-product-table th {
+        padding: 10px 8px;
+        font-size: 15px;
+        font-weight: 600;
+        color: #495057;
+    }
+    
+    .sales-product-table th:nth-child(1) { text-align: left; }
+    .sales-product-table th:nth-child(2) { text-align: center; }
+    .sales-product-table th:nth-child(3) { text-align: left; }
+    .sales-product-table th:nth-child(4) { text-align: center; padding: 2px; }
+    
+    .cart-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 15px;
+    }
+    
+    .cart-table thead tr {
+        background: #f8f9fa;
+        border-bottom: 2px solid #dee2e6;
+    }
+    
+    .cart-table th {
+        padding: 8px 5px;
+        font-size: 15px;
+        font-weight: 600;
+        color: #495057;
+    }
+    
+    .cart-table th:nth-child(1) { text-align: left; }
+    .cart-table th:nth-child(2) { text-align: center; }
+    .cart-table th:nth-child(3) { text-align: right; }
+    .cart-table th:nth-child(4) { text-align: right; }
+    .cart-table th:nth-child(5) { text-align: center; }
     
     /* Scroll indicator removed for better mobile UX */
     
@@ -632,14 +674,14 @@
             </div>
             
             <!-- Mahsulotlar jadvali -->
-            <div class="table-wrapper" style="overflow-x: auto;">
-                <table class="sales-product-table" style="width: 100%; border-collapse: collapse;">
+            <div class="table-wrapper">
+                <table class="sales-product-table">
                     <thead>
-                        <tr style="background: #f8f9fa; border-bottom: 2px solid #dee2e6;">
-                            <th style="padding: 10px 8px; text-align: left; font-size: 15px; font-weight: 600; color: #495057;">Mahsulot</th>
-                            <th style="padding: 10px 8px; text-align: center; font-size: 15px; font-weight: 600; color: #495057;">Mavjud</th>
-                            <th style="padding: 10px 8px; text-align: left; font-size: 15px; font-weight: 600; color: #495057;">Narx</th>
-                            <th style="padding: 2px; text-align: center; font-size: 15px; font-weight: 600; color: #495057;">Amal</th>
+                        <tr>
+                            <th>Mahsulot</th>
+                            <th>Mavjud</th>
+                            <th>Narx</th>
+                            <th>Amal</th>
                         </tr>
                     </thead>
                     <tbody id="productsTable">
@@ -666,15 +708,15 @@
                 <div id="cartTotalHeader" style="text-align: right;"></div>
             </div>
             <div id="cartContainer">
-                <div class="table-wrapper" style="overflow-x: auto;">
-                    <table class="cart-table" style="width: 100%; border-collapse: collapse; margin-bottom: 15px;">
+                <div class="table-wrapper">
+                    <table class="cart-table">
                         <thead>
-                            <tr style="background: #f8f9fa; border-bottom: 2px solid #dee2e6;">
-                                <th style="padding: 8px 5px; text-align: left; font-size: 15px; font-weight: 600; color: #495057;">Mahsulot</th>
-                                <th style="padding: 8px 5px; text-align: center; font-size: 15px; font-weight: 600; color: #495057;">Soni</th>
-                                <th style="padding: 8px 5px; text-align: right; font-size: 15px; font-weight: 600; color: #495057;">Narxi</th>
-                                <th style="padding: 8px 5px; text-align: right; font-size: 15px; font-weight: 600; color: #495057;">Jami</th>
-                                <th style="padding: 8px 5px; text-align: center; font-size: 15px; font-weight: 600; color: #495057;">Amal</th>
+                            <tr>
+                                <th>Mahsulot</th>
+                                <th>Soni</th>
+                                <th>Narxi</th>
+                                <th>Jami</th>
+                                <th>Amal</th>
                             </tr>
                         </thead>
                         <tbody id="cartItems">
