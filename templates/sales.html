@@ -2792,6 +2792,16 @@
         modalAvailable.value = quantity;
         modalQuantity.value = 1;
         modalQuantity.max = quantity;
+        
+        // Unit type ga qarab step o'rnatish
+        if (unitType === 'dona') {
+            modalQuantity.step = '0.5'; // Dona: 0.5, 1, 1.5, 2...
+            modalQuantity.min = '0.5';
+        } else {
+            modalQuantity.step = '0.01'; // Litr: 0.01, 0.02...
+            modalQuantity.min = '0.01';
+        }
+        
         modalPriceUSD.value = price.toFixed(2);
         console.log('💵 modalPriceUSD.value o\'rnatildi:', modalPriceUSD.value);
         updateUZSPrice();
@@ -2904,6 +2914,12 @@
         } else if (quantity <= 0) {
             warningDiv.style.display = 'block';
             warningText.textContent = 'Miqdor 0 dan katta bo\'lishi kerak!';
+            modalQuantity.style.borderColor = '#dc3545';
+            modalQuantity.style.backgroundColor = '#ffe6e6';
+        } else if (unitType === 'dona' && (quantity % 0.5 !== 0)) {
+            // Dona uchun: faqat 0.5 qadam (0.5, 1, 1.5, 2...)
+            warningDiv.style.display = 'block';
+            warningText.textContent = 'Dona uchun faqat 0.5, 1, 1.5, 2... miqdor mumkin!';
             modalQuantity.style.borderColor = '#dc3545';
             modalQuantity.style.backgroundColor = '#ffe6e6';
         } else {
