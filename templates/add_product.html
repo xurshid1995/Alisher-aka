@@ -852,26 +852,29 @@
                     {
                         'Mahsulot nomi': 'Misol: Samsung Galaxy A54',
                         'Barcode': '8600000000001',
+                        'O\'lchov birligi': 'dona',
                         'Miqdor': 10,
                         'Tan narxi ($)': 250.00,
                         'Sotish narxi ($)': 300.00,
                         'Asl tan narx ($)': 250.00
                     },
                     {
-                        'Mahsulot nomi': 'Misol: iPhone 13 Pro',
+                        'Mahsulot nomi': 'Misol: Moy 5W-30',
                         'Barcode': '8600000000002',
-                        'Miqdor': 5,
+                        'O\'lchov birligi': 'litr',
+                        'Miqdor': 25.5,
+                        'Tan narxi ($)': 8.50,
+                        'Sotish narxi ($)': 10.00,
+                        'Asl tan narx ($)': 8.50
+                    },
+                    {
+                        'Mahsulot nomi': 'Misol: iPhone 13 Pro',
+                        'Barcode': '8600000000003',
+                        'O\'lchov birligi': 'dona',
+                        'Miqdor': 0.5,
                         'Tan narxi ($)': 800.00,
                         'Sotish narxi ($)': 950.00,
                         'Asl tan narx ($)': 800.00
-                    },
-                    {
-                        'Mahsulot nomi': 'Misol: Xiaomi Redmi Note 12',
-                        'Barcode': '8600000000003',
-                        'Miqdor': 20,
-                        'Tan narxi ($)': 150.00,
-                        'Sotish narxi ($)': 180.00,
-                        'Asl tan narx ($)': 150.00
                     }
                 ];
                 
@@ -988,7 +991,8 @@
                     // Excel ustun nomlarini tekshirish - sizning fayl formatiga mos
                     const name = row['Mahsulot nomi'] || row['mahsulot nomi'] || row['Nomi'] || row['nomi'];
                     const barcode = row['Barcode'] || row['barcode'] || row['Barkod'] || row['barkod'] || '';
-                    const quantity = parseInt(row['Miqdori'] || row['miqdori'] || row['Miqdor'] || row['miqdor'] || 0);
+                    const unitType = (row['O\'lchov birligi'] || row['o\'lchov birligi'] || row['Olchov birligi'] || row['olchov birligi'] || 'dona').toLowerCase().trim();
+                    const quantity = parseFloat(row['Miqdori'] || row['miqdori'] || row['Miqdor'] || row['miqdor'] || 0);
                     const minStock = parseInt(row['Minimal qoldiq'] || row['minimal qoldiq'] || row['Min qoldiq'] || row['min qoldiq'] || 0);
                     // Narxlarni to'g'ri formatga keltirish (vergul o'rniga nuqta)
                     let costPriceRaw = row['Tan narxi ($)'] || row['Tan narx ($)'] || row['Tan narx'] || row['tan narx'] || row['Tan narxi'] || row['tan narxi'] || 0;
@@ -1073,6 +1077,7 @@
                         sell_price: sellPrice,
                         cost_price: costPrice,
                         quantity: quantity,
+                        unit_type: unitType === 'litr' ? 'litr' : 'dona', // dona yoki litr
                         min_stock: minStock,
                         location_id: locationId,
                         location_type: locationType,
@@ -1106,10 +1111,11 @@
                 message += `❌ Xatoliklar: ${errorCount} ta\n\n`;
                 message += `📋 Talab qilinadigan ustunlar:\n`;
                 message += `1. Mahsulot nomi (majburiy)\n`;
-                message += `2. Miqdori\n`;
-                message += `3. Minimal qoldiq\n`;
-                message += `4. Tan narx\n`;
-                message += `5. Sotish narxi (majburiy)\n\n`;
+                message += `2. Barcode\n`;
+                message += `3. O'lchov birligi (dona/litr, default: dona)\n`;
+                message += `4. Miqdor\n`;
+                message += `5. Tan narx\n`;
+                message += `6. Sotish narxi (majburiy)\n\n`;
                 if (errors.length > 0) {
                     message += `Xatoliklar ro'yxati:\n${errors.slice(0, 5).join('\n')}`;
                     if (errors.length > 5) {
@@ -1120,8 +1126,9 @@
                 message += `\n⚠️ Hech qanday mahsulot import qilinmadi.\n`;
                 message += `Excel fayldagi ustun nomlarini tekshiring:\n`;
                 message += `• Mahsulot nomi\n`;
-                message += `• Miqdori\n`;
-                message += `• Minimal qoldiq\n`;
+                message += `• Barcode\n`;
+                message += `• O'lchov birligi (dona/litr)\n`;
+                message += `• Miqdor\n`;
                 message += `• Tan narx\n`;
                 message += `• Sotish narxi`;
             }
