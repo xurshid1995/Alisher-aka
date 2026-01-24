@@ -955,7 +955,7 @@
                 const unitType = product.unit_type || 'dona';
                 const quantityDisplay = unitType === 'litr' 
                     ? `${totalStock.toFixed(2)} litr` 
-                    : `${Math.floor(totalStock)} dona`;
+                    : (totalStock % 1 === 0 ? `${Math.floor(totalStock)} dona` : `${parseFloat(totalStock).toFixed(1)} dona`);
                 
                 // Qidiruv matnini highlight qilish
                 const highlightedName = highlightSearchText(product.name, currentSearch);
