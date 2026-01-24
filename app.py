@@ -6727,7 +6727,7 @@ def process_transfers():
             product_id = transfer['product_id']
             from_location = transfer['from_location']
             to_location = transfer['to_location']
-            quantity = int(transfer['quantity'])
+            quantity = Decimal(str(transfer['quantity']))  # Decimal ishlatish (0.5 litr uchun)
             print(
                 f"📦 Transfer: {product_id} from {from_location} to {to_location}, qty: {quantity}")
 
