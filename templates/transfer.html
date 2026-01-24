@@ -761,6 +761,13 @@
             // Transfer ro'yxatida borligini tekshirish
             const isInTransferList = transferList.some(item => item.id === product.id);
             
+            // O'lchov birligi
+            const unitType = product.unit_type || 'dona';
+            const unitText = unitType === 'litr' ? 'L' : 'dona';
+            const quantityDisplay = unitType === 'litr' 
+                ? `${parseFloat(quantity).toFixed(2)} ${unitText}` 
+                : (quantity % 1 === 0 ? `${Math.floor(quantity)} ${unitText}` : `${parseFloat(quantity).toFixed(1)} ${unitText}`);
+            
             const row = document.createElement('tr');
             const sellingPrice = product.sell_price || product.price || 0;
             const badgeColor = quantity <= 0 ? '#dc3545' : '#007bff';
@@ -788,7 +795,7 @@
                     $${sellingPrice.toFixed(2)}
                 </td>
                 <td style="text-align: center;">
-                    <span style="background: ${badgeColor}; color: white; padding: 4px 8px; border-radius: 0px; font-weight: 500;">${quantity}</span>
+                    <span style="background: ${badgeColor}; color: white; padding: 4px 8px; border-radius: 0px; font-weight: 500;">${quantityDisplay}</span>
                 </td>
                 <td style="text-align: center;">
                     <button onclick="openModalById(${product.id})" 
@@ -1088,7 +1095,7 @@
             
             // 500ms kutib, avtomatik modal ochish
             setTimeout(() => {
-                openQuantityModal(product);
+                openModalById(product.id);
                 document.getElementById('productSearch').value = '';
                 document.getElementById('searchStatus').style.display = 'none';
             }, 500);
@@ -1195,21 +1202,45 @@
         }
         
         const price = product.sell_price || product.price || 0;
-        openModal(productId, product.name, quantity, price);
+        const unitType = product.unit_type || 'dona';
+        openModal(productId, product.name, quantity, price, unitType);
     }
     
     // Modal ochish
-    function openModal(productId, productName, available, price) {
-        currentProduct = { id: productId, name: productName, available: available, price: price || 0 };
+    function openModal(productId, productName, available, price, unitType = 'dona') {
+        currentProduct = { 
+            id: productId, 
+            name: productName, 
+            available: available, 
+            price: price || 0,
+            unitType: unitType 
+        };
         
         // Agar mahsulot allaqachon ro'yxatda bo'lsa, joriy miqdorni ko'rsatish
         const existingItem = transferList.find(item => item.id === productId);
-        const currentQuantity = existingItem ? existingItem.quantity : 1;
+        const currentQuantity = existingItem ? existingItem.quantity : (unitType === 'litr' ? 0.01 : 1);
         
         document.getElementById('modalProductName').textContent = productName;
-        document.getElementById('modalAvailable').value = available;
-        document.getElementById('modalQuantity').value = currentQuantity;
-        document.getElementById('modalQuantity').max = available;
+        
+        // Mavjud miqdorni unit type bilan ko'rsatish
+        const unitText = unitType === 'litr' ? 'L' : 'dona';
+        const formattedAvailable = unitType === 'litr' 
+            ? `${parseFloat(available).toFixed(2)} ${unitText}`
+            : (available % 1 === 0 ? `${Math.floor(available)} ${unitText}` : `${parseFloat(available).toFixed(1)} ${unitText}`);
+        document.getElementById('modalAvailable').value = formattedAvailable;
+        
+        const modalQuantity = document.getElementById('modalQuantity');
+        modalQuantity.value = currentQuantity;
+        modalQuantity.max = available;
+        
+        // Unit type ga qarab step o'rnatish
+        if (unitType === 'litr') {
+            modalQuantity.step = '0.01'; // Litr: 0.01, 0.02...
+            modalQuantity.min = '0.01';
+        } else {
+            modalQuantity.step = '0.5'; // Dona: 0.5, 1, 1.5, 2...
+            modalQuantity.min = '0.5';
+        }
         
         // Validatsiya xabarni yashirish
         const warningDiv = document.getElementById('quantityWarning');
@@ -1236,12 +1267,14 @@
     
     // Transfer miqdorini real-time validatsiya qilish
     function validateTransferQuantity() {
-        if (!currentProduct) return;
+        if (!currentProduct) return false;
         
         const quantityInput = document.getElementById('modalQuantity');
         const warningDiv = document.getElementById('quantityWarning');
-        const quantity = parseInt(quantityInput.value) || 0;
-        const available = currentProduct.available || 0;
+        const quantity = parseFloat(quantityInput.value) || 0;
+        const available = parseFloat(currentProduct.available) || 0;
+        const unitType = currentProduct.unitType || 'dona';
+        const unitText = unitType === 'litr' ? 'litr' : 'dona';
         
         // Miqdor validatsiyasi
         if (quantity <= 0) {
@@ -1254,13 +1287,24 @@
             quantityInput.style.backgroundColor = '#fffaed';
             return false;
         } else if (quantity > available) {
-            warningDiv.textContent = `❌ Stokda faqat ${available} dona mavjud!`;
+            const formattedAvailable = unitType === 'litr' ? available.toFixed(2) : (available % 1 === 0 ? Math.floor(available) : available.toFixed(1));
+            warningDiv.textContent = `❌ Stokda faqat ${formattedAvailable} ${unitText} mavjud!`;
             warningDiv.style.display = 'block';
             warningDiv.style.background = '#f8d7da';
             warningDiv.style.border = '1px solid #f5c6cb';
             warningDiv.style.color = '#721c24';
             quantityInput.style.borderColor = '#dc3545';
             quantityInput.style.backgroundColor = '#ffe6e6';
+            return false;
+        } else if (unitType === 'dona' && (quantity % 0.5 !== 0)) {
+            // Dona uchun faqat 0.5 qadam (0.5, 1, 1.5, 2...)
+            warningDiv.textContent = 'Dona uchun faqat 0.5, 1, 1.5, 2... miqdor mumkin!';
+            warningDiv.style.display = 'block';
+            warningDiv.style.background = '#fff3cd';
+            warningDiv.style.border = '1px solid #ffc107';
+            warningDiv.style.color = '#856404';
+            quantityInput.style.borderColor = '#ffc107';
+            quantityInput.style.backgroundColor = '#fffaed';
             return false;
         } else {
             warningDiv.style.display = 'none';
@@ -1295,7 +1339,8 @@
             return;
         }
         
-        const quantity = parseInt(document.getElementById('modalQuantity').value);
+        const quantity = parseFloat(document.getElementById('modalQuantity').value);
+        const unitType = currentProduct.unitType || 'dona';
         
         if (!quantity || quantity <= 0) {
             alert('Miqdor 0 dan katta bo\'lishi kerak!');
@@ -1303,7 +1348,9 @@
         }
         
         if (quantity > currentProduct.available) {
-            alert(`Stokda faqat ${currentProduct.available} dona mavjud!`);
+            const unitText = unitType === 'litr' ? 'litr' : 'dona';
+            const formattedAvailable = unitType === 'litr' ? currentProduct.available.toFixed(2) : Math.floor(currentProduct.available);
+            alert(`Stokda faqat ${formattedAvailable} ${unitText} mavjud!`);
             return;
         }
         
@@ -1312,15 +1359,17 @@
         
         if (existingIndex >= 0) {
             transferList[existingIndex].quantity = quantity;
-            console.log('✅ Miqdor yangilandi:', currentProduct.name, 'x', quantity);
+            transferList[existingIndex].unitType = unitType;
+            console.log('✅ Miqdor yangilandi:', currentProduct.name, 'x', quantity, unitType);
         } else {
             transferList.push({
                 id: currentProduct.id,
                 name: currentProduct.name,
                 quantity: quantity,
-                price: currentProduct.price || 0
+                price: currentProduct.price || 0,
+                unitType: unitType
             });
-            console.log('✅ Transfer ro\'yxatiga qo\'shildi:', currentProduct.name, 'x', quantity);
+            console.log('✅ Transfer ro\'yxatiga qo\'shildi:', currentProduct.name, 'x', quantity, unitType);
         }
         
         updateTransferListDisplay();
@@ -1355,6 +1404,13 @@
         
         tbody.innerHTML = '';
         transferList.forEach((item, index) => {
+            // O'lchov birligi bilan ko'rsatish
+            const unitType = item.unitType || 'dona';
+            const unitText = unitType === 'litr' ? 'L' : 'dona';
+            const quantityDisplay = unitType === 'litr' 
+                ? `${parseFloat(item.quantity).toFixed(2)} ${unitText}` 
+                : (item.quantity % 1 === 0 ? `${Math.floor(item.quantity)} ${unitText}` : `${parseFloat(item.quantity).toFixed(1)} ${unitText}`);
+            
             const row = document.createElement('tr');
             row.innerHTML = `
                 <td style="color: #333; font-weight: 500;">${item.name}</td>
@@ -1362,7 +1418,7 @@
                     $${(item.price || 0).toFixed(2)}
                 </td>
                 <td style="text-align: center;">
-                    <span style="background: #007bff; color: white; padding: 4px 8px; border-radius: 0px; font-weight: 500;">${item.quantity}</span>
+                    <span style="background: #007bff; color: white; padding: 4px 8px; border-radius: 0px; font-weight: 500;">${quantityDisplay}</span>
                 </td>
                 <td style="text-align: center;">
                     <button onclick="editTransferItem(${index})" 
@@ -1428,16 +1484,36 @@
             }
         }
         
+        const unitType = product.unit_type || 'dona';
+        
         currentProduct = { 
             id: item.id, 
             name: item.name, 
             available: quantity, // Faqat stokdagi haqiqiy miqdor
-            price: item.price || 0
+            price: item.price || 0,
+            unitType: unitType
         };
         
+        const unitText = unitType === 'litr' ? 'L' : 'dona';
+        const formattedAvailable = unitType === 'litr' 
+            ? `${parseFloat(quantity).toFixed(2)} ${unitText}`
+            : (quantity % 1 === 0 ? `${Math.floor(quantity)} ${unitText}` : `${parseFloat(quantity).toFixed(1)} ${unitText}`);
+        
         document.getElementById('modalProductName').textContent = item.name;
-        document.getElementById('modalAvailable').value = quantity;
-        document.getElementById('modalQuantity').value = item.quantity;
+        document.getElementById('modalAvailable').value = formattedAvailable;
+        
+        const modalQuantity = document.getElementById('modalQuantity');
+        modalQuantity.value = item.quantity;
+        modalQuantity.max = quantity;
+        
+        // Unit type ga qarab step o'rnatish
+        if (unitType === 'litr') {
+            modalQuantity.step = '0.01';
+            modalQuantity.min = '0.01';
+        } else {
+            modalQuantity.step = '0.5';
+            modalQuantity.min = '0.5';
+        }
         
         document.getElementById('quantityModal').style.display = 'flex';
         
