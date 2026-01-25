@@ -654,18 +654,18 @@
             <table class="orders-table">
                 <thead>
                     <tr>
-                        <th>📅 Sana/Vaqt</th>
-                        <th>👤 Mijoz</th>
-                        <th>📍 Joylashuv</th>
-                        <th>📦 Mahsulot</th>
-                        <th>🔢 Miqdor</th>
-                        <th>💰 Narx</th>
-                        <th>💵 Jami</th>
-                        <th>💸 Umumiy</th>
+                        <th>Sana va vaqt</th>
+                        <th>Mijoz</th>
+                        <th>Joylashuv</th>
+                        <th>Mahsulot</th>
+                        <th class="compact-hide">Miqdor</th>
+                        <th class="compact-hide">Narx</th>
+                        <th class="compact-hide">Yig'indi</th>
+                        <th>Jami yig'indi</th>
                         {% if session.role in ['admin', 'manager'] %}
-                        <th>📈 Foyda</th>
+                        <th>Jami foyda</th>
                         {% endif %}
-                        <th>⚙️ Amallar</th>
+                        <th>Amal</th>
                     </tr>
                 </thead>
                 <tbody id="ordersTableBody">
