@@ -2762,7 +2762,7 @@ def print_barcode():
 @app.route('/transfer')
 @role_required('admin', 'kassir', 'sotuvchi')
 def transfer():
-    return render_template('transfer.html')
+    return render_template('transfer1.html')
 
 
 @app.route('/return-product')
