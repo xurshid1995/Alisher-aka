@@ -233,7 +233,7 @@
             .catch(error => console.error('Foydalanuvchilarni yuklashda xato:', error));
     }
 
-    function loadHistory() {
+    async function loadHistory(page = 1) {
         const startDate = document.getElementById('startDate').value;
         const endDate = document.getElementById('endDate').value;
         const operationType = document.getElementById('operationType').value;
@@ -249,10 +249,45 @@
             </tr>
         `;
 
-        // API so'rovi (keyinchalik to'ldiriladi)
-        setTimeout(() => {
-            displayNoData();
-        }, 500);
+        try {
+            // API so'rovi
+            const params = new URLSearchParams();
+            if (startDate) params.append('start_date', startDate);
+            if (endDate) params.append('end_date', endDate);
+            if (operationType) params.append('operation_type', operationType);
+            if (userId) params.append('user_id', userId);
+            params.append('page', page);
+            params.append('per_page', 50);
+
+            const response = await fetch(`/api/operations-history?${params.toString()}`);
+            const data = await response.json();
+
+            if (data.success) {
+                currentPage = data.current_page;
+                totalPages = data.pages;
+
+                if (data.operations.length === 0) {
+                    displayNoData();
+                } else {
+                    displayOperations(data.operations);
+                    updatePagination();
+                    updateStatistics(data.operations);
+                }
+            } else {
+                throw new Error(data.error || 'Ma\'lumot yuklashda xatolik');
+            }
+        } catch (error) {
+            console.error('Xatolik:', error);
+            document.getElementById('historyTableBody').innerHTML = `
+                <tr>
+                    <td colspan="9" style="padding: 3rem; text-align: center; color: #dc3545;">
+                        <div style="font-size: 2rem; margin-bottom: 1rem;">❌</div>
+                        <div style="font-size: 1.1rem;">Xatolik yuz berdi</div>
+                        <div style="margin-top: 0.5rem; color: #a0aec0;">${error.message}</div>
+                    </td>
+                </tr>
+            `;
+        }
     }
 
     function displayNoData() {
@@ -288,8 +323,166 @@
         `;
     }
 
+    function displayOperations(operations) {
+        const tbody = document.getElementById('historyTableBody');
+        tbody.innerHTML = '';
+
+        operations.forEach((op, index) => {
+            const row = document.createElement('tr');
+            
+            // Amaliyot turini badge qilish
+            const operationBadges = {
+                'sale': { text: '🛒 Sotish', color: '#28a745' },
+                'add_product': { text: '📦 Qo\'shish', color: '#007bff' },
+                'transfer': { text: '🔄 Transfer', color: '#17a2b8' },
+                'return': { text: '↩️ Qaytarish', color: '#ffc107' },
+                'payment_refund': { text: '💰 To\'lov qaytarish', color: '#fd7e14' },
+                'edit': { text: '✏️ Tahrirlash', color: '#6c757d' },
+                'delete': { text: '🗑️ O\'chirish', color: '#dc3545' }
+            };
+
+            const badge = operationBadges[op.operation_type] || { text: op.operation_type, color: '#6c757d' };
+            
+            // Ma'lumotlarni new_data dan olish
+            const productName = op.new_data?.product_name || '-';
+            const quantity = op.new_data?.quantity || op.new_data?.returned_quantity || '-';
+
+            row.innerHTML = `
+                <td>${(currentPage - 1) * 50 + index + 1}</td>
+                <td style="white-space: nowrap;">${op.created_at || '-'}</td>
+                <td>
+                    <span class="operation-badge" style="background: ${badge.color}; color: white;">
+                        ${badge.text}
+                    </span>
+                </td>
+                <td>${productName}</td>
+                <td style="text-align: center;">${quantity}</td>
+                <td>${op.location_name || '-'}</td>
+                <td>${op.username || '-'}</td>
+                <td style="text-align: right; font-weight: 600;">
+                    ${op.amount ? formatMoney(op.amount) : '-'}
+                </td>
+                <td style="text-align: center;">
+                    <button onclick="viewDetails(${op.id})" class="btn" style="padding: 0.25rem 0.75rem; background: #667eea; color: white; font-size: 0.85rem;">
+                        👁️ Ko'rish
+                    </button>
+                </td>
+            `;
+            
+            tbody.appendChild(row);
+        });
+    }
+
+    function formatMoney(amount) {
+        return new Intl.NumberFormat('uz-UZ', {
+            style: 'currency',
+            currency: 'UZS',
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0
+        }).format(amount);
+    }
+
+    function updatePagination() {
+        const pagination = document.getElementById('pagination');
+        pagination.innerHTML = '';
+
+        if (totalPages <= 1) return;
+
+        // Previous button
+        if (currentPage > 1) {
+            const prevBtn = document.createElement('button');
+            prevBtn.textContent = '← Oldingi';
+            prevBtn.className = 'page-btn';
+            prevBtn.onclick = () => loadHistory(currentPage - 1);
+            pagination.appendChild(prevBtn);
+        }
+
+        // Page numbers
+        const startPage = Math.max(1, currentPage - 2);
+        const endPage = Math.min(totalPages, currentPage + 2);
+
+        for (let i = startPage; i <= endPage; i++) {
+            const pageBtn = document.createElement('button');
+            pageBtn.textContent = i;
+            pageBtn.className = `page-btn ${i === currentPage ? 'active' : ''}`;
+            pageBtn.onclick = () => loadHistory(i);
+            pagination.appendChild(pageBtn);
+        }
+
+        // Next button
+        if (currentPage < totalPages) {
+            const nextBtn = document.createElement('button');
+            nextBtn.textContent = 'Keyingi →';
+            nextBtn.className = 'page-btn';
+            nextBtn.onclick = () => loadHistory(currentPage + 1);
+            pagination.appendChild(nextBtn);
+        }
+    }
+
+    function updateStatistics(operations) {
+        const stats = {
+            sale: 0,
+            add_product: 0,
+            transfer: 0,
+            return: 0,
+            edit: 0,
+            total_amount: 0
+        };
+
+        operations.forEach(op => {
+            if (stats.hasOwnProperty(op.operation_type)) {
+                stats[op.operation_type]++;
+            }
+            if (op.amount) {
+                stats.total_amount += parseFloat(op.amount);
+            }
+        });
+
+        const statContainer = document.getElementById('statistics');
+        statContainer.innerHTML = `
+            <div class="stat-card" style="border-left-color: #28a745;">
+                <div style="font-size: 0.9rem; color: #6c757d; margin-bottom: 0.5rem;">🛒 Sotishlar</div>
+                <div style="font-size: 1.8rem; font-weight: 700; color: #28a745;">${stats.sale}</div>
+            </div>
+            <div class="stat-card" style="border-left-color: #007bff;">
+                <div style="font-size: 0.9rem; color: #6c757d; margin-bottom: 0.5rem;">📦 Mahsulot qo'shish</div>
+                <div style="font-size: 1.8rem; font-weight: 700; color: #007bff;">${stats.add_product}</div>
+            </div>
+            <div class="stat-card" style="border-left-color: #17a2b8;">
+                <div style="font-size: 0.9rem; color: #6c757d; margin-bottom: 0.5rem;">🔄 Transferlar</div>
+                <div style="font-size: 1.8rem; font-weight: 700; color: #17a2b8;">${stats.transfer}</div>
+            </div>
+            <div class="stat-card" style="border-left-color: #ffc107;">
+                <div style="font-size: 0.9rem; color: #6c757d; margin-bottom: 0.5rem;">↩️ Qaytarishlar</div>
+                <div style="font-size: 1.8rem; font-weight: 700; color: #ffc107;">${stats.return}</div>
+            </div>
+            <div class="stat-card" style="border-left-color: #667eea;">
+                <div style="font-size: 0.9rem; color: #6c757d; margin-bottom: 0.5rem;">💰 Jami summa</div>
+                <div style="font-size: 1.5rem; font-weight: 700; color: #667eea;">${formatMoney(stats.total_amount)}</div>
+            </div>
+        `;
+    }
+
+    function viewDetails(operationId) {
+        // Tafsilotlarni ko'rsatish (modal orqali)
+        alert(`Amaliyot #${operationId} tafsilotlari\n\nBu funksiya tez orada qo'shiladi!`);
+    }
+
     function exportHistory() {
-        alert('Excel eksport funksiyasi tez orada qo\'shiladi!');
+        const startDate = document.getElementById('startDate').value;
+        const endDate = document.getElementById('endDate').value;
+        const operationType = document.getElementById('operationType').value;
+        const userId = document.getElementById('userFilter').value;
+
+        // Excel eksport so'rovi
+        const params = new URLSearchParams();
+        if (startDate) params.append('start_date', startDate);
+        if (endDate) params.append('end_date', endDate);
+        if (operationType) params.append('operation_type', operationType);
+        if (userId) params.append('user_id', userId);
+        params.append('export', 'excel');
+
+        window.location.href = `/api/operations-history?${params.toString()}`;
     }
 </script>
 {% endblock %}

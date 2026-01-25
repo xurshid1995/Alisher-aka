@@ -2261,6 +2261,38 @@ def api_add_product():
                         added_by=current_user_name
                     )
                     db.session.add(history)
+                    
+                    # OperationHistory ga ham yozish
+                    location_id_int = None
+                    if location_type_str == 'store':
+                        location_id_int = int(location_value.replace('store_', ''))
+                    elif location_type_str == 'warehouse':
+                        location_id_int = int(location_value.replace('warehouse_', ''))
+                    
+                    operation = OperationHistory(
+                        operation_type='add_product',
+                        table_name='products',
+                        record_id=product.id,
+                        user_id=session.get('user_id'),
+                        username=current_user_name or 'System',
+                        description=f"Mahsulot qo'shildi: {product.name} - {quantity} {product.unit_type}",
+                        old_data=None,
+                        new_data={
+                            'product_id': product.id,
+                            'product_name': product.name,
+                            'quantity': float(quantity),
+                            'cost_price': float(cost_price),
+                            'sell_price': float(sell_price),
+                            'barcode': product.barcode
+                        },
+                        ip_address=request.remote_addr,
+                        location_id=location_id_int,
+                        location_type=location_type_str,
+                        location_name=location_name,
+                        amount=float(cost_price * Decimal(str(quantity)))  # Jami summa
+                    )
+                    db.session.add(operation)
+                    
                     logger.info(f"✅ History yozuvi yaratildi: {product.name}, {quantity} ta, {location_name}")
                 else:
                     logger.warning(f"⚠️ History yaratilmadi: quantity={quantity}, location_name='{location_name}'")
@@ -2467,6 +2499,31 @@ def api_batch_products():
                     added_by=current_user_name
                 )
                 db.session.add(history)
+                
+                # OperationHistory ga ham yozish
+                operation = OperationHistory(
+                    operation_type='add_product',
+                    table_name='products',
+                    record_id=product.id,
+                    user_id=session.get('user_id'),
+                    username=current_user_name or 'System',
+                    description=f"Mahsulot qo'shildi: {product.name} - {quantity} {product.unit_type}",
+                    old_data=None,
+                    new_data={
+                        'product_id': product.id,
+                        'product_name': product.name,
+                        'quantity': float(quantity),
+                        'cost_price': float(cost_price),
+                        'sell_price': float(sell_price),
+                        'barcode': product.barcode
+                    },
+                    ip_address=request.remote_addr,
+                    location_id=location_id,
+                    location_type=location_type,
+                    location_name=location_name,
+                    amount=float(cost_price * Decimal(str(quantity)))
+                )
+                db.session.add(operation)
 
             created_count += 1
 
@@ -6872,6 +6929,55 @@ def process_transfers():
                         quantity=quantity
                     )
                     db.session.add(new_stock)
+            
+            # OperationHistory ga transfer yozish
+            product = Product.query.get(product_id)
+            from_location_name = ''
+            to_location_name = ''
+            
+            if from_type == 'store':
+                from_store = Store.query.get(int(from_id))
+                if from_store:
+                    from_location_name = from_store.name
+            elif from_type == 'warehouse':
+                from_warehouse = Warehouse.query.get(int(from_id))
+                if from_warehouse:
+                    from_location_name = from_warehouse.name
+            
+            if to_type == 'store':
+                to_store = Store.query.get(int(to_id))
+                if to_store:
+                    to_location_name = to_store.name
+            elif to_type == 'warehouse':
+                to_warehouse = Warehouse.query.get(int(to_id))
+                if to_warehouse:
+                    to_location_name = to_warehouse.name
+            
+            operation = OperationHistory(
+                operation_type='transfer',
+                table_name='transfers',
+                record_id=transfer_record.id,
+                user_id=session.get('user_id'),
+                username=session.get('username') or 'Admin',
+                description=f"Transfer: {product.name} - {from_location_name} → {to_location_name}",
+                old_data={
+                    'from_location': from_location_name,
+                    'from_location_type': from_type
+                },
+                new_data={
+                    'product_id': product_id,
+                    'product_name': product.name,
+                    'quantity': float(quantity),
+                    'to_location': to_location_name,
+                    'to_location_type': to_type
+                },
+                ip_address=request.remote_addr,
+                location_id=int(to_id),
+                location_type=to_type,
+                location_name=to_location_name,
+                amount=None
+            )
+            db.session.add(operation)
 
         db.session.commit()
         return jsonify(
@@ -9082,6 +9188,47 @@ def create_sale():
             except Exception as telegram_error:
                 logger.warning(f"⚠️ Telegram xabar yuborishda xatolik: {telegram_error}")
                 # Telegram xatosi savdo yaratishni to'xtatmasin
+        
+        # OperationHistory ga yozish
+        location_name = ''
+        if sale_location_type == 'store':
+            store_obj = Store.query.get(sale_location_id)
+            if store_obj:
+                location_name = store_obj.name
+        elif sale_location_type == 'warehouse':
+            warehouse_obj = Warehouse.query.get(sale_location_id)
+            if warehouse_obj:
+                location_name = warehouse_obj.name
+        
+        # Mahsulotlar tavsifi
+        products_desc = ', '.join([f"{item.product.name} ({item.quantity} ta)" for item in current_sale.items])
+        
+        operation_type = 'sale' if not is_edit_mode else 'edit'
+        description = f"Savdo yaratildi: {products_desc}" if not is_edit_mode else f"Savdo tahrirlandi: {products_desc}"
+        
+        operation = OperationHistory(
+            operation_type=operation_type,
+            table_name='sales',
+            record_id=current_sale.id,
+            user_id=current_user.id,
+            username=f'{current_user.first_name} {current_user.last_name}',
+            description=description,
+            old_data=None,
+            new_data={
+                'sale_id': current_sale.id,
+                'total_amount_usd': float(current_sale.total_amount),
+                'payment_status': current_sale.payment_status,
+                'payment_method': current_sale.payment_method,
+                'items_count': len(current_sale.items)
+            },
+            ip_address=request.remote_addr,
+            location_id=sale_location_id,
+            location_type=sale_location_type,
+            location_name=location_name,
+            amount=float(current_sale.total_amount * current_sale.currency_rate)  # UZS da
+        )
+        db.session.add(operation)
+        db.session.commit()
 
         return jsonify({
             'success': True,
@@ -9659,6 +9806,43 @@ def create_pending_sale(data):
         db.session.commit()
 
         logger.info(f" Pending savdo yaratildi: ID={new_sale.id}")
+        
+        # OperationHistory ga pending savdoni yozish
+        location_name = ''
+        if item_location_type == 'store':
+            store_obj = Store.query.get(item_location_id)
+            if store_obj:
+                location_name = store_obj.name
+        elif item_location_type == 'warehouse':
+            warehouse_obj = Warehouse.query.get(item_location_id)
+            if warehouse_obj:
+                location_name = warehouse_obj.name
+        
+        # Barcha mahsulotlarni tavsif uchun yig'ish
+        products_desc = ', '.join([f"{item.product.name} ({item.quantity} ta)" for item in new_sale.items])
+        
+        operation = OperationHistory(
+            operation_type='sale',
+            table_name='sales',
+            record_id=new_sale.id,
+            user_id=current_user.id,
+            username=f'{current_user.first_name} {current_user.last_name}',
+            description=f"Savdo yaratildi (Pending): {products_desc}",
+            old_data=None,
+            new_data={
+                'sale_id': new_sale.id,
+                'total_amount_usd': float(total_amount),
+                'payment_status': 'pending',
+                'items_count': len(items)
+            },
+            ip_address=request.remote_addr,
+            location_id=item_location_id,
+            location_type=item_location_type,
+            location_name=location_name,
+            amount=float(Decimal(str(total_amount)) * new_sale.currency_rate)  # UZS da
+        )
+        db.session.add(operation)
+        db.session.commit()
 
         return jsonify({
             'success': True,
