@@ -221,14 +221,20 @@
     function loadUsers() {
         fetch('/api/users')
             .then(response => response.json())
-            .then(users => {
+            .then(data => {
                 const select = document.getElementById('userFilter');
-                users.forEach(user => {
-                    const option = document.createElement('option');
-                    option.value = user.id;
-                    option.textContent = user.username;
-                    select.appendChild(option);
-                });
+                const users = data.users || data; // API data.users formatida yoki to'g'ridan-to'g'ri array
+                
+                if (Array.isArray(users)) {
+                    users.forEach(user => {
+                        const option = document.createElement('option');
+                        option.value = user.id;
+                        option.textContent = user.username;
+                        select.appendChild(option);
+                    });
+                } else {
+                    console.error('Foydalanuvchilar ro\'yxati array emas:', users);
+                }
             })
             .catch(error => console.error('Foydalanuvchilarni yuklashda xato:', error));
     }
