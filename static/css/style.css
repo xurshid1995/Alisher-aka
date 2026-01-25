@@ -1254,7 +1254,7 @@ footer {
 
 /* Mobile Header */
 .mobile-header {
-    display: none;
+    display: none; /* Mobilda ham yashirish */
     position: fixed;
     top: 0;
     left: 0;
@@ -1316,7 +1316,7 @@ footer {
     }
     
     .mobile-header {
-        display: flex;
+        display: none !important; /* Mobilda ham ko'rsatmaymiz */
         position: fixed;
         top: 0;
         left: 0;
@@ -1340,50 +1340,7 @@ footer {
     /* Hide desktop header */
     .header,
     .top-header {
-        display: flex !important;
-        height: 60px;
-        padding: 0 1rem;
-        flex-direction: row;
-        justify-content: space-between;
-    }
-    
-    .top-header .header-left h1 {
-        font-size: 1.1rem;
-    }
-    
-    .top-header .header-right {
-        gap: 0.5rem;
-    }
-    
-    .top-header .currency-display {
-        display: none; /* Mobile'da joy tejash uchun */
-    }
-    
-    .top-header .user-info {
-        padding: 0.3rem 0.6rem;
-        font-size: 0.8rem;
-    }
-    
-    .top-header .user-name {
-        display: inline-block;
-        max-width: 80px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-    
-    .top-header .user-role {
-        display: inline-block;
-        font-size: 0.7rem;
-    }
-    
-    .top-header .logout-btn {
-        padding: 0.4rem 0.8rem;
-        font-size: 0.85rem;
-    }
-    
-    .top-header .logout-text {
-        display: none; /* Faqat icon ko'rsatish */
+        display: none !important; /* Mobilda butunlay yashirish */
     }
     
     /* Adjust body layout for mobile */
