@@ -7016,9 +7016,11 @@ def get_transfer_history_formatted():
         # So'nggi transferlarni olish
         transfers = Transfer.query.order_by(
             Transfer.created_at.desc()
-        ).limit(limit).all()
+        ).limit(limit * 10).all()  # Ko'proq olish, keyin guruhlash
         
-        history_list = []
+        # Transferlarni guruhlash - bir xil vaqt, from_location, to_location, user
+        grouped_transfers = {}
+        
         for transfer in transfers:
             # Joylashuv nomlarini olish
             from_location_name = "N/A"
@@ -7042,23 +7044,45 @@ def get_transfer_history_formatted():
             product = Product.query.get(transfer.product_id)
             product_name = product.name if product else f"Mahsulot #{transfer.product_id}"
             
-            # Guruh mahsulotlari bir xil transfer uchun birlashtirib ko'rsatish
-            # Lekin hozircha har bir transferni alohida ko'rsatamiz
-            history_list.append({
-                'id': transfer.id,
-                'created_at': transfer.created_at.isoformat() if transfer.created_at else None,
-                'from_location': from_location_name,
-                'to_location': to_location_name,
-                'products': [
-                    {
-                        'name': product_name,
-                        'quantity': transfer.quantity
-                    }
-                ],
-                'user_name': transfer.user_name or 'N/A'
+            # Grupplash kaliti - 1 daqiqa oralig'ida, bir xil joylashuvlar va foydalanuvchi
+            if transfer.created_at:
+                # 1 daqiqa aniqlik bilan guruhlash
+                time_key = transfer.created_at.replace(second=0, microsecond=0)
+            else:
+                time_key = "unknown"
+            
+            group_key = (
+                time_key,
+                transfer.from_location_type,
+                transfer.from_location_id,
+                transfer.to_location_type,
+                transfer.to_location_id,
+                transfer.user_name or 'N/A'
+            )
+            
+            if group_key not in grouped_transfers:
+                grouped_transfers[group_key] = {
+                    'created_at': transfer.created_at.isoformat() if transfer.created_at else None,
+                    'from_location': from_location_name,
+                    'to_location': to_location_name,
+                    'user_name': transfer.user_name or 'N/A',
+                    'products': []
+                }
+            
+            grouped_transfers[group_key]['products'].append({
+                'name': product_name,
+                'quantity': float(transfer.quantity) if transfer.quantity else 0
             })
         
-        # Bir xil vaqtdagi transferlarni birlashtirishni keyinroq qo'shamiz
+        # Ro'yxatga aylantirish va limit qo'llash
+        history_list = list(grouped_transfers.values())
+        
+        # Vaqt bo'yicha saralash (eng yangi birinchi)
+        history_list.sort(key=lambda x: x['created_at'] if x['created_at'] else '', reverse=True)
+        
+        # Limit qo'llash
+        history_list = history_list[:limit]
+        
         return jsonify({
             'transfers': history_list,
             'count': len(history_list)
