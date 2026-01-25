@@ -1123,10 +1123,11 @@
             // Mobil uchun: butun qatorga bosish imkoniyati
             if (!buttonDisabled) {
                 row.style.cursor = 'pointer';
+                const productId = product.id;
                 row.addEventListener('click', function(e) {
                     // Agar button ustiga bosilsa, ikki marta ishlamaslik uchun
                     if (e.target.tagName !== 'BUTTON') {
-                        openModalById(${product.id});
+                        openModalById(productId);
                     }
                 });
             }
