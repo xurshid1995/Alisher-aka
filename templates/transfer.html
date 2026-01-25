@@ -1706,6 +1706,9 @@
         // Mahsulotlar jadvalini yangilash (yashil background ko'rsatish uchun)
         renderCurrentPage();
         
+        // Tasdiqlanmagan transferni saqlash
+        savePendingTransfer();
+        
         closeModal();
         
         // Fokusni qidiruv maydoniga qaytarish va barcha matnni belgilash
@@ -1849,6 +1852,9 @@
         // Remove current item
         transferList.splice(index, 1);
         updateTransferListDisplay();
+        
+        // Tasdiqlanmagan transferni yangilash
+        savePendingTransfer();
     }
 
     // Transfer elementini o'chirish
@@ -1859,6 +1865,9 @@
             
             // Mahsulotlar jadvalini yangilash (yashil background olib tashlash uchun)
             renderCurrentPage();
+            
+            // Tasdiqlanmagan transferni yangilash
+            savePendingTransfer();
         }
     }
 
@@ -1875,6 +1884,9 @@
             
             // Mahsulotlar jadvalini yangilash (yashil backgroundlarni olib tashlash uchun)
             renderCurrentPage();
+            
+            // Tasdiqlanmagan transferni o'chirish
+            deletePendingTransfer();
         }
     }
 
@@ -1898,6 +1910,80 @@
             const productName = cells[0].textContent.toLowerCase();
             
             if (!searchText || productName.includes(searchText)) {
+                row.style.display = '';
+                visibleCount++;
+            } else {
+                row.style.display = 'none';
+            }
+        }
+    }
+
+    // Tasdiqlanmagan transferni saqlash/yangilash
+    async function savePendingTransfer() {
+        const fromLocation = document.getElementById('fromLocation').value;
+        const toLocation = document.getElementById('toLocation').value;
+        
+        // Agar joylashuvlar tanlanmagan yoki ro'yxat bo'sh bo'lsa, o'chirish
+        if (!fromLocation || !toLocation || transferList.length === 0) {
+            await deletePendingTransfer();
+            return;
+        }
+        
+        const [fromType, fromId] = fromLocation.split('_');
+        const [toType, toId] = toLocation.split('_');
+        
+        const data = {
+            from_location_type: fromType,
+            from_location_id: parseInt(fromId),
+            to_location_type: toType,
+            to_location_id: parseInt(toId),
+            items: transferList.map(item => ({
+                product_id: item.id,
+                name: item.name,
+                price: item.price || 0,
+                quantity: item.quantity,
+                available: item.available || 0,
+                unitType: item.unitType || 'dona'
+            }))
+        };
+        
+        try {
+            // Avval mavjudligini tekshirish
+            const getResponse = await fetch('/api/pending-transfer');
+            const existing = await getResponse.json();
+            
+            const method = existing.pending_transfer ? 'PUT' : 'POST';
+            
+            const response = await fetch('/api/pending-transfer', {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            
+            if (response.ok) {
+                console.log('✅ Tasdiqlanmagan transfer saqlandi');
+            }
+        } catch (error) {
+            console.error('❌ Tasdiqlanmagan transferni saqlashda xatolik:', error);
+        }
+    }
+
+    // Tasdiqlanmagan transferni o'chirish
+    async function deletePendingTransfer() {
+        try {
+            const response = await fetch('/api/pending-transfer', {
+                method: 'DELETE'
+            });
+            
+            if (response.ok) {
+                console.log('✅ Tasdiqlanmagan transfer o\'chirildi');
+            }
+        } catch (error) {
+            console.error('❌ Tasdiqlanmagan transferni o\'chirishda xatolik:', error);
+        }
+    }
+
+    // Transfer ro'yxatini filterlash
                 row.style.display = '';
                 visibleCount++;
             } else {
@@ -2001,6 +2087,9 @@
                 
                 // Transfer tarixini yangilash
                 loadTransferHistory();
+                
+                // Tasdiqlanmagan transferni o'chirish
+                await deletePendingTransfer();
             } else {
                 console.error('❌ Server xatosi:', result);
                 alert('❌ Xatolik: ' + (result.error || result.message || 'Transfer amalga oshmadi'));

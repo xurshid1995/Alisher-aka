@@ -714,6 +714,41 @@ class Transfer(db.Model):
             'created_at': self.created_at.isoformat()}
 
 
+# Tasdiqlanmagan (pending) transferlar modeli
+class PendingTransfer(db.Model):
+    __tablename__ = 'pending_transfers'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
+    from_location_type = db.Column(db.String(20), nullable=False)  # 'store' yoki 'warehouse'
+    from_location_id = db.Column(db.Integer, nullable=False)
+    to_location_type = db.Column(db.String(20), nullable=False)  # 'store' yoki 'warehouse'
+    to_location_id = db.Column(db.Integer, nullable=False)
+    items = db.Column(db.JSON, nullable=False)  # [{product_id, name, price, quantity, available}, ...]
+    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+    updated_at = db.Column(db.DateTime, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
+
+    # Relationship
+    user = db.relationship('User', backref='pending_transfers')
+
+    def __repr__(self):
+        return f'<PendingTransfer {self.id}: User {self.user_id}>'
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'user_name': self.user.username if self.user else 'N/A',
+            'from_location_type': self.from_location_type,
+            'from_location_id': self.from_location_id,
+            'to_location_type': self.to_location_type,
+            'to_location_id': self.to_location_id,
+            'items': self.items,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
+
+
 # Mijozlar modeli
 class Customer(db.Model):
     __tablename__ = 'customers'
@@ -7031,6 +7066,145 @@ def get_transfer_history_formatted():
         
     except Exception as e:
         logger.error(f"Transfer tarixini olishda xatolik: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/pending-transfer', methods=['GET', 'POST', 'PUT', 'DELETE'])
+@role_required('admin', 'kassir', 'sotuvchi')
+def manage_pending_transfer():
+    """Tasdiqlanmagan transferni boshqarish"""
+    try:
+        current_user = get_current_user()
+        if not current_user:
+            return jsonify({'error': 'Foydalanuvchi topilmadi'}), 401
+
+        # GET - foydalanuvchining tasdiqlanmagan transferini olish
+        if request.method == 'GET':
+            pending = PendingTransfer.query.filter_by(user_id=current_user.id).first()
+            if pending:
+                return jsonify({
+                    'success': True,
+                    'pending_transfer': pending.to_dict()
+                })
+            return jsonify({
+                'success': True,
+                'pending_transfer': None
+            })
+
+        # POST - yangi tasdiqlanmagan transfer yaratish
+        elif request.method == 'POST':
+            data = request.get_json()
+            
+            # Avvalgi tasdiqlanmagan transferni o'chirish
+            PendingTransfer.query.filter_by(user_id=current_user.id).delete()
+            
+            pending = PendingTransfer(
+                user_id=current_user.id,
+                from_location_type=data['from_location_type'],
+                from_location_id=data['from_location_id'],
+                to_location_type=data['to_location_type'],
+                to_location_id=data['to_location_id'],
+                items=data['items']
+            )
+            
+            db.session.add(pending)
+            db.session.commit()
+            
+            return jsonify({
+                'success': True,
+                'pending_transfer': pending.to_dict()
+            })
+
+        # PUT - tasdiqlanmagan transferni yangilash
+        elif request.method == 'PUT':
+            data = request.get_json()
+            
+            pending = PendingTransfer.query.filter_by(user_id=current_user.id).first()
+            if not pending:
+                return jsonify({'error': 'Tasdiqlanmagan transfer topilmadi'}), 404
+            
+            pending.from_location_type = data['from_location_type']
+            pending.from_location_id = data['from_location_id']
+            pending.to_location_type = data['to_location_type']
+            pending.to_location_id = data['to_location_id']
+            pending.items = data['items']
+            
+            db.session.commit()
+            
+            return jsonify({
+                'success': True,
+                'pending_transfer': pending.to_dict()
+            })
+
+        # DELETE - tasdiqlanmagan transferni o'chirish
+        elif request.method == 'DELETE':
+            PendingTransfer.query.filter_by(user_id=current_user.id).delete()
+            db.session.commit()
+            
+            return jsonify({
+                'success': True,
+                'message': 'Tasdiqlanmagan transfer o\'chirildi'
+            })
+
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Tasdiqlanmagan transferni boshqarishda xatolik: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/all-pending-transfers', methods=['GET'])
+@role_required('admin', 'kassir', 'sotuvchi')
+def get_all_pending_transfers():
+    """Barcha tasdiqlanmagan transferlarni olish"""
+    try:
+        current_user = get_current_user()
+        if not current_user:
+            return jsonify({'error': 'Foydalanuvchi topilmadi'}), 401
+
+        # Admin barcha tasdiqlanmagan transferlarni ko'rishi mumkin
+        if current_user.role == 'admin':
+            pending_transfers = PendingTransfer.query.all()
+        else:
+            # Boshqa foydalanuvchilar faqat o'zining pending transferini ko'radi
+            pending_transfers = PendingTransfer.query.filter_by(user_id=current_user.id).all()
+
+        result = []
+        for pending in pending_transfers:
+            # Joylashuv nomlarini olish
+            from_location_name = "N/A"
+            to_location_name = "N/A"
+            
+            if pending.from_location_type == 'warehouse':
+                warehouse = Warehouse.query.get(pending.from_location_id)
+                from_location_name = warehouse.name if warehouse else f"Ombor #{pending.from_location_id}"
+            elif pending.from_location_type == 'store':
+                store = Store.query.get(pending.from_location_id)
+                from_location_name = store.name if store else f"Dokon #{pending.from_location_id}"
+            
+            if pending.to_location_type == 'warehouse':
+                warehouse = Warehouse.query.get(pending.to_location_id)
+                to_location_name = warehouse.name if warehouse else f"Ombor #{pending.to_location_id}"
+            elif pending.to_location_type == 'store':
+                store = Store.query.get(pending.to_location_id)
+                to_location_name = store.name if store else f"Dokon #{pending.to_location_id}"
+            
+            result.append({
+                'id': pending.id,
+                'user_name': pending.user.username if pending.user else 'N/A',
+                'from_location': from_location_name,
+                'to_location': to_location_name,
+                'items': pending.items,
+                'created_at': pending.created_at.isoformat() if pending.created_at else None,
+                'updated_at': pending.updated_at.isoformat() if pending.updated_at else None
+            })
+
+        return jsonify({
+            'success': True,
+            'pending_transfers': result
+        })
+
+    except Exception as e:
+        logger.error(f"Tasdiqlanmagan transferlarni olishda xatolik: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
 

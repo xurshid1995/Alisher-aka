@@ -163,7 +163,53 @@
 
 {% block extra_js %}
 <script>
-    // Transfer sahifasi JavaScript kodlari
+    // Tasdiqlanmagan transferlarni yuklash
+    async function loadPendingTransfers() {
+        try {
+            const response = await fetch('/api/all-pending-transfers');
+            const data = await response.json();
+            
+            const tbody = document.getElementById('pendingTransfersBody');
+            
+            if (data.pending_transfers && data.pending_transfers.length > 0) {
+                tbody.innerHTML = data.pending_transfers.map(pending => {
+                    const products = pending.items.map(item => 
+                        `${item.name} (${item.quantity})`
+                    ).join('<br>');
+                    
+                    const total = pending.items.reduce((sum, item) => 
+                        sum + (item.quantity * (item.price || 0)), 0
+                    );
+                    
+                    return `
+                        <tr>
+                            <td>${pending.from_location}</td>
+                            <td>${pending.to_location}</td>
+                            <td>${products}</td>
+                            <td>${total.toLocaleString()} so'm</td>
+                            <td>
+                                <a href="${pending.user_name === '{{ session.get("username") }}' ? '/transfer_old' : '#'}" 
+                                   class="btn-sm btn-success-sm" 
+                                   ${pending.user_name !== '{{ session.get("username") }}' ? 'onclick="alert(\'Faqat o\\\'z transferingizni tahrirlashingiz mumkin\'); return false;"' : ''}>
+                                    ✏️ Tahrirlash
+                                </a>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            } else {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" style="text-align: center; padding: 20px; color: #666;">
+                            📭 Tasdiqlanmagan transferlar yo'q
+                        </td>
+                    </tr>
+                `;
+            }
+        } catch (error) {
+            console.error('Tasdiqlanmagan transferlarni yuklashda xatolik:', error);
+        }
+    }
     
     // Transfer tarixini yuklash
     async function loadTransferHistory() {
@@ -232,9 +278,13 @@
     
     // Sahifa yuklanganda ma'lumotlarni yuklash
     document.addEventListener('DOMContentLoaded', function() {
+        loadPendingTransfers();
         loadTransferHistory();
         
-        // Har 30 soniyada yangilab turish
+        // Har 10 soniyada tasdiqlanmagan transferlarni yangilab turish
+        setInterval(loadPendingTransfers, 10000);
+        
+        // Har 30 soniyada tarixni yangilab turish
         setInterval(loadTransferHistory, 30000);
     });
     
