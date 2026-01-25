@@ -459,7 +459,7 @@
                     <thead>
                         <tr>
                             <th>Sana va vaqt</th>
-                            <th>Mijoz</th>
+                            <th>Sotuvchi</th>
                             <th>Joylashuv</th>
                             <th>Mahsulot</th>
                             <th class="compact-hide">Miqdor</th>
@@ -644,10 +644,12 @@ function displayOrders(orders) {
         html += '<div class="sale-time">' + formattedTime + '</div>';
         html += '</div></td>';
         
-        html += '<td rowspan="' + items.length + '" class="group-cell group-customer">';
-        html += '<div class="customer-info">';
-        html += '<div class="customer-name">' + (sale.customer_name || 'Noma\'lum') + '</div>';
-        html += '<div class="customer-phone">' + (sale.customer_phone || '+998 XX XXX XX XX') + '</div>';
+        html += '<td rowspan="' + items.length + '" class="group-cell group-seller">';
+        html += '<div style="line-height: 1.4;">';
+        html += '<div style="font-size: 14px; font-weight: 600; color: #495057;">' + (sale.seller_name || 'Admin') + '</div>';
+        if (sale.seller_phone) {
+            html += '<div style="font-size: 12px; color: #6c757d; font-style: italic;">' + sale.seller_phone + '</div>';
+        }
         html += '</div></td>';
         
         html += '<td class="group-cell group-location">' + getLocationName(firstItem) + '</td>';
