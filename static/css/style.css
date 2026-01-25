@@ -1347,7 +1347,7 @@ footer {
         display: flex !important;
         height: 60px;
         padding: 0 0.5rem;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: #667eea;
         position: fixed;
         top: 0;
         left: 0;
