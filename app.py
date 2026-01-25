@@ -6109,9 +6109,33 @@ def edit_stock(warehouse_id, product_id):
             stock.product.sell_price = Decimal(str(new_sell_price))
 
             # Stock miqdorini yangilash
+            old_quantity = stock.quantity
             stock.quantity = new_quantity
 
             db.session.commit()
+
+            # OperationHistory logini yozish
+            try:
+                warehouse = Warehouse.query.get(warehouse_id)
+                history = OperationHistory(
+                    operation_type='edit_stock',
+                    table_name='warehouse_stock',
+                    record_id=stock.id,
+                    user_id=session.get('user_id'),
+                    username=session.get('username', 'Unknown'),
+                    description=f"{new_product_name} tahrirlandi: miqdor {old_quantity} -> {new_quantity}, narx ${new_cost_price:.2f} -> ${new_sell_price:.2f}",
+                    old_data={'quantity': str(old_quantity), 'cost_price': str(cost_price), 'sell_price': str(sell_price)},
+                    new_data={'quantity': str(new_quantity), 'cost_price': str(new_cost_price), 'sell_price': str(new_sell_price)},
+                    ip_address=request.remote_addr,
+                    location_id=warehouse_id,
+                    location_type='warehouse',
+                    location_name=warehouse.name if warehouse else 'Unknown',
+                    amount=None
+                )
+                db.session.add(history)
+                db.session.commit()
+            except Exception as log_error:
+                logger.error(f"OperationHistory log xatoligi: {log_error}")
 
             return redirect(url_for('warehouse_detail',
                                     warehouse_id=warehouse_id))
@@ -6275,9 +6299,33 @@ def edit_store_stock(store_id, product_id):
             stock.product.sell_price = Decimal(str(new_sell_price))
 
             # Stock miqdorini yangilash
+            old_quantity = stock.quantity
             stock.quantity = new_quantity
 
             db.session.commit()
+
+            # OperationHistory logini yozish
+            try:
+                store = Store.query.get(store_id)
+                history = OperationHistory(
+                    operation_type='edit_stock',
+                    table_name='store_stock',
+                    record_id=stock.id,
+                    user_id=session.get('user_id'),
+                    username=session.get('username', 'Unknown'),
+                    description=f"{new_product_name} tahrirlandi: miqdor {old_quantity} -> {new_quantity}, narx ${new_cost_price:.2f} -> ${new_sell_price:.2f}",
+                    old_data={'quantity': str(old_quantity), 'cost_price': str(cost_price), 'sell_price': str(sell_price)},
+                    new_data={'quantity': str(new_quantity), 'cost_price': str(new_cost_price), 'sell_price': str(new_sell_price)},
+                    ip_address=request.remote_addr,
+                    location_id=store_id,
+                    location_type='store',
+                    location_name=store.name if store else 'Unknown',
+                    amount=None
+                )
+                db.session.add(history)
+                db.session.commit()
+            except Exception as log_error:
+                logger.error(f"OperationHistory log xatoligi: {log_error}")
 
             return redirect(url_for('store_detail',
                                     store_id=store_id))
