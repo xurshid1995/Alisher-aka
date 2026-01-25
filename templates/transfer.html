@@ -451,11 +451,15 @@
         /* Mahsulotlar jadvalidagi amal ustunini yashirish (mobil) */
         #productsTableBody tr td:nth-child(4) {
             display: none !important;
+            width: 0 !important;
+            padding: 0 !important;
         }
 
         /* Mahsulotlar jadvali thead'dagi amal ustunini yashirish */
         table.transfer-product-table:not(#transferListTable) thead th:nth-child(4) {
             display: none !important;
+            width: 0 !important;
+            padding: 0 !important;
         }
 
         /* Mahsulot qatorini bosilganda cursor pointer */
@@ -478,14 +482,12 @@
         .transfer-product-table td:nth-child(3),
         .transfer-list-table th:nth-child(3),
         .transfer-list-table td:nth-child(3) {
-            width: 22% !important;
+            width: 27% !important;
             text-align: center;
             white-space: nowrap !important;
         }
 
-        /* Amal ustuni */
-        .transfer-product-table th:nth-child(4),
-        .transfer-product-table td:nth-child(4),
+        /* Amal ustuni - faqat transfer ro'yxati uchun */
         .transfer-list-table th:nth-child(4),
         .transfer-list-table td:nth-child(4) {
             width: 10% !important;
