@@ -211,6 +211,21 @@
         max-width: 390px !important; 
     }
 
+    /* Amallar tugmalarini vertikal qilish */
+    .group-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        align-items: center;
+        padding: 4px;
+    }
+
+    .group-actions .btn-action {
+        display: block;
+        width: 100%;
+        margin: 0;
+    }
+
     /* Loading va xabarlar */
     .loading-message, .no-data-message {
         text-align: center;
