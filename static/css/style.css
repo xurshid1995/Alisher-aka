@@ -1417,8 +1417,8 @@ footer {
     }
     
     .top-header .logout-btn {
-        padding: 0.2rem 0.5rem;
-        font-size: 0.65rem;
+        padding: 0.15rem 0.4rem;
+        font-size: 0.6rem;
         background: rgba(255,255,255,0.2);
         border-radius: 4px;
     }
