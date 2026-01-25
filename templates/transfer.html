@@ -1918,6 +1918,9 @@
         }
     }
 
+    // Hozirgi pending transfer ID
+    let currentPendingTransferId = null;
+
     // Tasdiqlanmagan transferni saqlash/yangilash
     async function savePendingTransfer() {
         const fromLocation = document.getElementById('fromLocation').value;
@@ -1948,20 +1951,29 @@
         };
         
         try {
-            // Avval mavjudligini tekshirish
-            const getResponse = await fetch('/api/pending-transfer');
-            const existing = await getResponse.json();
+            // Agar ID mavjud bo'lsa - yangilash, aks holda yangi yaratish
+            const method = currentPendingTransferId ? 'PUT' : 'POST';
+            const url = currentPendingTransferId 
+                ? `/api/pending-transfer/${currentPendingTransferId}` 
+                : '/api/pending-transfer';
             
-            const method = existing.pending_transfer ? 'PUT' : 'POST';
-            
-            const response = await fetch('/api/pending-transfer', {
+            const response = await fetch(url, {
                 method: method,
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)
             });
             
             if (response.ok) {
-                console.log('✅ Tasdiqlanmagan transfer saqlandi');
+                const result = await response.json();
+                // Yangi yaratilgan transfer ID sini saqlash
+                if (result.pending_transfer && result.pending_transfer.id) {
+                    currentPendingTransferId = result.pending_transfer.id;
+                    // URL'ga ID qo'shish
+                    const newUrl = new URL(window.location);
+                    newUrl.searchParams.set('id', currentPendingTransferId);
+                    window.history.replaceState({}, '', newUrl);
+                }
+                console.log('✅ Tasdiqlanmagan transfer saqlandi, ID:', currentPendingTransferId);
             }
         } catch (error) {
             console.error('❌ Tasdiqlanmagan transferni saqlashda xatolik:', error);
@@ -1971,11 +1983,20 @@
     // Tasdiqlanmagan transferni o'chirish
     async function deletePendingTransfer() {
         try {
-            const response = await fetch('/api/pending-transfer', {
+            const url = currentPendingTransferId 
+                ? `/api/pending-transfer/${currentPendingTransferId}`
+                : '/api/pending-transfer';
+                
+            const response = await fetch(url, {
                 method: 'DELETE'
             });
             
             if (response.ok) {
+                currentPendingTransferId = null;
+                // URL'dan ID'ni o'chirish
+                const newUrl = new URL(window.location);
+                newUrl.searchParams.delete('id');
+                window.history.replaceState({}, '', newUrl);
                 console.log('✅ Tasdiqlanmagan transfer o\'chirildi');
             }
         } catch (error) {
@@ -2192,16 +2213,29 @@
         await loadLocations(); // Joylashuvlarni avval yuklash
         loadTransferHistory(); // Transfer tarixini yuklash
         
-        // URL parametrlarini tekshirish - yangi transfer boshlanganmi?
+        // URL parametrlarini tekshirish
         const urlParams = new URLSearchParams(window.location.search);
         const isNewTransfer = urlParams.get('new') === 'true';
+        const pendingId = urlParams.get('id');
         
-        if (!isNewTransfer) {
-            // Faqat yangi transfer bo'lmasa, pending transferni yuklash
+        if (isNewTransfer) {
+            // Yangi transfer boshlash - ID'ni o'chirish
+            currentPendingTransferId = null;
+            console.log('✅ Yangi transfer boshlandi');
+        } else if (pendingId) {
+            // Mavjud pending transferni yuklash
             await loadPendingTransfer();
+        }
+        
+        // URL'ni tozalash - ?new=true parametrini o'chirish
+        if (isNewTransfer) {
+            const newUrl = new URL(window.location);
+            newUrl.searchParams.delete('new');
+            window.history.replaceState({}, '', newUrl);
+        }
         } else {
-            // Yangi transfer boshlanganda pending transferni o'chirish
-            await deletePendingTransfer();
+            // Oddiy ochilgan - pending transferni yuklash
+            await loadPendingTransfer();
         }
         
         const productSearch = document.getElementById('productSearch');
@@ -2229,34 +2263,42 @@
         
         // Focus hodisasi - status xabarni yashirish
         productSearch.addEventListener('focus', function() {
-            document.getElementById('searchStatus').style.display = 'none';
-        });
-        
-        console.log('✅ Transfer sahifasi tayyor (barcode scanner yoqilgan)');
-    });
-    
-    // Tasdiqlanmagan transferni yuklash
-    async function loadPendingTransfer() {
-        try {
-            const response = await fetch('/api/pending-transfer');
-            const data = await response.json();
+            // URL'dan ID olish
+            const urlParams = new URLSearchParams(window.location.search);
+            const pendingId = urlParams.get('id');
             
-            if (data.pending_transfer) {
-                const pending = data.pending_transfer;
+            if (pendingId) {
+                currentPendingTransferId = parseInt(pendingId);
                 
-                // Joylashuvlarni to'ldirish
-                const fromLocation = `${pending.from_location_type}_${pending.from_location_id}`;
-                const toLocation = `${pending.to_location_type}_${pending.to_location_id}`;
+                const response = await fetch(`/api/pending-transfer/${currentPendingTransferId}`);
+                const data = await response.json();
                 
-                document.getElementById('fromLocation').value = fromLocation;
-                document.getElementById('toLocation').value = toLocation;
-                
-                // Mahsulotlarni yuklash
-                await loadProducts();
-                
-                // Transfer ro'yxatini tiklash
-                transferList = pending.items.map(item => ({
-                    id: item.product_id,
+                if (data.pending_transfer) {
+                    const pending = data.pending_transfer;
+                    
+                    // Joylashuvlarni to'ldirish
+                    const fromLocation = `${pending.from_location_type}_${pending.from_location_id}`;
+                    const toLocation = `${pending.to_location_type}_${pending.to_location_id}`;
+                    
+                    document.getElementById('fromLocation').value = fromLocation;
+                    document.getElementById('toLocation').value = toLocation;
+                    
+                    // Mahsulotlarni yuklash
+                    await loadProducts();
+                    
+                    // Transfer ro'yxatini tiklash
+                    transferList = pending.items.map(item => ({
+                        id: item.product_id,
+                        name: item.name,
+                        price: item.price || 0,
+                        quantity: item.quantity,
+                        available: item.available || 0,
+                        unitType: item.unitType || 'dona'
+                    }));
+                    
+                    updateTransferListDisplay();
+                    console.log('✅ Tasdiqlanmagan transfer tiklandi:', transferList.length, 'ta mahsulot');
+                }
                     name: item.name,
                     price: item.price || 0,
                     quantity: item.quantity,

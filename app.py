@@ -7094,17 +7094,29 @@ def get_transfer_history_formatted():
 
 
 @app.route('/api/pending-transfer', methods=['GET', 'POST', 'PUT', 'DELETE'])
+@app.route('/api/pending-transfer/<int:pending_id>', methods=['GET', 'PUT', 'DELETE'])
 @role_required('admin', 'kassir', 'sotuvchi')
-def manage_pending_transfer():
+def manage_pending_transfer(pending_id=None):
     """Tasdiqlanmagan transferni boshqarish"""
     try:
         current_user = get_current_user()
         if not current_user:
             return jsonify({'error': 'Foydalanuvchi topilmadi'}), 401
 
-        # GET - foydalanuvchining tasdiqlanmagan transferini olish
+        # GET - ID bo'yicha yoki foydalanuvchining birinchi pending transferini olish
         if request.method == 'GET':
-            pending = PendingTransfer.query.filter_by(user_id=current_user.id).first()
+            if pending_id:
+                # ID bo'yicha olish
+                pending = PendingTransfer.query.filter_by(
+                    id=pending_id, 
+                    user_id=current_user.id
+                ).first()
+            else:
+                # Eng oxirgi pending transferni olish
+                pending = PendingTransfer.query.filter_by(
+                    user_id=current_user.id
+                ).order_by(PendingTransfer.updated_at.desc()).first()
+                
             if pending:
                 return jsonify({
                     'success': True,
@@ -7118,9 +7130,6 @@ def manage_pending_transfer():
         # POST - yangi tasdiqlanmagan transfer yaratish
         elif request.method == 'POST':
             data = request.get_json()
-            
-            # Avvalgi tasdiqlanmagan transferni o'chirish
-            PendingTransfer.query.filter_by(user_id=current_user.id).delete()
             
             pending = PendingTransfer(
                 user_id=current_user.id,
@@ -7143,7 +7152,17 @@ def manage_pending_transfer():
         elif request.method == 'PUT':
             data = request.get_json()
             
-            pending = PendingTransfer.query.filter_by(user_id=current_user.id).first()
+            if pending_id:
+                pending = PendingTransfer.query.filter_by(
+                    id=pending_id,
+                    user_id=current_user.id
+                ).first()
+            else:
+                # Eng oxirgi pending transferni yangilash
+                pending = PendingTransfer.query.filter_by(
+                    user_id=current_user.id
+                ).order_by(PendingTransfer.updated_at.desc()).first()
+                
             if not pending:
                 return jsonify({'error': 'Tasdiqlanmagan transfer topilmadi'}), 404
             
@@ -7162,7 +7181,15 @@ def manage_pending_transfer():
 
         # DELETE - tasdiqlanmagan transferni o'chirish
         elif request.method == 'DELETE':
-            PendingTransfer.query.filter_by(user_id=current_user.id).delete()
+            if pending_id:
+                PendingTransfer.query.filter_by(
+                    id=pending_id,
+                    user_id=current_user.id
+                ).delete()
+            else:
+                # Barcha pending transferlarni o'chirish
+                PendingTransfer.query.filter_by(user_id=current_user.id).delete()
+                
             db.session.commit()
             
             return jsonify({

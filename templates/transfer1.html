@@ -183,6 +183,7 @@
                     });
                     
                     const productCount = pending.items.length;
+                    const isOwnTransfer = pending.user_name === '{{ session.get("username") }}';
                     
                     return `
                         <tr>
@@ -194,11 +195,18 @@
                             </td>
                             <td>${pending.user_name}</td>
                             <td>
-                                <a href="${pending.user_name === '{{ session.get("username") }}' ? '/transfer_old' : '#'}" 
+                                <a href="${isOwnTransfer ? '/transfer_old?id=' + pending.id : '#'}" 
                                    class="btn-sm btn-success-sm" 
-                                   ${pending.user_name !== '{{ session.get("username") }}' ? 'onclick="alert(\'Faqat o\\\'z transferingizni tahrirlashingiz mumkin\'); return false;"' : ''}>
+                                   ${!isOwnTransfer ? 'onclick="alert(\'Faqat o\\\'z transferingizni tahrirlashingiz mumkin\'); return false;"' : ''}>
                                     ✏️ Tahrirlash
                                 </a>
+                                ${isOwnTransfer ? `
+                                <button class="btn-sm btn-danger-sm" 
+                                        onclick="deletePendingTransfer(${pending.id}); return false;"
+                                        style="margin-left: 5px;">
+                                    🗑️ O'chirish
+                                </button>
+                                ` : ''}
                             </td>
                         </tr>
                     `;
@@ -214,6 +222,29 @@
             }
         } catch (error) {
             console.error('Tasdiqlanmagan transferlarni yuklashda xatolik:', error);
+        }
+    }
+    
+    // Pending transferni o'chirish
+    async function deletePendingTransfer(pendingId) {
+        if (!confirm('Bu transferni o\'chirmoqchimisiz?')) {
+            return;
+        }
+        
+        try {
+            const response = await fetch(`/api/pending-transfer/${pendingId}`, {
+                method: 'DELETE'
+            });
+            
+            if (response.ok) {
+                alert('✅ Transfer o\'chirildi');
+                await loadPendingTransfers(); // Jadvalni yangilash
+            } else {
+                alert('❌ Transferni o\'chirishda xatolik');
+            }
+        } catch (error) {
+            console.error('Transferni o\'chirishda xatolik:', error);
+            alert('❌ Transferni o\'chirishda xatolik');
         }
     }
     
