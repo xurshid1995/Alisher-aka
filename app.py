@@ -7815,22 +7815,24 @@ def get_customers():
                 sales = sales_query.all()
                 total_sales = len(sales)
                 
-                # Total amount va profit ni hisoblash
+                # Total amount va profit ni hisoblash (UZS dan USD ga)
                 total_amount = 0
                 total_profit = 0
                 for sale in sales:
-                    if hasattr(sale, 'total_amount_usd') and sale.total_amount_usd:
-                        total_amount += float(sale.total_amount_usd)
-                    elif hasattr(sale, 'total_price_usd') and sale.total_price_usd:
-                        total_amount += float(sale.total_price_usd)
+                    # Currency rate
+                    rate = float(sale.currency_rate) if sale.currency_rate else 12500
                     
-                    # Foydani hisoblash
-                    if hasattr(sale, 'total_profit_usd') and sale.total_profit_usd:
-                        total_profit += float(sale.total_profit_usd)
+                    # Total amount (UZS ni USD ga o'tkazish)
+                    if sale.total_amount:
+                        total_amount += float(sale.total_amount) / rate
+                    
+                    # Total profit (UZS ni USD ga o'tkazish)
+                    if sale.total_profit:
+                        total_profit += float(sale.total_profit) / rate
                 
                 customer_dict['total_sales'] = total_sales
-                customer_dict['total_amount'] = total_amount
-                customer_dict['total_profit'] = total_profit
+                customer_dict['total_amount'] = round(total_amount, 2)
+                customer_dict['total_profit'] = round(total_profit, 2)
             except Exception as e:
                 logger.error(f"Error calculating sales for customer {customer.id}: {str(e)}")
                 customer_dict['total_sales'] = 0
