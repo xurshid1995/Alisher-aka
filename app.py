@@ -7719,10 +7719,11 @@ def get_customers():
 
         # Qidiruv parametrini olish
         search = request.args.get('search', '').strip()
+        time_filter = request.args.get('time_filter', 'all')  # all, today, week, month, year
 
         # Debug ma'lumotlari
         print(
-            f"🔍 Customers API - User: {current_user.username}, Role: {current_user.role}, Search: {search}")
+            f"🔍 Customers API - User: {current_user.username}, Role: {current_user.role}, Search: {search}, Time: {time_filter}")
         logger.debug(f" Allowed locations: {current_user.allowed_locations}")
 
         # Mijozlarni joylashuv bo'yicha filterlash
@@ -7785,8 +7786,41 @@ def get_customers():
             customers = query.all()
             logger.debug(f" Admin user, returning all {len(customers)} customers")
 
-        result = [customer.to_dict() for customer in customers]
-        logger.debug(f" Returning {len(result)} customers")
+        # Vaqt filtriga asosan savdo ma'lumotlarini hisoblash
+        from datetime import datetime, timedelta
+        now = datetime.now()
+        
+        # Vaqt oralig'ini aniqlash
+        if time_filter == 'today':
+            start_date = datetime(now.year, now.month, now.day)
+        elif time_filter == 'week':
+            start_date = now - timedelta(days=7)
+        elif time_filter == 'month':
+            start_date = datetime(now.year, now.month, 1)
+        elif time_filter == 'year':
+            start_date = datetime(now.year, 1, 1)
+        else:  # 'all'
+            start_date = None
+
+        result = []
+        for customer in customers:
+            customer_dict = customer.to_dict()
+            
+            # Savdolar ma'lumotini hisoblash
+            sales_query = Sale.query.filter_by(customer_id=customer.id)
+            if start_date:
+                sales_query = sales_query.filter(Sale.created_at >= start_date)
+            
+            sales = sales_query.all()
+            total_sales = len(sales)
+            total_amount = sum(float(sale.total_price_usd or 0) for sale in sales)
+            
+            customer_dict['total_sales'] = total_sales
+            customer_dict['total_amount'] = total_amount
+            
+            result.append(customer_dict)
+        
+        logger.debug(f" Returning {len(result)} customers with sales data")
 
         return jsonify(result)
     except Exception as e:

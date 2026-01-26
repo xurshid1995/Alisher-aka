@@ -799,7 +799,8 @@
     async function loadCustomers() {
         try {
             console.log('Mijozlarni yuklayapti...');
-            const response = await fetch('/api/customers');
+            const url = `/api/customers?time_filter=${currentTimeFilter}`;
+            const response = await fetch(url);
             const data = await response.json();
             console.log('Mijozlar yuklandi:', data.length, 'ta mijoz');
             allCustomers = data;
@@ -923,10 +924,7 @@
             const matchesStore = !currentStoreFilter || 
                 (customer.store_id && customer.store_id.toString() === currentStoreFilter);
             
-            // Vaqt filtri
-            const matchesTime = isInTimeRange(customer.created_at);
-            
-            return matchesSearch && matchesStore && matchesTime;
+            return matchesSearch && matchesStore;
         });
         
         displayCustomers();
@@ -1158,32 +1156,12 @@
         });
         event.target.classList.add('active');
         
-        // Mijozlarni qayta saralash
-        applyFilters();
+        // Mijozlarni qayta yuklash (backend'dan filtr bilan)
+        loadCustomers();
     }
 
-    // Vaqt oralig'ini hisoblash
-    function isInTimeRange(dateStr) {
-        if (currentTimeFilter === 'all') return true;
-        
-        const customerDate = new Date(dateStr);
-        const now = new Date();
-        
-        switch(currentTimeFilter) {
-            case 'today':
-                return customerDate.toDateString() === now.toDateString();
-            case 'week':
-                const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-                return customerDate >= weekAgo;
-            case 'month':
-                return customerDate.getMonth() === now.getMonth() && 
-                       customerDate.getFullYear() === now.getFullYear();
-            case 'year':
-                return customerDate.getFullYear() === now.getFullYear();
-            default:
-                return true;
-        }
-    }
+    // Vaqt oralig'ini hisoblash - ENDI BACKEND'DA ISHLATILADI
+
 
 </script>
 {% endblock %}
