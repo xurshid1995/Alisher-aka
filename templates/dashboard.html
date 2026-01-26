@@ -60,7 +60,10 @@
                                     <div class="stat-separator">|</div>
                                     <div class="stat-item">
                                         <span class="stat-label-inline">💰 Summa</span>
-                                        <span class="stat-number-inline" id="totalAmount">0$</span>
+                                        <div style="display: flex; flex-direction: column; align-items: flex-start;">
+                                            <span class="stat-number-inline" id="totalAmount">0$</span>
+                                            <span style="font-size: 11px; color: #666; margin-top: 2px;" id="totalAmountUZS">0 UZS</span>
+                                        </div>
                                     </div>
                                     <div class="stat-separator">|</div>
                                     <div class="stat-item" id="paymentMethodsContainer" style="display: flex; gap: 5px; align-items: center;">
@@ -71,7 +74,10 @@
                                     <div class="stat-separator">|</div>
                                     <div class="stat-item">
                                         <span class="stat-label-inline">💵 Foyda</span>
-                                        <span class="stat-number-inline" id="totalProfit">0$</span>
+                                        <div style="display: flex; flex-direction: column; align-items: flex-start;">
+                                            <span class="stat-number-inline" id="totalProfit">0$</span>
+                                            <span style="font-size: 11px; color: #666; margin-top: 2px;" id="totalProfitUZS">0 UZS</span>
+                                        </div>
                                     </div>
                                     {% endif %}
                                 </div>
@@ -665,32 +671,53 @@ async function loadSalesChart(locationId = null, period = null, locationType = n
                                 const click = currentSalesData && currentSalesData.click_list ? currentSalesData.click_list[dataIndex] : 0;
                                 const terminal = currentSalesData && currentSalesData.terminal_list ? currentSalesData.terminal_list[dataIndex] : 0;
                                 
+                                const exchangeRateTooltip = window.currentExchangeRate || 12500;
                                 const formattedAmount = Math.floor(savdoSummasi).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+                                const formattedAmountUZS = Math.floor(savdoSummasi * exchangeRateTooltip).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
                                 const formattedProfit = Math.floor(savdoFoydasi).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+                                const formattedProfitUZS = Math.floor(savdoFoydasi * exchangeRateTooltip).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
                                 const formattedDebt = Math.floor(qarzSummasi).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+                                const formattedDebtUZS = Math.floor(qarzSummasi * exchangeRateTooltip).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
                                 const formattedCash = Math.floor(naqdPul).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+                                const formattedCashUZS = Math.floor(naqdPul * exchangeRateTooltip).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
                                 const formattedClick = Math.floor(click).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+                                const formattedClickUZS = Math.floor(click * exchangeRateTooltip).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
                                 const formattedTerminal = Math.floor(terminal).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+                                const formattedTerminalUZS = Math.floor(terminal * exchangeRateTooltip).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
                                 
                                 const tooltipLines = [
                                     `📊 Savdo soni: ${savdoSoni}`,
                                     `💰 Savdo summasi: ${formattedAmount} $`,
+                                    `   (${formattedAmountUZS} UZS)`,
                                     '' // Bo'sh qator
                                 ];
                                 
                                 // To'lov ma'lumotlarini ko'rsatish
                                 if (naqdPul > 0 || click > 0 || terminal > 0 || qarzSummasi > 0) {
                                     tooltipLines.push('💳 To\'lovlar:');
-                                    if (naqdPul > 0) tooltipLines.push(`   💵 Naqd: ${formattedCash} $`);
-                                    if (click > 0) tooltipLines.push(`   📱 Click: ${formattedClick} $`);
-                                    if (terminal > 0) tooltipLines.push(`   💳 Terminal: ${formattedTerminal} $`);
-                                    if (qarzSummasi > 0) tooltipLines.push(`   📝 Qarz: ${formattedDebt} $`);
+                                    if (naqdPul > 0) {
+                                        tooltipLines.push(`   💵 Naqd: ${formattedCash} $`);
+                                        tooltipLines.push(`      (${formattedCashUZS} UZS)`);
+                                    }
+                                    if (click > 0) {
+                                        tooltipLines.push(`   📱 Click: ${formattedClick} $`);
+                                        tooltipLines.push(`      (${formattedClickUZS} UZS)`);
+                                    }
+                                    if (terminal > 0) {
+                                        tooltipLines.push(`   💳 Terminal: ${formattedTerminal} $`);
+                                        tooltipLines.push(`      (${formattedTerminalUZS} UZS)`);
+                                    }
+                                    if (qarzSummasi > 0) {
+                                        tooltipLines.push(`   📝 Qarz: ${formattedDebt} $`);
+                                        tooltipLines.push(`      (${formattedDebtUZS} UZS)`);
+                                    }
                                     tooltipLines.push(''); // Bo'sh qator
                                 }
                                 
                                 // Faqat sotuvchi emas bo'lsa foydani ko'rsatish
                                 if (userRole !== 'sotuvchi') {
                                     tooltipLines.push(`💵 Foyda: ${formattedProfit} $`);
+                                    tooltipLines.push(`   (${formattedProfitUZS} UZS)`);
                                 }
                                 
                                 return tooltipLines;
@@ -800,18 +827,38 @@ function updateStatistics(data) {
     // Jami foyda
     const totalProfit = data.profits.reduce((sum, profit) => sum + profit, 0);
     
+    // Valyuta kursi (backenddan keladi yoki default)
+    const exchangeRate = window.currentExchangeRate || 12500;
+    
     // Formatlash va ko'rsatish
     document.getElementById('totalSales').textContent = totalSales.toLocaleString();
     document.getElementById('totalAmount').textContent = Math.floor(totalAmount).toLocaleString() + '$';
+    document.getElementById('totalAmountUZS').textContent = Math.floor(totalAmount * exchangeRate).toLocaleString() + ' UZS';
     
     // To'lov turlarini ko'rsatish
     if (data.payment_totals) {
         console.log('💰 To\'lov turlari yangilanmoqda:', data.payment_totals);
         const payments = [];
-        if (data.payment_totals.cash > 0) payments.push(`<span style="display: inline-block; background: #f8f9fa; padding: 4px 10px; margin-right: 8px; border-radius: 4px; border-left: 3px solid #28a745; font-size: 16px;">💵 Naqd pul: <strong>$${Math.floor(data.payment_totals.cash)}</strong></span>`);
-        if (data.payment_totals.click > 0) payments.push(`<span style="display: inline-block; background: #f8f9fa; padding: 4px 10px; margin-right: 8px; border-radius: 4px; border-left: 3px solid #007bff; font-size: 16px;">📱 Click: <strong>$${Math.floor(data.payment_totals.click)}</strong></span>`);
-        if (data.payment_totals.terminal > 0) payments.push(`<span style="display: inline-block; background: #f8f9fa; padding: 4px 10px; margin-right: 8px; border-radius: 4px; border-left: 3px solid #17a2b8; font-size: 16px;">💳 Terminal: <strong>$${Math.floor(data.payment_totals.terminal)}</strong></span>`);
-        if (data.payment_totals.debt > 0) payments.push(`<span style="display: inline-block; background: #f8f9fa; padding: 4px 10px; margin-right: 8px; border-radius: 4px; border-left: 3px solid #dc3545; font-size: 16px;">📝 Qarz: <strong>$${Math.floor(data.payment_totals.debt)}</strong></span>`);
+        if (data.payment_totals.cash > 0) {
+            const cashUSD = Math.floor(data.payment_totals.cash);
+            const cashUZS = Math.floor(data.payment_totals.cash * exchangeRate);
+            payments.push(`<span style="display: inline-block; background: #f8f9fa; padding: 4px 10px; margin-right: 8px; border-radius: 4px; border-left: 3px solid #28a745; font-size: 14px;">💵 Naqd: <strong>$${cashUSD}</strong><br><span style="font-size: 11px; color: #666;">${cashUZS.toLocaleString()} UZS</span></span>`);
+        }
+        if (data.payment_totals.click > 0) {
+            const clickUSD = Math.floor(data.payment_totals.click);
+            const clickUZS = Math.floor(data.payment_totals.click * exchangeRate);
+            payments.push(`<span style="display: inline-block; background: #f8f9fa; padding: 4px 10px; margin-right: 8px; border-radius: 4px; border-left: 3px solid #007bff; font-size: 14px;">📱 Click: <strong>$${clickUSD}</strong><br><span style="font-size: 11px; color: #666;">${clickUZS.toLocaleString()} UZS</span></span>`);
+        }
+        if (data.payment_totals.terminal > 0) {
+            const termUSD = Math.floor(data.payment_totals.terminal);
+            const termUZS = Math.floor(data.payment_totals.terminal * exchangeRate);
+            payments.push(`<span style="display: inline-block; background: #f8f9fa; padding: 4px 10px; margin-right: 8px; border-radius: 4px; border-left: 3px solid #17a2b8; font-size: 14px;">💳 Terminal: <strong>$${termUSD}</strong><br><span style="font-size: 11px; color: #666;">${termUZS.toLocaleString()} UZS</span></span>`);
+        }
+        if (data.payment_totals.debt > 0) {
+            const debtUSD = Math.floor(data.payment_totals.debt);
+            const debtUZS = Math.floor(data.payment_totals.debt * exchangeRate);
+            payments.push(`<span style="display: inline-block; background: #f8f9fa; padding: 4px 10px; margin-right: 8px; border-radius: 4px; border-left: 3px solid #dc3545; font-size: 14px;">📝 Qarz: <strong>$${debtUSD}</strong><br><span style="font-size: 11px; color: #666;">${debtUZS.toLocaleString()} UZS</span></span>`);
+        }
         
         document.getElementById('paymentMethods').innerHTML = payments.length > 0 ? payments.join('') : '-';
         console.log('✅ HTML yangilandi:', payments.length, 'ta tolov turi');
@@ -823,6 +870,7 @@ function updateStatistics(data) {
     // Foyda faqat sotuvchi bo'lmasa yangilanadi
     if (userRole !== 'sotuvchi') {
         document.getElementById('totalProfit').textContent = Math.floor(totalProfit).toLocaleString() + '$';
+        document.getElementById('totalProfitUZS').textContent = Math.floor(totalProfit * exchangeRate).toLocaleString() + ' UZS';
     }
     
     console.log('📈 Statistikalar yangilandi:', {
