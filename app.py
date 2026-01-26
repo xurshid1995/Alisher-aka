@@ -7815,20 +7815,16 @@ def get_customers():
                 sales = sales_query.all()
                 total_sales = len(sales)
                 
-                # Total amount va profit ni hisoblash (UZS dan USD ga)
+                # Total amount va profit ni hisoblash (allaqachon USD da)
                 total_amount = 0
                 total_profit = 0
                 for sale in sales:
-                    # Currency rate
-                    rate = float(sale.currency_rate) if sale.currency_rate else 12500
-                    
-                    # Total amount (UZS ni USD ga o'tkazish)
+                    # Ma'lumotlar allaqachon USD da saqlanadi
                     if sale.total_amount:
-                        total_amount += float(sale.total_amount) / rate
+                        total_amount += float(sale.total_amount)
                     
-                    # Total profit (UZS ni USD ga o'tkazish)
                     if sale.total_profit:
-                        total_profit += float(sale.total_profit) / rate
+                        total_profit += float(sale.total_profit)
                 
                 customer_dict['total_sales'] = total_sales
                 customer_dict['total_amount'] = round(total_amount, 2)
