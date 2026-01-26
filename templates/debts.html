@@ -611,81 +611,136 @@
             max-height: 100vh;
             border-radius: 0;
             margin: 0;
+            display: flex;
+            flex-direction: column;
         }
 
         .modal-header {
-            padding: 15px;
+            padding: 12px 15px;
             position: sticky;
             top: 0;
             background: white;
             z-index: 10;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            flex-shrink: 0;
         }
 
         .modal-header h2 {
-            font-size: 18px;
+            font-size: 16px;
+        }
+
+        .modal-close {
+            font-size: 24px;
+            width: 28px;
+            height: 28px;
         }
 
         .modal-body {
-            padding: 15px;
+            padding: 12px;
+            overflow-y: auto;
+            flex: 1;
         }
 
         .customer-info,
         .payment-section {
-            padding: 15px;
-            margin-bottom: 15px;
+            padding: 12px;
+            margin-bottom: 12px;
+            border-radius: 6px;
         }
 
         .customer-info h3,
         .payment-section h3 {
-            font-size: 16px;
-            margin-bottom: 10px;
+            font-size: 15px;
+            margin-bottom: 8px;
         }
 
         .customer-info p {
-            font-size: 13px;
+            font-size: 12px;
+            margin: 3px 0;
         }
 
         .payment-methods {
             grid-template-columns: 1fr;
             gap: 10px;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
         }
 
         .payment-method label {
             font-size: 13px;
+            margin-bottom: 4px;
         }
 
         .payment-method input {
-            padding: 8px;
-            font-size: 14px;
+            padding: 10px;
+            font-size: 15px;
+            border: 1.5px solid #ced4da;
+        }
+
+        .payment-method input:focus {
+            outline: none;
+            border-color: #28a745;
+            box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1);
         }
 
         .payment-total {
-            font-size: 14px;
-            margin-bottom: 10px;
+            font-size: 15px;
+            margin-bottom: 12px;
+            text-align: center;
+            padding: 10px;
+            background: #e7f4ea;
+            border-radius: 6px;
         }
 
         .payment-actions {
             flex-direction: column;
-            gap: 8px;
+            gap: 10px;
+            position: sticky;
+            bottom: 0;
+            background: white;
+            padding: 12px 0 0 0;
+            border-top: 1px solid #dee2e6;
+            margin-top: 12px;
         }
 
         .btn-cancel,
         .btn-confirm {
             width: 100%;
-            padding: 12px;
-            font-size: 14px;
+            padding: 14px;
+            font-size: 15px;
+            font-weight: 600;
+            border-radius: 8px;
         }
 
         .debt-history-table {
-            min-width: 600px;
-            font-size: 12px;
+            display: block;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            font-size: 11px;
+            margin-bottom: 12px;
+        }
+
+        .debt-history-table thead,
+        .debt-history-table tbody {
+            display: table;
+            width: 100%;
+            min-width: 500px;
         }
 
         .debt-history-table th,
         .debt-history-table td {
-            padding: 8px;
-            font-size: 12px;
+            padding: 6px 4px;
+            font-size: 11px;
+        }
+
+        /* Mijoz ma'lumotlari va To'lov qilish yonma-yon joylashuv */
+        .modal-body > div[style*="display: flex"] {
+            flex-direction: column !important;
+            gap: 12px !important;
+        }
+
+        .modal-body > div[style*="display: flex"] > div {
+            flex: 1 1 100% !important;
+            max-width: 100% !important;
         }
 
         /* Table scroll wrapper */
@@ -739,12 +794,48 @@
         }
 
         .modal-header h2 {
-            font-size: 16px;
+            font-size: 14px;
         }
 
-        .btn-sms {
+        .modal-close {
+            font-size: 22px;
+            width: 26px;
+            height: 26px;
+        }
+
+        .customer-info h3,
+        .payment-section h3 {
+            font-size: 14px;
+        }
+
+        .customer-info p {
             font-size: 11px;
-            padding: 8px 12px;
+        }
+
+        .payment-method label {
+            font-size: 12px;
+        }
+
+        .payment-method input {
+            padding: 9px;
+            font-size: 14px;
+        }
+
+        .payment-total {
+            font-size: 14px;
+            padding: 8px;
+        }
+
+        .btn-cancel,
+        .btn-confirm {
+            padding: 13px;
+            font-size: 14px;
+        }
+
+        .debt-history-table th,
+        .debt-history-table td {
+            padding: 5px 3px;
+            font-size: 10px;
         }
     }
 </style>
