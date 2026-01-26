@@ -4840,9 +4840,13 @@
                 if (cashUZS) cashUZS.value = Math.round(usdValue * exchangeRate);
             });
             newCashUZS.addEventListener('input', function() {
-                const uzsValue = parseFloat(this.value) || 0;
                 const cashUSD = getActiveTabElement('paymentCashUSD');
-                if (cashUSD) cashUSD.value = (uzsValue / exchangeRate).toFixed(2);
+                if (this.value.trim() === '') {
+                    if (cashUSD) cashUSD.value = '';
+                } else {
+                    const uzsValue = parseFloat(this.value) || 0;
+                    if (cashUSD) cashUSD.value = (uzsValue / exchangeRate).toFixed(2);
+                }
             });
         }
         
@@ -4858,9 +4862,13 @@
                 if (clickUZS) clickUZS.value = Math.round(usdValue * exchangeRate);
             });
             newClickUZS.addEventListener('input', function() {
-                const uzsValue = parseFloat(this.value) || 0;
                 const clickUSD = getActiveTabElement('paymentClickUSD');
-                if (clickUSD) clickUSD.value = (uzsValue / exchangeRate).toFixed(2);
+                if (this.value.trim() === '') {
+                    if (clickUSD) clickUSD.value = '';
+                } else {
+                    const uzsValue = parseFloat(this.value) || 0;
+                    if (clickUSD) clickUSD.value = (uzsValue / exchangeRate).toFixed(2);
+                }
             });
         }
         
@@ -4876,9 +4884,13 @@
                 if (terminalUZS) terminalUZS.value = Math.round(usdValue * exchangeRate);
             });
             newTerminalUZS.addEventListener('input', function() {
-                const uzsValue = parseFloat(this.value) || 0;
                 const terminalUSD = getActiveTabElement('paymentTerminalUSD');
-                if (terminalUSD) terminalUSD.value = (uzsValue / exchangeRate).toFixed(2);
+                if (this.value.trim() === '') {
+                    if (terminalUSD) terminalUSD.value = '';
+                } else {
+                    const uzsValue = parseFloat(this.value) || 0;
+                    if (terminalUSD) terminalUSD.value = (uzsValue / exchangeRate).toFixed(2);
+                }
             });
         }
         
@@ -4894,9 +4906,13 @@
                 if (debtUZS) debtUZS.value = Math.round(usdValue * exchangeRate);
             });
             newDebtUZS.addEventListener('input', function() {
-                const uzsValue = parseFloat(this.value) || 0;
                 const debtUSD = getActiveTabElement('paymentDebtUSD');
-                if (debtUSD) debtUSD.value = (uzsValue / exchangeRate).toFixed(2);
+                if (this.value.trim() === '') {
+                    if (debtUSD) debtUSD.value = '';
+                } else {
+                    const uzsValue = parseFloat(this.value) || 0;
+                    if (debtUSD) debtUSD.value = (uzsValue / exchangeRate).toFixed(2);
+                }
             });
         }
         
