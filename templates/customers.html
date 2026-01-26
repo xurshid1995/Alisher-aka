@@ -296,6 +296,28 @@
         border-color: #667eea;
     }
 
+    .analysis-filter-btn {
+        background: white;
+        color: #f57c00;
+        padding: 0.5rem 1rem;
+        border: 2px solid #f57c00;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.85rem;
+        font-weight: 500;
+        transition: all 0.2s ease;
+    }
+
+    .analysis-filter-btn:hover {
+        background: #fff3e0;
+    }
+
+    .analysis-filter-btn.active {
+        background: #f57c00;
+        color: white;
+        border-color: #f57c00;
+    }
+
     .customers-table {
         width: 100%;
         min-width: 800px; /* Mijozlar jadvali uchun minimal kenglik */
@@ -740,9 +762,9 @@
                 </div>
             </div>
             <div class="time-filter-buttons">
-                <button class="time-filter-btn active" onclick="filterByAnalysis('count')">🔢 Savdo soni</button>
-                <button class="time-filter-btn" onclick="filterByAnalysis('sum')">💰 Savdolar summasi</button>
-                <button class="time-filter-btn" onclick="filterByAnalysis('profit')">📊 Jami foyda</button>
+                <button class="analysis-filter-btn active" onclick="filterByAnalysis('count')">🔢 Savdo soni</button>
+                <button class="analysis-filter-btn" onclick="filterByAnalysis('sum')">💰 Savdolar summasi</button>
+                <button class="analysis-filter-btn" onclick="filterByAnalysis('profit')">📊 Jami foyda</button>
             </div>
         </div>
 
@@ -1154,7 +1176,7 @@
         currentAnalysisFilter = type;
         
         // Active class o'zgartirish - faqat tahlil tugmalari uchun
-        const analysisButtons = document.querySelectorAll('.time-filter-buttons:last-child .time-filter-btn');
+        const analysisButtons = document.querySelectorAll('.analysis-filter-btn');
         analysisButtons.forEach(btn => {
             btn.classList.remove('active');
         });
