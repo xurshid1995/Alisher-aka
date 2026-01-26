@@ -215,27 +215,27 @@
 
     /* Barcha jadval qatorlariga bir xil balandlik */
     .sales-table tbody tr {
-        vertical-align: middle;
-        height: 60px; /* Minimal balandlik */
+        border-bottom: 1px solid #e9ecef;
     }
 
     .sales-table tbody td {
-        vertical-align: middle;
         padding: 12px 8px;
+        vertical-align: middle;
         line-height: 1.5;
     }
 
-    /* Group sale birinchi va qolgan qatorlar uchun bir xil style */
-    .sale-group-start td,
-    .sale-group-item td {
-        padding: 12px 8px !important;
-        vertical-align: middle !important;
+    /* Bir sale group ichidagi qatorlar */
+    .sale-group-row {
+        transition: background 0.2s ease;
     }
 
-    /* Rowspan ustunlari uchun maxsus style */
-    .group-cell {
-        vertical-align: middle !important;
-        padding: 12px 8px !important;
+    .sale-group-row:hover {
+        background: #f8f9fa;
+    }
+
+    /* Bir sale group'ning birinchi qatori */
+    .sale-group-first {
+        border-top: 2px solid #667eea;
     }
 
     /* Amallar tugmalarini vertikal qilish */
@@ -246,7 +246,6 @@
         align-items: center;
         justify-content: center;
         padding: 4px;
-        vertical-align: middle;
     }
 
     /* Loading va xabarlar */
@@ -517,11 +516,7 @@
                         </tr>
                     </thead>
                     <tbody id="salesTableBody">
-                        <tr>
-                            <td colspan="10" style="text-align: center; padding: 20px;">
-                                <div class="loading-state">Yuklanmoqda...</div>
-                            </td>
-                        </tr>
+                        <!-- JavaScript orqali to'ldiriladi -->
                     </tbody>
                 </table>
             </div>
@@ -622,9 +617,9 @@ function loadCustomerOrders(customerId) {
 }
 
 function displayEmptyTable() {
-    const tbody = document.getElementById('salesTableBody');
+    const container = document.getElementById('salesTableBody');
     const colspan = (userRole === 'admin' || userRole === 'manager') ? 10 : 9;
-    tbody.innerHTML = '<tr><td colspan="' + colspan + '" class="no-data-message">Hozircha savdolar mavjud emas</td></tr>';
+    container.innerHTML = '<tr><td colspan="' + colspan + '" class="no-data-message">Hozircha savdolar mavjud emas</td></tr>';
 }
 
 function displayOrders(orders) {
@@ -641,7 +636,7 @@ function displayOrders(orders) {
         });
     });
     
-    const tbody = document.getElementById('salesTableBody');
+    const container = document.getElementById('salesTableBody');
     let html = '';
     
     orders.forEach(sale => {
@@ -674,101 +669,93 @@ function displayOrders(orders) {
             minute: '2-digit'
         });
         
-        // Birinchi item (grupning boshlanishi)
-        const firstItem = items[0];
-        const isOnlyItem = items.length === 1;
-        
-        let firstRowClasses = ['sale-group-start'];
-        if (isOnlyItem) firstRowClasses.push('sale-group-end');
-        
-        html += '<tr class="' + firstRowClasses.join(' ') + '">';
-        html += '<td rowspan="' + items.length + '" class="group-cell group-datetime">';
-        html += '<div class="datetime-info">';
-        html += '<div class="sale-date">' + formattedDate + '</div>';
-        html += '<div class="sale-time">' + formattedTime + '</div>';
-        html += '</div></td>';
-        
-        html += '<td rowspan="' + items.length + '" class="group-cell group-seller">';
-        html += '<div style="font-size: 14px; font-weight: 600; color: #495057;">' + (sale.seller_name || 'Admin') + '</div>';
-        if (sale.seller_phone) {
-            html += '<div style="font-size: 12px; color: #6c757d; font-style: italic;">' + sale.seller_phone + '</div>';
-        }
-        html += '</td>';
-        
-        html += '<td class="group-cell group-location">' + getLocationName(firstItem) + '</td>';
-        html += '<td class="product-cell">' + (firstItem.product_name || 'Noma\'lum') + '</td>';
-        html += '<td style="text-align: center; font-weight: 600;">' + firstItem.quantity + '</td>';
-        html += '<td>';
-        html += '<div style="font-weight: 600; text-align: center;">$' + parseFloat(firstItem.unit_price || 0).toFixed(2) + '</div>';
-        if (sale.currency_rate) {
-            html += '<div style="margin-top: 3px; text-align: center;"><span style="background-color: #5cb3fd; color: white; font-size: 11px; padding: 2px 6px; border-radius: 0; font-weight: 500;">' + (parseFloat(firstItem.unit_price || 0) * sale.currency_rate).toLocaleString('en-US', {maximumFractionDigits: 0}) + '</span></div>';
-        }
-        html += '</td>';
-        html += '<td>';
-        html += '<div style="font-weight: 600; text-align: center;">$' + parseFloat(firstItem.total_price || 0).toFixed(2) + '</div>';
-        if (sale.currency_rate) {
-            html += '<div style="margin-top: 3px; text-align: center;"><span style="background-color: #5cb3fd; color: white; font-size: 11px; padding: 2px 6px; border-radius: 0; font-weight: 500;">' + (parseFloat(firstItem.total_price || 0) * sale.currency_rate).toLocaleString('en-US', {maximumFractionDigits: 0}) + '</span></div>';
-        }
-        html += '</td>';
-        
-        html += '<td rowspan="' + items.length + '" class="group-cell group-total">';
-        html += '<div style="font-weight: 600; text-align: center;">$' + totalAmount.toFixed(2) + '</div>';
-        if (sale.currency_rate) {
-            html += '<div style="margin-top: 3px; text-align: center;"><span style="background-color: #5cb3fd; color: white; font-size: 11px; padding: 2px 6px; border-radius: 0; font-weight: 500;">' + (totalAmount * sale.currency_rate).toLocaleString('en-US', {maximumFractionDigits: 0}) + '</span></div>';
-        }
-        html += '</td>';
-        
-        if (userRole === 'admin' || userRole === 'manager') {
-            html += '<td rowspan="' + items.length + '" class="group-cell group-profit ' + profitClass + '">';
-            html += '<div style="font-weight: 600; text-align: center;">$' + totalProfit.toFixed(2) + '</div>';
-            if (sale.currency_rate) {
-                html += '<div style="margin-top: 3px; text-align: center;"><span style="background-color: #5cb3fd; color: white; font-size: 11px; padding: 2px 6px; border-radius: 0; font-weight: 500;">' + (totalProfit * sale.currency_rate).toLocaleString('en-US', {maximumFractionDigits: 0}) + '</span></div>';
+        // Har bir item uchun to'liq qator
+        items.forEach((item, index) => {
+            const isFirst = index === 0;
+            
+            html += '<tr class="sale-group-row' + (isFirst ? ' sale-group-first' : '') + '">';
+            
+            // Sana va vaqt (har bir qatorda)
+            html += '<td>';
+            if (isFirst) {
+                html += '<div class="sale-date">' + formattedDate + '</div>';
+                html += '<div class="sale-time">' + formattedTime + '</div>';
             }
             html += '</td>';
-        }
-        
-        html += '<td rowspan="' + items.length + '" class="group-cell group-actions">';
-        html += '<button class="btn-action btn-view" onclick="viewSaleDetails(' + sale.id + ')" title="Ko\'rish" style="background-color: #007bff; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 18px;">';
-        html += '👁️';
-        html += '</button>';
-        html += '<button class="btn-action btn-edit" onclick="editSaleGroup(' + sale.id + ')" title="Tahrirlash" style="background-color: #ffc107; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 18px;">';
-        html += '✏️';
-        html += '</button>';
-        html += '<button class="btn-action btn-delete" onclick="deleteSale(' + sale.id + ')" title="O\'chirish" style="background-color: #dc3545; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 18px;">';
-        html += '🗑️';
-        html += '</button>';
-        html += '</td>';
-        html += '</tr>';
-        
-        // Qolgan itemlar
-        for (let i = 1; i < items.length; i++) {
-            const item = items[i];
-            const isLast = i === items.length - 1;
             
-            let rowClasses = ['sale-group-item'];
-            if (isLast) rowClasses.push('sale-group-end');
+            // Sotuvchi (har bir qatorda)
+            html += '<td>';
+            if (isFirst) {
+                html += '<div style="font-size: 14px; font-weight: 600; color: #495057;">' + (sale.seller_name || 'Admin') + '</div>';
+                if (sale.seller_phone) {
+                    html += '<div style="font-size: 12px; color: #6c757d; font-style: italic;">' + sale.seller_phone + '</div>';
+                }
+            }
+            html += '</td>';
             
-            html += '<tr class="' + rowClasses.join(' ') + '">';
-            html += '<td class="group-cell group-location">' + getLocationName(item) + '</td>';
+            // Joylashuv
+            html += '<td>' + getLocationName(item) + '</td>';
+            
+            // Mahsulot
             html += '<td class="product-cell">' + (item.product_name || 'Noma\'lum') + '</td>';
+            
+            // Miqdor
             html += '<td style="text-align: center; font-weight: 600;">' + item.quantity + '</td>';
+            
+            // Narx
             html += '<td>';
             html += '<div style="font-weight: 600; text-align: center;">$' + parseFloat(item.unit_price || 0).toFixed(2) + '</div>';
             if (sale.currency_rate) {
                 html += '<div style="margin-top: 3px; text-align: center;"><span style="background-color: #5cb3fd; color: white; font-size: 11px; padding: 2px 6px; border-radius: 0; font-weight: 500;">' + (parseFloat(item.unit_price || 0) * sale.currency_rate).toLocaleString('en-US', {maximumFractionDigits: 0}) + '</span></div>';
             }
             html += '</td>';
+            
+            // Yig'indi
             html += '<td>';
             html += '<div style="font-weight: 600; text-align: center;">$' + parseFloat(item.total_price || 0).toFixed(2) + '</div>';
             if (sale.currency_rate) {
                 html += '<div style="margin-top: 3px; text-align: center;"><span style="background-color: #5cb3fd; color: white; font-size: 11px; padding: 2px 6px; border-radius: 0; font-weight: 500;">' + (parseFloat(item.total_price || 0) * sale.currency_rate).toLocaleString('en-US', {maximumFractionDigits: 0}) + '</span></div>';
             }
             html += '</td>';
+            
+            // Jami summa (har bir qatorda)
+            html += '<td>';
+            if (isFirst) {
+                html += '<div style="font-weight: 600; text-align: center;">$' + totalAmount.toFixed(2) + '</div>';
+                if (sale.currency_rate) {
+                    html += '<div style="margin-top: 3px; text-align: center;"><span style="background-color: #5cb3fd; color: white; font-size: 11px; padding: 2px 6px; border-radius: 0; font-weight: 500;">' + (totalAmount * sale.currency_rate).toLocaleString('en-US', {maximumFractionDigits: 0}) + '</span></div>';
+                }
+            }
+            html += '</td>';
+            
+            // Jami foyda (faqat admin va manager uchun, har bir qatorda)
+            if (userRole === 'admin' || userRole === 'manager') {
+                html += '<td class="' + (isFirst ? profitClass : '') + '">';
+                if (isFirst) {
+                    html += '<div style="font-weight: 600; text-align: center;">$' + totalProfit.toFixed(2) + '</div>';
+                    if (sale.currency_rate) {
+                        html += '<div style="margin-top: 3px; text-align: center;"><span style="background-color: #5cb3fd; color: white; font-size: 11px; padding: 2px 6px; border-radius: 0; font-weight: 500;">' + (totalProfit * sale.currency_rate).toLocaleString('en-US', {maximumFractionDigits: 0}) + '</span></div>';
+                    }
+                }
+                html += '</td>';
+            }
+            
+            // Amallar (har bir qatorda)
+            html += '<td>';
+            if (isFirst) {
+                html += '<div class="group-actions">';
+                html += '<button class="btn-action btn-view" onclick="viewSaleDetails(' + sale.id + ')" title="Ko\'rish" style="background-color: #007bff; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 18px;">👁️</button>';
+                html += '<button class="btn-action btn-edit" onclick="editSaleGroup(' + sale.id + ')" title="Tahrirlash" style="background-color: #ffc107; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 18px;">✏️</button>';
+                html += '<button class="btn-action btn-delete" onclick="deleteSale(' + sale.id + ')" title="O\'chirish" style="background-color: #dc3545; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 18px;">🗑️</button>';
+                html += '</div>';
+            }
+            html += '</td>';
+            
             html += '</tr>';
-        }
+        });
     });
     
-    tbody.innerHTML = html;
+    container.innerHTML = html;
 }
 
 // Modal functions
