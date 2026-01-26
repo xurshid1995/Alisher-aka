@@ -268,6 +268,34 @@
         font-weight: 600;
     }
 
+    .time-filter-buttons {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .time-filter-btn {
+        background: white;
+        color: #667eea;
+        padding: 0.5rem 1rem;
+        border: 2px solid #667eea;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.85rem;
+        font-weight: 500;
+        transition: all 0.2s ease;
+    }
+
+    .time-filter-btn:hover {
+        background: #f0f3ff;
+    }
+
+    .time-filter-btn.active {
+        background: #667eea;
+        color: white;
+        border-color: #667eea;
+    }
+
     .customers-table {
         width: 100%;
         min-width: 800px; /* Mijozlar jadvali uchun minimal kenglik */
@@ -702,7 +730,16 @@
         <div class="customers-table-container">
         <!-- Ma'lumot ko'rsatuvchisi -->
         <div class="table-info">
-            <span id="resultsInfo">Mijozlar yuklanmoqda...</span>
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <span id="resultsInfo">Mijozlar yuklanmoqda...</span>
+                <div class="time-filter-buttons">
+                    <button class="time-filter-btn active" onclick="filterByTime('all')">Hammasi</button>
+                    <button class="time-filter-btn" onclick="filterByTime('today')">Bugun</button>
+                    <button class="time-filter-btn" onclick="filterByTime('week')">Bu hafta</button>
+                    <button class="time-filter-btn" onclick="filterByTime('month')">Bu oy</button>
+                    <button class="time-filter-btn" onclick="filterByTime('year')">Bu yil</button>
+                </div>
+            </div>
             <div class="analysis-dropdown">
                 <button class="analysis-btn" onclick="toggleAnalysisDropdown()">
                     📊 Savdoni tahlili
@@ -881,7 +918,10 @@
             const matchesStore = !currentStoreFilter || 
                 (customer.store_id && customer.store_id.toString() === currentStoreFilter);
             
-            return matchesSearch && matchesStore;
+            // Vaqt filtri
+            const matchesTime = isInTimeRange(customer.created_at);
+            
+            return matchesSearch && matchesStore && matchesTime;
         });
         
         displayCustomers();
@@ -1107,6 +1147,7 @@
 
     // Savdo tahlili bo'yicha filtr
     let currentAnalysisFilter = 'count'; // default: savdo soni
+    let currentTimeFilter = 'all'; // default: hammasi
 
     function filterByAnalysis(type) {
         currentAnalysisFilter = type;
@@ -1125,6 +1166,43 @@
         
         // Mijozlarni qayta saralash
         applyFilters();
+    }
+
+    // Vaqt bo'yicha filtr
+    function filterByTime(period) {
+        currentTimeFilter = period;
+        
+        // Active class o'zgartirish
+        document.querySelectorAll('.time-filter-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        event.target.classList.add('active');
+        
+        // Mijozlarni qayta saralash
+        applyFilters();
+    }
+
+    // Vaqt oralig'ini hisoblash
+    function isInTimeRange(dateStr) {
+        if (currentTimeFilter === 'all') return true;
+        
+        const customerDate = new Date(dateStr);
+        const now = new Date();
+        
+        switch(currentTimeFilter) {
+            case 'today':
+                return customerDate.toDateString() === now.toDateString();
+            case 'week':
+                const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                return customerDate >= weekAgo;
+            case 'month':
+                return customerDate.getMonth() === now.getMonth() && 
+                       customerDate.getFullYear() === now.getFullYear();
+            case 'year':
+                return customerDate.getFullYear() === now.getFullYear();
+            default:
+                return true;
+        }
     }
 
 </script>
