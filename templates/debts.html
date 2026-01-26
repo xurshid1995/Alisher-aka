@@ -741,6 +741,34 @@
         .modal-body > div[style*="display: flex"] > div {
             flex: 1 1 100% !important;
             max-width: 100% !important;
+            min-width: 100% !important;
+        }
+
+        /* To'lov turlari grid */
+        .payment-section > div > h4 ~ div[style*="grid-template-columns"] {
+            grid-template-columns: 1fr !important;
+        }
+
+        /* To'lov input container */
+        .payment-section div[style*="display: flex"][style*="gap: 8px"] {
+            flex-wrap: wrap !important;
+        }
+
+        .payment-section div[style*="display: flex"][style*="gap: 8px"] > label {
+            width: 100% !important;
+            min-width: 100% !important;
+            margin-bottom: 4px;
+        }
+
+        .payment-section div[style*="display: flex"][style*="gap: 8px"] > div {
+            flex: 1 1 calc(50% - 4px) !important;
+            min-width: calc(50% - 4px) !important;
+        }
+
+        .payment-section div[style*="display: flex"][style*="gap: 8px"] > button {
+            flex: 1 1 100% !important;
+            width: 100% !important;
+            margin-top: 4px;
         }
 
         /* Table scroll wrapper */
