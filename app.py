@@ -9621,11 +9621,11 @@ def create_sale():
                     "ℹ️ Warehouse stock dan ayirilmaydi (allaqachon rezerv qilingan)")
 
             # Savdo summasini hisoblash
-            total_amount_usd = unit_price_usd * quantity  # USD da
+            total_amount_usd = Decimal(str(unit_price_usd)) * quantity  # USD da
             
             # Cost price allaqachon USD da (products jadvalidagi qiymat)
             unit_cost_price_usd = float(product.cost_price)  # USD da
-            total_cost_price_usd = unit_cost_price_usd * quantity  # Jami tan narx (USD)
+            total_cost_price_usd = Decimal(str(unit_cost_price_usd)) * quantity  # Jami tan narx (USD)
             
             # Foyda USD da hisoblash
             profit_usd = total_amount_usd - total_cost_price_usd  # USD da
@@ -9644,9 +9644,9 @@ def create_sale():
                 product_id=product_id,
                 quantity=quantity,
                 unit_price=Decimal(str(unit_price_usd)),  # USD da saqlanadi
-                total_price=Decimal(str(unit_price_usd * quantity)),  # USD da
+                total_price=Decimal(str(unit_price_usd)) * quantity,  # USD da
                 cost_price=Decimal(str(unit_cost_price_usd)),  # USD da
-                profit=Decimal(str(profit_usd)),  # USD da
+                profit=profit_usd,  # USD da (allaqachon Decimal)
                 source_type=item_location_type,
                 source_id=item_location_id,
                 notes=f'{product.name} | {location_info}'
