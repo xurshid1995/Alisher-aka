@@ -740,19 +740,9 @@
                     <button class="time-filter-btn" onclick="filterByTime('year')">Bu yil</button>
                 </div>
             </div>
-            <div class="analysis-dropdown">
-                <button class="analysis-btn" onclick="toggleAnalysisDropdown()">
-                    📊 Savdoni tahlili
-                    <span id="dropdownArrow">▼</span>
-                </button>
-                <div class="dropdown-content" id="analysisDropdown">
-                    <div class="dropdown-item active" onclick="filterByAnalysis('count')">
-                        🔢 Savdo soni
-                    </div>
-                    <div class="dropdown-item" onclick="filterByAnalysis('sum')">
-                        💰 Savdolar summasi
-                    </div>
-                </div>
+            <div class="time-filter-buttons">
+                <button class="time-filter-btn active" onclick="filterByAnalysis('count')">🔢 Savdo soni</button>
+                <button class="time-filter-btn" onclick="filterByAnalysis('sum')">💰 Savdolar summasi</button>
             </div>
         </div>
 
@@ -1130,26 +1120,6 @@
         `;
     }
 
-    // Dropdown ni ochish/yopish
-    function toggleAnalysisDropdown() {
-        const dropdown = document.getElementById('analysisDropdown');
-        const arrow = document.getElementById('dropdownArrow');
-        dropdown.classList.toggle('show');
-        arrow.textContent = dropdown.classList.contains('show') ? '▲' : '▼';
-    }
-
-    // Tashqi klik bilan yopish
-    window.addEventListener('click', function(e) {
-        if (!e.target.matches('.analysis-btn') && !e.target.closest('.analysis-dropdown')) {
-            const dropdown = document.getElementById('analysisDropdown');
-            const arrow = document.getElementById('dropdownArrow');
-            if (dropdown && dropdown.classList.contains('show')) {
-                dropdown.classList.remove('show');
-                arrow.textContent = '▼';
-            }
-        }
-    });
-
     // Savdo tahlili bo'yicha filtr
     let currentAnalysisFilter = 'count'; // default: savdo soni
     let currentTimeFilter = 'all'; // default: hammasi
@@ -1157,17 +1127,12 @@
     function filterByAnalysis(type) {
         currentAnalysisFilter = type;
         
-        // Active class o'zgartirish
-        document.querySelectorAll('.dropdown-item').forEach(item => {
-            item.classList.remove('active');
+        // Active class o'zgartirish - faqat tahlil tugmalari uchun
+        const analysisButtons = document.querySelectorAll('.time-filter-buttons:last-child .time-filter-btn');
+        analysisButtons.forEach(btn => {
+            btn.classList.remove('active');
         });
         event.target.classList.add('active');
-        
-        // Dropdown yopish
-        const dropdown = document.getElementById('analysisDropdown');
-        const arrow = document.getElementById('dropdownArrow');
-        dropdown.classList.remove('show');
-        arrow.textContent = '▼';
         
         // Mijozlarni qayta saralash
         applyFilters();
