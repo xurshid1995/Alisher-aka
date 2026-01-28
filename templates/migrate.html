@@ -2,13 +2,131 @@
 <html>
 <head>
     <title>Database Migration Tool</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 2px solid #e74c3c;
+            padding-bottom: 10px;
+        }
+        button {
+            padding: 12px 24px;
+            margin: 10px 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+        .btn-danger:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+        }
+        .btn-warning {
+            background: #f39c12;
+            color: white;
+        }
+        .btn-warning:hover {
+            background: #e67e22;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            background: #ecf0f1;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            color: #856404;
+        }
+    </style>
 </head>
 <body>
-    <h1>Database Migration</h1>
-    <button onclick="addCurrencyColumn()">Add Currency Rate Column</button>
-    <div id="result"></div>
+    <div class="container">
+        <h1>⚙️ Database Management Tool</h1>
+        
+        <div class="warning">
+            <strong>⚠️ Diqqat!</strong> Ma'lumotlar bazasini tozalash qaytarilmas jarayon. Barcha ma'lumotlar o'chib ketadi!
+        </div>
+
+        <h3>�️ Ma'lumotlar bazasini tozalash</h3>
+        <button class="btn-danger" onclick="confirmClearDatabase()">Ma'lumotlar bazasini tozalash</button>
+        
+        <h3>🔧 Migration</h3>
+        <button class="btn-warning" onclick="addCurrencyColumn()">Add Currency Rate Column</button>
+        
+        <div id="result"></div>
+    </div>
     
     <script>
+    async function confirmClearDatabase() {
+        const confirmation = confirm('⚠️ DIQQAT! Bu amalni bajarish barcha ma\'lumotlarni o\'chiradi:\n\n' +
+            '• Barcha savdolar\n' +
+            '• Barcha mijozlar\n' +
+            '• Barcha mahsulotlar\n' +
+            '• Barcha qarzlar\n' +
+            '• Barcha to\'lovlar\n\n' +
+            'Bu jarayonni qaytarib bo\'lmaydi!\n\n' +
+            'Davom etishni xohlaysizmi?');
+        
+        if (!confirmation) return;
+        
+        const secondConfirm = prompt('Tasdiqlash uchun "TOZALASH" so\'zini kiriting:');
+        
+        if (secondConfirm !== 'TOZALASH') {
+            alert('Bekor qilindi. Tasdiqlash so\'zi noto\'g\'ri.');
+            return;
+        }
+        
+        try {
+            document.getElementById('result').innerHTML = '⏳ Ma\'lumotlar bazasi tozalanmoqda...';
+            
+            const response = await fetch('/api/clear-database', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'}
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                document.getElementById('result').innerHTML = 
+                    '✅ Ma\'lumotlar bazasi muvaffaqiyatli tozalandi!\n\n' +
+                    JSON.stringify(data, null, 2);
+            } else {
+                document.getElementById('result').innerHTML = 
+                    '❌ Xatolik yuz berdi:\n\n' + 
+                    JSON.stringify(data, null, 2);
+            }
+        } catch (error) {
+            document.getElementById('result').innerHTML = 
+                '❌ Xatolik: ' + error.message;
+        }
+    }
+    
     async function addCurrencyColumn() {
         try {
             const response = await fetch('/api/add-currency-column', {

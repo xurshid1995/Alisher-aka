@@ -432,8 +432,8 @@ class Product(db.Model):
     __tablename__ = 'products'
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    barcode = db.Column(db.String(100), unique=True, nullable=True, index=True)  # Barcode raqami
+    name = db.Column(db.String(255), nullable=False)
+    barcode = db.Column(db.String(255), unique=True, nullable=True, index=True)  # Barcode raqami
     cost_price = db.Column(db.DECIMAL(precision=10, scale=2),
                            nullable=False)  # Ortacha tan narxi
     sell_price = db.Column(db.DECIMAL(precision=10, scale=2),
@@ -1539,35 +1539,9 @@ def api_products():
             pass
     # Location filter yo'q bo'lsa - barcha mahsulotlarni ko'rsatish (stock bo'lsin yoki bo'lmasin)
 
-    # Saralash: Agar joylashuv tanlangan bo'lsa, eng ko'p sotilgan mahsulotlarni birinchi ko'rsatish
-    if location_filter and location_filter != 'all':
-        try:
-            location_type, location_id = location_filter.split('_')
-            location_id = int(location_id)
-            
-            # Sale_items dan sotilgan miqdorni hisoblash va saralash
-            from sqlalchemy import func, case, desc
-            
-            subquery = db.session.query(
-                SaleItem.product_id,
-                func.sum(SaleItem.quantity).label('total_sold')
-            ).filter(
-                SaleItem.source_type == location_type,
-                SaleItem.source_id == location_id
-            ).group_by(SaleItem.product_id).subquery()
-            
-            query = query.outerjoin(
-                subquery, Product.id == subquery.c.product_id
-            ).order_by(
-                desc(case((subquery.c.total_sold == None, 0), else_=subquery.c.total_sold)),
-                Product.name
-            )
-        except (ValueError, IndexError, AttributeError):
-            # Xatolik bo'lsa, oddiy nom bo'yicha saralash
-            query = query.order_by(Product.name)
-    else:
-        # Joylashuv tanlanmagan bo'lsa, nom bo'yicha saralash
-        query = query.order_by(Product.name)
+    # Saralash: Yangi qo'shilgan mahsulotlar birinchi bo'lishi uchun ID bo'yicha kamayish tartibida
+    from sqlalchemy import desc
+    query = query.order_by(desc(Product.id))
 
     # Get paginated results
     paginated = query.paginate(
