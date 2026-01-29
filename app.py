@@ -8,7 +8,7 @@ import time
 import urllib.parse
 import uuid
 from datetime import datetime, timezone, timedelta
-from decimal import Decimal, getcontext
+from decimal import Decimal, getcontext, InvalidOperation
 from functools import wraps
 import pytz
 
@@ -256,6 +256,27 @@ def check_password(password, hashed):
         return False
 
 
+def validate_quantity(quantity, field_name='Miqdor'):
+    """Miqdorni validatsiya qilish - manfiy va haddan tashqari katta qiymatlardan himoya"""
+    try:
+        qty = Decimal(str(quantity))
+        
+        if qty < 0:
+            return False, f"{field_name} manfiy bo'lishi mumkin emas"
+        
+        if qty > 999999999:
+            return False, f"{field_name} juda katta (maksimal: 999,999,999)"
+        
+        # Kasr qismini tekshirish - maksimal 2 ta raqam
+        if qty.as_tuple().exponent < -2:
+            return False, f"{field_name} maksimal 2 ta kasr raqamga ega bo'lishi mumkin"
+        
+        return True, None
+        
+    except (ValueError, TypeError, InvalidOperation) as e:
+        return False, f"{field_name} noto'g'ri formatda"
+
+
 def log_operation(operation_type, table_name=None, record_id=None, description=None, 
                   old_data=None, new_data=None, location_id=None, location_type=None,
                   location_name=None, amount=None):
@@ -318,6 +339,16 @@ def role_required(*allowed_roles):
             if 'user_id' not in session:
                 if request.path.startswith('/api/'):
                     return jsonify({'error': 'Login required'}), 401
+                return redirect(url_for('login_page'))
+
+            # Session hijacking himoyasi - User-Agent tekshirish
+            session_ua = session.get('user_agent')
+            current_ua = request.headers.get('User-Agent', '')
+            if session_ua and session_ua != current_ua:
+                logger.warning(f"Session hijacking attempt: user_id={session.get('user_id')}, expected UA={session_ua[:50]}, got UA={current_ua[:50]}")
+                session.clear()
+                if request.path.startswith('/api/'):
+                    return jsonify({'error': 'Session invalid'}), 401
                 return redirect(url_for('login_page'))
 
             user_role = session.get('role')
@@ -390,11 +421,22 @@ def location_permission_required(
 
 
 def get_current_user():
-    """Session'dan current user ni olish"""
-    user_id = session.get('user_id')
-    if user_id:
-        return User.query.get(user_id)
-    return None
+    """Session'dan current user ni olish - request ichida cache bilan"""
+    # Request ichida cache qilish - bir request'da faqat 1 marta DB query
+    if not hasattr(request, '_cached_user'):
+        user_id = session.get('user_id')
+        if user_id:
+            try:
+                # Type validation - session manipulyatsiyadan himoya
+                user_id = int(user_id)
+                request._cached_user = User.query.get(user_id)
+            except (ValueError, TypeError):
+                logger.warning(f"Invalid user_id in session: {user_id}")
+                session.clear()
+                request._cached_user = None
+        else:
+            request._cached_user = None
+    return request._cached_user
 
 
 def extract_location_ids(locations, location_type):
@@ -487,12 +529,12 @@ class Product(db.Model):
             'id': self.id,
             'name': self.name,
             'barcode': self.barcode,  # Barcode qo'shildi
-            'cost_price': float(self.cost_price),
-            'sell_price': float(self.sell_price),
-            'price': float(self.sell_price),  # Compatibility uchun
+            'cost_price': str(self.cost_price),  # Decimal precision saqlanadi
+            'sell_price': str(self.sell_price),  # Decimal precision saqlanadi
+            'price': str(self.sell_price),  # Compatibility uchun
             'min_stock': self.min_stock,
             'unit_type': self.unit_type,  # O'lchov birligi
-            'last_batch_cost': float(self.last_batch_cost) if self.last_batch_cost else None,
+            'last_batch_cost': str(self.last_batch_cost) if self.last_batch_cost else None,
             'last_batch_date': self.last_batch_date.isoformat() if self.last_batch_date else None,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'stocks': stocks
@@ -2109,6 +2151,12 @@ def api_add_product():
                 cost_price = Decimal(str(product_data['costPrice']))
                 sell_price = Decimal(str(product_data['sellPrice']))
                 quantity = product_data.get('quantity', 0)
+                
+                # Quantity validation
+                is_valid, error_msg = validate_quantity(quantity, 'Miqdor')
+                if not is_valid:
+                    return jsonify({'error': f"{product_data['name']}: {error_msg}"}), 400
+                
                 logger.info(f"📊 Mahsulot: {product_data['name']}, Miqdor: {quantity}, Location: {product_data.get('locationValue', 'N/A')}")
 
                 # Validatsiya
@@ -2193,7 +2241,13 @@ def api_add_product():
                         existing_stock = StoreStock.query.filter_by(
                             store_id=store_id, product_id=product.id).first()
                         if existing_stock:
-                            existing_stock.quantity += quantity
+                            # Race condition oldini olish - atomic UPDATE
+                            db.session.execute(
+                                text("UPDATE store_stocks SET quantity = quantity + :qty WHERE id = :stock_id"),
+                                {'qty': quantity, 'stock_id': existing_stock.id}
+                            )
+                            # Object'ni refresh qilish
+                            db.session.refresh(existing_stock)
                         else:
                             store_stock = StoreStock(
                                 store_id=store_id,
@@ -2215,7 +2269,12 @@ def api_add_product():
                         existing_stock = WarehouseStock.query.filter_by(
                             warehouse_id=warehouse_id, product_id=product.id).first()
                         if existing_stock:
-                            existing_stock.quantity += quantity
+                            # Race condition oldini olish - atomic UPDATE
+                            db.session.execute(
+                                text("UPDATE warehouse_stocks SET quantity = quantity + :qty WHERE id = :stock_id"),
+                                {'qty': quantity, 'stock_id': existing_stock.id}
+                            )
+                            db.session.refresh(existing_stock)
                         else:
                             warehouse_stock = WarehouseStock(
                                 warehouse_id=warehouse_id,
@@ -11345,6 +11404,9 @@ def api_login():
         session['user_name'] = f"{user.first_name} {user.last_name}"
         session['user_phone'] = user.phone or ''
         session['store_id'] = user.store_id
+        # Session hijacking himoyasi
+        session['user_agent'] = request.headers.get('User-Agent', '')[:500]
+        session['login_ip'] = request.remote_addr
 
         # Session tracking - database'da session yaratish
         try:
@@ -11403,10 +11465,11 @@ def api_login():
     except Exception as e:
         logger.error(f"Login xatoligi: {str(e)}")
         import traceback
-        traceback.print_exc()
+        logger.error(traceback.format_exc())
+        # Foydalanuvchiga faqat umumiy xabar
         return jsonify({
             'success': False,
-            'message': 'Server xatoligi yuz berdi'
+            'message': 'Server xatoligi yuz berdi. Iltimos qayta urinib ko\'ring.'
         }), 500
 
 
