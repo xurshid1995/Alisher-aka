@@ -2516,10 +2516,18 @@
         const customerSearch = document.getElementById(`customerSearch_tab${tabId}`);
         const selectedCustomerId = document.getElementById(`selectedCustomerId_tab${tabId}`);
         const customerDropdown = document.getElementById(`customerDropdown_tab${tabId}`);
+        const addCustomerBtn = activeTab.querySelector('button[onclick="openAddCustomerModal()"]');
         
         if (customerSearch) customerSearch.value = displayText;
         if (selectedCustomerId) selectedCustomerId.value = id;
         if (customerDropdown) customerDropdown.style.display = 'none';
+        
+        // Yangi mijoz qo'shish tugmasini disable qilish
+        if (addCustomerBtn) {
+            addCustomerBtn.disabled = true;
+            addCustomerBtn.style.opacity = '0.5';
+            addCustomerBtn.style.cursor = 'not-allowed';
+        }
         
         // Savdo korzinasi sarlavhasida mijoz ma'lumotlarini ko'rsatish
         const cartCustomerInfo = document.getElementById(`cartCustomerInfo_tab${tabId}`);
@@ -4773,11 +4781,21 @@
         // Mijoz maydonini tozalash
         const customerSearch = getActiveTabElement('customerSearch');
         const selectedCustomerId = getActiveTabElement('selectedCustomerId');
+        const activeTab = document.querySelector('.sales-tab.active');
+        const addCustomerBtn = activeTab ? activeTab.querySelector('button[onclick="openAddCustomerModal()"]') : null;
+        
         if (customerSearch) {
             customerSearch.value = '';
         }
         if (selectedCustomerId) {
             selectedCustomerId.value = '';
+        }
+        
+        // Yangi mijoz qo'shish tugmasini qayta yoqish
+        if (addCustomerBtn) {
+            addCustomerBtn.disabled = false;
+            addCustomerBtn.style.opacity = '1';
+            addCustomerBtn.style.cursor = 'pointer';
         }
         
         updateCart();
@@ -5666,6 +5684,14 @@
                         const tabId = activeTab.dataset.tabId;
                         tabTitle.textContent = `Savdo ${tabId}`;
                         tabTitle.title = `Savdo ${tabId}`;
+                    }
+                    
+                    // Yangi mijoz qo'shish tugmasini qayta yoqish
+                    const addCustomerBtn = activeTab.querySelector('button[onclick="openAddCustomerModal()"]');
+                    if (addCustomerBtn) {
+                        addCustomerBtn.disabled = false;
+                        addCustomerBtn.style.opacity = '1';
+                        addCustomerBtn.style.cursor = 'pointer';
                     }
                 }
                 
