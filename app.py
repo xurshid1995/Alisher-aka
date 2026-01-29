@@ -4391,9 +4391,9 @@ def store_detail(store_id):
         # Safe values
         total_products = stats.total_products or 0
         total_quantity = int(stats.total_quantity or 0)
-        total_value = float(stats.total_value or 0)
-        total_cost_value = float(stats.total_cost_value or 0)
-        total_profit = float(stats.total_profit or 0)
+        total_value = stats.total_value or Decimal('0')
+        total_cost_value = stats.total_cost_value or Decimal('0')
+        total_profit = stats.total_profit or Decimal('0')
         critical_stock_count = int(stats.critical_stock_count or 0)
 
         # Profit percentage
@@ -4406,10 +4406,10 @@ def store_detail(store_id):
         # Fallback values
         total_products = 0
         total_quantity = 0
-        total_value = 0.0
-        total_cost_value = 0.0
-        total_profit = 0.0
-        profit_percentage = 0.0
+        total_value = Decimal('0')
+        total_cost_value = Decimal('0')
+        total_profit = Decimal('0')
+        profit_percentage = Decimal('0')
         critical_stock_count = 0
 
     return render_template('store_detail.html',
@@ -5721,7 +5721,7 @@ def api_debt_details(customer_id):
 
         result = db.session.execute(query, {'customer_id': customer_id})
         history = []
-        total_debt = 0
+        total_debt = Decimal('0')
 
         for row in result:
             paid_amount = float(row.cash_usd) + float(row.click_usd) + float(row.terminal_usd)
@@ -5738,8 +5738,8 @@ def api_debt_details(customer_id):
                 'terminal_usd': float(row.terminal_usd)
             })
 
-            if float(row.debt_usd) > 0:
-                total_debt += float(row.debt_usd)
+            if row.debt_usd and Decimal(str(row.debt_usd)) > 0:
+                total_debt += Decimal(str(row.debt_usd))
 
         remaining_debt = total_debt
 
@@ -6267,9 +6267,9 @@ def warehouse_detail(warehouse_id):
         # Safe values
         total_products = stats.total_products or 0
         total_quantity = int(stats.total_quantity or 0)
-        total_value = float(stats.total_value or 0)
-        total_cost_value = float(stats.total_cost_value or 0)
-        total_profit = float(stats.total_profit or 0)
+        total_value = stats.total_value or Decimal('0')
+        total_cost_value = stats.total_cost_value or Decimal('0')
+        total_profit = stats.total_profit or Decimal('0')
         critical_stock_count = int(stats.critical_stock_count or 0)
 
         # Profit percentage
@@ -6282,10 +6282,10 @@ def warehouse_detail(warehouse_id):
         # Fallback values
         total_products = 0
         total_quantity = 0
-        total_value = 0.0
-        total_cost_value = 0.0
-        total_profit = 0.0
-        profit_percentage = 0.0
+        total_value = Decimal('0')
+        total_cost_value = Decimal('0')
+        total_profit = Decimal('0')
+        profit_percentage = Decimal('0')
         critical_stock_count = 0
 
     return render_template('warehouse_detail.html',
@@ -7900,15 +7900,15 @@ def get_customers():
                 total_sales = len(sales)
 
                 # Total amount va profit ni hisoblash (allaqachon USD da)
-                total_amount = 0
-                total_profit = 0
+                total_amount = Decimal('0')
+                total_profit = Decimal('0')
                 for sale in sales:
                     # Ma'lumotlar allaqachon USD da saqlanadi
                     if sale.total_amount:
-                        total_amount += float(sale.total_amount)
+                        total_amount += sale.total_amount
 
                     if sale.total_profit:
-                        total_profit += float(sale.total_profit)
+                        total_profit += sale.total_profit
 
                 customer_dict['total_sales'] = total_sales
                 customer_dict['total_amount'] = round(total_amount, 2)
@@ -9558,9 +9558,9 @@ def create_sale():
             db.session.add(current_sale)
             db.session.flush()  # ID ni olish uchun
 
-        total_profit = 0
-        total_revenue = 0
-        total_cost = 0
+        total_profit = Decimal('0')
+        total_revenue = Decimal('0')
+        total_cost = Decimal('0')
 
         # Har bir mahsulot uchun SaleItem yaratish (ham yangi, ham tahrirlashda bir xil)
         for item in items:
@@ -10341,7 +10341,7 @@ def create_pending_sale(data):
         db.session.flush()  # ID ni olish uchun
 
         # Items ni qo'shish (stock'dan ayirmasdan)
-        total_amount = 0
+        total_amount = Decimal('0')
         for item in items:
             product_id = item.get('product_id') or item.get('id')
             quantity = Decimal(str(item.get('quantity', 0)))
@@ -10391,15 +10391,15 @@ def create_pending_sale(data):
             )
 
             db.session.add(sale_item)
-            total_amount += float(total_price_usd)  # USD da yig'ish
+            total_amount += total_price_usd  # USD da yig'ish
 
         # Savdo jami summalarini hisoblash (USD da)
-        total_cost = 0
-        total_profit = 0
+        total_cost = Decimal('0')
+        total_profit = Decimal('0')
 
         for sale_item in new_sale.items:
-            total_cost += float(sale_item.cost_price * sale_item.quantity)
-            total_profit += float(sale_item.profit)
+            total_cost += sale_item.cost_price * sale_item.quantity
+            total_profit += sale_item.profit
 
         new_sale.total_amount = total_amount  # USD da
         new_sale.total_cost = total_cost  # USD da
