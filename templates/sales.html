@@ -2762,7 +2762,20 @@
             
             // Narx o'zgarishini saqlash (debounce bilan)
             clearTimeout(priceChangeTimeout);
-            priceChangeTimeout = setTimeou (debounce bilan)
+            priceChangeTimeout = setTimeout(() => {
+                if (currentProduct && lockedProductId === currentProduct.id) {
+                    lastPriceUpdate[currentProduct.id] = {
+                        priceUSD: usdPrice,
+                        priceUZS: Math.round(uzsPrice),
+                        timestamp: Date.now()
+                    };
+                    console.log('🔒 Narx saqlandi:', currentProduct.id, '=', usdPrice, 'USD');
+                }
+            }, 500); // 500ms kutadi
+        }
+    }
+    
+    // UZS dan USD ga avtomatik konversiya (debounce bilan)
     function updateUSDPrice() {
         const usdInput = getActiveTabElement('modalPriceUSD');
         const uzsInput = getActiveTabElement('modalPriceUZS');
