@@ -2793,20 +2793,20 @@
                     };
                     console.log('🔒 Narx saqlandi:', currentProduct.id, '=', usdPrice, 'USD');
                 }
-            }, 500); // 500ms kutadisInput) {
-            console.error('❌ Modal input elementlari topilmadi');
+            }, 500); // 500ms kutadi
+        }
+    }
+    
+    // Modal ochish
+    function addToCart(productId, productName, quantity, price, costPrice, unitType = 'dona') {
+        console.log('🛒 addToCart() chaqirildi:', { productId, productName, quantity, price, costPrice, unitType });
+        
+        // Miqdori 0 bo'lsa xabar chiqarish
+        if (quantity <= 0) {
+            alert('Bu mahsulot miqdori 0, shuning uchun uni sotib bo\'lmaydi');
             return;
         }
         
-        const uzsPrice = parseFloat(uzsInput.value) || 0;
-        const usdPrice = uzsPrice / exchangeRate;
-        usdInput.value = usdPrice.toFixed(2);
-        
-        console.log('💱 Konversiya (UZS→USD):', uzsPrice, 'UZS ÷', exchangeRate, '=', usdPrice.toFixed(2), 'USD');
-        
-        // Narx validatsiyasini ishga tushirish (faqat modal ochiq bo'lsa)
-        if (currentProduct) {
-            validatePrice();
         // 🔒 Mahsulot ID'sini lock qilish
         lockedProductId = productId;
         console.log('🔒 Product locked:', lockedProductId);
@@ -2820,19 +2820,6 @@
                 console.log('♻️ Saqlangan narx ishlatilmoqda:', savedPrice.priceUSD, 'USD');
                 price = savedPrice.priceUSD;
             }
-        }
-        
-        }
-    }
-    
-    // Modal ochish
-    function addToCart(productId, productName, quantity, price, costPrice, unitType = 'dona') {
-        console.log('🛒 addToCart() chaqirildi:', { productId, productName, quantity, price, costPrice, unitType });
-        
-        // Miqdori 0 bo'lsa xabar chiqarish
-        if (quantity <= 0) {
-            alert('Bu mahsulot miqdori 0, shuning uchun uni sotib bo\'lmaydi');
-            return;
         }
         
         currentProduct = { id: productId, name: productName, available: quantity, price: price, costPrice: costPrice, unitType: unitType };
