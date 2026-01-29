@@ -1460,8 +1460,20 @@
         
         console.log('📦 Yuklangan ma\'lumotlar:', {cart, locationId, locationType, customerId, customerName});
         
-        // TODO: Bu ma'lumotlarni UI'ga yuklash
-        // Bu qismni keyingi qadamda to'ldiraman
+        // Ma'lumotlarni UI'ga yuklash
+        if (cart && cart.length > 0) {
+            cart.forEach(item => addToCart(item.product, item.quantity, item.price));
+        }
+        if (locationId && locationElement) {
+            locationElement.value = locationId;
+        }
+        if (customerId && customerName) {
+            const customerInput = getActiveTabElement('customerSearch');
+            if (customerInput) {
+                customerInput.value = customerName;
+                customerInput.dataset.customerId = customerId;
+            }
+        }
     }
     
     // Tab ma'lumotlarini saqlash
@@ -1470,8 +1482,18 @@
         
         console.log(`💾 Tab ${tabId} ma'lumotlari saqlanmoqda...`);
         
-        // TODO: Hozirgi UI state'ni olish va saqlash
-        // Bu qismni keyingi qadamda to'ldiraman
+        // Hozirgi UI state'ni olish va saqlash
+        const tabData = {
+            cart: cart,
+            locationId: getCurrentLocationId(),
+            locationType: getCurrentLocationType(),
+            customerId: getCurrentCustomerId(),
+            customerName: getCurrentCustomerName(),
+            timestamp: Date.now()
+        };
+        
+        tabStates.set(tabId, tabData);
+        saveTabsToLocalStorage();
     }
     
     // ============================================
