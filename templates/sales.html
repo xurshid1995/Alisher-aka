@@ -5338,11 +5338,27 @@
             // Mijoz tanlanganligini tekshirish (agar qarz bo'lsa)
             const selectedCustomerIdElement = getActiveTabElement('selectedCustomerId');
             const customerId = selectedCustomerIdElement ? selectedCustomerIdElement.value : null;
+            
+            console.log('💰 Qarz tekshiruvi:', {debtUSD, customerId, hasCustomer: !!customerId});
+            
             if (debtUSD > 0 && !customerId) {
+                alert('⚠️ DIQQAT!\n\nQarzga sotish uchun mijoz tanlanishi SHART!\n\n📋 Iltimos:\n1. "Mijoz tanlash" maydonidan mijoz tanlang\n2. Yoki yangi mijoz qo\'shing');
+                
                 if (paymentWarning) {
                     paymentWarning.textContent = '⚠️ Qarzga sotish uchun mijoz tanlanishi shart!';
                     paymentWarning.style.display = 'block';
                 }
+                
+                // Mijoz input maydoniga focus
+                const customerInput = getActiveTabElement('customerSearch');
+                if (customerInput) {
+                    customerInput.focus();
+                    customerInput.style.border = '2px solid #dc3545';
+                    setTimeout(() => {
+                        customerInput.style.border = '';
+                    }, 2000);
+                }
+                
                 // Tugmani qayta faollashtirish
                 if (confirmBtn) {
                     confirmBtn.disabled = false;
