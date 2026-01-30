@@ -980,7 +980,7 @@ class OperationHistory(db.Model):
     operation_type = db.Column(db.String(50), nullable=False, index=True)  # 'sale', 'add_product', 'transfer', 'return', 'edit', 'delete', 'payment'
     table_name = db.Column(db.String(50))  # Ta'sirlangan jadval
     record_id = db.Column(db.Integer)  # Ta'sirlangan record ID
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='SET NULL'), nullable=True)
     username = db.Column(db.String(100))  # Foydalanuvchi nomi (cache)
     description = db.Column(db.Text)  # Amaliyot tavsifi
     old_data = db.Column(db.JSON)  # Eski ma'lumotlar (edit/delete uchun)
