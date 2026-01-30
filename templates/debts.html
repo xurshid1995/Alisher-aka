@@ -1454,8 +1454,8 @@
             document.getElementById('modalCustomerName').textContent = data.customer.name;
             document.getElementById('modalCustomerPhone').textContent = data.customer.phone || '-';
             document.getElementById('modalCustomerAddress').textContent = data.customer.address || '-';
-            document.getElementById('modalTotalDebt').textContent = `$${data.total_debt.toFixed(2)}`;
-            document.getElementById('paymentAmount').textContent = `$${data.remaining_debt.toFixed(2)}`;
+            document.getElementById('modalTotalDebt').textContent = `$${parseFloat(data.total_debt).toFixed(2)}`;
+            document.getElementById('paymentAmount').textContent = `$${parseFloat(data.remaining_debt).toFixed(2)}`;
             
             // Qarzlar tarixi
             const historyBody = document.getElementById('debtHistoryBody');

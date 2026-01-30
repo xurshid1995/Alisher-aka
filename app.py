@@ -5751,9 +5751,9 @@ def api_debt_details(customer_id):
                 'phone': customer.phone,
                 'address': customer.address
             },
-            'total_debt': total_debt,
+            'total_debt': str(total_debt),
             'total_paid': 0,
-            'remaining_debt': remaining_debt,
+            'remaining_debt': str(remaining_debt),
             'history': history
         })
 
