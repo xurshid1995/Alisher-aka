@@ -9076,6 +9076,16 @@ def finalize_sale(sale_id):
                     total_uzs = float(sale.cash_amount) + float(sale.click_amount) + float(sale.terminal_amount) + float(sale.debt_amount)
                     paid_uzs = float(sale.cash_amount) + float(sale.click_amount) + float(sale.terminal_amount)
 
+                    # Savdo mahsulotlarini PDF uchun tayyorlash
+                    sale_items_for_pdf = []
+                    for item in sale.items:
+                        sale_items_for_pdf.append({
+                            'name': item.product.name if item.product else 'Mahsulot',
+                            'quantity': float(item.quantity),
+                            'unit_price': float(item.unit_price) * float(sale.currency_rate),
+                            'total': float(item.total_price) * float(sale.currency_rate)
+                        })
+
                     # Telegram xabar yuborish
                     bot.send_sale_notification_sync(
                         chat_id=customer.telegram_chat_id,
@@ -9088,9 +9098,11 @@ def finalize_sale(sale_id):
                         cash_uzs=float(sale.cash_amount),
                         click_uzs=float(sale.click_amount),
                         terminal_uzs=float(sale.terminal_amount),
-                        debt_uzs=float(sale.debt_amount)
+                        debt_uzs=float(sale.debt_amount),
+                        sale_id=sale.id,
+                        sale_items=sale_items_for_pdf
                     )
-                    logger.info(f"✅ Telegram xabar yuborildi (finalize): {customer.name}")
+                    logger.info(f"✅ Telegram xabar va PDF yuborildi (finalize): {customer.name}")
             except Exception as telegram_error:
                 logger.warning(f"⚠️ Telegram xabar yuborishda xatolik (finalize): {telegram_error}")
                 # Telegram xatosi savdoni to'xtatmasin
@@ -9775,6 +9787,16 @@ def create_sale():
                     total_uzs = cash_amount + click_amount + terminal_amount + debt_amount
                     paid_uzs = cash_amount + click_amount + terminal_amount
 
+                    # Savdo mahsulotlarini PDF uchun tayyorlash
+                    sale_items_for_pdf = []
+                    for item in current_sale.items:
+                        sale_items_for_pdf.append({
+                            'name': item.product.name if item.product else 'Mahsulot',
+                            'quantity': float(item.quantity),
+                            'unit_price': float(item.unit_price) * float(current_sale.currency_rate),
+                            'total': float(item.total_price) * float(current_sale.currency_rate)
+                        })
+
                     # Telegram xabar yuborish
                     bot.send_sale_notification_sync(
                         chat_id=customer.telegram_chat_id,
@@ -9787,9 +9809,11 @@ def create_sale():
                         cash_uzs=cash_amount,
                         click_uzs=click_amount,
                         terminal_uzs=terminal_amount,
-                        debt_uzs=debt_amount
+                        debt_uzs=debt_amount,
+                        sale_id=current_sale.id,
+                        sale_items=sale_items_for_pdf
                     )
-                    logger.info(f"✅ Telegram xabar yuborildi: {customer.name}")
+                    logger.info(f"✅ Telegram xabar va PDF yuborildi: {customer.name}")
             except Exception as telegram_error:
                 logger.warning(f"⚠️ Telegram xabar yuborishda xatolik: {telegram_error}")
                 # Telegram xatosi savdo yaratishni to'xtatmasin

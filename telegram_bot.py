@@ -15,6 +15,7 @@ from telegram import Bot, Update, InlineKeyboardButton, InlineKeyboardMarkup, Re
 from telegram.ext import Application, CommandHandler, ContextTypes, CallbackQueryHandler, MessageHandler, filters
 from telegram.error import TelegramError
 from dotenv import load_dotenv
+from pdf_generator import generate_sale_receipt_pdf
 
 load_dotenv()
 logger = logging.getLogger(__name__)
@@ -369,7 +370,9 @@ class DebtTelegramBot:
         cash_uzs: float = 0,
         click_uzs: float = 0,
         terminal_uzs: float = 0,
-        debt_uzs: float = 0
+        debt_uzs: float = 0,
+        sale_id: int = None,
+        sale_items: list = None
     ) -> bool:
         """
         Savdo yakunlanganda mijozga xabar yuborish (sync versiya - Flask uchun)
@@ -386,6 +389,8 @@ class DebtTelegramBot:
             click_uzs: Click to'lov (UZS)
             terminal_uzs: Terminal to'lov (UZS)
             debt_uzs: Qarz (UZS)
+            sale_id: Savdo ID (PDF uchun)
+            sale_items: Savdo mahsulotlari ro'yxati (PDF uchun)
             
         Returns:
             bool: Yuborildi/yuborilmadi
@@ -457,7 +462,7 @@ class DebtTelegramBot:
             
             message += "\nRahmat! 🙏"
             
-            # HTTP API orqali yuborish
+            # HTTP API orqali xabar yuborish
             url = f"https://api.telegram.org/bot{self.token}/sendMessage"
             payload = {
                 'chat_id': chat_id,
@@ -469,10 +474,55 @@ class DebtTelegramBot:
             
             if response.status_code == 200:
                 logger.info(f"✅ Savdo xabari yuborildi: {customer_name} (Chat ID: {chat_id})")
-                return True
             else:
                 logger.error(f"❌ Telegram API xatosi ({customer_name}): {response.status_code} - {response.text}")
                 return False
+            
+            # PDF chek yuborish
+            if sale_id and sale_items:
+                try:
+                    # PDF yaratish uchun ma'lumotlar
+                    pdf_data = {
+                        'sale_id': sale_id,
+                        'date': sale_date.strftime('%d.%m.%Y %H:%M'),
+                        'customer_name': customer_name,
+                        'location': location_name,
+                        'items': sale_items,
+                        'total_amount': total_amount_uzs,
+                        'paid_amount': paid_uzs,
+                        'cash': cash_uzs,
+                        'click': click_uzs,
+                        'terminal': terminal_uzs,
+                        'debt': debt_uzs,
+                        'phone': ''  # Agar kerak bo'lsa
+                    }
+                    
+                    # PDF yaratish
+                    pdf_path = generate_sale_receipt_pdf(pdf_data)
+                    
+                    # PDF yuborish
+                    url_doc = f"https://api.telegram.org/bot{self.token}/sendDocument"
+                    with open(pdf_path, 'rb') as pdf_file:
+                        files = {'document': pdf_file}
+                        data = {
+                            'chat_id': chat_id,
+                            'caption': f"📄 Savdo cheki #{sale_id}"
+                        }
+                        response_pdf = requests.post(url_doc, files=files, data=data, timeout=30)
+                    
+                    # Temp faylni o'chirish
+                    if os.path.exists(pdf_path):
+                        os.remove(pdf_path)
+                    
+                    if response_pdf.status_code == 200:
+                        logger.info(f"✅ PDF chek yuborildi: {customer_name}")
+                    else:
+                        logger.error(f"❌ PDF yuborishda xatolik: {response_pdf.status_code}")
+                        
+                except Exception as pdf_error:
+                    logger.error(f"❌ PDF yaratishda xatolik: {pdf_error}")
+            
+            return True
             
         except Exception as e:
             logger.error(f"❌ Savdo xabarida xatolik ({customer_name}): {e}")
