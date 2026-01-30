@@ -1011,7 +1011,7 @@ class UserSession(db.Model):
     created_at = db.Column(db.DateTime, default=get_tashkent_time)
 
     # Relationships
-    user = db.relationship('User', backref='sessions')
+    user = db.relationship('User', backref=db.backref('sessions', cascade='all, delete-orphan', lazy='dynamic'))
 
     def __repr__(self):
         return f'<UserSession {self.id}: User {self.user_id} - {self.session_id[:8]}...>'
@@ -1068,8 +1068,8 @@ class StockCheckSession(db.Model):
     status = db.Column(db.String(20), default='active')  # 'active', 'completed', 'cancelled'
 
     # Relationships
-    user = db.relationship('User', foreign_keys=[user_id], backref='stock_check_sessions_started')
-    completed_by = db.relationship('User', foreign_keys=[completed_by_user_id], backref='stock_check_sessions_completed')
+    user = db.relationship('User', foreign_keys=[user_id], backref=db.backref('stock_check_sessions_started', cascade='all, delete-orphan', lazy='dynamic'))
+    completed_by = db.relationship('User', foreign_keys=[completed_by_user_id], backref=db.backref('stock_check_sessions_completed', cascade='all, delete-orphan', lazy='dynamic'))
 
     def __repr__(self):
         return f'<StockCheckSession {self.location_type}-{self.location_id} - User: {self.user_id}>'
@@ -8323,6 +8323,9 @@ def delete_user(user_id):
         username = user.username
         user_role = user.role
 
+        # Foydalanuvchiga tegishli barcha session'larini o'chirish
+        UserSession.query.filter_by(user_id=user_id).delete()
+        
         # Foydalanuvchiga tegishli stock check sessions'larini o'chirish
         StockCheckSession.query.filter_by(user_id=user_id).delete()
 
@@ -8330,7 +8333,7 @@ def delete_user(user_id):
         db.session.delete(user)
         db.session.commit()
 
-        app.logger.info(f"✅ User {user_id} va uning barcha stock check sessions'lari o'chirildi")
+        app.logger.info(f"✅ User {user_id}, uning session'lari va stock check sessions'lari o'chirildi")
 
         # OperationHistory logini yozish
         try:
@@ -11417,8 +11420,11 @@ def api_login():
             old_sessions = UserSession.query.filter_by(user_id=user.id, is_active=True).all()
             if old_sessions:
                 for old_session in old_sessions:
-                    # SQLAlchemy ORM orqali yangilash
-                    old_session.is_active = False
+                    # user_id ni saqlash va faqat is_active ni o'zgartirish
+                    db.session.execute(
+                        db.text("UPDATE user_sessions SET is_active = false WHERE id = :id"),
+                        {"id": old_session.id}
+                    )
                     app.logger.info(f"🔒 Eski session o'chirildi: User {user.username}, Session: {old_session.session_id[:8]}...")
                 
                 db.session.commit()  # Eski sessionlarni saqlash
