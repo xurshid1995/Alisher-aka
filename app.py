@@ -10484,6 +10484,9 @@ def get_current_currency_rate():
         return 12500.0  # Xatolik bo'lsa default qaytarish
 
 
+# Oxirgi operatsiyalarni saqlash (memory cache)
+_last_operations = {}
+
 # API endpoint - Real-time stock rezerv qilish (korzinaga qo'shilganda)
 @app.route('/api/reserve-stock', methods=['POST'])
 def api_reserve_stock():
@@ -10504,6 +10507,19 @@ def api_reserve_stock():
         print(f"   Location: {location_id} ({location_type})")
         print(f"   Timestamp: {get_tashkent_time()}")
         print(f"{'=' * 80}\n")
+
+        # Duplicate operatsiyani oldini olish
+        operation_key = f"reserve_{product_id}_{location_id}_{location_type}_{quantity}"
+        current_time = get_tashkent_time()
+        
+        if operation_key in _last_operations:
+            last_time = _last_operations[operation_key]
+            time_diff = (current_time - last_time).total_seconds()
+            if time_diff < 2:  # 2 sekund ichida bir xil operatsiya
+                print(f"⚠️ DUPLICATE OPERATION BLOCKED: {time_diff:.2f} sekund oldin bajarilgan")
+                return jsonify({'success': True, 'message': 'Duplicate operatsiya blocked', 'blocked': True}), 200
+        
+        _last_operations[operation_key] = current_time
 
         # Mahsulotni tekshirish
         product = Product.query.get(product_id)
@@ -10604,6 +10620,19 @@ def api_return_stock():
         print(f"   Location: {location_id} ({location_type})")
         print(f"   Timestamp: {get_tashkent_time()}")
         print(f"{'=' * 80}\n")
+
+        # Duplicate operatsiyani oldini olish
+        operation_key = f"return_{product_id}_{location_id}_{location_type}_{quantity}"
+        current_time = get_tashkent_time()
+        
+        if operation_key in _last_operations:
+            last_time = _last_operations[operation_key]
+            time_diff = (current_time - last_time).total_seconds()
+            if time_diff < 2:  # 2 sekund ichida bir xil operatsiya
+                print(f"⚠️ DUPLICATE OPERATION BLOCKED: {time_diff:.2f} sekund oldin bajarilgan")
+                return jsonify({'success': True, 'message': 'Duplicate operatsiya blocked', 'blocked': True}), 200
+        
+        _last_operations[operation_key] = current_time
 
         # Mahsulotni tekshirish
         product = Product.query.get(product_id)
