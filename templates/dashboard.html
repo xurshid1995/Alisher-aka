@@ -15,11 +15,9 @@
         <div class="col-md-10 col-lg-8 mx-auto">
             <div class="location-filter-wrapper">
                 <div id="locationButtons">
-                    {% if current_user.role in ['admin', 'kassir'] %}
                     <button class="btn btn-sm me-2 mb-2 location-btn active" data-location="" onclick="selectLocation(this, '')">
                         🏢 Barchasi
                     </button>
-                    {% endif %}
                 </div>
             </div>
         </div>
@@ -456,17 +454,8 @@ async function loadLocations() {
         
         console.log('✅ Barcha joylashuvlar yuklandi!');
         
-        // Sotuvchi roli uchun birinchi joylashuvni avtomatik tanlash
-        {% if current_user.role == 'sotuvchi' %}
-        if (locations.length > 0) {
-            const firstLocation = locations[0];
-            const firstButton = buttonsContainer.querySelector(`[data-location="${firstLocation.id}"]`);
-            if (firstButton) {
-                console.log('🎯 Sotuvchi uchun birinchi joylashuvni avtomatik tanlash:', firstLocation.name);
-                selectLocation(firstButton, firstLocation.id, firstLocation.type);
-            }
-        }
-        {% endif %}
+        // Sotuvchi roli uchun ham "Barchasi" tugmasi fokusda qolsin
+        // (Eski kod: birinchi joylashuvni avtomatik tanlash - olib tashlandi)
         
     } catch (error) {
         console.error('❌ Joylashuvlarni yuklashda xatolik:', error);

@@ -372,7 +372,15 @@ class DebtTelegramBot:
         terminal_uzs: float = 0,
         debt_uzs: float = 0,
         sale_id: int = None,
-        sale_items: list = None
+        sale_items: list = None,
+        receipt_format: str = 'both',  # 'usd', 'uzs', yoki 'both'
+        seller_phone: str = '',
+        total_amount_usd: float = 0,
+        paid_usd: float = 0,
+        cash_usd: float = 0,
+        click_usd: float = 0,
+        terminal_usd: float = 0,
+        debt_usd: float = 0
     ) -> bool:
         """
         Savdo yakunlanganda mijozga xabar yuborish (sync versiya - Flask uchun)
@@ -391,6 +399,13 @@ class DebtTelegramBot:
             debt_uzs: Qarz (UZS)
             sale_id: Savdo ID (PDF uchun)
             sale_items: Savdo mahsulotlari ro'yxati (PDF uchun)
+            receipt_format: Chek formati ('usd', 'uzs', 'both')
+            total_amount_usd: Jami summa (USD)
+            paid_usd: To'langan summa (USD)
+            cash_usd: Naqd to'lov (USD)
+            click_usd: Click to'lov (USD)
+            terminal_usd: Terminal to'lov (USD)
+            debt_usd: Qarz (USD)
             
         Returns:
             bool: Yuborildi/yuborilmadi
@@ -400,65 +415,69 @@ class DebtTelegramBot:
             return False
         
         try:
-            # Savdo xabari
+            # Savdo xabari (USD formatda)
             message = (
                 f"📅 {sale_date.strftime('%d.%m.%Y %H:%M')}\n"
                 f"📍 Do'kon: {location_name}dan\n"
                 f"Savdo qildingiz\n\n"
                 f"━━━━━━━━━━━━━━━━━━━\n"
-                f"💰 Jami: {total_amount_uzs:,.0f} so'm\n"
+                f"💰 Jami: ${total_amount_usd:,.2f}\n"
             )
             
             # To'lov ma'lumotlari
-            if paid_uzs > 0:
-                message += f"✅ To'langan: {paid_uzs:,.0f} so'm\n"
+            if paid_usd > 0:
+                message += f"✅ To'langan: ${paid_usd:,.2f}\n"
                 
                 # To'lov turlarini ko'rsatish
-                if cash_uzs > 0:
-                    message += f"   💵 Naqd: {cash_uzs:,.0f} so'm\n"
-                if click_uzs > 0:
-                    message += f"   📱 Click: {click_uzs:,.0f} so'm\n"
-                if terminal_uzs > 0:
-                    message += f"   💳 Terminal: {terminal_uzs:,.0f} so'm\n"
+                if cash_usd > 0:
+                    message += f"   💵 Naqd: ${cash_usd:,.2f}\n"
+                if click_usd > 0:
+                    message += f"   📱 Click: ${click_usd:,.2f}\n"
+                if terminal_usd > 0:
+                    message += f"   💳 Terminal: ${terminal_usd:,.2f}\n"
             
             # Qarz ma'lumoti
-            if debt_uzs > 0:
-                message += f"⚠️ Qarz: {debt_uzs:,.0f} so'm\n"
+            if debt_usd > 0:
+                message += f"⚠️ Qarz: ${debt_usd:,.2f}\n"
             
-            # Oldingi va jami qarzni hisoblash (database'dan)
-            try:
-                if self.db and customer_id:
-                    # Joriy kursni olish
-                    from app import Currency
-                    current_currency = Currency.query.filter_by(name='USD').first()
-                    rate = float(current_currency.rate) if current_currency else 12700
-                    
-                    # Barcha qarzlarni (shu savdogacha) hisoblash - debt_usd dan
-                    total_debt_result = self.db.session.execute(
-                        text("""
-                            SELECT COALESCE(SUM(debt_usd), 0) as total_debt_usd
-                            FROM sales
-                            WHERE customer_id = :customer_id 
-                            AND payment_status = 'partial'
-                            AND debt_usd > 0
-                        """),
-                        {"customer_id": customer_id}
-                    ).fetchone()
-                    
-                    total_debt_usd = float(total_debt_result[0] or 0) if total_debt_result else 0
-                    total_debt_uzs = total_debt_usd * rate
-                    
-                    # Oldingi qarz = Jami qarz - Joriy savdo qarzi
-                    previous_debt_uzs = total_debt_uzs - debt_uzs
-                    
-                    # Qarz bo'lsa ko'rsatish
-                    if debt_uzs > 0:
-                        message += "\n"
-                        message += f"<b>📋 OLDINGI QARZ: {previous_debt_uzs:,.0f} so'm</b>\n"
-                        message += f"<b>💳 JAMI QARZ: {total_debt_uzs:,.0f} so'm</b>\n"
-                        message += "Qarzingizni vaqtida to'lashni unutmang Qarz bu sizga omonat\n"
-            except Exception as db_error:
-                logger.warning(f"⚠️ Jami qarzni olishda xatolik: {db_error}")
+            # Oldingi va jami qarzni hisoblash (database'dan) - har doim ko'rsatish
+            previous_debt_usd = 0
+            total_debt_usd = 0
+            
+            if customer_id:
+                try:
+                    from app import app, db
+                    with app.app_context():
+                        # Barcha qarzlarni (shu savdogacha) hisoblash - debt_usd dan
+                        total_debt_result = db.session.execute(
+                            text("""
+                                SELECT COALESCE(SUM(debt_usd), 0) as total_debt_usd
+                                FROM sales
+                                WHERE customer_id = :customer_id 
+                                AND payment_status = 'partial'
+                                AND debt_usd > 0
+                            """),
+                            {"customer_id": customer_id}
+                        ).fetchone()
+                        
+                        total_debt_usd = float(total_debt_result[0] or 0) if total_debt_result else 0
+                        
+                        # Oldingi qarz = Jami qarz - Joriy savdo qarzi
+                        previous_debt_usd = total_debt_usd - debt_usd
+                        
+                        logger.info(f"💰 Qarz hisoblandi: previous=${previous_debt_usd:.2f}, total=${total_debt_usd:.2f}, current=${debt_usd:.2f}")
+                        
+                except Exception as db_error:
+                    logger.error(f"❌ Jami qarzni olishda xatolik: {db_error}", exc_info=True)
+            
+            # Oldingi yoki jami qarz bo'lsa ko'rsatish
+            if previous_debt_usd > 0 or total_debt_usd > 0:
+                message += "\n"
+                if previous_debt_usd > 0:
+                    message += f"<b>📋 OLDINGI QARZ: ${previous_debt_usd:,.2f}</b>\n"
+                message += f"<b>💳 JAMI QARZ: ${total_debt_usd:,.2f}</b>\n"
+                if total_debt_usd > 0:
+                    message += "Qarzingizni vaqtida to'lashni unutmang Qarz bu sizga omodat\n"
             
             message += "\nRahmat! 🙏"
             
@@ -482,42 +501,82 @@ class DebtTelegramBot:
             if sale_id and sale_items:
                 try:
                     # PDF yaratish uchun ma'lumotlar
-                    pdf_data = {
+                    pdf_data_uzs = {
                         'sale_id': sale_id,
                         'date': sale_date.strftime('%d.%m.%Y %H:%M'),
                         'customer_name': customer_name,
+                        'seller_name': sale_items[0].get('seller_name', '') if sale_items and isinstance(sale_items[0], dict) else '',
+                        'seller_phone': seller_phone,
                         'location': location_name,
                         'items': sale_items,
+                        'total_amount_uzs': total_amount_uzs,
+                        'paid_amount_uzs': paid_uzs,
+                        'cash_uzs': cash_uzs,
+                        'click_uzs': click_uzs,
+                        'terminal_uzs': terminal_uzs,
+                        'debt_uzs': debt_uzs,
                         'total_amount': total_amount_uzs,
                         'paid_amount': paid_uzs,
                         'cash': cash_uzs,
                         'click': click_uzs,
                         'terminal': terminal_uzs,
                         'debt': debt_uzs,
-                        'phone': ''  # Agar kerak bo'lsa
+                        'phone': ''
                     }
                     
-                    # PDF yaratish
-                    pdf_path = generate_sale_receipt_pdf(pdf_data)
+                    pdf_data_usd = {
+                        'sale_id': sale_id,
+                        'date': sale_date.strftime('%d.%m.%Y %H:%M'),
+                        'customer_name': customer_name,
+                        'seller_name': sale_items[0].get('seller_name', '') if sale_items and isinstance(sale_items[0], dict) else '',
+                        'seller_phone': seller_phone,
+                        'location': location_name,
+                        'items': sale_items,
+                        'total_amount_usd': total_amount_usd,
+                        'paid_amount_usd': paid_usd,
+                        'cash_usd': cash_usd,
+                        'click_usd': click_usd,
+                        'terminal_usd': terminal_usd,
+                        'debt_usd': debt_usd,
+                        'total_amount': total_amount_usd,
+                        'paid_amount': paid_usd,
+                        'cash': cash_usd,
+                        'click': click_usd,
+                        'terminal': terminal_usd,
+                        'debt': debt_usd,
+                        'phone': ''
+                    }
                     
-                    # PDF yuborish
+                    # Tanlangan formatga qarab PDF yaratish
+                    pdf_paths = []
+                    
+                    if receipt_format in ['uzs', 'both']:
+                        pdf_path_uzs = generate_sale_receipt_pdf(pdf_data_uzs, currency='uzs')
+                        pdf_paths.append(('UZS', pdf_path_uzs))
+                    
+                    if receipt_format in ['usd', 'both']:
+                        pdf_path_usd = generate_sale_receipt_pdf(pdf_data_usd, currency='usd')
+                        pdf_paths.append(('USD', pdf_path_usd))
+                    
+                    # PDF fayllarni yuborish
                     url_doc = f"https://api.telegram.org/bot{self.token}/sendDocument"
-                    with open(pdf_path, 'rb') as pdf_file:
-                        files = {'document': pdf_file}
-                        data = {
-                            'chat_id': chat_id,
-                            'caption': f"📄 Savdo cheki #{sale_id}"
-                        }
-                        response_pdf = requests.post(url_doc, files=files, data=data, timeout=30)
-                    
-                    # Temp faylni o'chirish
-                    if os.path.exists(pdf_path):
-                        os.remove(pdf_path)
-                    
-                    if response_pdf.status_code == 200:
-                        logger.info(f"✅ PDF chek yuborildi: {customer_name}")
-                    else:
-                        logger.error(f"❌ PDF yuborishda xatolik: {response_pdf.status_code}")
+                    for currency_label, pdf_path in pdf_paths:
+                        with open(pdf_path, 'rb') as pdf_file:
+                            files = {'document': pdf_file}
+                            data = {
+                                'chat_id': chat_id,
+                                'caption': f"📄 Savdo cheki #{sale_id} ({currency_label})"
+                            }
+                            response_pdf = requests.post(url_doc, files=files, data=data, timeout=30)
+                        
+                        # Temp faylni o'chirish
+                        if os.path.exists(pdf_path):
+                            os.remove(pdf_path)
+                        
+                        if response_pdf.status_code == 200:
+                            logger.info(f"✅ {currency_label} PDF chek yuborildi: {customer_name}")
+                        else:
+                            logger.error(f"❌ {currency_label} PDF yuborishda xatolik: {response_pdf.status_code}")
                         
                 except Exception as pdf_error:
                     logger.error(f"❌ PDF yaratishda xatolik: {pdf_error}")
@@ -568,24 +627,29 @@ class DebtTelegramBot:
             return False
         
         try:
-            # Aynan shu to'lovning turlarini ko'rsatish
+            # Aynan shu to'lovning turlarini ko'rsatish (USD)
             payment_details = ""
             if cash_uzs > 0 or click_uzs > 0 or terminal_uzs > 0:
                 payment_details = "\n\n<b>📊 To'lov turlari:</b>\n"
-                if cash_uzs > 0:
-                    payment_details += f"💵 Naqd: {cash_uzs:,.0f} so'm\n"
-                if click_uzs > 0:
-                    payment_details += f"📱 Click: {click_uzs:,.0f} so'm\n"
-                if terminal_uzs > 0:
-                    payment_details += f"💳 Terminal: {terminal_uzs:,.0f} so'm"
+                # USD ga o'tkazish (cash_uzs parametri USD hisoblanadi)
+                cash_usd = cash_uzs
+                click_usd = click_uzs  
+                terminal_usd = terminal_uzs
+                
+                if cash_usd > 0:
+                    payment_details += f"💵 Naqd: ${cash_usd:,.2f}\n"
+                if click_usd > 0:
+                    payment_details += f"📱 Click: ${click_usd:,.2f}\n"
+                if terminal_usd > 0:
+                    payment_details += f"💳 Terminal: ${terminal_usd:,.2f}"
             
             if remaining_usd <= 0:
                 # Qarz to'liq to'landi
                 message = (
                     f"✅ <b>TO'LOV QABUL QILINDI</b>\n\n"
                     f"Hurmatli {customer_name}!\n\n"
-                    f"💰 Avvalgi qarz: {previous_debt_uzs:,.0f} so'm\n\n"
-                    f"✅ To'langan: {paid_uzs:,.0f} so'm\n\n"
+                    f"💰 Avvalgi qarz: ${previous_debt_usd:,.2f}\n\n"
+                    f"✅ To'langan: ${paid_usd:,.2f}\n\n"
                     f"🎉 <b>Qarzingiz to'liq to'landi!</b>\n\n"
                     f"Rahmat! 🙏"
                 )
@@ -594,9 +658,9 @@ class DebtTelegramBot:
                 message = (
                     f"✅ <b>TO'LOV QABUL QILINDI</b>\n\n"
                     f"Hurmatli {customer_name}!\n\n"
-                    f"💰 Avvalgi qarz: {previous_debt_uzs:,.0f} so'm\n\n"
-                    f"✅ To'langan: {paid_uzs:,.0f} so'm\n\n"
-                    f"📊 Qolgan qarz: {remaining_uzs:,.0f} so'm{payment_details}\n\n"
+                    f"💰 Avvalgi qarz: ${previous_debt_usd:,.2f}\n\n"
+                    f"✅ To'langan: ${paid_usd:,.2f}\n\n"
+                    f"📊 Qolgan qarz: ${remaining_usd:,.2f}{payment_details}\n\n"
                     f"Rahmat! 🙏"
                 )
             
@@ -889,30 +953,18 @@ async def handle_verification_code(update: Update, context: ContextTypes.DEFAULT
                 )
                 return
             
-            # Qarzlar haqida xabar - faqat jami qarzni ko'rsatish
+            # Qarzlar haqida xabar - faqat jami qarzni ko'rsatish (USD)
             total_usd = 0
-            total_uzs = 0
-            
-            # Kurs olish
-            from app import get_current_currency_rate
-            rate = get_current_currency_rate()
             
             for debt in debts:
                 debt_usd = float(debt.total_debt_usd or 0)
-                debt_uzs = float(debt.total_debt_uzs or 0)
-                
-                # Agar debt_uzs 0 yoki juda kichik bo'lsa (USD saqlanib qolgan), kursga ko'paytiramiz
-                if debt_uzs == 0 or debt_uzs < debt_usd * 100:
-                    debt_uzs = debt_usd * rate
-                
                 total_usd += debt_usd
-                total_uzs += debt_uzs
             
             message = (
                 f"✅ Tasdiqlash muvaffaqiyatli!\n\n"
                 f"Assalomu alaykum, {customer.name}!\n\n"
                 f"💰 <b>Sizning qarzingiz:</b>\n\n"
-                f"💸 {total_uzs:,.0f} so'm\n\n"
+                f"💸 ${total_usd:,.2f}\n\n"
                 f"Iltimos, qarzingizni to'lashni unutmang.\n"
                 f"Rahmat! 🙏"
             )
@@ -972,18 +1024,13 @@ async def check_debt_button(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 )
                 return
             
-            # Qarzlar haqida xabar - jami qarzni ko'rsatish
+            # Qarzlar haqida xabar - jami qarzni ko'rsatish (USD)
             total_debt_usd = float(debts_result.total_debt_usd or 0)
-            
-            # Joriy kurs bilan UZS ga o'tkazish
-            from app import get_current_currency_rate
-            rate = get_current_currency_rate()
-            total_debt_uzs = total_debt_usd * rate
             
             message = (
                 f"Assalomu alaykum, {customer.name}!\n\n"
                 f"💰 <b>Sizning jami qarzingiz:</b>\n\n"
-                f"💸 {total_debt_uzs:,.0f} so'm\n\n"
+                f"💸 ${total_debt_usd:,.2f}\n\n"
                 f"Iltimos, qarzingizni to'lashni unutmang.\n"
                 f"Rahmat! 🙏"
             )
@@ -1034,7 +1081,7 @@ async def payment_history_button(update: Update, context: ContextTypes.DEFAULT_T
                 )
                 return
             
-            # To'lov tarixini formatlash
+            # To'lov tarixini formatlash (USD)
             message = (
                 f"📜 <b>To'lov tarixi</b>\n"
                 f"Mijoz: {customer.name}\n\n"
@@ -1043,22 +1090,17 @@ async def payment_history_button(update: Update, context: ContextTypes.DEFAULT_T
             for idx, payment in enumerate(payments, 1):
                 payment_datetime = payment.payment_date.strftime('%d.%m.%Y %H:%M')
                 payment_usd = float(payment.total_usd or 0)
-                payment_uzs = payment_usd * float(payment.currency_rate or 13000)
-                currency_rate = float(payment.currency_rate or 13000)
                 
                 message += f"<b>{idx}.</b> {payment_datetime}\n"
-                message += f"💰 {payment_uzs:,.0f} so'm\n"
+                message += f"💰 ${payment_usd:,.2f}\n"
                 
-                # To'lov turlarini so'mda alohida qatorlarda ko'rsatish
+                # To'lov turlarini USD da alohida qatorlarda ko'rsatish
                 if float(payment.cash_usd or 0) > 0:
-                    cash_uzs = float(payment.cash_usd) * currency_rate
-                    message += f"   💵 Naqd: {cash_uzs:,.0f} so'm\n"
+                    message += f"   💵 Naqd: ${float(payment.cash_usd):,.2f}\n"
                 if float(payment.click_usd or 0) > 0:
-                    click_uzs = float(payment.click_usd) * currency_rate
-                    message += f"   📱 Click: {click_uzs:,.0f} so'm\n"
+                    message += f"   📱 Click: ${float(payment.click_usd):,.2f}\n"
                 if float(payment.terminal_usd or 0) > 0:
-                    terminal_uzs = float(payment.terminal_usd) * currency_rate
-                    message += f"   💳 Terminal: {terminal_uzs:,.0f} so'm\n"
+                    message += f"   💳 Terminal: ${float(payment.terminal_usd):,.2f}\n"
                 
                 if payment.notes:
                     message += f"📝 {payment.notes}\n"

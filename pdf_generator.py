@@ -13,131 +13,228 @@ from reportlab.lib import colors
 
 def generate_sale_receipt_pdf(
     sale_data: dict,
-    output_path: str = None
+    output_path: str = None,
+    currency: str = 'uzs'  # 'usd' yoki 'uzs'
 ) -> str:
     """
-    Savdo cheki PDF yaratish
+    Printer formatidagi savdo cheki PDF yaratish
     
     Args:
         sale_data: Savdo ma'lumotlari
         output_path: PDF saqlash yo'li (agar None bo'lsa, temp file yaratiladi)
+        currency: Valyuta turi ('usd' yoki 'uzs')
     
     Returns:
         str: PDF fayl yo'li
     """
     if output_path is None:
-        output_path = f"/tmp/sale_{sale_data['sale_id']}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+        output_path = f"/tmp/sale_{sale_data['sale_id']}_{currency}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
     
-    # PDF yaratish
-    c = canvas.Canvas(output_path, pagesize=A4)
-    width, height = A4
+    # PDF yaratish - 80mm kenglikda (printer chek formati)
+    from reportlab.lib.pagesizes import landscape
+    # 80mm = 226.77 points, balandlik A4
+    page_width = 80 * mm
+    page_height = A4[1]  # Uzun sahifa
+    
+    c = canvas.Canvas(output_path, pagesize=(page_width, page_height))
     
     # Y pozitsiyasi
-    y = height - 30*mm
+    y = page_height - 10*mm
     
-    # Sarlavha
-    c.setFont("Helvetica-Bold", 16)
-    c.drawCentredString(width/2, y, "SAVDO CHEKI")
-    y -= 10*mm
+    # Valyuta belgisi va formatlash
+    currency_symbol = "$" if currency == 'usd' else "so'm"
+    currency_label = "USD" if currency == 'usd' else "UZS"
+    
+    # Do'kon nomi (markazda, katta)
+    c.setFont("Helvetica-Bold", 14)
+    store_name = sale_data.get('location', 'Do\'kon')
+    c.drawCentredString(page_width/2, y, store_name)
+    y -= 8*mm
     
     # Chiziq
-    c.line(30*mm, y, width-30*mm, y)
-    y -= 10*mm
-    
-    # Asosiy ma'lumotlar
-    c.setFont("Helvetica", 12)
-    c.drawString(30*mm, y, f"Check #: {sale_data['sale_id']}")
-    y -= 7*mm
-    
-    c.drawString(30*mm, y, f"Sana: {sale_data['date']}")
-    y -= 7*mm
-    
-    if sale_data.get('customer_name'):
-        c.drawString(30*mm, y, f"Mijoz: {sale_data['customer_name']}")
-        y -= 7*mm
-    
-    c.drawString(30*mm, y, f"Do'kon: {sale_data['location']}")
-    y -= 10*mm
-    
-    # Mahsulotlar jadvali
-    c.line(30*mm, y, width-30*mm, y)
-    y -= 7*mm
-    
-    c.setFont("Helvetica-Bold", 10)
-    c.drawString(30*mm, y, "Mahsulot")
-    c.drawString(120*mm, y, "Soni")
-    c.drawString(145*mm, y, "Narx")
-    c.drawString(170*mm, y, "Jami")
+    c.setLineWidth(0.5)
+    c.line(5*mm, y, page_width-5*mm, y)
     y -= 5*mm
     
-    c.line(30*mm, y, width-30*mm, y)
-    y -= 7*mm
+    # Chek ma'lumotlari (bordersiz)
+    c.setFont("Helvetica-Bold", 9)
+    c.drawString(5*mm, y, f"Chek #{sale_data['sale_id']}")
+    c.setFont("Helvetica", 9)
+    c.drawRightString(page_width-5*mm, y, f"{sale_data['date']}")
+    y -= 5*mm
+    
+    # Sotuvchi ma'lumotlari
+    if sale_data.get('seller_name'):
+        c.setFont("Helvetica-Bold", 8)
+        c.drawString(5*mm, y, "Sotuvchi:")
+        c.setFont("Helvetica", 8)
+        c.drawString(5*mm, y - 3*mm, sale_data['seller_name'])
+        
+        # Sotuvchi telefoni
+        if sale_data.get('seller_phone'):
+            c.drawString(5*mm, y - 6*mm, sale_data['seller_phone'])
+            y -= 9*mm
+        else:
+            y -= 6*mm
+    
+    # Mijoz ma'lumotlari
+    if sale_data.get('customer_name'):
+        c.setFont("Helvetica-Bold", 8)
+        c.drawString(5*mm, y, "Mijoz:")
+        c.setFont("Helvetica", 8)
+        c.drawString(5*mm, y - 3*mm, sale_data['customer_name'])
+        
+        # Mijoz telefoni
+        if sale_data.get('customer_phone'):
+            c.drawString(5*mm, y - 6*mm, sale_data['customer_phone'])
+            y -= 9*mm
+        else:
+            y -= 6*mm
+    
+    y -= 2*mm
+    
+    # Mahsulotlar jadvali
+    # Jadval sarlavhasi
+    c.setStrokeColor(colors.black)
+    c.setLineWidth(1.5)
+    
+    # Jadval chegaralari
+    table_top = y
+    table_left = 5*mm
+    table_right = page_width - 5*mm
+    table_width = table_right - table_left
+    
+    # Ustun kengliklari
+    col1_width = table_width * 0.50  # Mahsulot - 50%
+    col2_width = table_width * 0.20  # Miqdor - 20%
+    col3_width = table_width * 0.30  # Narx - 30%
+    
+    # Sarlavha qatori
+    c.rect(table_left, y - 6*mm, table_width, 6*mm, stroke=1, fill=0)
+    c.line(table_left + col1_width, y - 6*mm, table_left + col1_width, y)
+    c.line(table_left + col1_width + col2_width, y - 6*mm, table_left + col1_width + col2_width, y)
+    
+    c.setFont("Helvetica-Bold", 9)
+    c.drawString(table_left + 2*mm, y - 4*mm, "Mahsulot")
+    c.drawCentredString(table_left + col1_width + col2_width/2, y - 4*mm, "Miqdor")
+    c.drawRightString(table_right - 2*mm, y - 4*mm, "Narx")
+    
+    y -= 6*mm
     
     # Mahsulotlar ro'yxati
-    c.setFont("Helvetica", 9)
+    c.setFont("Helvetica-Bold", 8)
     for item in sale_data.get('items', []):
         # Mahsulot nomi (uzun bo'lsa qisqartirish)
-        product_name = item['name'][:40]
-        c.drawString(30*mm, y, product_name)
-        c.drawRightString(135*mm, y, f"{item['quantity']}")
-        c.drawRightString(165*mm, y, f"{item['unit_price']:,.0f}")
-        c.drawRightString(190*mm, y, f"{item['total']:,.0f}")
-        y -= 6*mm
+        product_name = item['name'][:20]
+        c.drawString(table_left + 2*mm, y - 4*mm, product_name)
+        
+        # Miqdor
+        quantity = item['quantity']
+        c.drawCentredString(table_left + col1_width + col2_width/2, y - 4*mm, str(int(quantity)))
+        
+        # Narx (valyutaga qarab)
+        if currency == 'usd':
+            unit_price = item.get('unit_price_usd', item.get('unit_price', 0))
+            price_str = f"${unit_price:.2f}"
+        else:
+            unit_price = item.get('unit_price_uzs', item.get('unit_price', 0))
+            price_str = f"{unit_price:,.0f}"
+        
+        c.drawRightString(table_right - 2*mm, y - 4*mm, price_str)
+        
+        # Qator borderlari
+        row_height = 6*mm
+        c.rect(table_left, y - row_height, table_width, row_height, stroke=1, fill=0)
+        c.line(table_left + col1_width, y - row_height, table_left + col1_width, y)
+        c.line(table_left + col1_width + col2_width, y - row_height, table_left + col1_width + col2_width, y)
+        
+        y -= row_height
         
         if y < 40*mm:  # Sahifa tugashidan oldin
             c.showPage()
-            y = height - 30*mm
-            c.setFont("Helvetica", 9)
+            y = page_height - 10*mm
+            c.setFont("Helvetica-Bold", 8)
     
-    y -= 5*mm
-    c.line(30*mm, y, width-30*mm, y)
-    y -= 10*mm
+    y -= 8*mm  # Jadval va jami summa orasidagi masofa
     
-    # Jami summa
-    c.setFont("Helvetica-Bold", 12)
-    c.drawString(30*mm, y, "JAMI:")
-    c.drawRightString(190*mm, y, f"{sale_data['total_amount']:,.0f} so'm")
+    # Jami summa (valyutaga qarab)
+    c.setFont("Helvetica-Bold", 11)
+    c.drawString(table_left, y, "Jami summa:")
+    if currency == 'usd':
+        total_amount = sale_data.get('total_amount_usd', sale_data.get('total_amount', 0))
+        c.drawRightString(table_right, y, f"${total_amount:.2f}")
+    else:
+        total_amount = sale_data.get('total_amount_uzs', sale_data.get('total_amount', 0))
+        c.drawRightString(table_right, y, f"{total_amount:,.0f} {currency_symbol}")
     y -= 8*mm
     
-    # To'lov ma'lumotlari
-    if sale_data.get('paid_amount', 0) > 0:
-        c.setFont("Helvetica", 10)
-        c.drawString(30*mm, y, "To'langan:")
-        c.drawRightString(190*mm, y, f"{sale_data['paid_amount']:,.0f} so'm")
-        y -= 6*mm
+    # To'lov ma'lumotlari (valyutaga qarab)
+    paid_key = 'paid_amount_usd' if currency == 'usd' else 'paid_amount_uzs'
+    paid_amount = sale_data.get(paid_key, sale_data.get('paid_amount', 0))
+    
+    if paid_amount > 0:
+        c.setFont("Helvetica-Bold", 9)
+        c.drawString(table_left, y, "To'lov:")
+        y -= 4*mm
         
         # To'lov turlari
-        if sale_data.get('cash', 0) > 0:
-            c.drawString(35*mm, y, "Naqd:")
-            c.drawRightString(190*mm, y, f"{sale_data['cash']:,.0f} so'm")
-            y -= 6*mm
-        if sale_data.get('click', 0) > 0:
-            c.drawString(35*mm, y, "Click:")
-            c.drawRightString(190*mm, y, f"{sale_data['click']:,.0f} so'm")
-            y -= 6*mm
-        if sale_data.get('terminal', 0) > 0:
-            c.drawString(35*mm, y, "Terminal:")
-            c.drawRightString(190*mm, y, f"{sale_data['terminal']:,.0f} so'm")
-            y -= 6*mm
+        c.setFont("Helvetica", 8)
+        cash_key = 'cash_usd' if currency == 'usd' else 'cash_uzs'
+        click_key = 'click_usd' if currency == 'usd' else 'click_uzs'
+        terminal_key = 'terminal_usd' if currency == 'usd' else 'terminal_uzs'
+        
+        if sale_data.get(cash_key, 0) > 0:
+            c.drawString(table_left + 3*mm, y, "Naqd:")
+            if currency == 'usd':
+                c.drawRightString(table_right, y, f"${sale_data[cash_key]:,.2f}")
+            else:
+                c.drawRightString(table_right, y, f"{sale_data[cash_key]:,.0f} {currency_symbol}")
+            y -= 4*mm
+        if sale_data.get(click_key, 0) > 0:
+            c.drawString(table_left + 3*mm, y, "Click:")
+            if currency == 'usd':
+                c.drawRightString(table_right, y, f"${sale_data[click_key]:,.2f}")
+            else:
+                c.drawRightString(table_right, y, f"{sale_data[click_key]:,.0f} {currency_symbol}")
+            y -= 4*mm
+        if sale_data.get(terminal_key, 0) > 0:
+            c.drawString(table_left + 3*mm, y, "Terminal:")
+            if currency == 'usd':
+                c.drawRightString(table_right, y, f"${sale_data[terminal_key]:,.2f}")
+            else:
+                c.drawRightString(table_right, y, f"{sale_data[terminal_key]:,.0f} {currency_symbol}")
+            y -= 4*mm
     
-    # Qarz
-    if sale_data.get('debt', 0) > 0:
+    # Qarz (valyutaga qarab)
+    debt_key = 'debt_usd' if currency == 'usd' else 'debt_uzs'
+    debt_amount = sale_data.get(debt_key, sale_data.get('debt', 0))
+    
+    if debt_amount > 0:
         y -= 2*mm
-        c.setFont("Helvetica-Bold", 11)
+        c.setFont("Helvetica-Bold", 10)
         c.setFillColor(colors.red)
-        c.drawString(30*mm, y, "QARZ:")
-        c.drawRightString(190*mm, y, f"{sale_data['debt']:,.0f} so'm")
+        c.drawString(table_left, y, "QARZ:")
+        if currency == 'usd':
+            c.drawRightString(table_right, y, f"${debt_amount:,.2f}")
+        else:
+            c.drawRightString(table_right, y, f"{debt_amount:,.0f} {currency_symbol}")
         c.setFillColor(colors.black)
-        y -= 8*mm
+        y -= 6*mm
     
     # Footer
-    y -= 10*mm
-    c.setFont("Helvetica", 8)
-    c.drawCentredString(width/2, y, "Xaridingiz uchun rahmat!")
     y -= 5*mm
-    c.drawCentredString(width/2, y, f"Tel: {sale_data.get('phone', '')}")
+    c.setLineWidth(0.5)
+    c.line(5*mm, y, page_width-5*mm, y)
+    y -= 4*mm
+    
+    c.setFont("Helvetica", 8)
+    c.drawCentredString(page_width/2, y, "Rahmat!")
+    y -= 3*mm
+    c.drawCentredString(page_width/2, y, "Yana tashrif buyuring!")
     
     # PDF ni saqlash
     c.save()
+    
+    return output_path
     
     return output_path

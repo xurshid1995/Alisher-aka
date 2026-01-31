@@ -93,7 +93,7 @@ app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
     'pool_timeout': 30,       # Connection olish uchun 30 sekund timeout
     'connect_args': {
         'connect_timeout': 10,  # PostgreSQL connection timeout
-        'options': '-c statement_timeout=10000'  # Query timeout: 10 sekund
+        'options': '-c statement_timeout=10000 -c timezone=Asia/Tashkent'  # Query timeout va timezone
     }
 }
 
@@ -116,6 +116,13 @@ TASHKENT_TZ = pytz.timezone('Asia/Tashkent')
 def get_tashkent_time():
     """O'zbekiston vaqtini qaytaradi"""
     return datetime.now(TASHKENT_TZ)
+
+# ✅ Cache o'zgaruvchilari - xotira tejash uchun
+_locations_cache = None
+_locations_cache_time = None
+_all_locations_cache = None
+_all_locations_cache_time = None
+CACHE_DURATION = 300  # 5 daqiqa
 
 
 # Timeout monitoring decorator
@@ -1311,7 +1318,13 @@ class Sale(db.Model):
             app.logger.error(f"Error getting payment refunds for sale {self.id}: {str(e)}")
             return []
 
-    def to_dict(self):
+    def to_dict(self, include_items=True, include_details=False):
+        """Sale obyektini dict ga aylantirish
+        
+        Args:
+            include_items: SaleItem'larni qo'shish (default: True)
+            include_details: Qo'shimcha ma'lumotlar (returned_products, payment_refunds, debt_payments)
+        """
         # Mijoz nomini aniqlash
         if self.customer:
             customer_name = self.customer.name
@@ -1320,7 +1333,7 @@ class Sale(db.Model):
         else:
             customer_name = '🚫 O\'chirilgan mijoz'  # Mijoz o'chirilgan
 
-        return {
+        result = {
             'id': self.id,
             'customer_id': self.customer_id,
             'customer_name': customer_name,
@@ -1361,11 +1374,20 @@ class Sale(db.Model):
             'currency_rate': float(
                 self.currency_rate) if self.currency_rate is not None else 12500.0,
             'created_by': self.created_by if self.created_by else 'System',
-            'items': [
-                item.to_dict() for item in self.items] if self.items else [],
-            'returned_products': self._get_returned_products(),
-            'payment_refunds': self._get_payment_refunds(),
-            'debt_payments': [
+        }
+        
+        # ✅ Optional: Faqat kerak bo'lganda items yuklash
+        if include_items:
+            result['items'] = [
+                item.to_dict() for item in self.items] if self.items else []
+        else:
+            result['items'] = []  # Bo'sh list qaytarish
+        
+        # ✅ Optional: Qo'shimcha ma'lumotlar (xotira tejash uchun)
+        if include_details:
+            result['returned_products'] = self._get_returned_products()
+            result['payment_refunds'] = self._get_payment_refunds()
+            result['debt_payments'] = [
                 {
                     'id': dp.id,
                     'cash_usd': float(dp.cash_usd or 0),
@@ -1377,7 +1399,13 @@ class Sale(db.Model):
                     'notes': dp.notes or ''
                 } for dp in self.debt_payments
             ]
-        }
+        else:
+            # Default: faqat asosiy ma'lumotlar
+            result['returned_products'] = []
+            result['payment_refunds'] = []
+            result['debt_payments'] = []
+        
+        return result
 
 
 # Valyuta kursi modeli
@@ -1720,6 +1748,15 @@ def api_locations():
 @role_required('admin', 'kassir', 'sotuvchi')
 def api_all_locations():
     """Mahsulotlar sahifasi uchun barcha joylashuvlar (filterlashsiz)"""
+    global _all_locations_cache, _all_locations_cache_time
+    
+    # ✅ Cache tekshirish
+    if _all_locations_cache and _all_locations_cache_time:
+        elapsed = (datetime.now() - _all_locations_cache_time).total_seconds()
+        if elapsed < CACHE_DURATION:
+            logger.debug(f"📦 All-locations cache hit - {int(CACHE_DURATION - elapsed)}s qoldi")
+            return jsonify(_all_locations_cache)
+    
     logger.debug(" All Locations API - Barcha foydalanuvchilar uchun barcha joylashuvlar")
 
     locations = []
@@ -1747,6 +1784,11 @@ def api_all_locations():
         })
 
     logger.info(f" Total locations for products page: {len(locations)}")
+    
+    # ✅ Cache'ga saqlash
+    _all_locations_cache = locations
+    _all_locations_cache_time = datetime.now()
+    logger.debug("💾 All-locations cached")
     return jsonify(locations)
 
 
@@ -5948,31 +5990,20 @@ def api_debt_payment():
                 from debt_scheduler import get_scheduler_instance
 
                 scheduler = get_scheduler_instance(app, db)
-                rate = get_current_currency_rate()
-
-                # To'langan va qolgan summalarni UZS'da hisoblash
-                paid_uzs = float(payment_usd - remaining_payment) * rate
-                previous_debt_uzs = float(previous_total_debt) * rate
-                remaining_debt_uzs = float(total_remaining_debt) * rate
-
-                # To'lov turlarini UZS'da hisoblash
-                cash_uzs = float(cash_usd) * rate
-                click_uzs = float(click_usd) * rate
-                terminal_uzs = float(terminal_usd) * rate
 
                 telegram_result = scheduler.bot.send_payment_confirmation_sync(
                     chat_id=customer.telegram_chat_id,
                     customer_name=customer.name,
                     previous_debt_usd=float(previous_total_debt),
-                    previous_debt_uzs=previous_debt_uzs,
+                    previous_debt_uzs=0,  # Not used anymore
                     paid_usd=float(payment_usd - remaining_payment),
-                    paid_uzs=paid_uzs,
+                    paid_uzs=0,  # Not used anymore
                     remaining_usd=float(total_remaining_debt),
-                    remaining_uzs=remaining_debt_uzs,
+                    remaining_uzs=0,  # Not used anymore
                     customer_id=customer_id,
-                    cash_uzs=cash_uzs,
-                    click_uzs=click_uzs,
-                    terminal_uzs=terminal_uzs
+                    cash_uzs=float(cash_usd),  # Actually USD
+                    click_uzs=float(click_usd),  # Actually USD
+                    terminal_uzs=float(terminal_usd)  # Actually USD
                 )
 
                 if telegram_result:
@@ -7005,31 +7036,31 @@ def debug_products():
     if not app.debug:
         abort(404)  # Production'da ko'rsatmaslik
     try:
-        products = Product.query.all()
+        # ✅ Eager loading - N+1 query muammosini hal qilish
+        from sqlalchemy.orm import joinedload
+        
+        products = Product.query.options(
+            joinedload(Product.warehouse_stocks).joinedload(WarehouseStock.warehouse),
+            joinedload(Product.store_stocks).joinedload(StoreStock.store)
+        ).all()
+        
         products_data = []
 
         for product in products:
-            # Warehouse stock'larni topish
-            warehouse_stocks = WarehouseStock.query.filter_by(
-                product_id=product.id).all()
+            # ✅ Eager loading natijasida stocks allaqachon yuklangan
             warehouse_data = []
-            for ws in warehouse_stocks:
-                warehouse = Warehouse.query.get(ws.warehouse_id)
-                if warehouse:
+            for ws in product.warehouse_stocks:
+                if ws.warehouse:  # Eager loaded
                     warehouse_data.append({
-                        'warehouse_name': warehouse.name,
+                        'warehouse_name': ws.warehouse.name,
                         'quantity': float(ws.quantity)
                     })
 
-            # Store stock'larni topish
-            store_stocks = StoreStock.query.filter_by(
-                product_id=product.id).all()
             store_data = []
-            for ss in store_stocks:
-                store = Store.query.get(ss.store_id)
-                if store:
+            for ss in product.store_stocks:
+                if ss.store:  # Eager loaded
                     store_data.append({
-                        'store_name': store.name,
+                        'store_name': ss.store.name,
                         'quantity': float(ss.quantity)
                     })
 
@@ -8195,16 +8226,34 @@ def update_customer(customer_id):
 @role_required('admin', 'kassir')
 def get_users():
     try:
-        # Barcha foydalanuvchilarni olish (dokon nomi bilan birga)
-        users = User.query.all()
-
+        # ✅ Pagination qo'shish - xotira tejash
+        page = request.args.get('page', 1, type=int)
+        per_page = request.args.get('per_page', 50, type=int)
+        get_all = request.args.get('all', 'false').lower() == 'true'
+        
         # Hozirgi foydalanuvchi ID sini ham yuborish
         current_user_id = session.get('user_id')
-
-        return jsonify({
-            'users': [user.to_dict() for user in users],
-            'current_user_id': current_user_id
-        })
+        
+        if get_all:
+            # Barcha userlar kerak bo'lsa (dropdown uchun)
+            users = User.query.all()
+            return jsonify({
+                'users': [user.to_dict() for user in users],
+                'current_user_id': current_user_id
+            })
+        else:
+            # Pagination bilan
+            pagination = User.query.paginate(page=page, per_page=per_page, error_out=False)
+            return jsonify({
+                'users': [user.to_dict() for user in pagination.items],
+                'current_user_id': current_user_id,
+                'pagination': {
+                    'page': page,
+                    'per_page': per_page,
+                    'total': pagination.total,
+                    'pages': pagination.pages
+                }
+            })
     except Exception as e:
         app.logger.error(f"Error fetching users: {str(e)}")
         return jsonify({'error': str(e)}), 500
@@ -8812,7 +8861,17 @@ def api_sales_history():
 
         # Pagination parametrlarini olish
         page = request.args.get('page', 1, type=int)
-        per_page = request.args.get('per_page', 50, type=int)
+        per_page = request.args.get('per_page', 20, type=int)  # ✅ Optimizatsiya: 50->20
+        per_page = min(per_page, 100)  # Maximum 100 limit
+
+        # ✅ Eager loading - N+1 query muammosini hal qilish
+        from sqlalchemy.orm import joinedload
+        query = query.options(
+            joinedload(Sale.customer),
+            joinedload(Sale.seller),
+            joinedload(Sale.store),
+            joinedload(Sale.items).joinedload(SaleItem.product)
+        )
 
         # Execute query with pagination
         pagination = query.paginate(page=page, per_page=per_page, error_out=False)
@@ -8840,19 +8899,19 @@ def api_sales_history():
             sale_ids = [sale.id for sale in sales[:3]]
             print(f"   - Birinchi 3 ta savdo ID: {sale_ids}")
 
-        # STATISTIKA: Barcha filtr qo'llanilgan sale ID'larini olish
+        # STATISTIKA: Subquery ishlatish - xotira sarfini kamaytirish
+        # ✅ Optimizatsiya: filtered_sale_ids list o'rniga subquery
         from sqlalchemy.orm import aliased
-        filtered_sale_ids = [sale_id for (sale_id,) in stats_filtered_query.with_entities(Sale.id).all()]
+        sale_ids_subquery = stats_filtered_query.with_entities(Sale.id).subquery()
 
-        # Jami mahsulotlar soni - barcha filtrlangan savdolardan
+        # Jami mahsulotlar soni - subquery bilan
         total_items = 0
-        if filtered_sale_ids:
-            items_count_query = db.session.query(
-                func.sum(SaleItem.quantity)
-            ).filter(
-                SaleItem.sale_id.in_(filtered_sale_ids)
-            )
-            total_items = float(items_count_query.scalar() or 0)
+        items_count_query = db.session.query(
+            func.sum(SaleItem.quantity)
+        ).filter(
+            SaleItem.sale_id.in_(db.select([sale_ids_subquery.c.id]))
+        )
+        total_items = float(items_count_query.scalar() or 0)
 
         # Average order value
         avg_order_value = total_revenue / total_sales_count if total_sales_count > 0 else 0
@@ -8878,59 +8937,59 @@ def api_sales_history():
                 'amount': float(total or 0)
             }
 
-        # Top selling products - filtered_sale_ids dan foydalanib
+        # Top selling products - subquery bilan optimizatsiya
         top_products = []
-        if filtered_sale_ids:
-            Product_alias = aliased(Product)
+        Product_alias = aliased(Product)
 
-            top_products_query = db.session.query(
-                Product_alias.name,
-                func.sum(SaleItem.quantity).label('quantity'),
-                func.sum(SaleItem.total_price).label('revenue')
-            ).join(
-                SaleItem, SaleItem.product_id == Product_alias.id
-            ).filter(
-                SaleItem.sale_id.in_(filtered_sale_ids)
-            ).group_by(
-                Product_alias.name
-            ).order_by(
-                func.sum(SaleItem.quantity).desc()
-            ).limit(5)
+        # ✅ Subquery ishlatish - list o'rniga
+        top_products_query = db.session.query(
+            Product_alias.name,
+            func.sum(SaleItem.quantity).label('quantity'),
+            func.sum(SaleItem.total_price).label('revenue')
+        ).join(
+            SaleItem, SaleItem.product_id == Product_alias.id
+        ).filter(
+            SaleItem.sale_id.in_(db.select([sale_ids_subquery.c.id]))
+        ).group_by(
+            Product_alias.name
+        ).order_by(
+            func.sum(SaleItem.quantity).desc()
+        ).limit(5)
 
-            for name, quantity, revenue in top_products_query.all():
-                top_products.append({
-                    'name': name or 'Noma\'lum',
-                    'quantity': float(quantity or 0),
-                    'revenue': float(revenue or 0)
-                })
+        for name, quantity, revenue in top_products_query.all():
+            top_products.append({
+                'name': name or 'Noma\'lum',
+                'quantity': float(quantity or 0),
+                'revenue': float(revenue or 0)
+            })
 
-        # Store performance - base_stats_query dan foydalanib
+        # Store performance - subquery bilan optimizatsiya
         store_performance = []
-        if filtered_sale_ids:
-            Store_alias = aliased(Store)
+        Store_alias = aliased(Store)
 
-            store_perf_query = db.session.query(
-                Store_alias.name,
-                func.count(Sale.id).label('sales'),
-                func.sum(Sale.total_amount).label('revenue'),
-                func.sum(Sale.total_profit).label('profit')
-            ).join(
-                Sale, Sale.store_id == Store_alias.id
-            ).filter(
-                Sale.id.in_(filtered_sale_ids)
-            ).group_by(
-                Store_alias.name
-            ).order_by(
-                func.sum(Sale.total_amount).desc()
-            )
+        # ✅ Subquery ishlatish
+        store_perf_query = db.session.query(
+            Store_alias.name,
+            func.count(Sale.id).label('sales'),
+            func.sum(Sale.total_amount).label('revenue'),
+            func.sum(Sale.total_profit).label('profit')
+        ).join(
+            Sale, Sale.store_id == Store_alias.id
+        ).filter(
+            Sale.id.in_(db.select([sale_ids_subquery.c.id]))
+        ).group_by(
+            Store_alias.name
+        ).order_by(
+            func.sum(Sale.total_amount).desc()
+        )
 
-            for name, sales_count, revenue, profit in store_perf_query.all():
-                store_performance.append({
-                    'name': name or 'Noma\'lum',
-                    'sales': sales_count,
-                    'revenue': float(revenue or 0),
-                    'profit': float(profit or 0)
-                })
+        for name, sales_count, revenue, profit in store_perf_query.all():
+            store_performance.append({
+                'name': name or 'Noma\'lum',
+                'sales': sales_count,
+                'revenue': float(revenue or 0),
+                'profit': float(profit or 0)
+            })
 
         # Sales list conversion with error handling
         sales_list = []
@@ -9056,6 +9115,10 @@ def finalize_sale(sale_id):
 
         logger.info(f"✅ Savdo yakunlandi: Sale ID {sale_id}, Status: {payment_status}, Location: {sale.location_id}/{sale.location_type}")
 
+        # Chek formatini olish
+        receipt_format = data.get('receipt_format', 'both')  # 'usd', 'uzs', yoki 'both'
+        logger.info(f"📄 Tanlangan chek formati: {receipt_format}")
+
         # Telegram xabar yuborish (mijoz telegram_chat_id bor bo'lsa)
         if customer_id:
             try:
@@ -9072,18 +9135,30 @@ def finalize_sale(sale_id):
                         store_obj = Store.query.get(sale.location_id)
                         location_name = store_obj.name if store_obj else "Do'kon"
 
-                    # To'lov summalari
+                    # To'lov summalari (UZS)
                     total_uzs = float(sale.cash_amount) + float(sale.click_amount) + float(sale.terminal_amount) + float(sale.debt_amount)
                     paid_uzs = float(sale.cash_amount) + float(sale.click_amount) + float(sale.terminal_amount)
 
+                    # To'lov summalari (USD)
+                    total_usd = float(sale.cash_usd) + float(sale.click_usd) + float(sale.terminal_usd) + float(sale.debt_usd)
+                    paid_usd = float(sale.cash_usd) + float(sale.click_usd) + float(sale.terminal_usd)
+
                     # Savdo mahsulotlarini PDF uchun tayyorlash
+                    seller_name = f"{sale.seller.first_name} {sale.seller.last_name}" if sale.seller else session.get('username', 'Sotuvchi')
+                    seller_phone = sale.seller.phone if sale.seller and sale.seller.phone else ''
+                    
                     sale_items_for_pdf = []
                     for item in sale.items:
                         sale_items_for_pdf.append({
                             'name': item.product.name if item.product else 'Mahsulot',
+                            'seller_name': seller_name,
                             'quantity': float(item.quantity),
-                            'unit_price': float(item.unit_price) * float(sale.currency_rate),
-                            'total': float(item.total_price) * float(sale.currency_rate)
+                            'unit_price_uzs': float(item.unit_price) * float(sale.currency_rate),
+                            'total_uzs': float(item.total_price) * float(sale.currency_rate),
+                            'unit_price_usd': float(item.unit_price),
+                            'total_usd': float(item.total_price),
+                            'unit_price': float(item.unit_price),  # Backward compatibility
+                            'total': float(item.total_price) * float(sale.currency_rate)  # Backward compatibility
                         })
 
                     # Telegram xabar yuborish
@@ -9100,7 +9175,15 @@ def finalize_sale(sale_id):
                         terminal_uzs=float(sale.terminal_amount),
                         debt_uzs=float(sale.debt_amount),
                         sale_id=sale.id,
-                        sale_items=sale_items_for_pdf
+                        sale_items=sale_items_for_pdf,
+                        receipt_format=receipt_format,
+                        seller_phone=seller_phone,
+                        total_amount_usd=total_usd,
+                        paid_usd=paid_usd,
+                        cash_usd=float(sale.cash_usd),
+                        click_usd=float(sale.click_usd),
+                        terminal_usd=float(sale.terminal_usd),
+                        debt_usd=float(sale.debt_usd)
                     )
                     logger.info(f"✅ Telegram xabar va PDF yuborildi (finalize): {customer.name}")
             except Exception as telegram_error:
@@ -10151,12 +10234,15 @@ def delete_sale_with_stock_return(sale_id):
                 }), 403
 
         # Debug: Savdo ma'lumotlarini ko'rsatish
-        logger.debug(f" DELETE DEBUG: Sale ID: {sale_id}")
-        logger.debug(f" DELETE DEBUG: Return stock: {return_stock}")
-        logger.debug(f" DELETE DEBUG: Items count: {len(sale.items)}")
+        print(f"🗑️ ========== SAVDO O'CHIRILMOQDA ==========")
+        print(f"🗑️ Sale ID: {sale_id}")
+        print(f"🗑️ Return stock: {return_stock}")
+        print(f"🗑️ Items count: {len(sale.items)}")
+        logger.info(f"🗑️ DELETE: Sale ID={sale_id}, return_stock={return_stock}, items={len(sale.items)}")
 
         # Faqat return_stock=true bo'lsa stokni qaytarish
         if return_stock:
+            print(f"✅ Stock qaytariladi - {len(sale.items)} ta mahsulot")
             for item in sale.items:
                 # Agar product o'chirilgan bo'lsa (product_id NULL), stock qaytarib bo'lmaydi
                 if not item.product_id:

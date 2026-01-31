@@ -5463,6 +5463,22 @@
             // YANGI MANTIQ: Agar pending savdo mavjud bo'lsa, faqat statusni o'zgartirish
             if (currentPendingSaleId && !editingSaleId) {
                 console.log('🔄 Pending savdo statusini o\'zgartirish:', currentPendingSaleId);
+                
+                // Printer checkbox'laridan chek formatini aniqlash
+                const printUSD = document.getElementById('printReceiptUSD');
+                const printUZS = document.getElementById('printReceiptUZS');
+                
+                let receiptFormat = 'none';
+                if (printUSD && printUSD.checked && printUZS && printUZS.checked) {
+                    receiptFormat = 'both';
+                } else if (printUSD && printUSD.checked) {
+                    receiptFormat = 'usd';
+                } else if (printUZS && printUZS.checked) {
+                    receiptFormat = 'uzs';
+                }
+                
+                console.log('📄 Telegram PDF formati:', receiptFormat);
+                
                 // Pending savdoni yakunlash - faqat status o'zgartirish
                 response = await fetch(`/api/finalize-sale/${currentPendingSaleId}`, {
                     method: 'POST',
@@ -5475,7 +5491,8 @@
                         payment_status: saleData.payment_status,
                         customer_id: saleData.customer_id,
                         exchange_rate: saleData.exchange_rate,
-                        idempotency_key: idempotencyKey
+                        idempotency_key: idempotencyKey,
+                        receipt_format: receiptFormat  // Chek formatini qo'shish
                     })
                 });
             } else {

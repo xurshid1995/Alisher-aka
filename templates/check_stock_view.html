@@ -338,12 +338,19 @@ function filterAndDisplay() {
         filtered = filtered.filter(p => p.difference !== 0 && p.difference !== null);
     }
     
-    // Qidiruv
+    // Qidiruv - qisman so'zlar bilan
     if (searchQuery) {
-        filtered = filtered.filter(p => 
-            p.name.toLowerCase().includes(searchQuery) ||
-            (p.barcode && p.barcode.toLowerCase().includes(searchQuery))
-        );
+        // Qidiruv so'zlarini bo'sh joylarga ajratish
+        const searchWords = searchQuery.split(/\s+/).filter(word => word.length > 0);
+        
+        filtered = filtered.filter(p => {
+            const productName = p.name.toLowerCase();
+            const productBarcode = (p.barcode || '').toLowerCase();
+            const searchText = productName + ' ' + productBarcode;
+            
+            // Har bir so'z mos kelishi kerak
+            return searchWords.every(word => searchText.includes(word));
+        });
     }
     
     // Filter counts

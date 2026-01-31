@@ -344,10 +344,17 @@ async function syncCheckedProducts() {
             
             // Agar qidiruv mavjud bo'lsa, filtrni qayta qo'llash
             if (currentSearch.length > 0) {
-                const filtered = allProducts.filter(p => 
-                    p.name.toLowerCase().includes(currentSearch) || 
-                    (p.barcode && p.barcode.toLowerCase().includes(currentSearch))
-                );
+                // Qidiruv so'zlarini bo'sh joylarga ajratish
+                const searchWords = currentSearch.split(/\s+/).filter(word => word.length > 0);
+                
+                const filtered = allProducts.filter(p => {
+                    const productName = p.name.toLowerCase();
+                    const productBarcode = (p.barcode || '').toLowerCase();
+                    const searchText = productName + ' ' + productBarcode;
+                    
+                    // Har bir so'z mos kelishi kerak
+                    return searchWords.every(word => searchText.includes(word));
+                });
                 displayProducts(filtered);
             } else {
                 displayProducts(allProducts);
@@ -411,15 +418,27 @@ async function loadAllProducts() {
 }
 
 // Mahsulotni qidirish
+let selectedProductIndex = -1; // Klaviatura navigatsiyasi uchun
+
 document.getElementById('productSearch').addEventListener('input', function(e) {
     const query = e.target.value.trim().toLowerCase();
+    selectedProductIndex = -1; // Reset selection
+    
     if (query.length === 0) {
         displayProducts(allProducts);
     } else {
-        const filtered = allProducts.filter(p => 
-            p.name.toLowerCase().includes(query) || 
-            (p.barcode && p.barcode.toLowerCase().includes(query))
-        );
+        // Qidiruv so'zlarini bo'sh joylarga ajratish
+        const searchWords = query.split(/\s+/).filter(word => word.length > 0);
+        
+        const filtered = allProducts.filter(p => {
+            const productName = p.name.toLowerCase();
+            const productBarcode = (p.barcode || '').toLowerCase();
+            const searchText = productName + ' ' + productBarcode;
+            
+            // Har bir so'z mos kelishi kerak
+            return searchWords.every(word => searchText.includes(word));
+        });
+        
         console.log(`Qidiruv: "${query}" - Topildi: ${filtered.length} / ${allProducts.length}`);
         displayProducts(filtered);
         
@@ -439,6 +458,54 @@ document.getElementById('productSearch').addEventListener('input', function(e) {
         }
     }
 });
+
+// Klaviatura navigatsiyasi
+document.getElementById('productSearch').addEventListener('keydown', function(e) {
+    const tbody = document.getElementById('productsTableBody');
+    const rows = Array.from(tbody.querySelectorAll('tr')).filter(row => row.querySelector('button'));
+    
+    if (rows.length === 0) return;
+    
+    if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        selectedProductIndex = Math.min(selectedProductIndex + 1, rows.length - 1);
+        highlightRow(rows, selectedProductIndex);
+    } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        selectedProductIndex = Math.max(selectedProductIndex - 1, 0);
+        highlightRow(rows, selectedProductIndex);
+    } else if (e.key === 'Enter' && selectedProductIndex >= 0) {
+        e.preventDefault();
+        const button = rows[selectedProductIndex].querySelector('button');
+        if (button) button.click();
+    } else if (e.key === 'Escape') {
+        e.preventDefault();
+        selectedProductIndex = -1;
+        clearHighlight(rows);
+    }
+});
+
+// Qatorni highlight qilish
+function highlightRow(rows, index) {
+    rows.forEach((row, i) => {
+        if (i === index) {
+            row.style.background = '#e3f2fd';
+            row.style.outline = '2px solid #2196F3';
+            row.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        } else {
+            row.style.background = '';
+            row.style.outline = '';
+        }
+    });
+}
+
+// Highlight tozalash
+function clearHighlight(rows) {
+    rows.forEach(row => {
+        row.style.background = '';
+        row.style.outline = '';
+    });
+}
 
 // Tekshirilganlardan qidirish
 document.getElementById('checkedSearch').addEventListener('input', function(e) {
@@ -483,12 +550,19 @@ function filterAndDisplayChecked(searchQuery = '') {
         filtered = filtered.filter(p => p.difference === 0);
     }
     
-    // Qidiruv bo'yicha saralash
+    // Qidiruv bo'yicha saralash - qisman so'zlar bilan
     if (searchQuery) {
-        filtered = filtered.filter(p => 
-            p.name.toLowerCase().includes(searchQuery) ||
-            (p.barcode && p.barcode.toLowerCase().includes(searchQuery))
-        );
+        // Qidiruv so'zlarini bo'sh joylarga ajratish
+        const searchWords = searchQuery.split(/\s+/).filter(word => word.length > 0);
+        
+        filtered = filtered.filter(p => {
+            const productName = p.name.toLowerCase();
+            const productBarcode = (p.barcode || '').toLowerCase();
+            const searchText = productName + ' ' + productBarcode;
+            
+            // Har bir so'z mos kelishi kerak
+            return searchWords.every(word => searchText.includes(word));
+        });
     }
     
     // Jadvalni yangilash

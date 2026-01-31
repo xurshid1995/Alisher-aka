@@ -1220,6 +1220,9 @@
         const searchInput = document.getElementById('productSearch');
         const searchText = searchInput.value.toLowerCase().trim();
         
+        console.log('🔍 Qidiruv boshlandi:', searchText);
+        console.log('📦 Jami mahsulotlar:', allProducts.length);
+        
         // Tanlovni tozalash
         clearProductSelection();
         
@@ -1227,36 +1230,31 @@
         if (searchText) {
             // Qidiruv so'zlarini bo'laklarga ajratish
             const searchWords = searchText.split(/\s+/).filter(word => word.length > 0);
+            console.log('🔤 Qidiruv so\'zlari:', searchWords);
             
             filteredProducts = allProducts.filter(product => {
                 const productName = (product.name || '').toLowerCase();
                 const barcode = (product.barcode || '').toString().toLowerCase();
+                const searchTextInProduct = productName + ' ' + barcode;
                 
                 // Barcode bilan to'liq moslik
                 if (barcode.includes(searchText)) {
                     return true;
                 }
                 
-                // Qisman so'zlar bilan qidirish - barcha so'zlar mahsulot nomida bo'lishi kerak
-                return searchWords.every(word => productName.includes(word));
+                // Qisman so'zlar bilan qidirish - barcha so'zlar mahsulot nomida yoki barkodda bo'lishi kerak
+                return searchWords.every(word => searchTextInProduct.includes(word));
             });
+            
+            console.log('✅ Topilgan mahsulotlar:', filteredProducts.length);
         } else {
             filteredProducts = allProducts;
+            console.log('📋 Barcha mahsulotlar ko\'rsatilmoqda:', filteredProducts.length);
         }
         
         // Birinchi sahifadan boshlash
         currentPage = 1;
         renderCurrentPage();
-        
-        // Agar barcode formatida kiritilayotgan bo'lsa (faqat raqamlar)
-        if (/^\d+$/.test(searchText)) {
-            clearTimeout(barcodeTimeout);
-            barcodeTimeout = setTimeout(() => {
-                if (searchText.length >= 8) { // Minimal barcode uzunligi
-                    searchProductByBarcode(searchText);
-                }
-            }, 100); // 100ms kutish - scanner tez yozadi
-        }
     }
 
     // Klaviatura navigatsiyasi - pagination bilan
