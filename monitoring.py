@@ -183,9 +183,9 @@ def setup_monitoring_routes(app, db):
     db_monitor = DatabaseMonitor(db)
     app_monitor = ApplicationMonitor(db)
     
-    @app.route('/health')
-    def health_check():
-        """Sodda health check - load balancer uchun"""
+    @app.route('/api/monitoring/health')
+    def monitoring_health_check():
+        """Monitoring health check - load balancer uchun"""
         try:
             # Database tekshirish
             db.session.execute(text("SELECT 1"))
