@@ -235,7 +235,7 @@ def setup_monitoring_routes(app, db):
         
         # Admin tekshiruvi
         if 'user_id' not in session:
-            return redirect(url_for('login'))
+            return redirect(url_for('login_page'))
         
         return render_template('monitoring_dashboard.html')
     
