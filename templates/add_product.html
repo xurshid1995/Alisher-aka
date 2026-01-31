@@ -64,23 +64,23 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 1rem;
-            margin-bottom: 0.6rem;
+            margin-bottom: 0.2rem;
         }
 
         .form-row-three {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
             gap: 1rem;
-            margin-bottom: 0.6rem;
+            margin-bottom: 0.2rem;
         }
 
         .form-group {
-            margin-bottom: 0.6rem;
+            margin-bottom: 0.2rem;
         }
 
         .form-group label {
             display: block;
-            margin-bottom: 0.3rem;
+            margin-bottom: 0.2rem;
             font-weight: 600;
             color: #495057;
         }
@@ -243,9 +243,24 @@
         }
 
         /* Klaviatura navigatsiyasi uchun selected class */
+        .suggestion-item {
+            transition: background-color 0.15s ease, color 0.15s ease;
+            cursor: pointer;
+        }
+        
         .suggestion-item.selected {
             background-color: #007bff !important;
             color: white !important;
+            box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
+        }
+        
+        .suggestion-item.selected strong,
+        .suggestion-item.selected span {
+            color: white !important;
+        }
+        
+        .suggestion-item:hover:not(.selected) {
+            background-color: #f8f9fa !important;
         }
 
         /* Vaqtinchalik ro'yxat jadvali */
@@ -584,9 +599,9 @@
                         </div>
                     </div>
 
-                    <!-- 2-qator: Mahsulot nomi va Barcode -->
-                    <div class="form-row">
-                        <div class="form-group" style="flex: 2;">
+                    <!-- 2-qator: Mahsulot nomi (to'liq kenglik) -->
+                    <div class="form-row" style="grid-template-columns: 1fr;">
+                        <div class="form-group">
                             <label for="product_name">📝 Mahsulot nomi:</label>
                             <div class="product-name-container">
                                 <input type="text" id="product_name" name="product_name" class="form-control" 
@@ -599,14 +614,72 @@
                                 <div id="searchResult" class="search-result"></div>
                             </div>
                         </div>
-                        <div class="form-group" style="flex: 1;">
+                    </div>
+
+                    <!-- 3-qator: Miqdor va O'lchov birligi -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="quantity">📊 Miqdor:</label>
+                            <input type="number" id="quantity" name="quantity" class="form-control" 
+                                   placeholder="0" min="0" step="any"
+                                   oninput="validateQuantityInput(); calculateProfit();">
+                        </div>
+                        <div class="form-group">
+                            <label for="unit_type">📏 O'lchov birligi:</label>
+                            <select id="unit_type" name="unit_type" class="form-control" 
+                                    onchange="updateQuantityStep(); validateQuantityInput();"
+                                    style="padding: 0.75rem; border: 2px solid #ced4da; border-radius: 8px; font-size: 1rem; height: 48px;">
+                                <option value="dona" selected>🔢 Dona</option>
+                                <option value="litr">💧 Litr</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- 4-qator: Minimal qoldiq (to'liq kenglik) -->
+                    <div class="form-row" style="grid-template-columns: 1fr;">
+                        <div class="form-group">
+                            <label for="min_stock">⚠️ Minimal qoldiq:</label>
+                            <input type="number" id="min_stock" name="min_stock" class="form-control" 
+                                   placeholder="0" min="0">
+                        </div>
+                    </div>
+
+                    <!-- Narx taqqoslash bloki -->
+                    <div id="priceComparison" class="price-comparison">
+                        <div id="priceComparisonContent"></div>
+                    </div>
+
+                    <!-- 5-qator: Tan narxi va Sotish narxi -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="cost_price">💰 Tan narxi ($):</label>
+                            <input type="number" id="cost_price" name="cost_price" class="form-control" 
+                                   placeholder="0.00" step="0.01" min="0" 
+                                   oninput="calculateProfit();"
+                                   onfocus="saveCostPriceOnFocus(); cancelAutoUpdate();"
+                                   onblur="updateOriginalCostPreview(); enableAutoUpdate(); comparePrices();">
+                        </div>
+                        <div class="form-group">
+                            <label for="sell_price">💵 Sotish narxi ($):</label>
+                            <input type="number" id="sell_price" name="sell_price" class="form-control" 
+                                   placeholder="0.00" step="0.01" min="0" 
+                                   oninput="calculateProfit();">
+                        </div>
+                    </div>
+
+                    <!-- 6-qator: Barcode (to'liq kenglik) -->
+                    <div class="form-row" style="grid-template-columns: 1fr;">
+                        <div class="form-group">
                             <label for="barcode">📷 Barcode:</label>
                             <!-- Barcode xatolik xabari - label dan keyingi qator -->
                             <div id="barcodeErrorContainer" style="margin-top: 4px; margin-bottom: 4px;"></div>
                             <div style="display: flex; gap: 5px;">
                                 <input type="text" id="barcode" name="barcode" class="form-control" 
-                                       placeholder="Avtomatik yoki kiriting" 
+                                       placeholder="8 xonali raqam" 
                                        autocomplete="off"
+                                       maxlength="8"
+                                       pattern="[0-9]{8}"
+                                       oninput="validateBarcodeInput(this)"
                                        style="border: 2px solid #28a745; flex: 1;">
                                 <button type="button" 
                                         id="autoGenerateBtn"
@@ -626,54 +699,7 @@
                         </div>
                     </div>
 
-                    <!-- 3-qator: Miqdor, O'lchov birligi va Minimal qoldiq -->
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="quantity">📊 Miqdor:</label>
-                            <input type="number" id="quantity" name="quantity" class="form-control" 
-                                   placeholder="0" min="0" step="any"
-                                   oninput="validateQuantityInput(); calculateProfit();">
-                        </div>
-                        <div class="form-group">
-                            <label for="unit_type">📏 O'lchov birligi:</label>
-                            <select id="unit_type" name="unit_type" class="form-control" 
-                                    onchange="updateQuantityStep(); validateQuantityInput();"
-                                    style="padding: 0.75rem; border: 2px solid #ced4da; border-radius: 8px; font-size: 1rem; height: 48px;">
-                                <option value="dona" selected>🔢 Dona</option>
-                                <option value="litr">💧 Litr</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="min_stock">⚠️ Minimal qoldiq:</label>
-                            <input type="number" id="min_stock" name="min_stock" class="form-control" 
-                                   placeholder="0" min="0">
-                        </div>
-                    </div>
-
-                    <!-- Narx taqqoslash bloki -->
-                    <div id="priceComparison" class="price-comparison">
-                        <div id="priceComparisonContent"></div>
-                    </div>
-
-                    <!-- 4-qator: Tan narxi va Sotish narxi -->
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="cost_price">💰 Tan narxi ($):</label>
-                            <input type="number" id="cost_price" name="cost_price" class="form-control" 
-                                   placeholder="0.00" step="0.01" min="0" 
-                                   oninput="calculateProfit();"
-                                   onfocus="saveCostPriceOnFocus(); cancelAutoUpdate();"
-                                   onblur="updateOriginalCostPreview(); enableAutoUpdate(); comparePrices();">
-                        </div>
-                        <div class="form-group">
-                            <label for="sell_price">💵 Sotish narxi ($):</label>
-                            <input type="number" id="sell_price" name="sell_price" class="form-control" 
-                                   placeholder="0.00" step="0.01" min="0" 
-                                   oninput="calculateProfit();">
-                        </div>
-                    </div>
-
-                    <!-- 5-qator: Asl tan narx va Foyda -->
+                    <!-- 7-qator: Asl tan narx va Foyda -->
                     <div class="form-row">
                         <div class="form-group">
                             <label for="original_cost">🏷️ Asl tan narx ($):</label>
@@ -1454,15 +1480,22 @@
                 case 'ArrowDown':
                     event.preventDefault();
                     if (suggestionItems.length > 0) {
-                        selectedProductIndex = Math.min(selectedProductIndex + 1, suggestionItems.length - 1);
+                        // Agar hech narsa tanlanmagan bo'lsa, birinchisini tanlash
+                        if (selectedProductIndex === -1) {
+                            selectedProductIndex = 0;
+                        } else {
+                            selectedProductIndex = Math.min(selectedProductIndex + 1, suggestionItems.length - 1);
+                        }
                         updateSelectedProduct(suggestionItems);
+                        // Qidiruv natijalarini ko'rsatish
+                        resultDiv.style.display = 'block';
                     }
                     break;
                     
                 case 'ArrowUp':
                     event.preventDefault();
                     if (suggestionItems.length > 0) {
-                        selectedProductIndex = Math.max(selectedProductIndex - 1, -1);
+                        selectedProductIndex = Math.max(selectedProductIndex - 1, 0);
                         updateSelectedProduct(suggestionItems);
                     }
                     break;
@@ -1474,9 +1507,10 @@
                         suggestionItems[selectedProductIndex].click();
                     } else {
                         // Enter bosilganda keyingi maydoniga o'tish
-                        const costPriceField = document.getElementById('cost_price');
-                        if (costPriceField) {
-                            costPriceField.focus();
+                        const quantityField = document.getElementById('quantity');
+                        if (quantityField) {
+                            quantityField.focus();
+                            quantityField.select();
                         }
                     }
                     break;
@@ -1503,9 +1537,21 @@
                 item.classList.remove('selected');
                 if (index === selectedProductIndex) {
                     item.classList.add('selected');
-                    item.scrollIntoView({ block: 'nearest' });
+                    item.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
                 }
             });
+        }
+        
+        // Mouse hover bilan klaviatura navigatsiyasini sinxronlash
+        function handleMouseEnterSuggestion(element) {
+            const resultDiv = document.getElementById('searchResult');
+            const suggestionItems = Array.from(resultDiv.querySelectorAll('.suggestion-item'));
+            const index = suggestionItems.indexOf(element);
+            
+            if (index !== -1) {
+                selectedProductIndex = index;
+                updateSelectedProduct(suggestionItems);
+            }
         }
 
         // Mahsulot qidirish - dropdown uslubida (maydon ostida)
@@ -1634,7 +1680,9 @@
                             const lastBatchDate = productData.product.last_batch_date || '';
                             
                             html += `
-                                <div class="product-dropdown-item" onclick="selectProduct('${productData.product.name}', ${lastBatchCost}, ${productData.product.sell_price}, ${productData.product.min_stock}, ${lastBatchCost}, '${lastBatchDate}', '${productData.product.barcode || ''}')">
+                                <div class="product-dropdown-item suggestion-item" 
+                                     onclick="selectProduct('${productData.product.name}', ${lastBatchCost}, ${productData.product.sell_price}, ${productData.product.min_stock}, ${lastBatchCost}, '${lastBatchDate}', '${productData.product.barcode || ''}')"
+                                     onmouseenter="handleMouseEnterSuggestion(this)">
                                     <div class="product-dropdown-content">
                                         <strong style="color: #2c3e50; font-size: 1.1rem;">${productData.product.name}</strong> | 
                                         <span style="color: #dc3545; font-weight: 600;">Ortacha: $${productData.product.cost_price.toFixed(2)}</span> | 
@@ -1765,6 +1813,15 @@
             // Qidiruv natijasini yashirish
             document.getElementById('searchResult').style.display = 'none';
             
+            // Fokusni miqdor maydoniga o'tkazish
+            setTimeout(() => {
+                const quantityField = document.getElementById('quantity');
+                if (quantityField) {
+                    quantityField.focus();
+                    quantityField.select(); // Mavjud qiymatni tanlash (agar bo'lsa)
+                }
+            }, 100);
+            
             // Foyda hisoblash
             calculateProfit();
         }
@@ -1876,6 +1933,28 @@
             }
         }
 
+        // Barcode input validatsiyasi - faqat 8 xonali raqamlar
+        function validateBarcodeInput(input) {
+            // Faqat raqamlarni qoldirish
+            let value = input.value.replace(/[^0-9]/g, '');
+            
+            // Maksimum 8 ta raqam
+            if (value.length > 8) {
+                value = value.substring(0, 8);
+            }
+            
+            input.value = value;
+            
+            // Vizual feedback
+            if (value.length > 0 && value.length < 8) {
+                input.style.borderColor = '#ffc107'; // Sariq - to'liq emas
+            } else if (value.length === 8) {
+                input.style.borderColor = '#28a745'; // Yashil - to'g'ri
+            } else {
+                input.style.borderColor = '#28a745'; // Yashil - bo'sh (Auto uchun)
+            }
+        }
+
         // Vaqtinchalik ro'yxatga qo'shish
         function addToTempList() {
             const productName = document.getElementById('product_name').value.trim();
@@ -1904,8 +1983,16 @@
                 return;
             }
             
-            // Barcode tekshiruvi - agar kiritilgan bo'lsa va duplicate bo'lsa
+            // Barcode tekshiruvi - agar kiritilgan bo'lsa
             if (barcode) {
+                // 8 xonali raqam emasligini tekshirish
+                if (barcode.length !== 8 || !/^[0-9]{8}$/.test(barcode)) {
+                    alert('❌ Barcode 8 xonali raqam bo\'lishi kerak!');
+                    document.getElementById('barcode').focus();
+                    return;
+                }
+                
+                // Duplicate tekshiruvi
                 const barcodeError = document.querySelector('.barcode-error-msg');
                 if (barcodeError) {
                     alert('❌ Bu barcode allaqachon boshqa mahsulotda mavjud!');
@@ -2109,7 +2196,14 @@
 
         // Formani tozalash
         function clearForm() {
+            // Joylashuvni saqlab qolish
+            const savedLocation = document.getElementById('location').value;
+            
             document.getElementById('productForm').reset();
+            
+            // Joylashuvni qayta o'rnatish
+            document.getElementById('location').value = savedLocation;
+            
             document.getElementById('searchResult').style.display = 'none';
             document.getElementById('priceComparison').style.display = 'none';
             document.getElementById('profitDisplay').style.display = 'none';
@@ -2117,44 +2211,68 @@
             // Global o'zgaruvchilarni tozalash
             selectedProductData = null;
             userEnteredCostPrice = null;
-            console.log('🧹 Forma va global o\'zgaruvchilar tozalandi');
+            console.log('🧹 Forma tozalandi (joylashuv saqlab qolindi)');
+            
+            // Fokusni mahsulot nomi maydoniga qaytarish
+            setTimeout(() => {
+                const productNameField = document.getElementById('product_name');
+                if (productNameField) {
+                    productNameField.focus();
+                }
+            }, 100);
         }
 
         // Avtomatik barcode generatsiya qilish
         function generateBarcode() {
-            // EAN-13 formatida barcode yaratish (13 raqam)
-            // Birinchi 3 raqam - mamlakat kodi (860 = O'zbekiston)
-            // Keyingi 9 raqam - mahsulot kodi (timestamp asosida)
-            // Oxirgi 1 raqam - checksum
-            
-            const countryCode = '860';
-            const timestamp = Date.now().toString().slice(-9); // 9 raqam
-            
-            // 12 raqamli kod (checksum'siz)
-            const partialCode = countryCode + timestamp;
-            
-            // EAN-13 checksum hisoblash
-            let sum = 0;
-            for (let i = 0; i < 12; i++) {
-                const digit = parseInt(partialCode[i]);
-                sum += (i % 2 === 0) ? digit : digit * 3;
-            }
-            const checksum = (10 - (sum % 10)) % 10;
-            
-            // To'liq barcode
-            const barcode = partialCode + checksum;
-            
-            // Input ga qo'yish
-            document.getElementById('barcode').value = barcode;
-            
-            // Visual feedback
+            // O'rtada qolgan yoki keyingi barcode'ni topish
             const barcodeInput = document.getElementById('barcode');
-            barcodeInput.style.background = '#d4edda';
-            setTimeout(() => {
-                barcodeInput.style.background = 'white';
-            }, 500);
+            const autoGenerateBtn = document.getElementById('autoGenerateBtn');
             
-            console.log('✅ Avtomatik barcode yaratildi:', barcode);
+            // Loading ko'rsatish
+            barcodeInput.value = 'Yuklanmoqda...';
+            barcodeInput.disabled = true;
+            autoGenerateBtn.disabled = true;
+            
+            fetch('/api/next-barcode')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // 8 xonali barcode
+                        const barcode = data.barcode;
+                        
+                        // Input ga qo'yish
+                        barcodeInput.value = barcode;
+                        barcodeInput.disabled = false;
+                        autoGenerateBtn.disabled = false;
+                        
+                        // Visual feedback
+                        barcodeInput.style.background = '#d4edda';
+                        setTimeout(() => {
+                            barcodeInput.style.background = 'white';
+                        }, 500);
+                        
+                        console.log('✅ Avtomatik barcode yaratildi:', barcode);
+                        if (data.is_gap_filled) {
+                            console.log('🔍 O\'rtada qolgan barcode to\'ldirildi');
+                        }
+                        if (data.max_barcode) {
+                            console.log('📊 Eng katta barcode:', data.max_barcode);
+                        }
+                        console.log('📈 Jami ishlatilgan barcode:', data.total_used);
+                    } else {
+                        alert('❌ Barcode yaratishda xatolik: ' + data.error);
+                        barcodeInput.value = '';
+                        barcodeInput.disabled = false;
+                        autoGenerateBtn.disabled = false;
+                    }
+                })
+                .catch(error => {
+                    console.error('❌ API xatolik:', error);
+                    alert('❌ Barcode yaratishda xatolik yuz berdi!');
+                    barcodeInput.value = '';
+                    barcodeInput.disabled = false;
+                    autoGenerateBtn.disabled = false;
+                });
         }
 
         // Barcode chop etish (formadan)
