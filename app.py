@@ -17,7 +17,7 @@ from flask import (Flask, render_template, request, jsonify, redirect,
                    url_for, render_template_string, send_from_directory,
                    session, abort)
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import text
+from sqlalchemy import text, select
 from sqlalchemy.exc import (
     OperationalError,      # Database connection muammolari
     TimeoutError,          # Database timeout
