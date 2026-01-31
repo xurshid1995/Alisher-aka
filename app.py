@@ -9006,7 +9006,7 @@ def api_sales_history():
         ).join(
             SaleItem, SaleItem.product_id == Product_alias.id
         ).filter(
-            SaleItem.sale_id.in_(db.select([sale_ids_subquery.c.id]))
+            SaleItem.sale_id.in_(select(sale_ids_subquery.c.id))
         ).group_by(
             Product_alias.name
         ).order_by(
@@ -9033,7 +9033,7 @@ def api_sales_history():
         ).join(
             Sale, Sale.store_id == Store_alias.id
         ).filter(
-            Sale.id.in_(db.select([sale_ids_subquery.c.id]))
+            Sale.id.in_(select(sale_ids_subquery.c.id))
         ).group_by(
             Store_alias.name
         ).order_by(
