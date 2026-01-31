@@ -295,6 +295,29 @@
         color: white;
         border-color: #667eea;
     }
+    
+    /* X tugmasi uchun stil */
+    .clear-filter-btn {
+        background: #dc3545;
+        color: white;
+        padding: 0.4rem 0.7rem;
+        border: 2px solid #dc3545;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        font-weight: 600;
+        transition: all 0.2s ease;
+        min-width: 36px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .clear-filter-btn:hover {
+        background: #c82333;
+        border-color: #c82333;
+        transform: scale(1.1);
+    }
 
     .analysis-filter-btn {
         background: white;
@@ -753,10 +776,11 @@
                 </div>
                 <span id="resultsInfo">Mijozlar yuklanmoqda...</span>
                 <div class="time-filter-buttons">
-                    <button class="time-filter-btn active" onclick="filterByTime('today')">Bugun</button>
+                    <button class="time-filter-btn" onclick="filterByTime('today')">Bugun</button>
                     <button class="time-filter-btn" onclick="filterByTime('week')">Bu hafta</button>
                     <button class="time-filter-btn" onclick="filterByTime('month')">Bu oy</button>
                     <button class="time-filter-btn" onclick="filterByTime('year')">Bu yil</button>
+                    <button class="clear-filter-btn" onclick="clearTimeFilter()" id="clearFilterBtn" style="display: none;">❌</button>
                 </div>
                 <div class="time-filter-buttons">
                     <button class="analysis-filter-btn active" onclick="filterByAnalysis('count')">🔢 Savdo soni</button>
@@ -1170,7 +1194,7 @@
 
     // Savdo tahlili bo'yicha filtr
     let currentAnalysisFilter = 'count'; // default: savdo soni
-    let currentTimeFilter = 'today'; // default: bugun
+    let currentTimeFilter = 'all'; // default: hech qanday filtr yo'q
 
     function filterByAnalysis(type) {
         currentAnalysisFilter = type;
@@ -1196,7 +1220,26 @@
         });
         event.target.classList.add('active');
         
+        // X tugmasini ko'rsatish
+        document.getElementById('clearFilterBtn').style.display = 'inline-block';
+        
         // Mijozlarni qayta yuklash (backend'dan filtr bilan)
+        loadCustomers();
+    }
+    
+    // Filtrni tozalash
+    function clearTimeFilter() {
+        currentTimeFilter = 'all';
+        
+        // Barcha active classlarni olib tashlash
+        document.querySelectorAll('.time-filter-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        
+        // X tugmasini yashirish
+        document.getElementById('clearFilterBtn').style.display = 'none';
+        
+        // Mijozlarni qayta yuklash (filtrsiz)
         loadCustomers();
     }
 
