@@ -948,7 +948,7 @@
         const searchInput = document.getElementById('customerSearch');
         const clearBtn = document.getElementById('clearSearchBtn');
         
-        if (searchInput.value.trim() !== '' || currentTimeFilter !== 'all') {
+        if (searchInput.value.trim() !== '' || currentTimeFilter !== 'all' || currentAnalysisFilter !== 'none') {
             clearBtn.style.display = 'flex';
         } else {
             clearBtn.style.display = 'none';
@@ -1218,6 +1218,13 @@
         });
         event.target.classList.add('active');
         
+        // Qidiruv maydonidagi X tugmasini ko'rsatish
+        const searchInput = document.getElementById('customerSearch');
+        const clearBtn = document.getElementById('clearSearchBtn');
+        if (searchInput.value.trim() !== '' || currentTimeFilter !== 'all' || currentAnalysisFilter !== 'none') {
+            clearBtn.style.display = 'flex';
+        }
+        
         // Mijozlarni qayta saralash
         applyFilters();
     }
@@ -1235,7 +1242,7 @@
         // Qidiruv maydonidagi X tugmasini ko'rsatish
         const searchInput = document.getElementById('customerSearch');
         const clearBtn = document.getElementById('clearSearchBtn');
-        if (searchInput.value.trim() !== '' || currentTimeFilter !== 'all') {
+        if (searchInput.value.trim() !== '' || currentTimeFilter !== 'all' || currentAnalysisFilter !== 'none') {
             clearBtn.style.display = 'flex';
         }
         
@@ -1248,11 +1255,19 @@
         // Qidiruv maydonini tozalash
         document.getElementById('customerSearch').value = '';
         
-        // Vaqt filtrini ham tozalash
+        // Vaqt filtrini tozalash
         currentTimeFilter = 'all';
         
-        // Barcha active classlarni olib tashlash
+        // Savdo tahlili filtrini tozalash
+        currentAnalysisFilter = 'none';
+        
+        // Barcha vaqt filtr tugmalaridan active classni olib tashlash
         document.querySelectorAll('.time-filter-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        
+        // Barcha tahlil filtr tugmalaridan active classni olib tashlash
+        document.querySelectorAll('.analysis-filter-btn').forEach(btn => {
             btn.classList.remove('active');
         });
         
