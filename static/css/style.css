@@ -59,12 +59,13 @@ body {
     left: 0;
     top: 70px;
     z-index: 900;
-    overflow-y: auto; /* Vertical scroll yoqish */
+    overflow-y: scroll; /* Har doim vertical scroll ko'rsatish */
     overflow-x: hidden;
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
     transition: width 0.3s ease; /* Yumshoq transition */
+    scrollbar-gutter: stable; /* Scrollbar uchun joy ajratish */
 }
 
 /* Hover qilganda kengayadi */
@@ -75,29 +76,32 @@ body {
 
 /* Custom Scrollbar for Sidebar - ko'rinadigan va chiroyli */
 .sidebar::-webkit-scrollbar {
-    width: 6px; /* Scrollbar kengligi */
+    width: 8px; /* Scrollbar kengligi - biroz kattaroq */
 }
 
 .sidebar::-webkit-scrollbar-track {
-    background: rgba(0,0,0,0.1);
+    background: rgba(0,0,0,0.2);
     border-radius: 10px;
+    margin: 5px 0; /* Yuqori va pastda margin */
 }
 
 .sidebar::-webkit-scrollbar-thumb {
-    background: rgba(255,255,255,0.3);
+    background: rgba(255,255,255,0.4);
     border-radius: 10px;
     transition: background 0.3s ease;
 }
 
 .sidebar::-webkit-scrollbar-thumb:hover {
-    background: rgba(255,255,255,0.5);
+    background: rgba(255,255,255,0.6);
 }
 
 .sidebar-menu {
     list-style: none;
-    padding: 10px;
+    padding: 10px 5px 20px 5px; /* Pastga ko'proq joy */
+    margin: 0;
     flex: 1;
-    overflow-y: auto; /* Scroll yoqish */
+    overflow-y: visible; /* Menu scroll qilmasin, faqat sidebar scroll qilsin */
+    min-height: max-content; /* Barcha elementlar ko'rinsin */
 }
 
 .sidebar-menu li {
