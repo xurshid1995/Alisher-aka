@@ -3979,10 +3979,11 @@
         console.log('   Korzina sourceType:', item.sourceType);
         console.log('   Korzina sourceId:', item.sourceId);
         
-        // Default qiymatlar - agar API'dan ma'lumot kelmasa ishlaydi
-        let totalAvailable = item.quantity; // Minimal: faqat korzinada bor miqdor
+        // Default qiymatlar
+        let totalAvailable = 0;  // ⚠️ Default 0 - agar mahsulot topilmasa xatolik ko'rsatish uchun
         let costPrice = 0;
         let productFound = false;
+        let stockQuantity = 0;  // Stokdagi sof miqdor
         
         try {
             console.log('🌐 API so\'rov yuborilmoqda:', `/api/products?location=${locationValue}`);
@@ -4028,21 +4029,36 @@
                     
                     if (matchingStock) {
                         console.log('✅ Stok topildi:', matchingStock);
-                        // Mavjud stok + korzinada band qilingan eski miqdor
-                        totalAvailable = (matchingStock.quantity || 0) + item.quantity;
-                        console.log('📊 Mavjud: stok =', matchingStock.quantity, '+ korzina =', item.quantity, '= jami', totalAvailable);
+                        stockQuantity = matchingStock.quantity || 0;
+                        // ⭐ MUHIM: Stokdagi miqdor + korzinada band qilingan miqdor
+                        totalAvailable = stockQuantity + item.quantity;
+                        console.log('📊 Hisoblash:');
+                        console.log('   - Stokda mavjud:', stockQuantity);
+                        console.log('   - Korzinada band:', item.quantity);
+                        console.log('   - JAMI mavjud:', totalAvailable);
                     } else {
-                        console.warn('⚠️ Bu joylashuv uchun stok topilmadi, faqat korzina miqdori ishlatiladi');
+                        console.warn('⚠️ Bu joylashuv uchun stok topilmadi!');
+                        // Stok topilmasa ham, minimal korzina miqdorini ko'rsatish (tahrirlash uchun)
+                        totalAvailable = item.quantity;
+                        stockQuantity = 0;
+                        console.log('⚠️ Faqat korzina miqdori ishlatiladi:', totalAvailable);
                     }
                 } else {
                     console.warn('⚠️ Mahsulotda stok ma\'lumotlari yo\'q');
+                    // Stok ma'lumoti bo'lmasa ham, minimal korzina miqdorini ko'rsatish
+                    totalAvailable = item.quantity;
                 }
             } else {
                 console.error('❌ Mahsulot topilmadi! ID:', itemId);
+            console.log('   💡 Bu raqam: Stok (', stockQuantity, ') + Korzina (', item.quantity, ')');
                 console.log('📋 Mavjud mahsulotlar:', products.map(p => ({ id: p.id, name: p.name })));
+                // Mahsulot topilmasa ham, minimal korzina miqdorini ko'rsatish (tahrirlash imkonini berish)
+                totalAvailable = item.quantity;
             }
         } catch (error) {
             console.error('❌ API so\'rovida xatolik:', error);
+            // Xatolik bo'lsa ham, minimal korzina miqdorini ko'rsatish
+            totalAvailable = item.quantity;
         }
         
         // Modal maydonlarini to'ldirish - har doim, mahsulot topilgan yoki topilmagan bo'lsin
