@@ -76,7 +76,29 @@
         color: white;
     }
 
-    /* Qidiruv va Filtr paneli */
+
+
+    /* Savdo tarixi jadvali */
+    .orders-section {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+
+    .orders-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 0.4rem 1rem;
+    }
+
+    .orders-header h2 {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 700;
+    }
+
+    /* Qidiruv va Filtr seksiyasi */
     .search-filter-section {
         background: white;
         border-radius: 12px;
@@ -86,6 +108,7 @@
         overflow: hidden;
     }
 
+    /* Qidiruv va Filtr paneli */
     .search-filter-panel {
         background: #f8f9fa;
         padding: 1rem;
@@ -169,6 +192,174 @@
         font-size: 0.9rem;
         color: #495057;
         border-bottom: 1px solid #dee2e6;
+    }
+
+    /* Jadval responsive qilish */
+    .table-responsive {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .table-container {
+        min-width: 100%;
+    }
+
+    /* Barcha jadval qatorlariga bir xil balandlik */
+    .sales-table tbody tr {
+        height: auto;
+        min-height: 28px;
+    }
+
+    .sales-table tbody td {
+        padding: 4px 6px;
+        line-height: 1.2;
+        vertical-align: middle;
+    }
+
+    /* Rowspan ustunlari - vertical va horizontal markazlashtirilgan */
+    .group-cell {
+        vertical-align: middle !important;
+        text-align: center !important;
+        padding: 4px 6px !important;
+    }
+
+    /* Mahsulot ustuni uchun bir xil font */
+    .product-cell {
+        font-size: 14px !important;
+        font-weight: 500 !important;
+    }
+
+    /* Sana va vaqt */
+    .group-datetime {
+        background-color: #f8f9fa;
+    }
+
+    /* Sotuvchi */
+    .group-seller {
+        background-color: #f8f9fa;
+    }
+
+    /* Jami summa */
+    .group-total {
+        background-color: #e7f3ff;
+        font-weight: 700 !important;
+    }
+
+    /* Jami foyda */
+    .group-profit {
+        background-color: #e8f5e9;
+        font-weight: 700 !important;
+    }
+
+    /* Amallar ustuni */
+    .group-actions {
+        background-color: #f8f9fa;
+        vertical-align: middle !important;
+        text-align: center !important;
+        padding: 2px !important;
+    }
+
+    .group-actions button {
+        width: 100%;
+        margin: 2px 0;
+    }
+
+    /* Loading va xabarlar */
+    .loading-message, .no-data-message {
+        text-align: center;
+        padding: 40px 20px;
+        color: #666;
+        font-style: italic;
+    }
+
+    /* Modal */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(3px);
+    }
+
+    .modal-content {
+        background-color: white;
+        margin: 5% auto;
+        padding: 0;
+        border-radius: 12px;
+        width: 90%;
+        max-width: 800px;
+        max-height: 85vh;
+        overflow-y: auto;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        animation: modalSlideIn 0.3s ease-out;
+    }
+
+    @keyframes modalSlideIn {
+        from {
+            opacity: 0;
+            transform: translateY(-50px) scale(0.95);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    .modal-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px 30px;
+        border-radius: 12px 12px 0 0;
+    }
+
+    .modal-header h3 {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 700;
+    }
+
+    .modal-body {
+        padding: 30px;
+    }
+
+    .modal-footer {
+        padding: 20px 30px;
+        border-top: 1px solid #dee2e6;
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+    }
+
+    .modal-close-btn, .modal-print-btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.2s ease;
+    }
+
+    .modal-close-btn {
+        background: #6c757d;
+        color: white;
+    }
+
+    .modal-close-btn:hover {
+        background: #5a6268;
+    }
+
+    .modal-print-btn {
+        background: #28a745;
+        color: white;
+    }
+
+    .modal-print-btn:hover {
+        background: #218838;
     }
 
     /* Statistika */
@@ -387,118 +578,6 @@
     .btn-excel i {
         font-size: 12px;
     }
-
-    /* Savdo tafsilotlari modal - markazda ochish */
-    .sale-details-modal {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        background-color: rgba(0, 0, 0, 0.6);
-        display: flex !important;
-        justify-content: center;
-        align-items: center;
-        z-index: 9999;
-        padding: 20px;
-        box-sizing: border-box;
-    }
-
-    .sale-details-content {
-        max-width: 1200px;
-        width: 95%;
-        max-height: 90vh;
-        overflow-y: auto;
-        background: white;
-        border-radius: 12px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-        animation: modalFadeIn 0.3s ease-out;
-    }
-
-    @keyframes modalFadeIn {
-        from {
-            opacity: 0;
-            transform: scale(0.9) translateY(-20px);
-        }
-        to {
-            opacity: 1;
-            transform: scale(1) translateY(0);
-        }
-    }
-
-    .modal-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 20px;
-        border-bottom: 1px solid #e9ecef;
-    }
-
-    .modal-header h3 {
-        margin: 0;
-        color: #495057;
-        font-size: 1.2rem;
-    }
-
-    .close-btn {
-        background: none;
-        border: none;
-        font-size: 1.5rem;
-        cursor: pointer;
-        color: #6c757d;
-        padding: 0;
-        width: 30px;
-        height: 30px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .close-btn:hover {
-        color: #dc3545;
-    }
-
-    .modal-body {
-        padding: 20px;
-    }
-
-    .modal-footer {
-        display: flex;
-        justify-content: flex-end;
-        gap: 10px;
-        padding: 20px;
-        border-top: 1px solid #e9ecef;
-    }
-
-    .btn {
-        padding: 10px 20px;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 14px;
-        font-weight: 500;
-        text-decoration: none;
-        display: inline-block;
-        text-align: center;
-    }
-
-    .btn-primary {
-        background-color: #007bff;
-        color: white;
-    }
-
-    .btn-primary:hover {
-        background-color: #0056b3;
-    }
-
-    .btn-secondary {
-        background-color: #6c757d;
-        color: white;
-    }
-
-    .btn-secondary:hover {
-        background-color: #545b62;
-    }
 </style>
 {% endblock %}
 
@@ -517,6 +596,8 @@
             </div>
             <a href="/customers" class="back-btn">← Orqaga</a>
         </div>
+
+
 
         <!-- Statistika -->
         <div class="stats-grid">
@@ -578,6 +659,10 @@
 
     <!-- Savdo tarixi -->
     <div class="sales-section">
+        <div class="sales-header">
+            <h2>📋 Savdo tarixi</h2>
+        </div>
+
         <div id="loadingSales" class="loading-message">
             ⏳ Yuklanmoqda...
         </div>
@@ -615,16 +700,24 @@
                 </table>
             </div>
         </div>
+
+        <!-- Pagination -->
+        <div id="paginationContainer" class="pagination-container" style="display: none;">
+            <!-- JavaScript orqali to'ldiriladi -->
+        </div>
     </div>
 </div>
 
 <script>
-// ========== SALES-HISTORY.HTML DAN 100% NUSXA QILINGAN KOD ==========
-
 // Global o'zgaruvchilar
 let userRole = '';
 let currentSaleData = null;
 let allCustomerOrders = [];
+
+// SaleItem dan joylashuv nomini olish funksiyasi
+function getLocationName(item) {
+    return item.location_name || 'Noma\'lum joylashuv';
+}
 
 document.addEventListener('DOMContentLoaded', function() {
     const customerId = {{ customer.id }};
@@ -680,7 +773,19 @@ function displayEmptyTable() {
 }
 
 function displayOrders(orders) {
-    // Sales tableni to'ldirish (eski logic)
+    // Global arrayni yangilash
+    allCustomerOrders = [];
+    orders.forEach(sale => {
+        const items = sale.items || [];
+        items.forEach(item => {
+            allCustomerOrders.push({
+                ...item,
+                created_at: sale.sale_date,
+                location_name: sale.location_name || 'N/A'
+            });
+        });
+    });
+    
     const tbody = document.getElementById('salesTableBody');
     let html = '';
     
@@ -714,69 +819,106 @@ function displayOrders(orders) {
             minute: '2-digit'
         });
         
-        // Birinchi item
+        // Birinchi item (grupning boshlanishi)
         const firstItem = items[0];
-        const rowspan = items.length;
+        const isOnlyItem = items.length === 1;
         
-        html += `
-            <tr class="sale-group-start">
-                <td rowspan="${rowspan}" class="group-cell group-datetime">
-                    <div class="datetime-info">
-                        <div class="sale-date">${formattedDate}</div>
-                        <div class="sale-time">${formattedTime}</div>
-                    </div>
-                </td>
-                <td rowspan="${rowspan}" class="group-cell group-seller">${sale.seller_name || 'Admin'}</td>
-                <td rowspan="${rowspan}" class="group-cell group-location">${sale.store_name || sale.warehouse_name || 'Noma\'lum'}</td>
-                <td class="product-cell">${firstItem.product_name}</td>
-                <td class="compact-hide" style="text-align: center;">${firstItem.quantity}</td>
-                <td class="compact-hide" style="text-align: right;">$${parseFloat(firstItem.unit_price || 0).toFixed(2)}</td>
-                <td class="compact-hide" style="text-align: right;">$${parseFloat(firstItem.total_price || 0).toFixed(2)}</td>
-                <td rowspan="${rowspan}" class="group-cell group-total" style="text-align: right;">$${totalAmount.toFixed(2)}</td>
-                ${(userRole === 'admin' || userRole === 'manager') ? `<td rowspan="${rowspan}" class="group-cell group-profit ${profitClass}" style="text-align: right;">$${totalProfit.toFixed(2)}</td>` : ''}
-                <td rowspan="${rowspan}" class="group-cell group-actions">
-                    <button class="btn-action btn-view" onclick="viewSaleDetails(${sale.id})" title="Ko'rish">
-                        <i class="fas fa-eye"></i>
-                    </button>
-                </td>
-            </tr>
-        `;
+        let firstRowClasses = ['sale-group-start'];
+        if (isOnlyItem) firstRowClasses.push('sale-group-end');
+        
+        html += '<tr class="' + firstRowClasses.join(' ') + '">';
+        html += '<td rowspan="' + items.length + '" class="group-cell group-datetime">';
+        html += '<div class="datetime-info">';
+        html += '<div class="sale-date">' + formattedDate + '</div>';
+        html += '<div class="sale-time">' + formattedTime + '</div>';
+        html += '</div></td>';
+        
+        html += '<td rowspan="' + items.length + '" class="group-cell group-seller">';
+        html += '<div style="font-size: 14px; font-weight: 600; color: #495057;">' + (sale.seller_name || 'Admin') + '</div>';
+        if (sale.seller_phone) {
+            html += '<div style="font-size: 12px; color: #6c757d; font-style: italic;">' + sale.seller_phone + '</div>';
+        }
+        html += '</td>';
+        
+        html += '<td class="group-cell group-location">' + getLocationName(firstItem) + '</td>';
+        html += '<td class="product-cell">' + (firstItem.product_name || 'Noma\'lum') + '</td>';
+        html += '<td style="text-align: center; font-weight: 600;">' + firstItem.quantity + '</td>';
+        html += '<td>';
+        html += '<div style="font-weight: 600; text-align: center;">$' + parseFloat(firstItem.unit_price || 0).toFixed(2) + '</div>';
+        if (sale.currency_rate) {
+            html += '<div style="margin-top: 3px; text-align: center;"><span style="background-color: #5cb3fd; color: white; font-size: 11px; padding: 2px 6px; border-radius: 0; font-weight: 500;">' + (parseFloat(firstItem.unit_price || 0) * sale.currency_rate).toLocaleString('en-US', {maximumFractionDigits: 0}) + '</span></div>';
+        }
+        html += '</td>';
+        html += '<td>';
+        html += '<div style="font-weight: 600; text-align: center;">$' + parseFloat(firstItem.total_price || 0).toFixed(2) + '</div>';
+        if (sale.currency_rate) {
+            html += '<div style="margin-top: 3px; text-align: center;"><span style="background-color: #5cb3fd; color: white; font-size: 11px; padding: 2px 6px; border-radius: 0; font-weight: 500;">' + (parseFloat(firstItem.total_price || 0) * sale.currency_rate).toLocaleString('en-US', {maximumFractionDigits: 0}) + '</span></div>';
+        }
+        html += '</td>';
+        
+        html += '<td rowspan="' + items.length + '" class="group-cell group-total">';
+        html += '<div style="font-weight: 600; text-align: center;">$' + totalAmount.toFixed(2) + '</div>';
+        if (sale.currency_rate) {
+            html += '<div style="margin-top: 3px; text-align: center;"><span style="background-color: #5cb3fd; color: white; font-size: 11px; padding: 2px 6px; border-radius: 0; font-weight: 500;">' + (totalAmount * sale.currency_rate).toLocaleString('en-US', {maximumFractionDigits: 0}) + '</span></div>';
+        }
+        html += '</td>';
+        
+        if (userRole === 'admin' || userRole === 'manager') {
+            html += '<td rowspan="' + items.length + '" class="group-cell group-profit ' + profitClass + '">';
+            html += '<div style="font-weight: 600; text-align: center;">$' + totalProfit.toFixed(2) + '</div>';
+            if (sale.currency_rate) {
+                html += '<div style="margin-top: 3px; text-align: center;"><span style="background-color: #5cb3fd; color: white; font-size: 11px; padding: 2px 6px; border-radius: 0; font-weight: 500;">' + (totalProfit * sale.currency_rate).toLocaleString('en-US', {maximumFractionDigits: 0}) + '</span></div>';
+            }
+            html += '</td>';
+        }
+        
+        html += '<td rowspan="' + items.length + '" class="group-cell group-actions">';
+        html += '<div style="display: flex; flex-direction: column; gap: 4px; align-items: center;">';
+        html += '<button class="btn-action btn-view" onclick="viewSaleDetails(' + sale.id + ')" title="Ko\'rish" style="background-color: #007bff; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 16px; width: 100%;">';
+        html += '👁️';
+        html += '</button>';
+        html += '<button class="btn-action btn-edit" onclick="editSaleGroup(' + sale.id + ')" title="Tahrirlash" style="background-color: #ffc107; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 16px; width: 100%;">';
+        html += '✏️';
+        html += '</button>';
+        html += '<button class="btn-action btn-delete" onclick="deleteSale(' + sale.id + ')" title="O\'chirish" style="background-color: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 16px; width: 100%;">';
+        html += '🗑️';
+        html += '</button>';
+        html += '</div>';
+        html += '</td>';
+        html += '</tr>';
         
         // Qolgan itemlar
         for (let i = 1; i < items.length; i++) {
             const item = items[i];
-            html += `
-                <tr class="sale-group-item ${i === items.length - 1 ? 'sale-group-end' : ''}">
-                    <td class="product-cell">${item.product_name}</td>
-                    <td class="compact-hide" style="text-align: center;">${item.quantity}</td>
-                    <td class="compact-hide" style="text-align: right;">$${parseFloat(item.unit_price || 0).toFixed(2)}</td>
-                    <td class="compact-hide" style="text-align: right;">$${parseFloat(item.total_price || 0).toFixed(2)}</td>
-                </tr>
-            `;
+            const isLast = i === items.length - 1;
+            
+            let rowClasses = ['sale-group-item'];
+            if (isLast) rowClasses.push('sale-group-end');
+            
+            html += '<tr class="' + rowClasses.join(' ') + '">';
+            html += '<td class="group-cell group-location">' + getLocationName(item) + '</td>';
+            html += '<td class="product-cell">' + (item.product_name || 'Noma\'lum') + '</td>';
+            html += '<td style="text-align: center; font-weight: 600;">' + item.quantity + '</td>';
+            html += '<td>';
+            html += '<div style="font-weight: 600; text-align: center;">$' + parseFloat(item.unit_price || 0).toFixed(2) + '</div>';
+            if (sale.currency_rate) {
+                html += '<div style="margin-top: 3px; text-align: center;"><span style="background-color: #5cb3fd; color: white; font-size: 11px; padding: 2px 6px; border-radius: 0; font-weight: 500;">' + (parseFloat(item.unit_price || 0) * sale.currency_rate).toLocaleString('en-US', {maximumFractionDigits: 0}) + '</span></div>';
+            }
+            html += '</td>';
+            html += '<td>';
+            html += '<div style="font-weight: 600; text-align: center;">$' + parseFloat(item.total_price || 0).toFixed(2) + '</div>';
+            if (sale.currency_rate) {
+                html += '<div style="margin-top: 3px; text-align: center;"><span style="background-color: #5cb3fd; color: white; font-size: 11px; padding: 2px 6px; border-radius: 0; font-weight: 500;">' + (parseFloat(item.total_price || 0) * sale.currency_rate).toLocaleString('en-US', {maximumFractionDigits: 0}) + '</span></div>';
+            }
+            html += '</td>';
+            html += '</tr>';
         }
     });
     
-    tbody.innerHTML = html || '<tr><td colspan="10" style="text-align: center;">Hech qanday savdo topilmadi</td></tr>';
+    tbody.innerHTML = html;
 }
 
-function updateStats(orders) {
-    const totalOrders = orders.length;
-    const totalAmount = orders.reduce((sum, order) => sum + parseFloat(order.total_amount || 0), 0);
-    
-    document.getElementById('totalOrders').textContent = totalOrders;
-    document.getElementById('totalAmount').textContent = totalAmount > 0 ? '$' + totalAmount.toLocaleString('uz-UZ') : '$0';
-    
-    // Foyda faqat admin va manager uchun
-    if (userRole === 'admin' || userRole === 'manager') {
-        const totalProfit = orders.reduce((sum, order) => sum + parseFloat(order.total_profit || 0), 0);
-        const profitElement = document.getElementById('totalProfit');
-        if (profitElement) {
-            profitElement.textContent = totalProfit > 0 ? '$' + totalProfit.toLocaleString('uz-UZ') : '$0';
-        }
-    }
-}
-
-// Savdo tafsilotlarini ko'rish - sales-history.html dan 100% nusxa
+// Modal functions - sales-history.html dan 100% nusxa
 function viewSaleDetails(saleId) {
     console.log('Ko\'rish: Savdo ID', saleId);
     
@@ -801,10 +943,10 @@ function showSaleDetailsModal(sale) {
     currentSaleData = sale;
     
     const modalHtml = `
-        <div id="saleDetailsModal" class="sale-details-modal">
-            <div class="sale-details-content">
-                <div class="modal-header">
-                    <h3><i class="fas fa-eye"></i> Savdo Tafsilotlari</h3>
+        <div id="saleDetailsModal" class="sale-details-modal" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(0, 0, 0, 0.6); display: flex !important; justify-content: center; align-items: center; z-index: 9999; padding: 20px; box-sizing: border-box;">
+            <div class="sale-details-content" style="max-width: 1200px; width: 95%; max-height: 90vh; overflow-y: auto; background: white; border-radius: 12px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3); animation: modalFadeIn 0.3s ease-out;">
+                <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; padding: 20px; border-bottom: 1px solid #e9ecef;">
+                    <h3 style="margin: 0; color: #495057; font-size: 1.2rem;"><i class="fas fa-eye"></i> Savdo Tafsilotlari</h3>
                     <div class="modal-header-actions">
                         <button class="btn-print" onclick="printSaleReceipt('uzs')" title="UZS chop etish" style="background: #28a745;">
                             <i class="fas fa-print"></i> UZS chop etish
@@ -815,10 +957,10 @@ function showSaleDetailsModal(sale) {
                         <button class="btn-excel" onclick="exportSaleToExcel()" title="Excel ga export">
                             <i class="fas fa-file-excel"></i> Excel
                         </button>
-                        <button class="close-btn" onclick="closeSaleDetailsModal()">&times;</button>
+                        <button class="close-btn" onclick="closeSaleDetailsModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #6c757d; padding: 0; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;">&times;</button>
                     </div>
                 </div>
-                <div class="modal-body">
+                <div class="modal-body" style="padding: 20px;">
                     <!-- Asosiy ma'lumotlar bir qatorda -->
                     <div class="sale-main-info">
                         <span class="customer-label">Mijoz:</span>
@@ -851,81 +993,377 @@ function showSaleDetailsModal(sale) {
                             <tbody>
                                 ${sale.items.map(item => {
                                     const exchangeRate = 12700;
-                                    const unitPriceUSD = parseFloat(item.unit_price || 0);
-                                    const totalPriceUSD = parseFloat(item.total_price || 0);
-                                    const unitPriceUZS = Math.round(unitPriceUSD * exchangeRate);
-                                    const totalPriceUZS = Math.round(totalPriceUSD * exchangeRate);
-                                    
-                                    const isReturned = item.quantity <= 0;
-                                    const rowStyle = isReturned ? 'background: #ffebee; color: #c62828; text-decoration: line-through;' : '';
-                                    const quantityBadge = isReturned ? '❌ ' : '';
-                                    
-                                    return `
-                                    <tr style="${rowStyle}">
-                                        <td style="font-weight: ${isReturned ? '600' : 'normal'};">${quantityBadge}${item.product_name}${isReturned ? ' (Qaytarilgan)' : ''}</td>
-                                        <td>${item.location_name}</td>
-                                        <td style="font-weight: ${isReturned ? '600' : 'normal'};">${item.quantity}</td>
-                                        <td>
-                                            <div>$${unitPriceUSD.toFixed(2)}</div>
-                                            <div style="font-size: 11px; color: ${isReturned ? '#c62828' : '#666'};">${unitPriceUZS.toLocaleString('uz-UZ')} so'm</div>
-                                        </td>
-                                        <td>
-                                            <div>$${totalPriceUSD.toFixed(2)}</div>
-                                            <div style="font-size: 11px; color: ${isReturned ? '#c62828' : '#666'};">${totalPriceUZS.toLocaleString('uz-UZ')} so'm</div>
-                                        </td>
-                                    </tr>
-                                `}).join('')}
-                                ${sale.returned_products && sale.returned_products.length > 0 ? `
-                                    <tr style="background: #fff3cd; border-top: 2px solid #ffc107;">
-                                        <td colspan="5" style="text-align: center; font-weight: 600; padding: 10px; color: #856404;">
-                                            ⚠️ Qaytarilgan mahsulotlar
-                                        </td>
-                                    </tr>
-                                    ${sale.returned_products.map(item => {
-                                        const exchangeRate = 12700;
-                                        const unitPriceUSD = parseFloat(item.unit_price || 0);
-                                        const totalPriceUSD = parseFloat(item.total_price || 0);
-                                        const unitPriceUZS = Math.round(unitPriceUSD * exchangeRate);
-                                        const totalPriceUZS = Math.round(totalPriceUSD * exchangeRate);
-                                        
-                                        return `
-                                        <tr style="background: #ffebee; color: #c62828;">
-                                            <td style="font-weight: 600;">❌ ${item.product_name} (Qaytarilgan)</td>
-                                            <td>${item.location_name}</td>
-                                            <td style="font-weight: 600;">-${item.returned_quantity}</td>
-                                            <td>
-                                                <div>$${unitPriceUSD.toFixed(2)}</div>
-                                                <div style="font-size: 11px; color: #c62828;">${unitPriceUZS.toLocaleString('uz-UZ')} so'm</div>
-                                            </td>
-                                            <td>
-                                                <div>-$${totalPriceUSD.toFixed(2)}</div>
-                                                <div style="font-size: 11px; color: #c62828;">-${totalPriceUZS.toLocaleString('uz-UZ')} so'm</div>
-                                                <div style="font-size: 11px; font-style: italic; margin-top: 4px;">
-                                                    ${item.return_date ? new Date(item.return_date).toLocaleString('uz-UZ', {timeZone: 'Asia/Tashkent', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'}) : ''}
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    `}).join('')}
-                                ` : ''}
-                            </tbody>
-                        </table>
-                    </div>
-                    
-                    <div class="total-info">
-                        ${generatePaymentDetailsHTML(sale)}
-                    </div>
+    
+    // Mahsulotlar jadvali - LOCATION ustuni bilan
+    let itemsHtml = '';
+    if (sale.items && sale.items.length > 0) {
+        itemsHtml = sale.items.map((item, index) => {
+            const unitPriceUSD = parseFloat(item.unit_price || 0);
+            const totalPriceUSD = parseFloat(item.total_price || 0);
+            const costPriceUSD = parseFloat(item.cost_price || 0);
+            const profitUSD = totalPriceUSD - (costPriceUSD * (item.quantity || 0));
+            const unitPriceUZS = Math.round(unitPriceUSD * exchangeRate);
+            const totalPriceUZS = Math.round(totalPriceUSD * exchangeRate);
+            
+            // Agar miqdor 0 yoki manfiy bo'lsa, qaytarilgan mahsulot
+            const isReturned = item.quantity <= 0;
+            const rowStyle = isReturned ? 'background: #ffebee; color: #c62828; text-decoration: line-through;' : '';
+            const quantityBadge = isReturned ? '❌ ' : '';
+            
+            return `
+                <tr style="${rowStyle}border-bottom: 1px solid #e9ecef;">
+                    <td style="padding: 12px 8px; font-size: 0.9rem;">
+                        <div style="font-weight: 600; color: ${isReturned ? '#c62828' : '#333'};">${quantityBadge}${index + 1}. ${item.product_name || 'Noma\'lum'}${isReturned ? ' (Qaytarilgan)' : ''}</div>
+                        ${item.barcode ? `<div style="font-size: 0.75rem; color: ${isReturned ? '#c62828' : '#6c757d'}; margin-top: 2px;">📊 ${item.barcode}</div>` : ''}
+                    </td>
+                    <td style="padding: 12px 8px; font-weight: 600;">${item.location_name || 'Noma\'lum'}</td>
+                    <td style="padding: 12px 8px; text-align: center; font-weight: 600;">${item.quantity || 0}</td>
+                    <td style="padding: 12px 8px; text-align: right;">
+                        <div style="font-weight: 600;">$${unitPriceUSD.toFixed(2)}</div>
+                        <div style="font-size: 0.75rem; color: ${isReturned ? '#c62828' : '#6c757d'};">${unitPriceUZS.toLocaleString('uz-UZ')} so'm</div>
+                    </td>
+                    <td style="padding: 12px 8px; text-align: right; font-weight: 600;">
+                        <div style="color: ${isReturned ? '#c62828' : '#28a745'};">$${totalPriceUSD.toFixed(2)}</div>
+                        <div style="font-size: 0.75rem; color: ${isReturned ? '#c62828' : '#6c757d'};">${totalPriceUZS.toLocaleString('uz-UZ')} so'm</div>
+                    </td>
+                    ${(userRole === 'admin' || userRole === 'manager') ? `
+                        <td style="padding: 12px 8px; text-align: right;">
+                            <div style="font-weight: 600; color: ${profitUSD >= 0 ? '#28a745' : '#dc3545'};">$${profitUSD.toFixed(2)}</div>
+                        </td>
+                    ` : ''}
+                </tr>
+            `;
+        }).join('');
+        
+        // Qaytarilgan mahsulotlar
+        if (sale.returned_products && sale.returned_products.length > 0) {
+            itemsHtml += `
+                <tr style="background: #fff3cd; border-top: 2px solid #ffc107;">
+                    <td colspan="${(userRole === 'admin' || userRole === 'manager') ? '6' : '5'}" style="text-align: center; font-weight: 600; padding: 10px; color: #856404;">
+                        ⚠️ Qaytarilgan mahsulotlar
+                    </td>
+                </tr>
+            `;
+            itemsHtml += sale.returned_products.map(item => {
+                const unitPriceUSD = parseFloat(item.unit_price || 0);
+                const totalPriceUSD = parseFloat(item.total_price || 0);
+                const unitPriceUZS = Math.round(unitPriceUSD * exchangeRate);
+                const totalPriceUZS = Math.round(totalPriceUSD * exchangeRate);
+                
+                return `
+                    <tr style="background: #ffebee; color: #c62828;">
+                        <td style="font-weight: 600; padding: 12px 8px;">❌ ${item.product_name} (Qaytarilgan)</td>
+                        <td style="padding: 12px 8px;">${item.location_name}</td>
+                        <td style="font-weight: 600; text-align: center; padding: 12px 8px;">-${item.returned_quantity}</td>
+                        <td style="text-align: right; padding: 12px 8px;">
+                            <div>$${unitPriceUSD.toFixed(2)}</div>
+                            <div style="font-size: 0.75rem;">$ {unitPriceUZS.toLocaleString('uz-UZ')} so'm</div>
+                        </td>
+                        <td style="text-align: right; padding: 12px 8px;">
+                            <div>-$${totalPriceUSD.toFixed(2)}</div>
+                            <div style="font-size: 0.75rem;">-${totalPriceUZS.toLocaleString('uz-UZ')} so'm</div>
+                            ${item.return_date ? `<div style="font-size: 0.75rem; font-style: italic; margin-top: 4px;">${new Date(item.return_date).toLocaleString('uz-UZ', {timeZone: 'Asia/Tashkent', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'})}</div>` : ''}
+                        </td>
+                        ${(userRole === 'admin' || userRole === 'manager') ? '<td></td>' : ''}
+                    </tr>
+                `;
+            }).join('');
+        }
+    } else {
+        itemsHtml = `<tr><td colspan="${(userRole === 'admin' || userRole === 'manager') ? '6' : '5'}" style="text-align: center; padding: 2rem; color: #6c757d;">Mahsulotlar topilmadi</td></tr>`;
+    }
+    
+    // To'lov tafsilotlari
+    let paymentDetailsHTML = '';
+    if (sale.cash_usd || sale.click_usd || sale.terminal_usd || sale.debt_usd) {
+        const payments = [];
+        if (sale.cash_usd > 0) payments.push({ name: '💵 Naqd', usd: sale.cash_usd });
+        if (sale.click_usd > 0) payments.push({ name: '📱 Click', usd: sale.click_usd });
+        if (sale.terminal_usd > 0) payments.push({ name: '💳 Terminal', usd: sale.terminal_usd });
+        if (sale.debt_usd > 0) payments.push({ name: '📝 Qarz', usd: sale.debt_usd });
+        
+        if (payments.length > 0) {
+            paymentDetailsHTML = '<div style="margin-top: 1.5rem; padding: 1rem; background: #f8f9fa; border-radius: 8px;"><div style="font-size: 0.85rem; color: #6c757d; margin-bottom: 0.75rem; font-weight: 600;">💳 To\'lov tafsilotlari:</div><div style="display: flex; flex-wrap: wrap; gap: 10px;">';
+            payments.forEach(p => {
+                const uzs = Math.round(p.usd * exchangeRate);
+                paymentDetailsHTML += `<div style="background: white; padding: 10px 15px; border-radius: 6px; border-left: 4px solid #007bff;"><div style="font-weight: 600; color: #495057; margin-bottom: 2px;">${p.name}</div><div style="font-weight: 700; color: #28a745;">$${p.usd.toFixed(2)}</div><div style="font-size: 0.75rem; color: #6c757d;">${uzs.toLocaleString('uz-UZ')} so'm</div></div>`;
+            });
+            paymentDetailsHTML += '</div></div>';
+        }
+    }
+    
+    content.innerHTML = `
+        <!-- Asosiy ma'lumotlar bir qatorda -->
+        <div style="background: linear-gradient(135deg, #f8f9fa, #e9ecef); padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 10px; text-align: center;">
+            <span style="font-weight: 500; color: #6c757d;">Mijoz:</span>
+            <span style="font-weight: 700; color: #333;">${sale.customer_name || 'Noma\'lum'}</span>
+            ${sale.customer_phone ? `<span style="color: #6c757d;">(${sale.customer_phone})</span>` : ''}
+            <span style="color: #dee2e6; margin: 0 8px;">•</span>
+            <span style="font-weight: 500; color: #6c757d;">Savdo sanasi:</span>
+            <span style="font-weight: 700; color: #333;">${formattedDate}</span>
+        </div>
+        
+        <div style="display: grid; gap: 1.5rem;">
+            <!-- Sotuvchi va joylashuv -->
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+                <div>
+                    <div style="font-size: 0.85rem; color: #6c757d; margin-bottom: 0.3rem;">👤 Sotuvchi</div>
+                    <div style="font-weight: 600;">${sale.user_name || sale.username || '-'}</div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" onclick="closeSaleDetailsModal()">Yopish</button>
+                <div>
+                    <div style="font-size: 0.85rem; color: #6c757d; margin-bottom: 0.3rem;">📍 Joylashuv</div>
+                    <div style="font-weight: 600;">${sale.store_name || sale.warehouse_name || 'Noma\'lum'}</div>
                 </div>
             </div>
+            
+            <!-- To'lov holati -->
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+                <div>
+                    <div style="font-size: 0.85rem; color: #6c757d; margin-bottom: 0.5rem;">💳 To'lov usuli</div>
+                    <div>${paymentMethodBadge}</div>
+                </div>
+                <div>
+                    <div style="font-size: 0.85rem; color: #6c757d; margin-bottom: 0.5rem;">📋 To'lov holati</div>
+                    <div>${paymentStatusBadge}</div>
+                </div>
+            </div>
+            
+            <!-- Mahsulotlar jadvali -->
+            <div style="margin-top: 1rem;">
+                <div style="font-size: 0.85rem; color: #6c757d; margin-bottom: 0.75rem; font-weight: 600;">📦 Sotilgan mahsulotlar</div>
+                <div style="overflow-x: auto; border: 1px solid #e9ecef; border-radius: 8px;">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background: linear-gradient(135deg, #667eea, #764ba2); color: white;">
+                                <th style="padding: 12px 8px; text-align: left; font-weight: 600; font-size: 0.85rem;">Mahsulot</th>
+                                <th style="padding: 12px 8px; text-align: left; font-weight: 600; font-size: 0.85rem;">Joylashuv</th>
+                                <th style="padding: 12px 8px; text-align: center; font-weight: 600; font-size: 0.85rem;">Miqdor</th>
+                                <th style="padding: 12px 8px; text-align: right; font-weight: 600; font-size: 0.85rem;">Narx</th>
+                                <th style="padding: 12px 8px; text-align: right; font-weight: 600; font-size: 0.85rem;">Jami</th>
+                                ${(userRole === 'admin' || userRole === 'manager') ? '<th style="padding: 12px 8px; text-align: right; font-weight: 600; font-size: 0.85rem;">Foyda</th>' : ''}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${itemsHtml}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            ${paymentDetailsHTML}
+            
+            <!-- Jami hisob-kitob -->
+            <div style="background: linear-gradient(135deg, #f8f9fa, #e9ecef); padding: 1.5rem; border-radius: 8px; border: 2px solid #dee2e6;">
+                <div style="display: grid; grid-template-columns: ${(userRole === 'admin' || userRole === 'manager') ? 'repeat(3, 1fr)' : 'repeat(2, 1fr)'}; gap: 1.5rem;">
+                    <div style="text-align: center;">
+                        <div style="font-size: 0.85rem; color: #6c757d; margin-bottom: 0.5rem;">💰 Jami summa</div>
+                        <div style="font-size: 1.5rem; font-weight: bold; color: #28a745;">$${parseFloat(sale.total_amount || 0).toFixed(2)}</div>
+                        <div style="font-size: 0.85rem; color: #6c757d; margin-top: 0.3rem;">${Math.round(parseFloat(sale.total_amount || 0) * exchangeRate).toLocaleString('uz-UZ')} so'm</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 0.85rem; color: #6c757d; margin-bottom: 0.5rem;">📊 Tan narx</div>
+                        <div style="font-size: 1.5rem; font-weight: bold; color: #dc3545;">$${parseFloat(sale.total_cost || 0).toFixed(2)}</div>
+                        <div style="font-size: 0.85rem; color: #6c757d; margin-top: 0.3rem;">${Math.round(parseFloat(sale.total_cost || 0) * exchangeRate).toLocaleString('uz-UZ')} so'm</div>
+                    </div>
+                    ${(userRole === 'admin' || userRole === 'manager') ? `
+                        <div style="text-align: center;">
+                            <div style="font-size: 0.85rem; color: #6c757d; margin-bottom: 0.5rem;">📈 Foyda</div>
+                            <div style="font-size: 1.5rem; font-weight: bold; color: ${parseFloat(sale.total_profit || 0) >= 0 ? '#28a745' : '#dc3545'};">$${parseFloat(sale.total_profit || 0).toFixed(2)}</div>
+                            <div style="font-size: 0.85rem; color: #6c757d; margin-top: 0.3rem;">${Math.round(parseFloat(sale.total_profit || 0) * exchangeRate).toLocaleString('uz-UZ')} so'm</div>
+                        </div>
+                    ` : ''}
+                </div>
+            </div>
+            
+            ${sale.notes ? `
+                <div style="background: #fff3cd; padding: 1rem; border-radius: 8px; border: 1px solid #ffc107;">
+                    <div style="font-size: 0.85rem; color: #856404; margin-bottom: 0.5rem; font-weight: 600;">📝 Izoh</div>
+                    <div style="color: #856404; line-height: 1.6;">${sale.notes}</div>
+                </div>
+            ` : ''}
         </div>
     `;
     
-    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    // Global o'zgaruvchiga saqlash (chop etish uchun)
+    window.currentSaleForPrint = sale;
+    
+    modal.style.display = 'flex';
 }
 
-// Tafsilotlar modalini yopish - sales-history.html dan 100% nusxa
+function closeSaleModal() {
+    const modal = document.getElementById('saleDetailsModal');
+    modal.style.display = 'none';
+    window.currentSaleForPrint = null;
+}
+
+function printSaleReceipt(currency = 'uzs') {
+    if (!currentSaleData) {
+        alert('❌ Chop etish uchun savdo ma\'lumotlari topilmadi!');
+        return;
+    }
+    
+    const sale = currentSaleData;
+    const exchangeRate = 12700;
+    
+    // Mini X90 (58mm) printer uchun format
+    let receiptText = '\n';
+    receiptText += '================================\n';
+    receiptText += '         SAVDO CHEKI\n';
+    receiptText += '================================\n';
+    receiptText += 'Sana: ' + new Date(sale.sale_date).toLocaleString('uz-UZ', { timeZone: 'Asia/Tashkent' }) + '\n';
+    receiptText += 'Mijoz: ' + (sale.customer_name || 'Noma\'lum') + '\n';
+    if (sale.customer_phone) {
+        receiptText += 'Tel: ' + sale.customer_phone + '\n';
+    }
+    receiptText += '--------------------------------\n';
+    
+    if (sale.items && sale.items.length > 0) {
+        sale.items.forEach(item => {
+            const productName = (item.product_name || 'Mahsulot').substring(0, 20);
+            const unitPrice = parseFloat(item.unit_price || 0);
+            const totalPrice = parseFloat(item.total_price || 0);
+            
+            receiptText += productName + '\n';
+            if (currency === 'usd') {
+                receiptText += item.quantity + ' x $' + unitPrice.toFixed(2) + 
+                              ' = $' + totalPrice.toFixed(2) + '\n';
+            } else {
+                const unitPriceUZS = Math.round(unitPrice * exchangeRate);
+                const totalPriceUZS = Math.round(totalPrice * exchangeRate);
+                receiptText += item.quantity + ' x ' + unitPriceUZS.toLocaleString('uz-UZ') + 
+                              ' = ' + totalPriceUZS.toLocaleString('uz-UZ') + ' so\'m\n';
+            }
+        });
+    }
+    
+    receiptText += '--------------------------------\n';
+    if (currency === 'usd') {
+        receiptText += 'JAMI: $' + parseFloat(sale.total_amount || 0).toFixed(2) + '\n';
+    } else {
+        const totalUZS = Math.round(parseFloat(sale.total_amount || 0) * exchangeRate);
+        receiptText += 'JAMI: ' + totalUZS.toLocaleString('uz-UZ') + ' so\'m\n';
+    }
+    receiptText += 'To\'lov: ' + (sale.payment_method === 'cash' ? 'Naqd' : 'Karta') + '\n';
+    receiptText += '================================\n';
+    receiptText += '      Rahmat! Yana keling!\n';
+    receiptText += '================================\n\n';
+    
+    // Demo: Console'ga chiqarish
+    console.log('Mini X90 Printer Format (' + currency.toUpperCase() + '):');
+    console.log(receiptText);
+    
+    // Brauzer print dialogini ochish
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write('<pre style="font-family: monospace; font-size: 12px; line-height: 1.2;">' + receiptText + '</pre>');
+    printWindow.document.close();
+    printWindow.print();
+}
+
+function editSaleGroup(saleId) {
+    window.location.href = '/sales?edit_group=' + saleId;
+}
+
+function deleteSale(saleId) {
+    if (confirm('Ushbu savdoni o\'chirishni xohlaysizmi? Bu amal bekor qilinmaydi.')) {
+        fetch('/api/sales/' + saleId, {
+            method: 'DELETE'
+        })
+        .then(response => {
+            if (response.ok) {
+                alert('Savdo muvaffaqiyatli o\'chirildi');
+                location.reload();
+            } else {
+                alert('Savdoni o\'chirishda xatolik');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Savdoni o\'chirishda xatolik: ' + error.message);
+        });
+    }
+}
+
+function updateStats(orders) {
+    const totalOrders = orders.length;
+    const totalAmount = orders.reduce((sum, order) => sum + parseFloat(order.total_amount || 0), 0);
+    
+    document.getElementById('totalOrders').textContent = totalOrders;
+    document.getElementById('totalAmount').textContent = totalAmount > 0 ? '$' + totalAmount.toLocaleString('uz-UZ') : '$0';
+    
+    // Foyda faqat admin va manager uchun
+    if (userRole === 'admin' || userRole === 'manager') {
+        const totalProfit = orders.reduce((sum, order) => sum + parseFloat(order.total_profit || 0), 0);
+        const profitElement = document.getElementById('totalProfit');
+        if (profitElement) {
+            profitElement.textContent = totalProfit > 0 ? '$' + totalProfit.toLocaleString('uz-UZ') : '$0';
+        }
+    }
+}
+
+// Qidiruv va filtr funksiyalari
+let allCustomerOrders = [];
+
+function filterCustomerOrders() {
+    const searchTerm = document.getElementById('customerSearchInput').value.toLowerCase();
+    const dateFrom = document.getElementById('customerDateFromFilter').value;
+    const dateTo = document.getElementById('customerDateToFilter').value;
+    
+    let filteredOrders = allCustomerOrders.filter(order => {
+        // Qidiruv filtri
+        const matchesSearch = !searchTerm || 
+            order.product_name.toLowerCase().includes(searchTerm) ||
+            order.location_name.toLowerCase().includes(searchTerm) ||
+            order.created_at.toLowerCase().includes(searchTerm);
+        
+        // Sana filtri
+        const orderDate = new Date(order.created_at).toISOString().split('T')[0];
+        const matchesDateFrom = !dateFrom || orderDate >= dateFrom;
+        const matchesDateTo = !dateTo || orderDate <= dateTo;
+        
+        return matchesSearch && matchesDateFrom && matchesDateTo;
+    });
+    
+    displayCustomerOrders(filteredOrders);
+    updateCustomerResultsInfo(filteredOrders.length, allCustomerOrders.length);
+}
+
+function updateCustomerResultsInfo(filteredCount, totalCount) {
+    const resultsInfo = document.getElementById('customerResultsInfo');
+    const resultsText = document.getElementById('customerResultsText');
+    
+    if (filteredCount < totalCount || document.getElementById('customerSearchInput').value || 
+        document.getElementById('customerDateFromFilter').value || document.getElementById('customerDateToFilter').value) {
+        resultsText.textContent = `${filteredCount} ta natija topildi (jami ${totalCount} tadan)`;
+        resultsInfo.style.display = 'block';
+    } else {
+        resultsInfo.style.display = 'none';
+    }
+}
+
+function displayCustomerOrders(orders) {
+    const tbody = document.querySelector('#ordersTable tbody');
+    if (!tbody) return;
+    
+    if (orders.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" class="no-data">Hech qanday ma\'lumot topilmadi</td></tr>';
+        return;
+    }
+    
+    tbody.innerHTML = orders.map(order => `
+        <tr>
+            <td>${formatDateTime(order.created_at)}</td>
+            <td>${order.location_name || 'N/A'}</td>
+            <td>${order.product_name}</td>
+            <td>${order.quantity}</td>
+            <td class="price">$${parseFloat(order.price || 0).toFixed(2)}</td>
+            <td class="price">$${parseFloat(order.total || 0).toFixed(2)}</td>
+            <td class="price">$${parseFloat(order.total_cost || 0).toFixed(2)}</td>
+            <td class="price profit">$${parseFloat(order.total_profit || 0).toFixed(2)}</td>
+        </tr>
+    `).join('');
+}
+
+// Yangi modal funksiyalari - sales-history.html dan 100% nusxa
 function closeSaleDetailsModal() {
     const modal = document.getElementById('saleDetailsModal');
     if (modal) {
@@ -934,7 +1372,6 @@ function closeSaleDetailsModal() {
     currentSaleData = null;
 }
 
-// To'lov turi matnini olish - sales-history.html dan 100% nusxa
 function getPaymentMethodText(method) {
     switch (method) {
         case 'cash': return '💵 Naqd pul';
@@ -945,13 +1382,12 @@ function getPaymentMethodText(method) {
     }
 }
 
-// To'lov tafsilotlarini HTML ga aylantirish - sales-history.html dan 100% nusxa
 function generatePaymentDetailsHTML(sale) {
     console.log('🔍 generatePaymentDetailsHTML - Sale data:', sale);
     
     const rate = sale.currency_rate || 12700;
     
-    const cashUSD = parseFloat(sale.cash_usd ||  0);
+    const cashUSD = parseFloat(sale.cash_usd || 0);
     const clickUSD = parseFloat(sale.click_usd || 0);
     const terminalUSD = parseFloat(sale.terminal_usd || 0);
     const debtUSD = parseFloat(sale.debt_usd || 0);
@@ -1053,7 +1489,6 @@ function generatePaymentDetailsHTML(sale) {
     `;
 }
 
-// Excel export funksiyasi - sales-history.html dan 100% nusxa
 function exportSaleToExcel() {
     if (!currentSaleData) {
         alert('❌ Savdo ma\'lumotlari topilmadi!');
@@ -1078,7 +1513,6 @@ function exportSaleToExcel() {
     console.log('Excel export: Savdo ID', currentSaleData.id);
 }
 
-// Excel HTML format yaratish - sales-history.html dan 100% nusxa
 function generateExcelHTML(sale) {
     let html = `
 <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
@@ -1139,63 +1573,36 @@ function generateExcelHTML(sale) {
     return html;
 }
 
-// Chop etish funksiyasi - sales-history.html dan 100% nusxa (qisqartirilgan)
-function printSaleReceipt(currency = 'uzs') {
-    if (!currentSaleData) {
-        alert('❌ Chop etish uchun savdo ma\'lumotlari topilmadi!');
-        return;
-    }
+// Event listenerlar
+document.addEventListener('DOMContentLoaded', function() {
+    // Qidiruv input
+    const searchInput = document.getElementById('customerSearchInput');
+    const clearSearchBtn = document.getElementById('customerClearSearch');
     
-    const sale = currentSaleData;
-    const exchangeRate = 12700;
-    
-    let receiptText = '\n';
-    receiptText += '================================\n';
-    receiptText += '         SAVDO CHEKI\n';
-    receiptText += '================================\n';
-    receiptText += 'Sana: ' + new Date(sale.sale_date).toLocaleString('uz-UZ', { timeZone: 'Asia/Tashkent' }) + '\n';
-    receiptText += 'Mijoz: ' + (sale.customer_name || 'Noma\'lum') + '\n';
-    if (sale.customer_phone) {
-        receiptText += 'Tel: ' + sale.customer_phone + '\n';
-    }
-    receiptText += '--------------------------------\n';
-    
-    if (sale.items && sale.items.length > 0) {
-        sale.items.forEach(item => {
-            const productName = (item.product_name || 'Mahsulot').substring(0, 20);
-            const unitPrice = parseFloat(item.unit_price || 0);
-            const totalPrice = parseFloat(item.total_price || 0);
-            
-            receiptText += productName + '\n';
-            if (currency === 'usd') {
-                receiptText += item.quantity + ' x $' + unitPrice.toFixed(2) + 
-                              ' = $' + totalPrice.toFixed(2) + '\n';
-            } else {
-                const unitPriceUZS = Math.round(unitPrice * exchangeRate);
-                const totalPriceUZS = Math.round(totalPrice * exchangeRate);
-                receiptText += item.quantity + ' x ' + unitPriceUZS.toLocaleString('uz-UZ') + 
-                              ' = ' + totalPriceUZS.toLocaleString('uz-UZ') + ' so\'m\n';
-            }
+    if (searchInput && clearSearchBtn) {
+        searchInput.addEventListener('input', function() {
+            clearSearchBtn.style.display = this.value ? 'block' : 'none';
+            filterCustomerOrders();
+        });
+        
+        clearSearchBtn.addEventListener('click', function() {
+            searchInput.value = '';
+            this.style.display = 'none';
+            filterCustomerOrders();
         });
     }
     
-    receiptText += '--------------------------------\n';
-    if (currency === 'usd') {
-        receiptText += 'JAMI: $' + parseFloat(sale.total_amount || 0).toFixed(2) + '\n';
-    } else {
-        const totalUZS = Math.round(parseFloat(sale.total_amount || 0) * exchangeRate);
-        receiptText += 'JAMI: ' + totalUZS.toLocaleString('uz-UZ') + ' so\'m\n';
+    // Sana filtrlari
+    const dateFromFilter = document.getElementById('customerDateFromFilter');
+    const dateToFilter = document.getElementById('customerDateToFilter');
+    
+    if (dateFromFilter) {
+        dateFromFilter.addEventListener('change', filterCustomerOrders);
     }
-    receiptText += '================================\n';
-    receiptText += '      Rahmat! Yana keling!\n';
-    receiptText += '================================\n\n';
     
-    console.log('Chop etish (' + currency.toUpperCase() + '):', receiptText);
-    
-    const printWindow = window.open('', '_blank');
-    printWindow.document.write('<pre style="font-family: monospace; font-size: 12px; line-height: 1.2;">' + receiptText + '</pre>');
-    printWindow.document.close();
-    printWindow.print();
-}
+    if (dateToFilter) {
+        dateToFilter.addEventListener('change', filterCustomerOrders);
+    }
+});
 </script>
 {% endblock %}
