@@ -3216,7 +3216,47 @@
     }
     
     // Modal yopish
-    function closeModal() {
+    async function closeModal() {
+        // ❗ Muhim: Agar tahrirlash rejimi bo'lsa va bekor qilinayotgan bo'lsa
+        // mahsulotni qayta korzinaga qo'shish kerak
+        if (typeof window.editingCartIndex !== 'undefined' && currentProduct) {
+            const editingItem = cart[window.editingCartIndex];
+            console.log('⚠️ Tahrirlash bekor qilindi, mahsulotni stokdan qayta olib korzinaga qaytarish kerak:', editingItem);
+            
+            // Mahsulotni stokdan qayta olish (korzinaga qaytarish)
+            try {
+                const locationSelect = getActiveTabElement('locationSelect');
+                if (locationSelect) {
+                    const locationValue = locationSelect.value;
+                    const [type, id] = locationValue.split('_');
+                    const locationId = parseInt(id);
+                    
+                    const response = await fetch('/api/reserve-stock', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({
+                            product_id: editingItem.id,
+                            quantity: editingItem.quantity,
+                            location_id: locationId,
+                            location_type: type
+                        })
+                    });
+                    
+                    const result = await response.json();
+                    if (result.success) {
+                        console.log('✅ Mahsulot qayta korzinaga qo\'shildi:', editingItem.quantity, 'dona');
+                    } else {
+                        console.error('❌ Mahsulotni qayta korzinaga qo\'shishda xatolik:', result.error);
+                    }
+                }
+            } catch (error) {
+                console.error('❌ Mahsulotni qayta rezerv qilishda xatolik:', error);
+            }
+            
+            // Chap tomondagi jadvalni yangilash
+            await loadProducts();
+        }
+        
         const quantityModal = getActiveTabElement('quantityModal');
         if (quantityModal) {
             quantityModal.style.display = 'none';
@@ -3895,12 +3935,7 @@
     async function editCartItem(index) {
         const item = cart[index];
         
-        // Tasdiqlash so'rovi
-        const confirmMessage = `"${item.name}" mahsulotini tahrirlashni xohlaysizmi?\n\nHozirgi miqdor: ${item.quantity} dona\nHozirgi narx: $${item.priceUSD.toFixed(2)}`;
-        if (!confirm(confirmMessage)) {
-            console.log('❌ Foydalanuvchi tahrirlashni bekor qildi');
-            return;
-        }
+        console.log('✏️ Mahsulot tahrirlash boshlandi:', item.name, '(', item.quantity, 'dona )');
         
         // Avval eski miqdorni stokka qaytarish
         try {
