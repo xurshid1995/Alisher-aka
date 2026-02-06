@@ -806,6 +806,36 @@ class PendingTransfer(db.Model):
         }
 
 
+# Helper funksiya: Transfer boshqarish ruxsatini tekshirish
+def user_can_manage_transfer(user, pending_transfer):
+    """
+    Foydalanuvchi transferni tahrirlashi/o'chirishi/yakunlashi mumkinligini aniqlash.
+    
+    Ruxsat beriladi agar:
+    1. Admin (har doim)
+    2. Transfer yaratuvchisi (har doim)  
+    3. Transfer'dagi ikkala joylashuvga (FROM va TO) ruxsati bor foydalanuvchi
+    """
+    # 1. Admin har doim
+    if user.role == 'admin':
+        return True
+    
+    # 2. Yaratuvchi har doim
+    if pending_transfer.user_id == user.id:
+        return True
+    
+    # 3. Ikkala joylashuvga ruxsati bor bo'lsa
+    allowed_locations = user.allowed_locations or []
+    
+    from_key = f"{pending_transfer.from_location_type}_{pending_transfer.from_location_id}"
+    to_key = f"{pending_transfer.to_location_type}_{pending_transfer.to_location_id}"
+    
+    if from_key in allowed_locations and to_key in allowed_locations:
+        return True
+    
+    return False
+
+
 # Mijozlar modeli
 class Customer(db.Model):
     __tablename__ = 'customers'
@@ -7765,10 +7795,7 @@ def manage_pending_transfer(pending_id=None):
             data = request.get_json()
 
             if pending_id:
-                pending = PendingTransfer.query.filter_by(
-                    id=pending_id,
-                    user_id=current_user.id
-                ).first()
+                pending = PendingTransfer.query.get(pending_id)
             else:
                 # Eng oxirgi pending transferni yangilash
                 pending = PendingTransfer.query.filter_by(
@@ -7777,6 +7804,10 @@ def manage_pending_transfer(pending_id=None):
 
             if not pending:
                 return jsonify({'error': 'Tasdiqlanmagan transfer topilmadi'}), 404
+            
+            # Ruxsat tekshirish
+            if not user_can_manage_transfer(current_user, pending):
+                return jsonify({'error': 'Sizga bu transferni tahrirlash uchun ruxsat yo\'q'}), 403
 
             pending.from_location_type = data['from_location_type']
             pending.from_location_id = data['from_location_id']
@@ -7794,12 +7825,17 @@ def manage_pending_transfer(pending_id=None):
         # DELETE - tasdiqlanmagan transferni o'chirish
         elif request.method == 'DELETE':
             if pending_id:
-                PendingTransfer.query.filter_by(
-                    id=pending_id,
-                    user_id=current_user.id
-                ).delete()
+                pending = PendingTransfer.query.get(pending_id)
+                if not pending:
+                    return jsonify({'error': 'Tasdiqlanmagan transfer topilmadi'}), 404
+                
+                # Ruxsat tekshirish
+                if not user_can_manage_transfer(current_user, pending):
+                    return jsonify({'error': 'Sizga bu transferni o\'chirish uchun ruxsat yo\'q'}), 403
+                
+                db.session.delete(pending)
             else:
-                # Barcha pending transferlarni o'chirish
+                # Barcha o'zining pending transferlarni o'chirish
                 PendingTransfer.query.filter_by(user_id=current_user.id).delete()
 
             db.session.commit()
@@ -7828,8 +7864,14 @@ def get_all_pending_transfers():
         if current_user.role == 'admin':
             pending_transfers = PendingTransfer.query.all()
         else:
-            # Boshqa foydalanuvchilar faqat o'zining pending transferini ko'radi
-            pending_transfers = PendingTransfer.query.filter_by(user_id=current_user.id).all()
+            # Boshqa foydalanuvchilar:
+            # 1. O'zining pending transferlari
+            # 2. Ikkala joylashuvga ruxsati bor transferlar
+            all_pendings = PendingTransfer.query.all()
+            pending_transfers = [
+                p for p in all_pendings 
+                if user_can_manage_transfer(current_user, p)
+            ]
 
         result = []
         for pending in pending_transfers:
