@@ -24,7 +24,7 @@ limit_request_field_size = 0  # No limit on header size (default 8190)
 # Logging
 accesslog = 'logs/access.log'
 errorlog = 'logs/error.log'
-loglevel = 'info'
+loglevel = 'warning'  # info -> warning (SIGTERM loglarini yashirish uchun)
 access_log_format = '%(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s" "%(a)s"'
 
 # Process naming
