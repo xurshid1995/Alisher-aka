@@ -1939,7 +1939,7 @@ function displaySalesData(data) {
                 </td>
                 <td rowspan="${items.length}" class="group-cell group-customer">
                     <div class="customer-info">
-                        <div class="customer-name">${sale.customer_name || '� Noma\'lum'}</div>
+                        <div class="customer-name">${sale.customer_name || '👤 Noma\'lum'}</div>
                         <div class="customer-phone">${sale.customer_phone || '+998 XX XXX XX XX'}</div>
                     </div>
                 </td>
@@ -2382,7 +2382,7 @@ function showSaleDetailsModal(sale) {
                     <!-- Asosiy ma'lumotlar bir qatorda -->
                     <div class="sale-main-info">
                         <span class="customer-label">Mijoz:</span>
-                        <span class="customer-name">${sale.customer_name || '� Noma\'lum'}</span>
+                        <span class="customer-name">${sale.customer_name || ''}</span>
                         ${sale.customer_phone ? `<span class="customer-phone">(${sale.customer_phone})</span>` : ''}
                         <span class="date-separator">•</span>
                         <span class="date-label">Savdo sanasi:</span>
@@ -2684,8 +2684,8 @@ function generateExcelHTML(sale) {
         </tr>
         <tr>
             <td>${new Date(sale.sale_date).toLocaleString('uz-UZ', { timeZone: 'Asia/Tashkent' })}</td>
-            <td>${sale.customer_name || 'Noma\'lum'}</td>
-            <td>${(sale.customer_phone && sale.customer_phone !== '+998 XX XXX XX XX') ? sale.customer_phone : ''}</td>
+            <td>${sale.customer_name || ''}</td>
+            <td>${sale.customer_phone || ''}</td>
             <td>${sale.store_name || 'Noma\'lum'}</td>
             <td>${sale.seller_name || 'Admin'}</td>
         </tr>
@@ -2894,9 +2894,8 @@ function generatePrintableReceipt(sale, currency = 'uzs') {
                     <div>Sotuvchi: ${sale.seller_name || 'Admin'}</div>
                     ${sale.seller_phone ? `<div>Tel: ${sale.seller_phone}</div>` : ''}
                     <div style="margin-top: 2mm; border-top: 1px dashed #ccc; padding-top: 2mm;">
-                        <div><strong>Mijoz:</strong> ${sale.customer_name || '� Noma\'lum'}</div>
-                        ${sale.customer_phone && sale.customer_phone !== '+998 XX XXX XX XX' ? 
-                            `<div><strong>Tel:</strong> ${sale.customer_phone}</div>` : ''}
+                        <div><strong>Mijoz:</strong> ${sale.customer_name || ''}</div>
+                        ${sale.customer_phone ? `<div><strong>Tel:</strong> ${sale.customer_phone}</div>` : ''}
                     </div>
                 </div>
             </div>
@@ -3573,7 +3572,7 @@ function updateTableForCompactView() {
                         <div class="sale-time">${formatTime(firstItem.sale_date)}</div>
                     </td>
                     <td class="col-customer">
-                        <div class="customer-name">${firstItem.customer_name || 'Noma\'lum'}</div>
+                        <div class="customer-name">${firstItem.customer_name || ''}</div>
                         ${firstItem.customer_phone ? `<div class="customer-phone">${firstItem.customer_phone}</div>` : ''}
                     </td>
                     <td class="col-seller">${firstItem.seller_name || 'Admin'}</td>
