@@ -3995,8 +3995,8 @@
         let stockQuantity = 0;  // Stokdagi sof miqdor
         
         try {
-            console.log('🌐 API so\'rov: GET /api/products?location=' + locationValue);
-            const response = await fetch(`/api/products?location=${locationValue}`);
+            console.log('🌐 API so\'rov: GET /api/products?location=' + locationValue + '&per_page=9999');
+            const response = await fetch(`/api/products?location=${locationValue}&per_page=9999`);
             
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -4024,6 +4024,25 @@
                 }
                 return isMatch;
             });
+            
+            // ⭐ FALLBACK: Agar mahsulot list'da topilmasa, alohida so'rov yuborish
+            if (!product) {
+                console.warn('⚠️ Mahsulot location list\'ida topilmadi, alohida so\'rov yuborilmoqda...');
+                console.log('🌐 FALLBACK API so\'rov: GET /api/product/' + itemId);
+                
+                try {
+                    const fallbackResponse = await fetch(`/api/product/${itemId}`);
+                    if (fallbackResponse.ok) {
+                        const fallbackData = await fallbackResponse.json();
+                        if (fallbackData.success && fallbackData.product) {
+                            product = fallbackData.product;
+                            console.log('✅ FALLBACK API: Mahsulot topildi!');
+                        }
+                    }
+                } catch (fallbackError) {
+                    console.error('❌ Fallback API xatolik:', fallbackError);
+                }
+            }
             
             if (product) {
                 productFound = true;
@@ -4229,7 +4248,7 @@
         
         try {
             // Serverdan qidiruv so'rovi yuborish
-            const response = await fetch(`/api/products?location=${locationValue}&search=${encodeURIComponent(searchText)}`);
+            const response = await fetch(`/api/products?location=${locationValue}&search=${encodeURIComponent(searchText)}&per_page=9999`);
             const data = await response.json();
             
             console.log('🔍 Qidiruv natijasi:', data);

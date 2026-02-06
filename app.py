@@ -7871,6 +7871,25 @@ def get_all_pending_transfers():
         return jsonify({'error': str(e)}), 500
 
 
+@app.route('/api/product/<int:product_id>', methods=['GET'])
+@role_required('admin', 'kassir', 'sotuvchi')
+def get_single_product(product_id):
+    """Bitta mahsulotni olish (stokiga qaramay)"""
+    try:
+        product = Product.query.options(
+            db.joinedload(Product.warehouse_stocks),
+            db.joinedload(Product.store_stocks)
+        ).get_or_404(product_id)
+        
+        return jsonify({
+            'success': True,
+            'product': product.to_dict()
+        })
+    
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
 @app.route('/api/product/<int:product_id>', methods=['DELETE'])
 def delete_product(product_id):
     """Mahsulotni o'chirish"""
