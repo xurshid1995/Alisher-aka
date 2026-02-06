@@ -62,7 +62,7 @@ class DatabaseMonitor:
     def check_connection(self):
         """Database connection tekshirish"""
         try:
-            result = self.db.session.execute(text("SELECT 1")).scalar()
+            self.db.session.execute(text("SELECT 1")).scalar()
             return {'status': 'ok', 'connected': True}
         except Exception as e:
             logger.error(f"Database connection error: {e}")
@@ -98,7 +98,7 @@ class DatabaseMonitor:
         """Sekin ishlayotgan querylarni topish"""
         try:
             query = text("""
-                SELECT 
+                SELECT
                     pid,
                     now() - query_start as duration,
                     query,
@@ -109,7 +109,7 @@ class DatabaseMonitor:
                 ORDER BY duration DESC
             """)
             result = self.db.session.execute(
-                query, 
+                query,
                 {'threshold': threshold_seconds}
             ).fetchall()
             return [dict(row._mapping) for row in result]
