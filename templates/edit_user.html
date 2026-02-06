@@ -627,38 +627,34 @@
                         return;
                     }
                     
-                    // Checkboxni topish - requestAnimationFrame va timeout bilan
-                    // Browser rendering cycle'ini kutish
-                    requestAnimationFrame(() => {
-                        setTimeout(() => {
-                            if (locationType) {
-                                // Type ma'lum bo'lsa, to'g'ridan-to'g'ri topish
-                                const checkbox = document.querySelector(`#salesLocationsList input[value="${locationId}"][data-type="${locationType}"]`);
-                                if (checkbox) {
-                                    checkbox.checked = true;
-                                    console.log(`✅ Sales ${locationType} location checked:`, locationId);
-                                } else {
-                                    console.log('❌ Sales location checkbox not found:', locationId, locationType);
-                                    console.log('   Available checkboxes:', document.querySelectorAll('#salesLocationsList input').length);
-                                }
-                            } else {
-                                // Type noma'lum bo'lsa, har ikkisidan ham izlash
-                                const storeCheckbox = document.querySelector(`#salesLocationsList input[value="${locationId}"][data-type="store"]`);
-                                const warehouseCheckbox = document.querySelector(`#salesLocationsList input[value="${locationId}"][data-type="warehouse"]`);
-                                
-                                if (storeCheckbox) {
-                                    storeCheckbox.checked = true;
-                                    console.log('✅ Sales store location checked:', locationId);
-                                } else if (warehouseCheckbox) {
-                                    warehouseCheckbox.checked = true;
-                                    console.log('✅ Sales warehouse location checked:', locationId);
-                                } else {
-                                    console.log('❌ Sales location checkbox not found:', locationId);
-                                    console.log('   Available checkboxes:', document.querySelectorAll('#salesLocationsList input').length);
-                                }
-                            }
-                        }, 100);
-                    });
+                    // YANGI: To'g'ridan-to'g'ri belgilash (300ms populatePermissions() kutgandan keyin)
+                    if (locationType) {
+                        // Type ma'lum bo'lsa, to'g'ridan-to'g'ri topish
+                        const checkbox = document.querySelector(`#salesLocationsList input[value="${locationId}"][data-type="${locationType}"]`);
+                        if (checkbox) {
+                            checkbox.checked = true;
+                            console.log(`✅ Sales ${locationType} location checked:`, locationId);
+                        } else {
+                            console.log('❌ Sales location checkbox not found:', locationId, locationType);
+                            console.log('   Available checkboxes:', document.querySelectorAll('#salesLocationsList input').length);
+                            console.log('   Full list:', Array.from(document.querySelectorAll('#salesLocationsList input')).map(cb => `${cb.value}:${cb.getAttribute('data-type')}`));
+                        }
+                    } else {
+                        // Type noma'lum bo'lsa, har ikkisidan ham izlash
+                        const storeCheckbox = document.querySelector(`#salesLocationsList input[value="${locationId}"][data-type="store"]`);
+                        const warehouseCheckbox = document.querySelector(`#salesLocationsList input[value="${locationId}"][data-type="warehouse"]`);
+                        
+                        if (storeCheckbox) {
+                            storeCheckbox.checked = true;
+                            console.log('✅ Sales store location checked:', locationId);
+                        } else if (warehouseCheckbox) {
+                            warehouseCheckbox.checked = true;
+                            console.log('✅ Sales warehouse location checked:', locationId);
+                        } else {
+                            console.log('❌ Sales location checkbox not found:', locationId);
+                            console.log('   Available checkboxes:', document.querySelectorAll('#salesLocationsList input').length);
+                        }
+                    }
                 });
             }
         }
@@ -688,31 +684,30 @@
                         return;
                     }
                     
-                    // Checkboxni topish - timeout bilan
-                    setTimeout(() => {
-                        if (locationType) {
-                            const checkbox = document.querySelector(`#transferLocationsList input[value="${locationId}"][data-type="${locationType}"]`);
-                            if (checkbox) {
-                                checkbox.checked = true;
-                                console.log(`✅ Transfer ${locationType} location checked:`, locationId);
-                            } else {
-                                console.log('❌ Transfer location checkbox not found:', locationId, locationType);
-                            }
+                    // YANGI: To'g'ridan-to'g'ri belgilash (300ms kutgandan keyin)
+                    if (locationType) {
+                        const checkbox = document.querySelector(`#transferLocationsList input[value="${locationId}"][data-type="${locationType}"]`);
+                        if (checkbox) {
+                            checkbox.checked = true;
+                            console.log(`✅ Transfer ${locationType} location checked:`, locationId);
                         } else {
-                            const storeCheckbox = document.querySelector(`#transferLocationsList input[value="${locationId}"][data-type="store"]`);
-                            const warehouseCheckbox = document.querySelector(`#transferLocationsList input[value="${locationId}"][data-type="warehouse"]`);
-                            
-                            if (storeCheckbox) {
-                                storeCheckbox.checked = true;
-                                console.log('✅ Transfer store location checked:', locationId);
-                            } else if (warehouseCheckbox) {
-                                warehouseCheckbox.checked = true;
-                                console.log('✅ Transfer warehouse location checked:', locationId);
-                            } else {
-                                console.log('❌ Transfer location checkbox not found:', locationId);
-                            }
+                            console.log('❌ Transfer location checkbox not found:', locationId, locationType);
+                            console.log('   Available:', document.querySelectorAll('#transferLocationsList input').length);
                         }
-                    }, 300);
+                    } else {
+                        const storeCheckbox = document.querySelector(`#transferLocationsList input[value="${locationId}"][data-type="store"]`);
+                        const warehouseCheckbox = document.querySelector(`#transferLocationsList input[value="${locationId}"][data-type="warehouse"]`);
+                        
+                        if (storeCheckbox) {
+                            storeCheckbox.checked = true;
+                            console.log('✅ Transfer store location checked:', locationId);
+                        } else if (warehouseCheckbox) {
+                            warehouseCheckbox.checked = true;
+                            console.log('✅ Transfer warehouse location checked:', locationId);
+                        } else {
+                            console.log('❌ Transfer location checkbox not found:', locationId);
+                        }
+                    }
                 });
             } else if (currentUser.allowed_locations && Array.isArray(currentUser.allowed_locations)) {
                 // Agar transfer_locations yo'q bo'lsa, allowed_locations'ni ishlatish
@@ -767,31 +762,30 @@
                         return;
                     }
                     
-                    // Checkboxni topish - timeout bilan
-                    setTimeout(() => {
-                        if (locationType) {
-                            const checkbox = document.querySelector(`#stockCheckLocationsList input[value="${locationId}"][data-type="${locationType}"]`);
-                            if (checkbox) {
-                                checkbox.checked = true;
-                                console.log(`✅ Stock check ${locationType} location checked:`, locationId);
-                            } else {
-                                console.log('❌ Stock check location checkbox not found:', locationId, locationType);
-                            }
+                    // YANGI: To'g'ridan-to'g'ri belgilash (300ms kutgandan keyin)
+                    if (locationType) {
+                        const checkbox = document.querySelector(`#stockCheckLocationsList input[value="${locationId}"][data-type="${locationType}"]`);
+                        if (checkbox) {
+                            checkbox.checked = true;
+                            console.log(`✅ Stock check ${locationType} location checked:`, locationId);
                         } else {
-                            const storeCheckbox = document.querySelector(`#stockCheckLocationsList input[value="${locationId}"][data-type="store"]`);
-                            const warehouseCheckbox = document.querySelector(`#stockCheckLocationsList input[value="${locationId}"][data-type="warehouse"]`);
-                            
-                            if (storeCheckbox) {
-                                storeCheckbox.checked = true;
-                                console.log('✅ Stock check store location checked:', locationId);
-                            } else if (warehouseCheckbox) {
-                                warehouseCheckbox.checked = true;
-                                console.log('✅ Stock check warehouse location checked:', locationId);
-                            } else {
-                                console.log('❌ Stock check location checkbox not found:', locationId);
-                            }
+                            console.log('❌ Stock check location checkbox not found:', locationId, locationType);
+                            console.log('   Available:', document.querySelectorAll('#stockCheckLocationsList input').length);
                         }
-                    }, 300);
+                    } else {
+                        const storeCheckbox = document.querySelector(`#stockCheckLocationsList input[value="${locationId}"][data-type="store"]`);
+                        const warehouseCheckbox = document.querySelector(`#stockCheckLocationsList input[value="${locationId}"][data-type="warehouse"]`);
+                        
+                        if (storeCheckbox) {
+                            storeCheckbox.checked = true;
+                            console.log('✅ Stock check store location checked:', locationId);
+                        } else if (warehouseCheckbox) {
+                            warehouseCheckbox.checked = true;
+                            console.log('✅ Stock check warehouse location checked:', locationId);
+                        } else {
+                            console.log('❌ Stock check location checkbox not found:', locationId);
+                        }
+                    }
                 });
             }
         }
@@ -816,13 +810,9 @@
                 populateLocationCheckboxes();
                 loadPrimaryLocations();
                 
-                // MUHIM: Checkboxlar yaratilgandan KEYIN huquqlarni to'ldirish
-                if (currentUser && currentUser.permissions) {
-                    console.log('✅ Checkboxlar yaratildi, endi huquqlarni to\'ldirish');
-                    populatePermissions(currentUser.permissions);
-                } else {
-                    console.log('⚠️ User yoki permissions topilmadi');
-                }
+                // populateLocationCheckboxes() ichida populatePermissions() chaqiriladi
+                // Shuning uchun bu yerda qayta chaqirish shart emas
+                console.log('✅ Checkboxlar yaratildi, populatePermissions() avtomatik chaqiriladi');
             })
             .catch(error => {
                 console.error('❌ Error loading locations:', error);
@@ -1118,10 +1108,12 @@
         // Agar user ma'lumotlari allaqachon yuklangan bo'lsa, permissions'ni qayta to'ldirish
         if (currentUser && currentUser.permissions) {
             console.log('🔄 Re-populating permissions after locations loaded');
-            // Kichik timeout qo'shamiz - DOM yangilanishini kutish uchun
+            // MUHIM: 300ms timeout - DOM'ga elementlar to'liq qo'shilishi uchun yetarli vaqt
+            // Browser rendering cycle, reflow, repaint uchun kutish
             setTimeout(() => {
+                console.log('⏱️ 300ms o\'tdi, endi huquqlarni to\'ldirish boshlash');
                 populatePermissions(currentUser.permissions);
-            }, 50);
+            }, 300);
         }
     }
 
