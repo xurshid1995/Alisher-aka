@@ -151,7 +151,7 @@ echo ""
 # ============================================
 echo "🌐 APPLICATION STATUS:"
 echo "─────────────────────────────────────────"
-if systemctl is-active --quiet xurshid_app; then
+if systemctl is-active --quiet xurshid; then
     echo "✅ Flask App: Running"
 else
     echo "❌ Flask App: Stopped"
