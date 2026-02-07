@@ -1825,8 +1825,8 @@ def api_locations():
                 'type': 'store',
                 'id': store.id,
                 'name': store.name,
-                'emoji': 'ğŸª',
-                'display': f'ğŸª {store.name} (Do\'kon)'
+                'emoji': '🏪',
+                'display': f'🏪 {store.name} (Do\'kon)'
             })
 
         # Omborlarni qo'shish (ikkinchi bo'lib)
@@ -1841,8 +1841,8 @@ def api_locations():
                 'type': 'warehouse',
                 'id': warehouse.id,
                 'name': warehouse.name,
-                'emoji': 'ğŸ“¦',
-                'display': f'ğŸ“¦ {warehouse.name} (Ombor)'
+                'emoji': '📦',
+                'display': f'📦 {warehouse.name} (Ombor)'
             })
 
         logger.debug(f" Final locations count: {len(locations)}")
@@ -1881,7 +1881,7 @@ def api_all_locations():
             'type': 'warehouse',
             'id': warehouse.id,
             'name': warehouse.name,
-            'display': f'ğŸ“¦ {warehouse.name} (Ombor)'
+            'display': f'📦 {warehouse.name} (Ombor)'
         })
 
     # Barcha do'konlarni qo'shish
@@ -1892,7 +1892,7 @@ def api_all_locations():
             'type': 'store',
             'id': store.id,
             'name': store.name,
-            'display': f'ğŸª {store.name} (Do\'kon)'
+            'display': f'🏪 {store.name} (Do\'kon)'
         })
 
     logger.info(f" Total locations for products page: {len(locations)}")
@@ -10329,12 +10329,58 @@ def update_sale(sale_id):
                 total_cost += cost_price_usd * quantity
                 total_profit += sale_item.profit
 
-            # Stock boshqaruvi real-time API'lar orqali amalga oshiriladi
-            # Sale edit'da stock logic'i disabled (real-time reserve/return
-            # API'lar ishlaydi)
+            # ✅ BUG FIX: Stock farqlarini hisoblash va avtomatik tuzatish
+            # Eski va yangi miqdorlarni solishtirish, farqni stockga qaytarish/ayirish
+            for key in set(list(old_quantities.keys()) + list(new_quantities.keys())):
+                product_id, location_type, location_id = key
+                old_qty = old_quantities.get(key, Decimal('0'))
+                new_qty = new_quantities.get(key, Decimal('0'))
+                difference = new_qty - old_qty  # Ijobiy: qo'shimcha sotildi, Manfiy: qaytarildi
+                
+                if difference != 0:
+                    app.logger.info(f"📦 STOCK DIFFERENCE UPDATE: Product {product_id}, {location_type}/{location_id}")
+                    app.logger.info(f"   Old quantity: {old_qty}, New quantity: {new_qty}, Difference: {difference}")
+                    
+                    # Stock'ni yangilash
+                    if location_type == 'warehouse':
+                        warehouse_stock = WarehouseStock.query.filter_by(
+                            warehouse_id=location_id,
+                            product_id=product_id
+                        ).first()
+                        
+                        if warehouse_stock:
+                            old_stock = warehouse_stock.quantity
+                            warehouse_stock.quantity -= difference  # Difference ijobiy bo'lsa kamaytiradi, manfiy bo'lsa ko'paytiradi
+                            warehouse_stock.last_updated = db.func.current_timestamp()
+                            app.logger.info(f"   ✅ Warehouse stock: {old_stock} -> {warehouse_stock.quantity}")
+                    
+                    elif location_type == 'store':
+                        store_stock = StoreStock.query.filter_by(
+                            store_id=location_id,
+                            product_id=product_id
+                        ).first()
+                        
+                        if store_stock:
+                            old_stock = store_stock.quantity
+                            store_stock.quantity -= difference  # Difference ijobiy bo'lsa kamaytiradi, manfiy bo'lsa ko'paytiradi
+                            store_stock.last_updated = db.func.current_timestamp()
+                            app.logger.info(f"   ✅ Store stock: {old_stock} -> {store_stock.quantity}")
+                    
+                    # Operations history ga yozish
+                    log_operation(
+                        operation_type='sale_edit',
+                        table_name='sales',
+                        record_id=sale.id,
+                        description=f"Savdo tahrirlandi - Stock tuzatildi: Product #{product_id}, Eski: {old_qty}, Yangi: {new_qty}",
+                        old_data={'product_id': product_id, 'quantity': float(old_qty)},
+                        new_data={'product_id': product_id, 'quantity': float(new_qty), 'stock_difference': float(difference)},
+                        user_id=current_user.id,
+                        username=current_user.username,
+                        location_id=location_id,
+                        location_type=location_type
+                    )
+            
             # Sale jami ma'lumotlarini yangilash
-            app.logger.info(
-                "ï¿½ Stock management: real-time API'lar orqali boshqariladi (edit'da stock logic disabled)")
             sale.total_amount = total_amount
             sale.total_cost = total_cost
             sale.total_profit = total_profit
