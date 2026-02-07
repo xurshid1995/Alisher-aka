@@ -800,7 +800,34 @@ class DebtTelegramBot:
 # Bot commandlari (agar mijozlar bot bilan interact qilishini hohlasangiz)
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Start command handler with phone number button"""
-    # Telefon raqam yuborish tugmasi
+    from app import app, db, Customer
+    
+    chat_id = update.effective_chat.id
+    
+    # Mijoz allaqachon ro'yxatdan o'tganmi tekshirish
+    with app.app_context():
+        try:
+            customer = Customer.query.filter_by(telegram_chat_id=chat_id).first()
+            
+            if customer:
+                # Mijoz allaqachon ro'yxatdan o'tgan - tugmalarni ko'rsatish
+                keyboard = [
+                    [KeyboardButton("💰 Qarzni tekshirish")],
+                    [KeyboardButton("📜 To'lov tarixi")]
+                ]
+                reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+                
+                await update.message.reply_text(
+                    f"Assalomu alaykum, {customer.name}! 👋\n\n"
+                    f"Xush kelibsiz!\n\n"
+                    f"Qarzingizni tekshirish yoki to'lov tarixini ko'rish uchun pastdagi tugmalardan foydalaning:",
+                    reply_markup=reply_markup
+                )
+                return
+        except Exception as e:
+            logger.error(f"❌ Start commandda mijozni tekshirishda xatolik: {e}")
+    
+    # Yangi mijoz - telefon raqam yuborish tugmasini ko'rsatish
     keyboard = [
         [KeyboardButton("📱 Telefon raqamni yuborish", request_contact=True)]
     ]
@@ -809,7 +836,8 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         "Assalomu alaykum! 👋\n\n"
         "Bu qarz eslatmalari botidir.\n\n"
-        "Qarzingizni tekshirish uchun pastdagi tugmani bosing:",
+        "Qarzingizni tekshirish uchun telefon raqamingizni yuboring.\n\n"
+        "Pastdagi tugmani bosing:",
         reply_markup=reply_markup
     )
 
@@ -823,8 +851,27 @@ async def handle_contact(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     logger.info(f"📱 Contact qabul qilindi: Chat ID {chat_id}, Phone: {phone_number}")
     
+    await _process_phone_verification(update, chat_id, phone_number)
+
+async def handle_phone_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Telefon raqam matn sifatida kelganda"""
+    from app import app, db, Customer
+    
+    chat_id = update.effective_chat.id
+    phone_number = update.message.text.strip()
+    
+    logger.info(f"📱 Telefon raqam matn sifatida qabul qilindi: Chat ID {chat_id}, Phone: {phone_number}")
+    
+    await _process_phone_verification(update, chat_id, phone_number)
+
+async def _process_phone_verification(update, chat_id, phone_number):
+    """Telefon raqamni tasdiqlash jarayoni"""
+    from app import app, db, Customer
+    
     # Telefon raqamni tozalash
     phone = ''.join(filter(str.isdigit, phone_number))
+    
+    logger.info(f"🔍 Telefon qidirish: tozalangan raqam: {phone}")
     
     with app.app_context():
         try:
@@ -832,18 +879,26 @@ async def handle_contact(update: Update, context: ContextTypes.DEFAULT_TYPE):
             customer = None
             all_customers = Customer.query.all()
             
+            logger.info(f"📊 Jami mijozlar soni: {len(all_customers)}")
+            
             for cust in all_customers:
                 if cust.phone:
                     clean_db_phone = ''.join(filter(str.isdigit, cust.phone))
-                    if clean_db_phone[-9:] == phone[-9:]:
-                        customer = cust
-                        logger.info(f"✅ Mijoz topildi: {customer.name} (ID: {customer.id})")
-                        break
+                    # Oxirgi 9 raqamni solishtirish
+                    if len(phone) >= 9 and len(clean_db_phone) >= 9:
+                        if clean_db_phone[-9:] == phone[-9:]:
+                            customer = cust
+                            logger.info(f"✅ Mijoz topildi: {customer.name} (ID: {customer.id}, Tel: {customer.phone})")
+                            break
             
             if not customer:
+                logger.warning(f"❌ Mijoz topilmadi: {phone_number}")
                 await update.message.reply_text(
                     "❌ Sizning raqamingiz tizimda topilmadi.\n\n"
-                    "Iltimos, do'konga murojaat qiling.",
+                    "Iltimos:\n"
+                    "1. Raqamingizni to'g'ri yuborganingizni tekshiring\n"
+                    "2. Yoki do'konga murojaat qiling\n\n"
+                    "Telefon formati: +998901234567",
                     reply_markup=ReplyKeyboardRemove()
                 )
                 return
@@ -856,21 +911,27 @@ async def handle_contact(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 'phone': phone_number
             }
             
-            logger.info(f"🔐 Tasdiqlash kodi yaratildi: {verification_code} for customer {customer.id}")
+            logger.info(f"🔐 Tasdiqlash kodi yaratildi: {verification_code} mijoz {customer.name} (ID: {customer.id}) uchun")
+            logger.info(f"📝 Verification codes dictionary: {verification_codes}")
             
-            # Tasdiqlash kodini yuborish
+            # Tasdiqlash kodini yuborish - yanada aniq ko'rsatmalar bilan
             await update.message.reply_text(
-                f"✅ Telefon raqam tasdiqlandi!\n\n"
-                f"🔐 Tasdiqlash kodi: <code>{verification_code}</code>\n\n"
-                f"Ushbu kodni kiriting:",
+                f"✅ Telefon raqam qabul qilindi!\n\n"
+                f"Hurmatli <b>{customer.name}</b>!\n\n"
+                f"Tasdiqlash uchun quyidagi 6 raqamli kodni kiriting:\n\n"
+                f"🔐 <b><code>{verification_code}</code></b>\n\n"
+                f"💡 Kodni ko'chirib oling va menga yuboring.",
                 parse_mode='HTML',
                 reply_markup=ReplyKeyboardRemove()
             )
             
+            logger.info(f"➡️ Tasdiqlash kodi yuborildi Chat ID {chat_id} ga")
+            
         except Exception as e:
-            logger.error(f"❌ Contact handle qilishda xatolik: {e}")
+            logger.error(f"❌ Telefon tekshirishda xatolik: {e}", exc_info=True)
             await update.message.reply_text(
-                "❌ Xatolik yuz berdi. Iltimos, qaytadan urinib ko'ring.",
+                "❌ Xatolik yuz berdi. Iltimos, qaytadan urinib ko'ring.\n\n"
+                "/start buyrug'ini boshing.",
                 reply_markup=ReplyKeyboardRemove()
             )
 
@@ -881,26 +942,38 @@ async def handle_verification_code(update: Update, context: ContextTypes.DEFAULT
     chat_id = update.effective_chat.id
     code = update.message.text.strip()
     
+    logger.info(f"📥 Kiritilgan kod: '{code}' Chat ID: {chat_id}")
+    
     # Kod formatini tekshirish (6 ta raqam)
     if not code.isdigit() or len(code) != 6:
+        logger.info(f"⚠️ Noto'g'ri kod formati: '{code}'")
         return
     
     # Tasdiqlash kodini tekshirish
     if chat_id not in verification_codes:
+        logger.warning(f"⚠️ Chat ID {chat_id} uchun tasdiqlash kodi topilmadi")
+        logger.info(f"📝 Mavjud verification codes: {list(verification_codes.keys())}")
+        
         await update.message.reply_text(
-            "❌ Avval telefon raqamingizni yuboring.\n\n"
-            "/start ni bosing."
+            "❌ Tasdiqlash kodi topilmadi.\n\n"
+            "Iltimos, avval telefon raqamingizni yuboring:\n\n"
+            "/start buyrug'ini bosing."
         )
         return
     
     saved_data = verification_codes[chat_id]
+    logger.info(f"🔍 Saqlangan kod: {saved_data['code']}, Kiritilgan kod: {code}")
     
     if saved_data['code'] != code:
+        logger.warning(f"❌ Noto'g'ri kod kiritildi. Kutilgan: {saved_data['code']}, Kiritildi: {code}")
         await update.message.reply_text(
             "❌ Noto'g'ri tasdiqlash kodi!\n\n"
-            "Iltimos, to'g'ri kodni kiriting."
+            "Iltimos, yuborilgan 6 raqamli kodni to'g'ri kiriting.\n\n"
+            "Agar kod yo'qolgan bo'lsa, /start dan qayta boshlang."
         )
         return
+    
+    logger.info(f"✅ Tasdiqlash kodi to'g'ri!")
     
     # Tasdiqlash muvaffaqiyatli
     customer_id = saved_data['customer_id']
@@ -1345,10 +1418,18 @@ def create_telegram_app():
             )
         )
         
+        # Telefon raqam matn sifatida yuborilganda (masalan: +998901234567)
+        application.add_handler(
+            MessageHandler(
+                filters.TEXT & ~filters.COMMAND & filters.Regex(r'^\+?998?\d{9}$|^\d{9}$'),
+                handle_phone_text
+            )
+        )
+        
         # Message handler - oddiy xabarlarni rad etish (faqat tugmalardan foydalanish)
         application.add_handler(
             MessageHandler(
-                filters.TEXT & ~filters.COMMAND & ~filters.Regex(r'^\d{6}$') & ~filters.Regex(r'^💰 Qarzni tekshirish$') & ~filters.Regex(r'^📜 To\'lov tarixi$'),
+                filters.TEXT & ~filters.COMMAND & ~filters.Regex(r'^\d{6}$') & ~filters.Regex(r'^💰 Qarzni tekshirish$') & ~filters.Regex(r'^📜 To\'lov tarixi$') & ~filters.Regex(r'^\+?998?\d{9}$|^\d{9}$'),
                 handle_unknown_message
             )
         )
