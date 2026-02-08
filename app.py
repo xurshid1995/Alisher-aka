@@ -813,18 +813,13 @@ def user_can_manage_transfer(user, pending_transfer):
 
     Ruxsat beriladi agar:
     1. Admin (har doim)
-    2. Transfer yaratuvchisi (har doim)
-    3. Transfer joylashuvlaridan (FROM yoki TO) kamida biriga ruxsati bor foydalanuvchi
+    2. Transfer joylashuvlaridan (FROM yoki TO) kamida biriga ruxsati bor foydalanuvchi
     """
     # 1. Admin har doim
     if user.role == 'admin':
         return True
 
-    # 2. Yaratuvchi har doim
-    if pending_transfer.user_id == user.id:
-        return True
-
-    # 3. FROM yoki TO joylashuvlaridan biriga ruxsati bo'lsa (transfer_locations yoki allowed_locations)
+    # 2. FROM yoki TO joylashuvlaridan biriga ruxsati bo'lsa (transfer_locations yoki allowed_locations)
     # Transfer locations dan tekshirish (transfer qilish huquqi)
     transfer_locations = user.transfer_locations or []
     if not transfer_locations:
