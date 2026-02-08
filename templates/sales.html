@@ -5007,6 +5007,11 @@
             return;
         }
         
+        // 🔍 VALIDATION: Cart itemlarini tekshirish
+        console.log('🔍 AUTO-SAVE VALIDATION:');
+        console.log('  ├─ Cart length:', cart.length);
+        console.log('  ├─ Cart items:', cart.map(i => `${i.name} x${i.quantity}`).join(', '));
+        
         // Savdo ma'lumotlarini tayyorlash
         const selectedCustomerIdElement = getActiveTabElement('selectedCustomerId');
         const customerId = selectedCustomerIdElement ? selectedCustomerIdElement.value || null : null;
@@ -5084,9 +5089,14 @@
                 }
             } else {
                 console.error('❌ Pending savdoni saqlashda xatolik:', result.error);
+                // 🔍 DEBUG: Xatolik tafsilotlari
+                console.error('   Server xabari:', result.error);
+                console.error('   Request data:', JSON.stringify(saleData, null, 2));
             }
         } catch (error) {
-            console.error('❌ Pending savdoni saqlashda xatolik:', error);
+            console.error('❌ Pending savdoni saqlashda xatolik (catch):', error);
+            console.error('   Error type:', error.name);
+            console.error('   Error message:', error.message);
         }
     }
     
@@ -5588,10 +5598,18 @@
                 return;
             }
             
-            // To'lov tekshiruvi
-            if (Math.abs(totalPayment - totalUSD) > 0.01) {
+            // 🔍 CART VA TO'LOV VALIDATSIYASI (Sale 126 muammosini oldini olish)
+            console.log('🔍 VALIDATION CHECK:');
+            console.log('  ├─ Cart items:', cart.length);
+            console.log('  ├─ Cart total USD:', totalUSD.toFixed(2));
+            console.log('  ├─ Payment total USD:', totalPayment.toFixed(2));
+            console.log('  └─ Difference:', Math.abs(totalPayment - totalUSD).toFixed(2), 'USD');
+            
+            // Cart bo'shligini tekshirish
+            if (cart.length === 0) {
+                alert('❌ XATOLIK!\n\nSavat bo\'sh!\n\nIltimos, kamida bitta mahsulot qo\'shing.');
                 if (paymentWarning) {
-                    paymentWarning.textContent = `⚠️ Jami to'lov ($${totalPayment.toFixed(2)}) savdo summasiga ($${totalUSD.toFixed(2)}) teng emas!`;
+                    paymentWarning.textContent = '❌ Savat bo\'sh! Mahsulot qo\'shing.';
                     paymentWarning.style.display = 'block';
                 }
                 // Tugmani qayta faollashtirish
@@ -5603,6 +5621,38 @@
                 }
                 return;
             }
+            
+            // To'lov va cart jami tekshiruvi - aniq moslik
+            if (Math.abs(totalPayment - totalUSD) > 0.01) {
+                const errorMsg = `⚠️ TO'LOV XATOLIGI!\n\n🛒 Cart jami: $${totalUSD.toFixed(2)}\n💰 To'lov jami: $${totalPayment.toFixed(2)}\n❗ Farq: $${Math.abs(totalPayment - totalUSD).toFixed(2)}\n\nIltimos, to'lovni to'g'rilang!`;
+                
+                alert(errorMsg);
+                
+                if (paymentWarning) {
+                    paymentWarning.textContent = `⚠️ Jami to'lov ($${totalPayment.toFixed(2)}) savdo summasiga ($${totalUSD.toFixed(2)}) teng emas!`;
+                    paymentWarning.style.display = 'block';
+                }
+                
+                console.error('❌ PAYMENT VALIDATION FAILED:', {
+                    cartTotal: totalUSD,
+                    paymentTotal: totalPayment,
+                    difference: Math.abs(totalPayment - totalUSD),
+                    cartItems: cart.length
+                });
+                
+                // Tugmani qayta faollashtirish
+                if (confirmBtn) {
+                    confirmBtn.disabled = false;
+                    confirmBtn.textContent = originalText;
+                    confirmBtn.style.opacity = '1';
+                    confirmBtn.style.cursor = 'pointer';
+                }
+                return;
+            }
+            
+            // ✅ VALIDATION PASSED
+            console.log('✅ VALIDATION PASSED: Cart and payment match');
+            
             
             // Idempotency key yaratish
             const idempotencyKey = `sale-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;

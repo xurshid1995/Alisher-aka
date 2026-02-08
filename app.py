@@ -10448,19 +10448,20 @@ def update_sale(sale_id):
                             store_stock.last_updated = db.func.current_timestamp()
                             app.logger.info(f"   ✅ Store stock: {old_stock} -> {store_stock.quantity}")
                     
-                    # Operations history ga yozish
-                    log_operation(
-                        operation_type='sale_edit',
-                        table_name='sales',
-                        record_id=sale.id,
-                        description=f"Savdo tahrirlandi - Stock tuzatildi: Product #{product_id}, Eski: {old_qty}, Yangi: {new_qty}",
-                        old_data={'product_id': product_id, 'quantity': float(old_qty)},
-                        new_data={'product_id': product_id, 'quantity': float(new_qty), 'stock_difference': float(difference)},
-                        user_id=current_user.id,
-                        username=current_user.username,
-                        location_id=location_id,
-                        location_type=location_type
-                    )
+                    # Operations history ga yozish (xatolik to'xtatmasin)
+                    try:
+                        log_operation(
+                            operation_type='sale_edit',
+                            table_name='sales',
+                            record_id=sale.id,
+                            description=f"Savdo tahrirlandi - Stock tuzatildi: Product #{product_id}, Eski: {old_qty}, Yangi: {new_qty}",
+                            old_data={'product_id': product_id, 'quantity': float(old_qty)},
+                            new_data={'product_id': product_id, 'quantity': float(new_qty), 'stock_difference': float(difference)},
+                            location_id=location_id,
+                            location_type=location_type
+                        )
+                    except Exception as log_error:
+                        app.logger.warning(f"⚠️ Log yozishda xatolik (ignored): {log_error}")
             
             # Sale jami ma'lumotlarini yangilash
             sale.total_amount = total_amount
