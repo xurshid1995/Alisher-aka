@@ -87,13 +87,13 @@ app.config['SECRET_KEY'] = SECRET_KEY
 # Database Connection Pool - API timeout muammosini hal qilish
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
     'pool_size': 10,          # Maksimal 10 ta active connection
-    'pool_recycle': 3600,     # Har 1 soatda connection yangilash
+    'pool_recycle': 540,      # 9 minut (PostgreSQL idle_in_transaction_timeout=10min dan oldin)
     'pool_pre_ping': True,    # Connection alive ekanini tekshirish (dead connection oldini oladi)
     'max_overflow': 20,       # Qo'shimcha 20 ta temporary connection
     'pool_timeout': 30,       # Connection olish uchun 30 sekund timeout
     'connect_args': {
         'connect_timeout': 10,  # PostgreSQL connection timeout
-        'options': '-c statement_timeout=10000 -c timezone=Asia/Tashkent'  # Query timeout va timezone
+        'options': '-c statement_timeout=30000 -c timezone=Asia/Tashkent'  # Query timeout 30s va timezone
     }
 }
 
