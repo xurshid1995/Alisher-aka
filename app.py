@@ -7852,13 +7852,10 @@ def manage_pending_transfer(pending_id=None):
         elif request.method == 'PUT':
             data = request.get_json()
 
-            if pending_id:
-                pending = PendingTransfer.query.get(pending_id)
-            else:
-                # Eng oxirgi pending transferni yangilash
-                pending = PendingTransfer.query.filter_by(
-                    user_id=current_user.id
-                ).order_by(PendingTransfer.updated_at.desc()).first()
+            if not pending_id:
+                return jsonify({'error': 'Transfer ID talab qilinadi'}), 400
+            
+            pending = PendingTransfer.query.get(pending_id)
 
             if not pending:
                 return jsonify({'error': 'Tasdiqlanmagan transfer topilmadi'}), 404
