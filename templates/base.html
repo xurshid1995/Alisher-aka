@@ -182,7 +182,8 @@
     </div>
 
     <script>
-        let currentCurrencyRate = null; // Null boshlanadi, API dan olinadi
+        // Global o'zgaruvchi - barcha sahifalarda ishlaydi
+        window.currentExchangeRate = null; // Null boshlanadi, API dan olinadi
         
         // Sahifa yuklanganda valyuta kursini olish
         document.addEventListener('DOMContentLoaded', function() {
@@ -208,17 +209,23 @@
                 const data = await response.json();
                 
                 if (data.success && data.rate) {
-                    currentCurrencyRate = data.rate.rate;
+                    window.currentExchangeRate = data.rate.rate;
                     updateCurrencyDisplay(data.rate.rate);
-                    console.log('✅ Valyuta kursi yuklandi:', currentCurrencyRate);
+                    console.log('✅ Valyuta kursi yuklandi:', window.currentExchangeRate);
                 } else {
                     console.log('❌ API dan ma\'lumot olishda xatolik:', data);
-                    updateCurrencyDisplay(12500); // Fallback
+                    // API xatolik bersa ham, joriy kursni saqlab qolish
+                    if (!window.currentExchangeRate) {
+                        window.currentExchangeRate = data.rate?.rate || null;
+                    }
+                    updateCurrencyDisplay(window.currentExchangeRate);
                 }
             } catch (error) {
                 console.error('❌ Valyuta kursini yuklashda xatolik:', error);
-                // Xatolik bo'lsa, default qiymatdan foydalanish
-                updateCurrencyDisplay(12500);
+                // Xatolik bo'lsa, mavjud kursni saqlab qolish
+                if (window.currentExchangeRate) {
+                    updateCurrencyDisplay(window.currentExchangeRate);
+                }
             }
         }
         
