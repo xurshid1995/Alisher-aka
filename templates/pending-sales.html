@@ -2205,10 +2205,11 @@ function saveEditedSale() {
 
 function deleteGroup(saleId) {
     // Savdo guruhini o'chirish funksiyasi
-    if (confirm(`Bu savdoni to'liq o'chirishni xohlaysizmi?`)) {
+    if (confirm(`Bu savdoni to'liq o'chirishni xohlaysizmi? Stock qaytariladi.`)) {
         console.log(`🗑️ Savdo o'chirilmoqda: ${saleId}`);
         
-        fetch('/api/sales/' + saleId, {
+        // return_stock=true parametrini qo'shish
+        fetch('/api/sales/' + saleId + '?return_stock=true', {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
@@ -2219,7 +2220,7 @@ function deleteGroup(saleId) {
             console.log('Delete result:', result);
             
             if (result.success) {
-                alert('✅ Savdo muvaffaqiyatli o\'chirildi');
+                alert('✅ Savdo muvaffaqiyatli o\'chirildi va stock qaytarildi');
                 forceRefresh(); // Jadvalni majburan yangilash
             } else {
                 alert('❌ Savdoni o\'chirishda xatolik: ' + result.error);
