@@ -5851,11 +5851,11 @@
                     const amountUZS = Math.round(amountUSD * exchangeRate).toLocaleString('uz-UZ');
                     
                     if (currency === 'uzs') {
-                        paymentDetails.push(`${label}: ${amountUZS}`);
+                        paymentDetails.push(`<strong>${label}:</strong> ${amountUZS}`);
                     } else if (currency === 'both') {
-                        paymentDetails.push(`${label}: $${amountUSD.toFixed(2)} / ${amountUZS}`);
+                        paymentDetails.push(`<strong>${label}:</strong> $${amountUSD.toFixed(2)} / ${amountUZS}`);
                     } else {
-                        paymentDetails.push(`${label}: $${amountUSD.toFixed(2)}`);
+                        paymentDetails.push(`<strong>${label}:</strong> $${amountUSD.toFixed(2)}`);
                     }
                 }
                 
@@ -6196,6 +6196,10 @@
                         margin-top: 2mm;
                         font-size: 8pt;
                         font-weight: normal;
+                    }
+                    
+                    .payment-details strong {
+                        font-weight: bold;
                     }
                     
                     .debt {
