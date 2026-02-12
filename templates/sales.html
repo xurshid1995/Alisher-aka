@@ -6234,6 +6234,10 @@
                         font-weight: normal;
                     }
                     
+                    .uzs-value {
+                        font-weight: normal;
+                    }
+                    
                     @page {
                         size: 80mm auto;
                         margin: 0;
@@ -6284,7 +6288,7 @@
                                 
                                 let priceDisplay;
                                 if (currency === 'both') {
-                                    priceDisplay = '$' + priceUSD.toFixed(2) + '<br>' + priceUZS.toLocaleString('uz-UZ');
+                                    priceDisplay = '$' + priceUSD.toFixed(2) + '<br><span class="uzs-value">' + priceUZS.toLocaleString('uz-UZ') + '</span>';
                                 } else if (currency === 'uzs') {
                                     priceDisplay = priceUZS.toLocaleString('uz-UZ');
                                 } else {
@@ -6309,7 +6313,7 @@
                             if (currency === 'both') {
                                 const totalUSD = parseFloat(sale.total_amount).toFixed(2);
                                 const totalUZS = Math.round(parseFloat(sale.total_amount) * exchangeRate).toLocaleString('uz-UZ');
-                                return '$' + totalUSD + '<br>' + totalUZS;
+                                return '$' + totalUSD + '<br><span class="uzs-value">' + totalUZS + '</span>';
                             } else if (currency === 'uzs') {
                                 return Math.round(parseFloat(sale.total_amount) * exchangeRate).toLocaleString('uz-UZ');
                             } else {
