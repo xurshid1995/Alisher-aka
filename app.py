@@ -10631,12 +10631,12 @@ def delete_sale_with_stock_return(sale_id):
         operation = OperationHistory(
             operation_type='delete',
             user_id=current_user.id,
-            description=f"Savdo o'chirildi #{sale_id}: {products_desc}",
-            quantity=total_items,
+            record_id=sale_id,
+            table_name='sales',
+            description=f"Savdo o'chirildi #{sale_id}: {products_desc}. Mijoz: {customer_name}, Stock qaytarildi: {stock_returned}",
             amount=sale_total,
             location_type=sale.location_type,
-            location_id=sale.location_id,
-            notes=f"Mijoz: {customer_name}, Jami: ${sale_total:.2f}, Stock qaytarildi: {stock_returned}"
+            location_id=sale.location_id
         )
         db.session.add(operation)
 
