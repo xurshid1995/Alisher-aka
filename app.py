@@ -10146,13 +10146,24 @@ def create_sale():
                         store_obj = Store.query.get(sale_location_id)
                         location_name = store_obj.name if store_obj else "Do'kon"
 
-                    # To'lov summalari - saqlangan savdodan olish (tahrirlash rejimida ham to'g'ri ishlaydi)
-                    tg_cash_uzs = float(current_sale.cash_amount) if current_sale.cash_amount else 0
-                    tg_click_uzs = float(current_sale.click_amount) if current_sale.click_amount else 0
-                    tg_terminal_uzs = float(current_sale.terminal_amount) if current_sale.terminal_amount else 0
-                    tg_debt_uzs = float(current_sale.debt_amount) if current_sale.debt_amount else 0
-                    tg_total_uzs = tg_cash_uzs + tg_click_uzs + tg_terminal_uzs + tg_debt_uzs
-                    tg_paid_uzs = tg_cash_uzs + tg_click_uzs + tg_terminal_uzs
+                    # Valyuta kursi
+                    tg_exchange_rate = float(current_sale.currency_rate) if current_sale.currency_rate else 12300
+                    
+                    # To'lov summalari USD da (bazada USD saqlanadi)
+                    tg_cash_usd = float(current_sale.cash_usd) if current_sale.cash_usd else 0
+                    tg_click_usd = float(current_sale.click_usd) if current_sale.click_usd else 0
+                    tg_terminal_usd = float(current_sale.terminal_usd) if current_sale.terminal_usd else 0
+                    tg_debt_usd = float(current_sale.debt_usd) if current_sale.debt_usd else 0
+                    tg_total_usd = float(current_sale.total_amount) if current_sale.total_amount else 0
+                    tg_paid_usd = tg_cash_usd + tg_click_usd + tg_terminal_usd
+                    
+                    # UZS ga konvertatsiya qilish
+                    tg_cash_uzs = tg_cash_usd * tg_exchange_rate
+                    tg_click_uzs = tg_click_usd * tg_exchange_rate
+                    tg_terminal_uzs = tg_terminal_usd * tg_exchange_rate
+                    tg_debt_uzs = tg_debt_usd * tg_exchange_rate
+                    tg_total_uzs = tg_total_usd * tg_exchange_rate
+                    tg_paid_uzs = tg_paid_usd * tg_exchange_rate
 
                     # Savdo mahsulotlarini PDF uchun tayyorlash
                     sale_items_for_pdf = []
@@ -10160,8 +10171,10 @@ def create_sale():
                         sale_items_for_pdf.append({
                             'name': item.product.name if item.product else 'Mahsulot',
                             'quantity': float(item.quantity),
-                            'unit_price': float(item.unit_price) * float(current_sale.currency_rate),
-                            'total': float(item.total_price) * float(current_sale.currency_rate)
+                            'unit_price': float(item.unit_price) * tg_exchange_rate,
+                            'total': float(item.total_price) * tg_exchange_rate,
+                            'unit_price_usd': float(item.unit_price),
+                            'total_usd': float(item.total_price)
                         })
 
                     # Telegram xabar yuborish
@@ -10181,12 +10194,12 @@ def create_sale():
                         sale_items=sale_items_for_pdf,
                         customer_phone=format_phone_number(customer.phone) if customer.phone else '',
                         # USD qiymatlar
-                        total_amount_usd=float(current_sale.total_amount) if current_sale.total_amount else 0,
-                        paid_usd=float(current_sale.cash_usd or 0) + float(current_sale.click_usd or 0) + float(current_sale.terminal_usd or 0),
-                        cash_usd=float(current_sale.cash_usd) if current_sale.cash_usd else 0,
-                        click_usd=float(current_sale.click_usd) if current_sale.click_usd else 0,
-                        terminal_usd=float(current_sale.terminal_usd) if current_sale.terminal_usd else 0,
-                        debt_usd=float(current_sale.debt_usd) if current_sale.debt_usd else 0
+                        total_amount_usd=tg_total_usd,
+                        paid_usd=tg_paid_usd,
+                        cash_usd=tg_cash_usd,
+                        click_usd=tg_click_usd,
+                        terminal_usd=tg_terminal_usd,
+                        debt_usd=tg_debt_usd
                     )
                     logger.info(f"âœ… Telegram xabar va PDF yuborildi: {customer.name}")
             except Exception as telegram_error:
