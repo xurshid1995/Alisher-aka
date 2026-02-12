@@ -3038,13 +3038,8 @@ function generatePrintableReceipt(sale, currency = 'uzs') {
                                 priceDisplay = '$' + priceUSD.toFixed(2);
                             }
                             
-                            return \`
-                            <tr>
-                                <td style="max-width: 25mm;">\${item.product_name}</td>
-                                <td>\${item.quantity}</td>
-                                <td>\${priceDisplay}</td>
-                            </tr>
-                        \`}).join('')}
+                            return '<tr><td style="max-width: 25mm;">' + item.product_name + '</td><td>' + item.quantity + '</td><td>' + priceDisplay + '</td></tr>';
+                        }).join('')}
                     </tbody>
                 </table>
             </div>
