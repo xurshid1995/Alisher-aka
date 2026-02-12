@@ -2817,10 +2817,9 @@ function formatPaymentDetails(paymentDetails, currency = 'uzs', exchangeRate = 1
     return JSON.stringify(paymentDetails);
 }
 
-// Mini X90 printer uchun chek yaratish
+// Mini X90 printer uchun chek yaratish - sales.html bilan bir xil format
 function generatePrintableReceipt(sale, currency = 'uzs') {
     const exchangeRate = sale.currency_rate || 12700;
-    const currencySymbol = currency === 'uzs' ? 'so\'m' : '$';
     const receiptWindow = window.open('', '_blank', 'width=400,height=600');
     
     const receiptHTML = `
@@ -2837,10 +2836,10 @@ function generatePrintableReceipt(sale, currency = 'uzs') {
                 }
                 
                 body {
-                    font-family: 'Courier New', monospace;
-                    font-size: 12px;
+                    font-family: Helvetica, Arial, sans-serif;
+                    font-size: 8pt;
                     line-height: 1.3;
-                    width: 80mm; /* 8cm thermal paper */
+                    width: 80mm;
                     margin: 0 auto;
                     padding: 5mm;
                     background: white;
@@ -2848,63 +2847,162 @@ function generatePrintableReceipt(sale, currency = 'uzs') {
                 
                 .header {
                     text-align: center;
-                    border-bottom: 1px dashed #000;
-                    padding-bottom: 5mm;
-                    margin-bottom: 3mm;
+                    padding-bottom: 2mm;
+                    margin-bottom: 1mm;
                 }
                 
                 .shop-name {
-                    font-size: 16px;
+                    font-size: 14pt;
                     font-weight: bold;
-                    margin-bottom: 2mm;
+                    margin-bottom: 3mm;
                 }
                 
                 .receipt-info {
                     margin-bottom: 3mm;
-                    font-size: 10px;
-                }
-                
-                .items {
-                    padding-bottom: 3mm;
-                    margin-bottom: 3mm;
-                }
-                
-                .item {
-                    margin-bottom: 2mm;
-                }
-                
-                .item-name {
+                    font-size: 8pt;
                     font-weight: bold;
+                }
+                
+                .customer-seller-info {
+                    display: flex;
+                    justify-content: space-between;
+                    margin-top: 3mm;
+                    font-size: 8pt;
+                    text-align: left;
+                }
+                
+                .customer-seller-info > div {
+                    width: 48%;
+                }
+                
+                .info-label {
+                    font-weight: bold;
+                }
+                
+                .info-name {
+                    font-weight: normal;
+                    margin-top: 1mm;
+                }
+                
+                .info-phone {
+                    font-weight: normal;
+                    margin-top: 1mm;
+                }
+                
+                table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin-top: 2mm;
+                    font-size: 8pt;
+                    border: 1px solid #000;
+                }
+                
+                th {
+                    font-size: 9pt;
+                    font-weight: bold;
+                    text-align: left;
+                    padding: 2mm;
+                    border-bottom: 1px solid #000;
+                    border-right: 1px solid #000;
+                }
+                
+                th:first-child {
+                    width: 55%;
+                }
+                
+                th:nth-child(2) {
+                    width: 15%;
+                    text-align: center;
+                }
+                
+                th:last-child {
+                    width: 30%;
+                    border-right: none;
+                    text-align: right;
+                }
+                
+                td {
+                    padding: 2mm;
+                    font-weight: bold;
+                    border-bottom: 1px solid #000;
+                    border-right: 1px solid #000;
                     word-wrap: break-word;
                 }
                 
-                .item-details {
-                    display: flex;
-                    justify-content: space-between;
-                    font-size: 10px;
+                td:last-child {
+                    background-color: white;
+                    border-right: none;
+                    text-align: right;
+                }
+                
+                td:nth-child(2) {
+                    text-align: center;
+                }
+                
+                tr:last-child td {
+                    border-bottom: none;
                 }
                 
                 .totals {
-                    margin-bottom: 3mm;
-                }
-                
-                .total-line {
-                    display: flex;
-                    justify-content: space-between;
-                    margin-bottom: 1mm;
-                }
-                
-                .total-line.main {
+                    margin-top: 2mm;
+                    font-size: 11pt;
                     font-weight: bold;
-                    font-size: 14px;
-                    border-top: 1px solid #000;
-                    padding-top: 2mm;
+                    padding-top: 1mm;
+                }
+                
+                .payment-info {
+                    margin-top: 3mm;
+                    padding: 2mm;
+                    background: #f8f9fa;
+                    border-radius: 2mm;
+                }
+                
+                .payment-label {
+                    font-size: 9pt;
+                    font-weight: bold;
+                }
+                
+                .payment-details {
+                    margin-top: 2mm;
+                    font-size: 8pt;
+                    font-weight: normal;
+                }
+                
+                .payment-details strong {
+                    font-weight: bold;
                 }
                 
                 .footer {
                     text-align: center;
+                    margin-top: 5mm;
                     padding-top: 3mm;
-                    font-size: 10px;
+                    border-top: 1px solid #000;
+                    font-size: 8pt;
+                    font-weight: normal;
+                }
+                
+                .footer div {
+                    margin: 1mm 0;
+                }
+                
+                .qr-code {
+                    text-align: center;
+                    margin-top: 3mm;
+                }
+                
+                .qr-code img {
+                    width: 25mm;
+                    height: 25mm;
+                }
+                
+                .qr-text {
+                    font-size: 6pt;
+                    margin-top: 1mm;
+                    font-weight: normal;
+                }
+                
+                .uzs-value {
+                    font-weight: normal;
                 }
                 
                 @page {
@@ -2915,69 +3013,87 @@ function generatePrintableReceipt(sale, currency = 'uzs') {
                 @media print {
                     body {
                         width: 80mm;
-                        font-size: 10px;
                     }
                 }
             </style>
         </head>
         <body>
             <div class="header">
-                <div class="shop-name">${sale.store_name || '🚫 O\'chirilgan do\'kon'}</div>
-                <div class="receipt-info">
-                    <div>Chek #${sale.id}</div>
-                    <div>${new Date(sale.sale_date).toLocaleString('uz-UZ', { timeZone: 'Asia/Tashkent' })}</div>
-                    <div>Sotuvchi: ${sale.seller_name || 'Admin'}</div>
-                    ${sale.seller_phone ? `<div>Tel: ${sale.seller_phone}</div>` : ''}
-                    <div style="margin-top: 2mm; border-top: 1px dashed #ccc; padding-top: 2mm;">
-                        <div><strong>Mijoz:</strong> ${sale.customer_name || '� Noma\'lum'}</div>
-                        ${sale.customer_phone && sale.customer_phone !== '+998 XX XXX XX XX' ? 
-                            `<div><strong>Tel:</strong> ${sale.customer_phone}</div>` : ''}
+                <div class="shop-name">${sale.store_name || 'Do\\'kon'}</div>
+                <div style="border-top: 1px solid #000; padding-top: 2mm; margin-top: 2mm;">
+                    <div class="receipt-info">Chek #${sale.id} | ${new Date(sale.sale_date).toLocaleString('uz-UZ', { timeZone: 'Asia/Tashkent' })}</div>
+                </div>
+                
+                <div class="customer-seller-info">
+                    <div>
+                        <div class="info-label">Mijoz:</div>
+                        <div class="info-name">${sale.customer_name || 'Naqd mijoz'}</div>
+                        ${sale.customer_phone ? '<div class="info-phone">' + sale.customer_phone + '</div>' : ''}
+                    </div>
+                    <div>
+                        <div class="info-label">Sotuvchi:</div>
+                        <div class="info-name">${sale.seller_name || 'Sotuvchi'}</div>
+                        ${sale.seller_phone ? '<div class="info-phone">' + sale.seller_phone + '</div>' : ''}
                     </div>
                 </div>
             </div>
             
             <div class="items">
-                <table style="width: 100%; border-collapse: collapse; font-size: 12px; border: 1.5px solid #000;">
+                <table>
                     <thead>
-                        <tr style="border-bottom: 1.5px solid #000;">
-                            <th style="text-align: left; padding: 2mm 2mm; font-weight: bold; border-right: 1.5px solid #000;">Mahsulot</th>
-                            <th style="text-align: center; padding: 2mm 2mm; font-weight: bold; border-right: 1.5px solid #000;">Miqdor</th>
-                            <th style="text-align: right; padding: 2mm 2mm; font-weight: bold;">Narx</th>
+                        <tr>
+                            <th>Mahsulot</th>
+                            <th>Miqdor</th>
+                            <th>Narx</th>
                         </tr>
                     </thead>
                     <tbody>
                         ${sale.items.map(item => {
                             const priceUSD = parseFloat(item.unit_price);
-                            const priceDisplay = currency === 'uzs' 
-                                ? Math.round(priceUSD * exchangeRate).toLocaleString('uz-UZ') + ' so\'m'
-                                : '$' + priceUSD.toFixed(2);
+                            const priceUZS = Math.round(priceUSD * exchangeRate);
                             
-                            return `
-                            <tr style="border-bottom: 1.5px solid #000;">
-                                <td style="padding: 2mm 2mm; word-wrap: break-word; max-width: 25mm; border-right: 1.5px solid #000; font-weight: bold;">${item.product_name}</td>
-                                <td style="padding: 2mm 2mm; text-align: center; border-right: 1.5px solid #000; font-weight: bold;">${item.quantity}</td>
-                                <td style="padding: 2mm 2mm; text-align: right; font-weight: bold;">${priceDisplay}</td>
-                            </tr>
-                        `}).join('')}
+                            let priceDisplay;
+                            if (currency === 'both') {
+                                priceDisplay = '$' + priceUSD.toFixed(2) + '<br><span class="uzs-value">' + priceUZS.toLocaleString('uz-UZ') + '</span>';
+                            } else if (currency === 'uzs') {
+                                priceDisplay = priceUZS.toLocaleString('uz-UZ');
+                            } else {
+                                priceDisplay = '$' + priceUSD.toFixed(2);
+                            }
+                            
+                            return '<tr><td style="max-width: 25mm;">' + item.product_name + '</td><td>' + item.quantity + '</td><td>' + priceDisplay + '</td></tr>';
+                        }).join('')}
                     </tbody>
                 </table>
             </div>
             
             <div class="totals">
-                <div class="total-line main">
+                <div style="display: flex; justify-content: space-between;">
                     <span>Jami summa:</span>
-                    <span>${currency === 'uzs' 
-                        ? Math.round(parseFloat(sale.total_amount) * exchangeRate).toLocaleString('uz-UZ') + ' so\'m'
-                        : '$' + parseFloat(sale.total_amount).toFixed(2)
-                    }</span>
+                    <span>${(() => {
+                        if (currency === 'both') {
+                            const totalUSD = parseFloat(sale.total_amount).toFixed(2);
+                            const totalUZS = Math.round(parseFloat(sale.total_amount) * exchangeRate).toLocaleString('uz-UZ');
+                            return '$' + totalUSD + '<br><span class="uzs-value">' + totalUZS + '</span>';
+                        } else if (currency === 'uzs') {
+                            return Math.round(parseFloat(sale.total_amount) * exchangeRate).toLocaleString('uz-UZ');
+                        } else {
+                            return '$' + parseFloat(sale.total_amount).toFixed(2);
+                        }
+                    })()}</span>
                 </div>
             </div>
             
-            ${sale.payment_details ? '<div style="margin-top: 3mm; padding: 2mm; background: #f8f9fa; border-radius: 2mm;"><strong style="font-size: 14px;">To\'lov:</strong><br><div style="margin-top: 2mm; font-size: 14px; font-weight: bold;">' + formatPaymentDetails(sale.payment_details, currency, exchangeRate) + '</div></div>' : ''}
+            ${sale.payment_details ? '<div class="payment-info"><div class="payment-label">To\\'lov:</div><div class="payment-details">' + formatPaymentDetails(sale.payment_details, currency, exchangeRate) + '</div></div>' : ''}
             
             <div class="footer">
                 <div>Rahmat!</div>
                 <div>Yana tashrif buyuring!</div>
+            </div>
+            
+            <div class="qr-code">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://t.me/DIAMONDCARAccesories" alt="QR Code">
+                <div class="qr-text">Telegram: @DIAMONDCARAccesories</div>
             </div>
         </body>
         </html>
