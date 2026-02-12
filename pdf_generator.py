@@ -124,15 +124,53 @@ def generate_sale_receipt_pdf(
     # Mahsulotlar ro'yxati
     c.setFont("Helvetica-Bold", 8)
     for item in sale_data.get('items', []):
-        # Mahsulot nomi (uzun bo'lsa qisqartirish)
-        product_name = item['name'][:20]
-        c.drawString(table_left + 2*mm, y - 4*mm, product_name)
+        # Mahsulot nomini qatorlarga bo'lish (uzun bo'lsa)
+        product_name = item['name']
+        max_width = col1_width - 4*mm  # 2mm padding har tarafdan
         
-        # Miqdor
+        # Matn kengligini tekshirish va qatorlarga bo'lish
+        name_lines = []
+        words = product_name.split()
+        current_line = ""
+        
+        for word in words:
+            test_line = current_line + (" " if current_line else "") + word
+            # Matn kengligini o'lchash (8 pt font)
+            text_width = pdfmetrics.stringWidth(test_line, "Helvetica-Bold", 8)
+            
+            if text_width <= max_width:
+                current_line = test_line
+            else:
+                if current_line:
+                    name_lines.append(current_line)
+                    current_line = word
+                else:
+                    # Bitta so'z juda uzun bo'lsa, uni qisqartirish
+                    name_lines.append(word[:30])
+                    current_line = ""
+        
+        if current_line:
+            name_lines.append(current_line)
+        
+        # Agar qator bo'lmasa, kamida bitta qator qo'shish
+        if not name_lines:
+            name_lines = [product_name[:30]]
+        
+        # Row height - mahsulot nomi qatorlari soniga qarab
+        lines_count = len(name_lines)
+        row_height = max(6*mm, (3 + lines_count * 3) * mm)
+        
+        # Mahsulot nomini chizish (bir necha qator bo'lishi mumkin)
+        name_y = y - 4*mm
+        for line in name_lines:
+            c.drawString(table_left + 2*mm, name_y, line)
+            name_y -= 3*mm
+        
+        # Miqdor (yuqori qatorda)
         quantity = item['quantity']
         c.drawCentredString(table_left + col1_width + col2_width/2, y - 4*mm, str(int(quantity)))
         
-        # Narx (valyutaga qarab)
+        # Narx (valyutaga qarab, yuqori qatorda)
         if currency == 'usd':
             unit_price = item.get('unit_price_usd', item.get('unit_price', 0))
             price_str = f"${unit_price:.2f}"
@@ -143,7 +181,6 @@ def generate_sale_receipt_pdf(
         c.drawRightString(table_right - 2*mm, y - 4*mm, price_str)
         
         # Qator borderlari
-        row_height = 6*mm
         c.rect(table_left, y - row_height, table_width, row_height, stroke=1, fill=0)
         c.line(table_left + col1_width, y - row_height, table_left + col1_width, y)
         c.line(table_left + col1_width + col2_width, y - row_height, table_left + col1_width + col2_width, y)
