@@ -10130,8 +10130,8 @@ def create_sale():
         action_text = 'tahrirlandi' if is_edit_mode else 'yaratildi'
         print(f"âœ… Savdo {action_text}: ID={current_sale.id}, Items={len(items)}, Total=${total_revenue}")
 
-        # Telegram xabar yuborish (faqat yangi savdo yaratilganda va mijoz telegram_chat_id bor bo'lsa)
-        if not is_edit_mode and final_customer_id:
+        # Telegram xabar yuborish (yangi savdo yaratilganda yoki tahrirlanganda, mijoz telegram_chat_id bor bo'lsa)
+        if final_customer_id:
             try:
                 customer = Customer.query.get(final_customer_id)
                 if customer and customer.telegram_chat_id:
