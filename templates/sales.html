@@ -5838,6 +5838,14 @@
                 const customerSearchInput = getActiveTabElement('customerSearch');
                 const customerName = customerId && customerSearchInput ? customerSearchInput.value : 'Naqd mijoz';
                 
+                // Mijoz telefon raqamini olish
+                let customerPhone = '';
+                if (customerId) {
+                    // Tanlangan mijozni topish
+                    const selectedCustomer = customers ? customers.find(c => c.id == customerId) : null;
+                    customerPhone = selectedCustomer && selectedCustomer.phone ? selectedCustomer.phone : '';
+                }
+                
                 // Qaysi valyuta tanlangani aniqlash
                 const selectedCurrency = (printUSD && printUSD.checked && printUZS && printUZS.checked) ? 'both' 
                                       : (printUZS && printUZS.checked) ? 'uzs' 
@@ -5882,7 +5890,7 @@
                     id: result.sale_id || result.id,
                     sale_date: new Date().toISOString(),
                     customer_name: customerName,
-                    customer_phone: '',
+                    customer_phone: customerPhone,
                     seller_name: sellerName,
                     seller_phone: sellerPhone,
                     store_name: locationName,
