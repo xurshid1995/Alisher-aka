@@ -10146,9 +10146,13 @@ def create_sale():
                         store_obj = Store.query.get(sale_location_id)
                         location_name = store_obj.name if store_obj else "Do'kon"
 
-                    # To'lov summalari (UZS da)
-                    total_uzs = cash_amount + click_amount + terminal_amount + debt_amount
-                    paid_uzs = cash_amount + click_amount + terminal_amount
+                    # To'lov summalari - saqlangan savdodan olish (tahrirlash rejimida ham to'g'ri ishlaydi)
+                    tg_cash_uzs = float(current_sale.cash_amount) if current_sale.cash_amount else 0
+                    tg_click_uzs = float(current_sale.click_amount) if current_sale.click_amount else 0
+                    tg_terminal_uzs = float(current_sale.terminal_amount) if current_sale.terminal_amount else 0
+                    tg_debt_uzs = float(current_sale.debt_amount) if current_sale.debt_amount else 0
+                    tg_total_uzs = tg_cash_uzs + tg_click_uzs + tg_terminal_uzs + tg_debt_uzs
+                    tg_paid_uzs = tg_cash_uzs + tg_click_uzs + tg_terminal_uzs
 
                     # Savdo mahsulotlarini PDF uchun tayyorlash
                     sale_items_for_pdf = []
@@ -10167,15 +10171,22 @@ def create_sale():
                         customer_id=customer.id,
                         sale_date=current_sale.sale_date,
                         location_name=location_name,
-                        total_amount_uzs=total_uzs,
-                        paid_uzs=paid_uzs,
-                        cash_uzs=cash_amount,
-                        click_uzs=click_amount,
-                        terminal_uzs=terminal_amount,
-                        debt_uzs=debt_amount,
+                        total_amount_uzs=tg_total_uzs,
+                        paid_uzs=tg_paid_uzs,
+                        cash_uzs=tg_cash_uzs,
+                        click_uzs=tg_click_uzs,
+                        terminal_uzs=tg_terminal_uzs,
+                        debt_uzs=tg_debt_uzs,
                         sale_id=current_sale.id,
                         sale_items=sale_items_for_pdf,
-                        customer_phone=format_phone_number(customer.phone) if customer.phone else ''
+                        customer_phone=format_phone_number(customer.phone) if customer.phone else '',
+                        # USD qiymatlar
+                        total_amount_usd=float(current_sale.total_amount) if current_sale.total_amount else 0,
+                        paid_usd=float(current_sale.cash_usd or 0) + float(current_sale.click_usd or 0) + float(current_sale.terminal_usd or 0),
+                        cash_usd=float(current_sale.cash_usd) if current_sale.cash_usd else 0,
+                        click_usd=float(current_sale.click_usd) if current_sale.click_usd else 0,
+                        terminal_usd=float(current_sale.terminal_usd) if current_sale.terminal_usd else 0,
+                        debt_usd=float(current_sale.debt_usd) if current_sale.debt_usd else 0
                     )
                     logger.info(f"âœ… Telegram xabar va PDF yuborildi: {customer.name}")
             except Exception as telegram_error:
