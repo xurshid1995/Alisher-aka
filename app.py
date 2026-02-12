@@ -237,6 +237,34 @@ DEFAULT_PHONE_PLACEHOLDER = os.getenv('DEFAULT_PHONE_PLACEHOLDER', 'Telefon kiri
 
 
 # Helper functions
+def format_phone_number(phone):
+    """Telefon raqamini formatlash: +998(99) 123-45-67"""
+    if not phone:
+        return ''
+    
+    # Faqat raqamlarni qoldirish
+    digits = ''.join(filter(str.isdigit, phone))
+    
+    # Agar 998 bilan boshlanmasa va 9 bilan boshlansa, 998 qo'shish
+    if digits and not digits.startswith('998'):
+        if digits.startswith('9') and len(digits) == 9:
+            digits = '998' + digits
+    
+    # Format: +998(99) 123-45-67
+    if len(digits) >= 12:
+        return f"+{digits[0:3]}({digits[3:5]}) {digits[5:8]}-{digits[8:10]}-{digits[10:12]}"
+    elif len(digits) >= 10:
+        return f"+{digits[0:3]}({digits[3:5]}) {digits[5:8]}-{digits[8:10]}"
+    elif len(digits) >= 8:
+        return f"+{digits[0:3]}({digits[3:5]}) {digits[5:8]}"
+    elif len(digits) >= 5:
+        return f"+{digits[0:3]}({digits[3:5]})"
+    elif len(digits) >= 3:
+        return f"+{digits[0:3]}"
+    else:
+        return phone  # Agar juda qisqa bo'lsa, asl qiymatni qaytarish
+
+
 def hash_password(password):
     """Parolni hash qilish"""
     return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
@@ -9389,7 +9417,7 @@ def finalize_sale(sale_id):
 
                     # Savdo mahsulotlarini PDF uchun tayyorlash
                     seller_name = f"{sale.seller.first_name} {sale.seller.last_name}" if sale.seller else session.get('username', 'Sotuvchi')
-                    seller_phone = sale.seller.phone if sale.seller and sale.seller.phone else ''
+                    seller_phone = format_phone_number(sale.seller.phone) if sale.seller and sale.seller.phone else ''
 
                     sale_items_for_pdf = []
                     for item in sale.items:
@@ -9422,7 +9450,7 @@ def finalize_sale(sale_id):
                         sale_items=sale_items_for_pdf,
                         receipt_format=receipt_format,
                         seller_phone=seller_phone,
-                        customer_phone=customer.phone if customer.phone else '',
+                        customer_phone=format_phone_number(customer.phone) if customer.phone else '',
                         total_amount_usd=total_usd,
                         paid_usd=paid_usd,
                         cash_usd=float(sale.cash_usd),
@@ -10147,7 +10175,7 @@ def create_sale():
                         debt_uzs=debt_amount,
                         sale_id=current_sale.id,
                         sale_items=sale_items_for_pdf,
-                        customer_phone=customer.phone if customer.phone else ''
+                        customer_phone=format_phone_number(customer.phone) if customer.phone else ''
                     )
                     logger.info(f"âœ… Telegram xabar va PDF yuborildi: {customer.name}")
             except Exception as telegram_error:
