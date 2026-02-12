@@ -31,7 +31,9 @@ def generate_sale_receipt_pdf(
         str: PDF fayl yo'li
     """
     if output_path is None:
-        output_path = f"/tmp/sale_{sale_data['sale_id']}_{currency}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+        # Fayl nomi: savdo (USD) 12.02.2026 23:15.pdf
+        currency_label = "USD" if currency == 'usd' else "UZS"
+        output_path = f"/tmp/savdo ({currency_label}) {datetime.now().strftime('%d.%m.%Y %H-%M')}.pdf"
     
     # PDF yaratish - 80mm kenglikda (printer chek formati)
     from reportlab.lib.pagesizes import landscape
