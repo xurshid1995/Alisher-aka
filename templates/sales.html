@@ -5851,9 +5851,9 @@
                     const amountUZS = Math.round(amountUSD * exchangeRate).toLocaleString('uz-UZ');
                     
                     if (currency === 'uzs') {
-                        paymentDetails.push(`${label}: ${amountUZS} som`);
+                        paymentDetails.push(`${label}: ${amountUZS}`);
                     } else if (currency === 'both') {
-                        paymentDetails.push(`${label}: $${amountUSD.toFixed(2)} / ${amountUZS} som`);
+                        paymentDetails.push(`${label}: $${amountUSD.toFixed(2)} / ${amountUZS}`);
                     } else {
                         paymentDetails.push(`${label}: $${amountUSD.toFixed(2)}`);
                     }
