@@ -2876,7 +2876,7 @@ function generatePrintableReceipt(sale, currency = 'uzs') {
         </head>
         <body>
             <div class="header">
-                <div class="shop-name">${sale.store_name || 'Do\'kon'}</div>
+                <div class="shop-name">${sale.store_name || "Do'kon"}</div>
                 <div style="border-top: 1px solid #000; padding-top: 2mm; margin-top: 2mm;">
                     <div class="receipt-info">Chek #${sale.id} | ${new Date(sale.sale_date).toLocaleString('uz-UZ', { timeZone: 'Asia/Tashkent' })}</div>
                 </div>
@@ -2936,7 +2936,7 @@ function generatePrintableReceipt(sale, currency = 'uzs') {
                 </div>
             </div>
             
-            ${sale.payment_details ? '<div class="payment-info"><div class="payment-label">To\'lov:</div><div class="payment-details">' + formatPaymentDetails(sale.payment_details, currency, exchangeRate) + '</div></div>' : ''}
+            ${sale.payment_details ? "<div class='payment-info'><div class='payment-label'>To'lov:</div><div class='payment-details'>" + formatPaymentDetails(sale.payment_details, currency, exchangeRate) + "</div></div>" : ''}
             
             <div class="footer">
                 <div>Rahmat!</div>
