@@ -3053,15 +3053,42 @@
                     if (e.key === 'Enter') {
                         e.preventDefault();
                         e.stopPropagation();
-                        // Klaviaturani to'liq yopib, yangi sessiya bilan ochish
-                        quantityInput.blur();
-                        setTimeout(() => {
-                            const priceInput = getActiveTabElement('modalPriceUSD');
-                            if (priceInput) {
-                                priceInput.focus();
-                                priceInput.select();
-                            }
-                        }, 300);
+                        
+                        const priceInput = getActiveTabElement('modalPriceUSD');
+                        if (priceInput) {
+                            // DEBUG: Barcha eventlarni kuzatish
+                            const debugEvents = ['focus', 'blur', 'input', 'change', 'select', 'mousedown', 'mouseup', 'touchstart', 'touchend', 'click', 'keydown', 'keyup', 'selectionchange'];
+                            debugEvents.forEach(evt => {
+                                priceInput.addEventListener(evt, function(ev) {
+                                    const sel = this.selectionStart !== null ? `sel:${this.selectionStart}-${this.selectionEnd}` : 'sel:N/A';
+                                    console.log(`🔍 DEBUG priceUSD [${evt}] value="${this.value}" ${sel} time=${Date.now()}`);
+                                }, { once: true });
+                            });
+                            // Document selectionchange ham kuzatish
+                            const selHandler = () => {
+                                const active = document.activeElement;
+                                if (active === priceInput) {
+                                    const sel = active.selectionStart !== null ? `sel:${active.selectionStart}-${active.selectionEnd}` : 'sel:N/A';
+                                    console.log(`🔍 DEBUG document.selectionchange active=priceUSD value="${active.value}" ${sel} time=${Date.now()}`);
+                                }
+                            };
+                            document.addEventListener('selectionchange', selHandler);
+                            setTimeout(() => document.removeEventListener('selectionchange', selHandler), 2000);
+                            
+                            console.log(`🔍 DEBUG START: value="${priceInput.value}" type="${priceInput.type}" time=${Date.now()}`);
+                            priceInput.focus();
+                            console.log(`🔍 DEBUG AFTER focus(): sel=${priceInput.selectionStart}-${priceInput.selectionEnd} time=${Date.now()}`);
+                            priceInput.select();
+                            console.log(`🔍 DEBUG AFTER select(): sel=${priceInput.selectionStart}-${priceInput.selectionEnd} time=${Date.now()}`);
+                            
+                            // 50ms, 100ms, 200ms keyin tekshirish
+                            [50, 100, 200, 500].forEach(ms => {
+                                setTimeout(() => {
+                                    const sel = priceInput.selectionStart !== null ? `${priceInput.selectionStart}-${priceInput.selectionEnd}` : 'N/A';
+                                    console.log(`🔍 DEBUG +${ms}ms: sel=${sel} activeEl=${document.activeElement === priceInput ? 'priceUSD' : document.activeElement.tagName} value="${priceInput.value}" time=${Date.now()}`);
+                                }, ms);
+                            });
+                        }
                         quantityInput.removeEventListener('keydown', handleQuantityEnter);
                     }
                 }, { once: false });
