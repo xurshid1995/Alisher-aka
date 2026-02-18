@@ -232,13 +232,26 @@
     .quantity-cell {
         display: inline-block;
         font-weight: 700;
-        color: white;
         text-align: center;
-        background-color: #4da6ff;
-        border-radius: 0;
-        padding: 0.15rem 0.3rem;
-        min-width: 1.8rem;
         font-size: 0.9rem;
+    }
+
+    .quantity-value {
+        display: inline-block;
+        color: white;
+        background-color: #4da6ff;
+        border-radius: 8px;
+        padding: 0.15rem 0.5rem;
+        min-width: 2rem;
+        text-align: center;
+    }
+
+    .quantity-unit {
+        display: inline-block;
+        color: #666;
+        font-weight: 500;
+        margin-left: 0.3rem;
+        font-size: 0.85rem;
     }
 
     .stock-badge {
@@ -958,9 +971,11 @@
                 
                 // O'lchov birligini aniqlash
                 const unitType = product.unit_type || 'dona';
-                const quantityDisplay = unitType === 'litr' 
-                    ? `${totalStock.toFixed(2)} litr` 
-                    : (totalStock % 1 === 0 ? `${Math.floor(totalStock)} dona` : `${parseFloat(totalStock).toFixed(1)} dona`);
+                const quantityValue = unitType === 'litr' 
+                    ? totalStock.toFixed(2)
+                    : (totalStock % 1 === 0 ? Math.floor(totalStock) : parseFloat(totalStock).toFixed(1));
+                const unitText = unitType === 'litr' ? 'litr' : 'dona';
+                const quantityDisplay = `<span class="quantity-value">${quantityValue}</span> <span class="quantity-unit">${unitText}</span>`;
                 
                 // Qidiruv matnini highlight qilish
                 const highlightedName = highlightSearchText(product.name, currentSearch);
@@ -979,7 +994,7 @@
                             <span style="background-color: #007bff; color: white; font-size: 0.9rem; margin-left: 0.5rem; padding: 2px 8px; border-radius: 0;">${formatPrice(product.sell_price * currencyRate)} so'm</span>
                         </td>
                         <td class="location-cell">${locations}</td>
-                        <td><span class="quantity-cell">${quantityDisplay}</span></td>
+                        <td class="quantity-cell">${quantityDisplay}</td>
                         <td><span class="stock-badge ${stockClass}">${stockText}</span></td>
                     </tr>
                 `;
