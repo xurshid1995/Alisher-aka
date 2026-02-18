@@ -24,6 +24,34 @@
             background: #667eea !important;
             color: white !important;
         }
+
+        /* Sticky columns - Barcode va Mahsulot nomi */
+        .products-table th:nth-child(1),
+        .products-table td:nth-child(1) {
+            position: sticky;
+            left: 0;
+            z-index: 2;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        }
+
+        .products-table th:nth-child(2),
+        .products-table td:nth-child(2) {
+            position: sticky;
+            left: 100px; /* Barcode ustuni kengligi (480px da kichikroq) */
+            z-index: 2;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        }
+
+        /* Sticky ustunlar uchun background */
+        .products-table thead th:nth-child(1),
+        .products-table thead th:nth-child(2) {
+            background: #667eea !important;
+        }
+
+        .products-table tbody td:nth-child(1),
+        .products-table tbody td:nth-child(2) {
+            background: white;
+        }
     }
 
     .page-header {
@@ -506,6 +534,34 @@
         .products-table th,
         .products-table td {
             padding: 0.75rem 0.5rem;
+        }
+
+        /* Sticky columns for mobile - Barcode va Mahsulot nomi */
+        .products-table th:nth-child(1),
+        .products-table td:nth-child(1) {
+            position: sticky;
+            left: 0;
+            z-index: 2;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        }
+
+        .products-table th:nth-child(2),
+        .products-table td:nth-child(2) {
+            position: sticky;
+            left: 120px; /* Barcode ustuni kengligi */
+            z-index: 2;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        }
+
+        /* Sticky ustunlar uchun background */
+        .products-table thead th:nth-child(1),
+        .products-table thead th:nth-child(2) {
+            background: #667eea !important;
+        }
+
+        .products-table tbody td:nth-child(1),
+        .products-table tbody td:nth-child(2) {
+            background: white;
         }
 
         /* Mobile pagination */
