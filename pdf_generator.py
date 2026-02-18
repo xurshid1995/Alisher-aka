@@ -103,7 +103,7 @@ def generate_sale_receipt_pdf(
     # Mahsulotlar jadvali
     # Jadval sarlavhasi
     c.setStrokeColor(colors.black)
-    c.setLineWidth(1.5)
+    c.setLineWidth(0.3)
     
     # Jadval chegaralari
     table_top = y
