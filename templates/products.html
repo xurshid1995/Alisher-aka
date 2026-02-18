@@ -493,37 +493,36 @@
 
     /* Joylashuv taglari uchun stillar */
     .location-tag {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
+        display: inline-block;
         padding: 0.2rem 0.8rem;
         border-radius: 20px;
         font-size: 0.85rem;
         font-weight: 500;
-        margin: -0.05rem 0;
-        width: 180px;
+        margin: 0.1rem 0.2rem 0.1rem 0;
         height: 1.5rem;
-        box-sizing: border-box;
+        line-height: 1.1rem;
+        vertical-align: middle;
     }
 
     .location-name {
-        flex: 1;
-        text-align: left;
-        margin-right: 0.5rem;
+        display: inline;
     }
 
     .location-quantity {
+        display: inline-block;
         font-weight: 700;
-        margin-left: auto;
-        margin-right: 0;
-        padding: 0.2rem 0.5rem;
+        padding: 0.2rem 0.6rem;
         background-color: #ffffff;
         border-radius: 12px;
-        font-size: 0.95rem;
+        font-size: 0.85rem;
         min-width: 2rem;
-        text-align: right;
-        flex-shrink: 0;
+        text-align: center;
         border: 1px solid rgba(0, 0, 0, 0.1);
+        margin-left: 0.2rem;
+        vertical-align: middle;
+        line-height: 1.1rem;
+        height: 1.5rem;
+        box-sizing: border-box;
     }
 
     .warehouse-tag {
@@ -1158,15 +1157,13 @@
                     if (stock.warehouse_id && stock.warehouse_name) {
                         locations.push(`<span class="location-tag warehouse-tag">
                             <span class="location-name">${stock.warehouse_name}</span>
-                            <span class="location-quantity">${qtyDisplay}</span>
-                        </span>`);
+                        </span><span class="location-quantity">${qtyDisplay}</span>`);
                     }
                     // Agar store_id mavjud bo'lsa - do'kon (yashil fon)
                     if (stock.store_id && stock.store_name) {
                         locations.push(`<span class="location-tag store-tag">
                             <span class="location-name">${stock.store_name}</span>
-                            <span class="location-quantity">${qtyDisplay}</span>
-                        </span>`);
+                        </span><span class="location-quantity">${qtyDisplay}</span>`);
                     }
                 } else {
                     // Aniq joylashuv tanlangan bo'lsa - faqat o'sha joylashuv ko'rsatilsin
