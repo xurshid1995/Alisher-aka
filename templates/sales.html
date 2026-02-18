@@ -3048,16 +3048,12 @@
                 quantityInput.focus();
                 quantityInput.select(); // Matnni belgilash
                 
-                // Enter event listener - miqdor → narx USD
+                // Enter event listener - miqdor → korzinaga qo'shish
                 quantityInput.addEventListener('keydown', function handleQuantityEnter(e) {
                     if (e.key === 'Enter') {
                         e.preventDefault();
                         e.stopPropagation();
-                        const priceInput = getActiveTabElement('modalPriceUSD');
-                        if (priceInput) {
-                            priceInput.focus();
-                            priceInput.select();
-                        }
+                        confirmAddToCart();
                         quantityInput.removeEventListener('keydown', handleQuantityEnter);
                     }
                 }, { once: false });
