@@ -708,6 +708,7 @@
         border-radius: 12px;
     }
     #prodOpsPopup .op-date { color: #888; font-size: 0.77rem; }
+    #prodOpsPopup .op-loc { color: #555; font-size: 0.78rem; background: #f0f0f0; border-radius: 4px; padding: 1px 6px; margin-left: 4px; }
     #prodOpsPopup .op-desc { color: #444; line-height: 1.4; }
     #prodOpsPopup .op-user { color: #667eea; font-size: 0.77rem; }
 </style>
@@ -1505,13 +1506,14 @@
                     html += `<div style="padding:1.5rem;text-align:center;color:#888;">📢 Amaliyotlar topilmadi</div>`;
                 } else {
                     ops.forEach(op => {
+                        const loc = op.location_name ? `<span class="op-loc">📍 ${op.location_name}</span>` : '';
                         html += `<div class="op-row">
                             <div class="op-top">
-                                <span class="op-badge">${op.label}</span>
+                                <span class="op-badge">${op.label}</span>${loc}
                                 <span class="op-date">${op.created_at || ''}</span>
                             </div>
                             <div class="op-desc">${op.description || ''}</div>
-                            <div class="op-user">👤 ${op.username || ''} ${op.location_name ? '&nbsp;•&nbsp;📍' + op.location_name : ''}</div>
+                            <div class="op-user">👤 ${op.username || ''}</div>
                         </div>`;
                     });
                 }
