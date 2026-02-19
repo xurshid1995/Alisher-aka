@@ -1508,7 +1508,11 @@
                 } else {
                     ops.forEach(op => {
                         const loc = op.location_name ? `<span class="op-loc">📍 ${op.location_name}</span>` : '';
-                        const user = op.username ? `<span class="op-user">👤 ${op.username}</span>` : '';
+                        let userInfo = op.username || '';
+                        if (op.user_role) userInfo += ` (${op.user_role}`;
+                        if (op.user_phone) userInfo += op.user_role ? `, ${op.user_phone})` : ` (${op.user_phone})`;
+                        else if (op.user_role) userInfo += ')';
+                        const user = userInfo ? `<span class="op-user">👤 ${userInfo}</span>` : '';
                         html += `<div class="op-row">
                             <div class="op-top">
                                 <span class="op-badge">${op.label}</span>${loc}${user}

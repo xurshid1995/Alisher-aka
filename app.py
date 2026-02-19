@@ -3741,17 +3741,34 @@ def api_product_operations(product_id):
             'create_store': '🏪 Do\'kon yaratish',
         }
 
+        # user_id → user ma'lumotlari cache
+        user_cache = {}
+
         result = []
         seen_ids = set()
         for op in ops:
             if op.id in seen_ids:
                 continue
             seen_ids.add(op.id)
+
+            user_role = None
+            user_phone = None
+            if op.user_id:
+                if op.user_id not in user_cache:
+                    u = User.query.get(op.user_id)
+                    user_cache[op.user_id] = u
+                u = user_cache[op.user_id]
+                if u:
+                    user_role = u.get_role_display() if hasattr(u, 'get_role_display') else u.role
+                    user_phone = u.phone
+
             result.append({
                 'operation_type': op.operation_type,
                 'label': op_labels.get(op.operation_type, op.operation_type),
                 'description': op.description,
                 'username': op.username,
+                'user_role': user_role,
+                'user_phone': user_phone,
                 'location_name': op.location_name,
                 'amount': float(op.amount) if op.amount else None,
                 'created_at': op.created_at.strftime('%d.%m.%Y %H:%M') if op.created_at else None,
