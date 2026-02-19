@@ -7758,6 +7758,7 @@ def process_transfers():
             db.session.add(transfer_record)
 
             # From location dan miqdorni kamaytirish
+            before_from_qty = 0
             if from_location.startswith('store_'):
                 store_id = int(from_location.replace('store_', ''))
                 store_stock = StoreStock.query.filter_by(
@@ -7769,6 +7770,7 @@ def process_transfers():
                     return jsonify(
                         {'error': 'Do\'konda yetarli miqdor yo\'q'}), 400
 
+                before_from_qty = float(store_stock.quantity)
                 store_stock.quantity -= quantity
                 # Miqdor 0 bo'lsa ham stockni saqlab qolamiz (o'chirmaymiz)
 
@@ -7783,10 +7785,12 @@ def process_transfers():
                     return jsonify(
                         {'error': 'Omborda yetarli miqdor yo\'q'}), 400
 
+                before_from_qty = float(warehouse_stock.quantity)
                 warehouse_stock.quantity -= quantity
                 # Miqdor 0 bo'lsa ham stockni saqlab qolamiz (o'chirmaymiz)
 
             # To location ga miqdorni qo'shish
+            before_to_qty = 0
             if to_location.startswith('store_'):
                 store_id = int(to_location.replace('store_', ''))
                 store_stock = StoreStock.query.filter_by(
@@ -7795,10 +7799,12 @@ def process_transfers():
                 ).first()
 
                 if store_stock:
+                    before_to_qty = float(store_stock.quantity)
                     store_stock.quantity += quantity
                 else:
                     # Yangi stock yaratish (StoreStock da cost_price va
                     # sell_price yo'q)
+                    before_to_qty = 0
                     new_stock = StoreStock(
                         store_id=store_id,
                         product_id=product_id,
@@ -7814,10 +7820,12 @@ def process_transfers():
                 ).first()
 
                 if warehouse_stock:
+                    before_to_qty = float(warehouse_stock.quantity)
                     warehouse_stock.quantity += quantity
                 else:
                     # Yangi stock yaratish (WarehouseStock da cost_price va
                     # sell_price yo'q)
+                    before_to_qty = 0
                     new_stock = WarehouseStock(
                         warehouse_id=warehouse_id,
                         product_id=product_id,
@@ -7848,23 +7856,35 @@ def process_transfers():
                 if to_warehouse:
                     to_location_name = to_warehouse.name
 
+            _qty = float(quantity)
+            _from_after = before_from_qty - _qty
+            _to_after = before_to_qty + _qty
+            transfer_desc = (
+                f"Transfer: {product.name} - "
+                f"{from_location_name} {before_from_qty:.0f}-{_qty:.0f}={_from_after:.0f}"
+                f" → {to_location_name} {before_to_qty:.0f}+{_qty:.0f}={_to_after:.0f}"
+            )
             operation = OperationHistory(
                 operation_type='transfer',
                 table_name='transfers',
                 record_id=transfer_record.id,
                 user_id=session.get('user_id'),
                 username=session.get('username') or 'Admin',
-                description=f"Transfer: {product.name} - {from_location_name} â†’ {to_location_name}",
+                description=transfer_desc,
                 old_data={
                     'from_location': from_location_name,
-                    'from_location_type': from_type
+                    'from_location_type': from_type,
+                    'from_qty_before': before_from_qty,
+                    'to_qty_before': before_to_qty
                 },
                 new_data={
                     'product_id': product_id,
                     'product_name': product.name,
                     'quantity': float(quantity),
                     'to_location': to_location_name,
-                    'to_location_type': to_type
+                    'to_location_type': to_type,
+                    'from_qty_after': before_from_qty - float(quantity),
+                    'to_qty_after': before_to_qty + float(quantity)
                 },
                 ip_address=request.remote_addr,
                 location_id=int(to_id),

@@ -1527,9 +1527,18 @@
                         // Transfer uchun description dan joylashuv qismini olib tashlash
                         let desc = op.description || '';
                         if (op.operation_type === 'transfer') {
-                            // "Transfer: MahsulotNomi - UY → Sergeli 1/4/3" dan faqat mahsulot nomini olish
-                            const m = desc.match(/^Transfer:\s*(.+?)\s*-\s*.+$/);
-                            if (m) desc = m[1];
+                            // Yangi format: "Transfer: Nom - FROM 44-2=42 → TO 20+2=22"
+                            const mNew = desc.match(/^Transfer:\s*(.+?)\s*-\s*.+?\s+(\d+)-(\d+)=(\d+)\s*[→➜]\s*.+?\s+(\d+)\+(\d+)=(\d+)/);
+                            // Eski format: "Transfer: Nom - FROM → TO"
+                            const mOld = desc.match(/^Transfer:\s*(.+?)\s*-\s*.+$/);
+                            if (mNew) {
+                                const name = mNew[1];
+                                const fromBefore = mNew[2], qty = mNew[3], fromAfter = mNew[4];
+                                const toBefore = mNew[5], toAfter = mNew[7];
+                                desc = `${name} | ${fromBefore}-${qty}=${fromAfter} ➜ ${toBefore}+${qty}=${toAfter}`;
+                            } else if (mOld) {
+                                desc = mOld[1];
+                            }
                         }
                         // edit_stock: eski format "miqdor X -> Y, narx $A -> $B" ni yangi formatga o'tkazish
                         if (op.operation_type === 'edit_stock') {
