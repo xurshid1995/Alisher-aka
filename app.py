@@ -3766,9 +3766,14 @@ def api_product_operations(product_id):
                 uname = op.username.strip()
                 cache_key = f'name_{uname}'
                 if cache_key not in user_cache:
+                    parts = uname.split(' ', 1)
+                    first = parts[0] if parts else ''
+                    last = parts[1] if len(parts) > 1 else ''
                     u = User.query.filter(
                         (User.username == uname) |
-                        (User.first_name + ' ' + User.last_name == uname)
+                        (User.email == uname) |
+                        ((User.first_name + ' ' + User.last_name) == uname) |
+                        (User.first_name == first)
                     ).first()
                     user_cache[cache_key] = u
                 u = user_cache[cache_key]
