@@ -711,7 +711,7 @@
     #prodOpsPopup .op-date { color: #888; font-size: 0.77rem; white-space: nowrap; }
     #prodOpsPopup .op-loc { color: #555; font-size: 0.78rem; background: #f0f0f0; border-radius: 4px; padding: 1px 6px; margin-left: 4px; }
     #prodOpsPopup .op-desc { color: #444; line-height: 1.4; }
-    #prodOpsPopup .op-user { color: #667eea; font-size: 0.77rem; }
+    #prodOpsPopup .op-user { color: #667eea; font-size: 0.77rem; background: #eef0ff; border-radius: 4px; padding: 1px 6px; }
 </style>
 {% endblock %}
 
@@ -1508,13 +1508,13 @@
                 } else {
                     ops.forEach(op => {
                         const loc = op.location_name ? `<span class="op-loc">📍 ${op.location_name}</span>` : '';
+                        const user = op.username ? `<span class="op-user">👤 ${op.username}</span>` : '';
                         html += `<div class="op-row">
                             <div class="op-top">
-                                <span class="op-badge">${op.label}</span>${loc}
+                                <span class="op-badge">${op.label}</span>${loc}${user}
                                 <span class="op-date">${op.created_at || ''}</span>
                             </div>
                             <div class="op-desc">${op.description || ''}</div>
-                            <div class="op-user">👤 ${op.username || ''}</div>
                         </div>`;
                     });
                 }
