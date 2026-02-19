@@ -851,11 +851,6 @@ def user_can_manage_transfer(user, pending_transfer):
         print(f"   ✅ ADMIN ACCESS")
         return True
 
-    # 1b. Transferni o'zi yaratgan bo'lsa
-    if pending_transfer.user_id and pending_transfer.user_id == user.id:
-        print(f"   ✅ CREATOR ACCESS: user created this transfer")
-        return True
-
     # 2. FROM yoki TO joylashuvlaridan biriga ruxsati bo'lsa (transfer_locations yoki allowed_locations)
     # Transfer locations dan tekshirish (transfer qilish huquqi)
     transfer_locations = user.transfer_locations or []
