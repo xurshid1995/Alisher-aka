@@ -68,7 +68,7 @@
     <!-- Amaliyotlar jadvali -->
     <div style="background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); overflow: hidden;">
         <div style="padding: 1.5rem; background: linear-gradient(135deg, #f8f9fa, #e9ecef); border-bottom: 2px solid #dee2e6;">
-            <h2 style="margin: 0; color: #495057; font-size: 1.4rem;">📋 Amaliyotlar ro'yxati</h2>
+            <h2 id="tableTitle" style="margin: 0; color: #495057; font-size: 1.4rem;">📋 Amaliyotlar ro'yxati</h2>
         </div>
         <div style="overflow-x: auto;">
             <table id="historyTable" style="width: 100%; border-collapse: collapse;">
@@ -351,6 +351,9 @@
                 currentPage = data.current_page;
                 totalPages = data.pages;
 
+                // Jadval sarlavhasini yangilash
+                updateTableTitle(data.total);
+
                 if (data.operations.length === 0) {
                     displayNoData();
                 } else {
@@ -371,6 +374,37 @@
                     </td>
                 </tr>
             `;
+        }
+    }
+
+    function updateTableTitle(total) {
+        const opType = document.getElementById('operationType').value;
+        const opLabels = {
+            '': '',
+            'sale': '🛒 Sotish',
+            'sale_edit': '✏️ Savdo tahrirlash',
+            'add_product': '📦 Mahsulot qo\'shish',
+            'edit_stock': '📝 Zaxira tahrirlash',
+            'transfer': '🔄 Transfer',
+            'return': '↩️ Qaytarish',
+            'debt_payment': '💳 Qarz to\'lash',
+            'edit': '✏️ Tahrirlash',
+            'delete': '🗑️ O\'chirish',
+            'edit_user': '👤 Foydalanuvchi tahrirlash',
+            'create_customer': '➕ Mijoz qo\'shish',
+            'delete_customer': '🗑️ Mijoz o\'chirish',
+            'edit_customer': '✏️ Mijoz tahrirlash',
+            'create_store': '🏬 Do\'kon qo\'shish',
+            'create_warehouse': '🏭 Ombor qo\'shish',
+            'create_user': '👤 Foydalanuvchi qo\'shish',
+            'delete_stock': '🗑️ Zaxira o\'chirish'
+        };
+        const label = opLabels[opType] || '';
+        const titleEl = document.getElementById('tableTitle');
+        if (opType && label) {
+            titleEl.innerHTML = `📋 Amaliyotlar ro'yxati &nbsp;<span style="background:#667eea;color:white;padding:0.2rem 0.7rem;border-radius:20px;font-size:0.9rem;font-weight:600;">${label}</span>&nbsp;<span style="background:#e2e8f0;color:#4a5568;padding:0.2rem 0.6rem;border-radius:20px;font-size:0.88rem;">${total} ta</span>`;
+        } else {
+            titleEl.innerHTML = `📋 Amaliyotlar ro'yxati &nbsp;<span style="background:#e2e8f0;color:#4a5568;padding:0.2rem 0.6rem;border-radius:20px;font-size:0.88rem;">${total} ta</span>`;
         }
     }
 
