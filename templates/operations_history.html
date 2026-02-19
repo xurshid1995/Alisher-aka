@@ -233,10 +233,10 @@
             .then(data => {
                 const select = document.getElementById('userFilter');
                 if (data.success && Array.isArray(data.users)) {
-                    data.users.forEach(username => {
+                    data.users.forEach(user => {
                         const option = document.createElement('option');
-                        option.value = username;
-                        option.textContent = username;
+                        option.value = user.id;
+                        option.textContent = user.display;
                         select.appendChild(option);
                     });
                 } else {
@@ -250,7 +250,7 @@
         const startDate = document.getElementById('startDate').value;
         const endDate = document.getElementById('endDate').value;
         const operationType = document.getElementById('operationType').value;
-        const usernameFilter = document.getElementById('userFilter').value;
+        const userId = document.getElementById('userFilter').value;
 
         // Loading ko'rsatish
         document.getElementById('historyTableBody').innerHTML = `
@@ -268,7 +268,7 @@
             if (startDate) params.append('start_date', startDate);
             if (endDate) params.append('end_date', endDate);
             if (operationType) params.append('operation_type', operationType);
-            if (usernameFilter) params.append('username', usernameFilter);
+            if (userId) params.append('user_id', userId);
             params.append('page', page);
             params.append('per_page', 50);
 
