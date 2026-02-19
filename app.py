@@ -3586,7 +3586,7 @@ def api_operations_history():
         start_date = request.args.get('start_date')
         end_date = request.args.get('end_date')
         operation_type = request.args.get('operation_type')
-        user_id = request.args.get('user_id', type=int)
+        username_filter = request.args.get('username')
         page = request.args.get('page', 1, type=int)
         per_page = request.args.get('per_page', 50, type=int)
 
@@ -3602,8 +3602,8 @@ def api_operations_history():
             query = query.filter(OperationHistory.created_at < end_datetime)
         if operation_type:
             query = query.filter(OperationHistory.operation_type == operation_type)
-        if user_id:
-            query = query.filter(OperationHistory.user_id == user_id)
+        if username_filter:
+            query = query.filter(OperationHistory.username == username_filter)
 
         # Pagination
         query = query.order_by(OperationHistory.created_at.desc())
@@ -3636,6 +3636,20 @@ def api_operations_history():
 
     except Exception as e:
         logger.error(f"Operations history API xatosi: {str(e)}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/operations-history/users')
+@role_required('admin', 'kassir', 'sotuvchi')
+def api_operations_history_users():
+    """Amaliyotlar tarixidagi unikal foydalanuvchilar ro'yxati"""
+    try:
+        rows = db.session.query(OperationHistory.username).filter(
+            OperationHistory.username.isnot(None)
+        ).distinct().order_by(OperationHistory.username).all()
+        users = [r[0] for r in rows if r[0]]
+        return jsonify({'success': True, 'users': users})
+    except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
 

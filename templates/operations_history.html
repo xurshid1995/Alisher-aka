@@ -20,11 +20,23 @@
                 <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #4a5568;">🏷️ Amaliyot turi:</label>
                 <select id="operationType" class="form-control" style="width: 100%;">
                     <option value="">Barchasi</option>
-                    <option value="sale">Sotish</option>
-                    <option value="add_product">Mahsulot qo'shish</option>
-                    <option value="transfer">Transfer</option>
-                    <option value="return">Qaytarish</option>
-                    <option value="edit">Tahrirlash</option>
+                    <option value="sale">🛒 Sotish</option>
+                    <option value="sale_edit">✏️ Savdo tahrirlash</option>
+                    <option value="add_product">📦 Mahsulot qo'shish</option>
+                    <option value="edit_stock">📝 Zaxira tahrirlash</option>
+                    <option value="transfer">🔄 Transfer</option>
+                    <option value="return">↩️ Qaytarish</option>
+                    <option value="debt_payment">💳 Qarz to'lash</option>
+                    <option value="edit">✏️ Tahrirlash</option>
+                    <option value="delete">🗑️ O'chirish</option>
+                    <option value="edit_user">👤 Foydalanuvchi tahrirlash</option>
+                    <option value="create_customer">➕ Mijoz qo'shish</option>
+                    <option value="delete_customer">🗑️ Mijoz o'chirish</option>
+                    <option value="edit_customer">✏️ Mijoz tahrirlash</option>
+                    <option value="create_store">🏬 Do'kon qo'shish</option>
+                    <option value="create_warehouse">🏭 Ombor qo'shish</option>
+                    <option value="create_user">👤 Foydalanuvchi qo'shish</option>
+                    <option value="delete_stock">🗑️ Zaxira o'chirish</option>
                 </select>
             </div>
             <div>
@@ -216,21 +228,19 @@
     });
 
     function loadUsers() {
-        fetch('/api/users')
+        fetch('/api/operations-history/users')
             .then(response => response.json())
             .then(data => {
                 const select = document.getElementById('userFilter');
-                const users = data.users || data; // API data.users formatida yoki to'g'ridan-to'g'ri array
-                
-                if (Array.isArray(users)) {
-                    users.forEach(user => {
+                if (data.success && Array.isArray(data.users)) {
+                    data.users.forEach(username => {
                         const option = document.createElement('option');
-                        option.value = user.id;
-                        option.textContent = user.username;
+                        option.value = username;
+                        option.textContent = username;
                         select.appendChild(option);
                     });
                 } else {
-                    console.error('Foydalanuvchilar ro\'yxati array emas:', users);
+                    console.error('Foydalanuvchilar ro\'yxati xato:', data);
                 }
             })
             .catch(error => console.error('Foydalanuvchilarni yuklashda xato:', error));
@@ -240,7 +250,7 @@
         const startDate = document.getElementById('startDate').value;
         const endDate = document.getElementById('endDate').value;
         const operationType = document.getElementById('operationType').value;
-        const userId = document.getElementById('userFilter').value;
+        const usernameFilter = document.getElementById('userFilter').value;
 
         // Loading ko'rsatish
         document.getElementById('historyTableBody').innerHTML = `
@@ -258,7 +268,7 @@
             if (startDate) params.append('start_date', startDate);
             if (endDate) params.append('end_date', endDate);
             if (operationType) params.append('operation_type', operationType);
-            if (userId) params.append('user_id', userId);
+            if (usernameFilter) params.append('username', usernameFilter);
             params.append('page', page);
             params.append('per_page', 50);
 
