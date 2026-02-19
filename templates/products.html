@@ -637,6 +637,15 @@
         transform: scale(1.2);
     }
 
+    #prodOpsBackdrop {
+        display: none;
+        position: fixed;
+        z-index: 9998;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background: rgba(0,0,0,0.35);
+    }
+
     #prodOpsPopup {
         display: none;
         position: fixed;
@@ -644,10 +653,14 @@
         background: white;
         border-radius: 10px;
         box-shadow: 0 8px 32px rgba(0,0,0,0.22);
-        width: 380px;
-        max-height: 420px;
+        width: 420px;
+        max-width: calc(100vw - 24px);
+        max-height: 480px;
         overflow-y: auto;
         font-size: 0.88rem;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
     }
     #prodOpsPopup .pop-header {
         background: linear-gradient(135deg,#667eea,#764ba2);
@@ -701,6 +714,7 @@
 {% endblock %}
 
 {% block content %}
+<div id="prodOpsBackdrop" onclick="closeProductOps()"></div>
 <div id="prodOpsPopup"></div>
 <div class="products-container" 
      data-user-store-id="{% if session.store_id %}{{ session.store_id }}{% else %}null{% endif %}"
@@ -1470,25 +1484,16 @@
 
     // Mahsulot amaliyotlari popup
     const popup = document.getElementById('prodOpsPopup');
+    const backdrop = document.getElementById('prodOpsBackdrop');
 
     function showProductOps(event, btn) {
         event.stopPropagation();
         const productId = btn.dataset.pid;
 
-        // Popup ochish va pozitsiyalash
+        // Popup ochish
+        backdrop.style.display = 'block';
         popup.style.display = 'block';
         popup.innerHTML = `<div class="pop-header"><h4>🕐 Yuklanmoqda...</h4><button class="pop-close" onclick="closeProductOps()">✕</button></div><div style="padding:1.2rem;text-align:center;color:#667eea;">⏳ Yuklanmoqda...</div>`;
-
-        const rect = btn.getBoundingClientRect();
-        let top = rect.bottom + 4;
-        let left = rect.left;
-        // Ekrandan chiqib ketmaslik
-        if (left + 385 > window.innerWidth) left = window.innerWidth - 390;
-        if (left < 4) left = 4;
-        if (top + 430 > window.innerHeight) top = rect.top - 434;
-        if (top < 4) top = 4;
-        popup.style.top = top + 'px';
-        popup.style.left = left + 'px';
 
         fetch(`/api/product/${productId}/operations`)
             .then(r => r.json())
@@ -1517,13 +1522,9 @@
 
     function closeProductOps() {
         popup.style.display = 'none';
+        backdrop.style.display = 'none';
     }
 
-    // Boshqa joyga bosganda yopilsin
-    document.addEventListener('click', function(e) {
-        if (popup.style.display === 'block' && !popup.contains(e.target)) {
-            closeProductOps();
-        }
-    });
+    // Boshqa joyga bosganda - backdrop orqali yopiladi (onclick), qolgan click listener shart emas
 </script>
 {% endblock %}
