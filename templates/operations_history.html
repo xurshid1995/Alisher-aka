@@ -10,50 +10,56 @@
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
             <div>
                 <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #4a5568;">📅 Boshlanish sanasi:</label>
-                <input type="date" id="startDate" class="form-control" style="width: 100%;">
+                <div class="filter-wrap">
+                    <input type="date" id="startDate" class="form-control" style="width: 100%;" onchange="onFilterChange('startDate')">
+                    <button class="filter-clear" id="clearStartDate" onclick="clearFilter('startDate')" title="Tozalash" style="display:none">✕</button>
+                </div>
             </div>
             <div>
                 <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #4a5568;">📅 Tugash sanasi:</label>
-                <input type="date" id="endDate" class="form-control" style="width: 100%;">
+                <div class="filter-wrap">
+                    <input type="date" id="endDate" class="form-control" style="width: 100%;" onchange="onFilterChange('endDate')">
+                    <button class="filter-clear" id="clearEndDate" onclick="clearFilter('endDate')" title="Tozalash" style="display:none">✕</button>
+                </div>
             </div>
             <div>
                 <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #4a5568;">🏷️ Amaliyot turi:</label>
-                <select id="operationType" class="form-control" style="width: 100%;">
-                    <option value="">Barchasi</option>
-                    <option value="sale">🛒 Sotish</option>
-                    <option value="sale_edit">✏️ Savdo tahrirlash</option>
-                    <option value="add_product">📦 Mahsulot qo'shish</option>
-                    <option value="edit_stock">📝 Zaxira tahrirlash</option>
-                    <option value="transfer">🔄 Transfer</option>
-                    <option value="return">↩️ Qaytarish</option>
-                    <option value="debt_payment">💳 Qarz to'lash</option>
-                    <option value="edit">✏️ Tahrirlash</option>
-                    <option value="delete">🗑️ O'chirish</option>
-                    <option value="edit_user">👤 Foydalanuvchi tahrirlash</option>
-                    <option value="create_customer">➕ Mijoz qo'shish</option>
-                    <option value="delete_customer">🗑️ Mijoz o'chirish</option>
-                    <option value="edit_customer">✏️ Mijoz tahrirlash</option>
-                    <option value="create_store">🏬 Do'kon qo'shish</option>
-                    <option value="create_warehouse">🏭 Ombor qo'shish</option>
-                    <option value="create_user">👤 Foydalanuvchi qo'shish</option>
-                    <option value="delete_stock">🗑️ Zaxira o'chirish</option>
-                </select>
+                <div class="filter-wrap">
+                    <select id="operationType" class="form-control" style="width: 100%;" onchange="onFilterChange('operationType')">
+                        <option value="">Barchasi</option>
+                        <option value="sale">🛒 Sotish</option>
+                        <option value="sale_edit">✏️ Savdo tahrirlash</option>
+                        <option value="add_product">📦 Mahsulot qo'shish</option>
+                        <option value="edit_stock">📝 Zaxira tahrirlash</option>
+                        <option value="transfer">🔄 Transfer</option>
+                        <option value="return">↩️ Qaytarish</option>
+                        <option value="debt_payment">💳 Qarz to'lash</option>
+                        <option value="edit">✏️ Tahrirlash</option>
+                        <option value="delete">🗑️ O'chirish</option>
+                        <option value="edit_user">👤 Foydalanuvchi tahrirlash</option>
+                        <option value="create_customer">➕ Mijoz qo'shish</option>
+                        <option value="delete_customer">🗑️ Mijoz o'chirish</option>
+                        <option value="edit_customer">✏️ Mijoz tahrirlash</option>
+                        <option value="create_store">🏬 Do'kon qo'shish</option>
+                        <option value="create_warehouse">🏭 Ombor qo'shish</option>
+                        <option value="create_user">👤 Foydalanuvchi qo'shish</option>
+                        <option value="delete_stock">🗑️ Zaxira o'chirish</option>
+                    </select>
+                    <button class="filter-clear" id="clearOperationType" onclick="clearFilter('operationType')" title="Tozalash" style="display:none">✕</button>
+                </div>
             </div>
             <div>
                 <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #4a5568;">👤 Foydalanuvchi:</label>
-                <select id="userFilter" class="form-control" style="width: 100%;">
-                    <option value="">Barchasi</option>
-                </select>
+                <div class="filter-wrap">
+                    <select id="userFilter" class="form-control" style="width: 100%;" onchange="onFilterChange('userFilter')">
+                        <option value="">Barchasi</option>
+                    </select>
+                    <button class="filter-clear" id="clearUserFilter" onclick="clearFilter('userFilter')" title="Tozalash" style="display:none">✕</button>
+                </div>
             </div>
         </div>
-        <div style="margin-top: 1rem; display: flex; gap: 1rem;">
-            <button onclick="loadHistory()" class="btn btn-primary" style="flex: 1;">
-                🔍 Qidirish
-            </button>
-            <button onclick="resetFilters()" class="btn btn-secondary" style="flex: 1;">
-                🔄 Tozalash
-            </button>
-            <button onclick="exportHistory()" class="btn btn-success" style="flex: 1;">
+        <div style="margin-top: 1rem; display: flex; justify-content: flex-end;">
+            <button onclick="exportHistory()" class="btn btn-success">
                 📊 Excel ga eksport
             </button>
         </div>
@@ -201,11 +207,84 @@
         color: white;
         border-color: #667eea;
     }
+
+    .filter-wrap {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .filter-wrap .form-control {
+        flex: 1;
+        padding-right: 2rem;
+    }
+
+    .filter-clear {
+        position: absolute;
+        right: 6px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: #e53e3e;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 22px;
+        height: 22px;
+        font-size: 12px;
+        line-height: 1;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1;
+        transition: background 0.2s;
+    }
+
+    .filter-clear:hover {
+        background: #c53030;
+    }
 </style>
 
 <script>
     let currentPage = 1;
     let totalPages = 1;
+    let filterDebounceTimer = null;
+
+    // Filter o'zgarganda avtomatik qidirish (debounce 400ms)
+    function onFilterChange(fieldId) {
+        updateClearButton(fieldId);
+        clearTimeout(filterDebounceTimer);
+        filterDebounceTimer = setTimeout(() => {
+            loadHistory(1);
+        }, 400);
+    }
+
+    // X tugmasi ko'rinishini yangilash
+    function updateClearButton(fieldId) {
+        const clearBtnMap = {
+            'startDate': 'clearStartDate',
+            'endDate': 'clearEndDate',
+            'operationType': 'clearOperationType',
+            'userFilter': 'clearUserFilter'
+        };
+        const btnId = clearBtnMap[fieldId];
+        if (!btnId) return;
+        const val = document.getElementById(fieldId).value;
+        document.getElementById(btnId).style.display = val ? 'flex' : 'none';
+    }
+
+    // X tugmasi bosilganda filterni tozalash
+    function clearFilter(fieldId) {
+        const el = document.getElementById(fieldId);
+        el.value = '';
+        updateClearButton(fieldId);
+        loadHistory(1);
+    }
+
+    // Barcha X tugmalarini yangilash
+    function updateAllClearButtons() {
+        ['startDate', 'endDate', 'operationType', 'userFilter'].forEach(updateClearButton);
+    }
 
     // Sahifa yuklanganida
     document.addEventListener('DOMContentLoaded', function() {
@@ -220,6 +299,9 @@
 
         // Foydalanuvchilar ro'yxatini yuklash
         loadUsers();
+
+        // X tugmalarini boshlang'ich holatda yangilash
+        updateAllClearButtons();
         
         // Avtomatik ma'lumotlarni yuklash
         setTimeout(() => {
@@ -326,14 +408,8 @@
         document.getElementById('operationType').value = '';
         document.getElementById('userFilter').value = '';
 
-        document.getElementById('historyTableBody').innerHTML = `
-            <tr>
-                <td colspan="9" style="padding: 3rem; text-align: center; color: #718096;">
-                    <div style="font-size: 3rem; margin-bottom: 1rem;">📜</div>
-                    <div style="font-size: 1.1rem;">Filterlarni tanlang va "Qidirish" tugmasini bosing</div>
-                </td>
-            </tr>
-        `;
+        updateAllClearButtons();
+        loadHistory(1);
     }
 
     function displayOperations(operations) {
