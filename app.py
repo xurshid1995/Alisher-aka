@@ -11007,30 +11007,33 @@ def create_pending_sale(data):
             if warehouse_obj:
                 location_name = warehouse_obj.name
 
-        # Barcha mahsulotlarni tavsif uchun yig'ish
-        products_desc = ', '.join([f"{item.product.name} ({item.quantity} ta)" for item in new_sale.items])
-
-        operation = OperationHistory(
-            operation_type='sale',
-            table_name='sales',
-            record_id=new_sale.id,
-            user_id=current_user.id,
-            username=f'{current_user.first_name} {current_user.last_name}',
-            description=f"Savdo yaratildi (Pending): {products_desc}",
-            old_data=None,
-            new_data={
-                'sale_id': new_sale.id,
-                'total_amount_usd': float(total_amount),
-                'payment_status': 'pending',
-                'items_count': len(items)
-            },
-            ip_address=request.remote_addr,
-            location_id=item_location_id,
-            location_type=item_location_type,
-            location_name=location_name,
-            amount=float(Decimal(str(total_amount)) * new_sale.currency_rate)  # UZS da
-        )
-        db.session.add(operation)
+        # Har bir mahsulot uchun alohida OperationHistory yozuvi
+        sale_username = f'{current_user.first_name} {current_user.last_name}'
+        for sale_item in new_sale.items:
+            item_amount_uzs = float(sale_item.total_price * new_sale.currency_rate) if sale_item.total_price else None
+            op_item = OperationHistory(
+                operation_type='sale',
+                table_name='products',
+                record_id=sale_item.product_id,
+                user_id=current_user.id,
+                username=sale_username,
+                description=f"Sotildi: {sale_item.product.name} - {sale_item.quantity} ta × ${sale_item.unit_price:.2f} (Savdo #{new_sale.id})",
+                old_data=None,
+                new_data={
+                    'sale_id': new_sale.id,
+                    'product_id': sale_item.product_id,
+                    'quantity': float(sale_item.quantity),
+                    'unit_price_usd': float(sale_item.unit_price),
+                    'total_price_usd': float(sale_item.total_price),
+                    'payment_status': 'pending',
+                },
+                ip_address=request.remote_addr,
+                location_id=item_location_id,
+                location_type=item_location_type,
+                location_name=location_name,
+                amount=item_amount_uzs
+            )
+            db.session.add(op_item)
         db.session.commit()
 
         return jsonify({
