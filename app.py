@@ -1060,7 +1060,7 @@ class User(db.Model):
 
     def get_role_display(self):
         role_names = {
-            'admin': 'Administrator',
+            'admin': 'Admin',
             'sotuvchi': 'Sotuvchi',
             'kassir': 'Kassir',
             'ombor_xodimi': 'Ombor xodimi',
