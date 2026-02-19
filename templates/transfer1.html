@@ -227,8 +227,8 @@
                     const toLocationId = pending.to_location_id;
                     const toLocationType = pending.to_location_type;
                     
-                    // Ruxsat tekshirish
-                    const hasPermission = canManageTransfer(fromLocationType, fromLocationId, toLocationType, toLocationId);
+                    // Ruxsat tekshirish — backend allaqachon filterlaydi, can_manage=true kelgan transferlar boshqarilishi mumkin
+                    const hasPermission = (pending.can_manage === true) || (userRole === 'admin');
                     
                     // Tugmalar
                     let actionButtons = '';

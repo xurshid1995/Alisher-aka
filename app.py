@@ -8310,7 +8310,8 @@ def get_all_pending_transfers():
                 'to_location_type': pending.to_location_type,
                 'items': pending.items,
                 'created_at': pending.created_at.isoformat() if pending.created_at else None,
-                'updated_at': pending.updated_at.isoformat() if pending.updated_at else None
+                'updated_at': pending.updated_at.isoformat() if pending.updated_at else None,
+                'can_manage': True  # Backend allaqachon user_can_manage_transfer bilan filterlaydi
             })
 
         return jsonify({
