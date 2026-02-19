@@ -1523,7 +1523,7 @@
                         const dtParts = (op.created_at || '').split(' ');
                         const dateStr = dtParts[0] || '';
                         const timeStr = dtParts[1] || '';
-                        const dateHtml = dateStr ? `<span class="op-date"><span>${dateStr}</span><span style="text-align:right">${timeStr}</span></span>` : '';
+                        const dateHtml = dateStr ? `<span class="op-date"><span>${dateStr}</span><span style="text-align:right;font-size:1rem">${timeStr}</span></span>` : '';
                         html += `<div class="op-row">
                             <div class="op-top">
                                 <span class="op-badge">${op.label}</span>${loc}${user}
