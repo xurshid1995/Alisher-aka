@@ -3775,6 +3775,9 @@ def api_product_operations(product_id):
                         ((User.first_name + ' ' + User.last_name) == uname) |
                         (User.first_name == first)
                     ).first()
+                    # 'admin' string saqlangan lekin haqiqiy user topilmasa — role='admin' userni olish
+                    if not u and uname.lower() == 'admin':
+                        u = User.query.filter_by(role='admin').first()
                     user_cache[cache_key] = u
                 u = user_cache[cache_key]
                 if u:
