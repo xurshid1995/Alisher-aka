@@ -3678,9 +3678,6 @@ def api_product_operations(product_id):
         warehouse_stock_ids = [ws.id for ws in WarehouseStock.query.filter_by(product_id=product_id).all()]
         store_stock_ids = [ss.id for ss in StoreStock.query.filter_by(product_id=product_id).all()]
 
-        # Bu mahsulot sotilgan savdo IDlarini olish
-        sale_ids = [si.sale_id for si in SaleItem.query.filter_by(product_id=product_id).all()]
-
         # To'liq filter: barcha amaliyotlarni qamrab olish
         from sqlalchemy import or_, and_, text as sa_text
 
@@ -3709,16 +3706,6 @@ def api_product_operations(product_id):
                 and_(
                     OperationHistory.record_id.in_(store_stock_ids),
                     OperationHistory.table_name.in_(['store_stocks', 'store_stock'])
-                )
-            )
-
-        # 5. Savdo operatsiyalari (sale, sale_edit, return) - SaleItem orqali topilgan sale_id lar
-        if sale_ids:
-            conditions.append(
-                and_(
-                    OperationHistory.record_id.in_(sale_ids),
-                    OperationHistory.table_name.in_(['sales', 'sale_items']),
-                    OperationHistory.operation_type.in_(['sale', 'sale_edit', 'return', 'sale_payment', 'payment_refund', 'sale_confirm'])
                 )
             )
 
