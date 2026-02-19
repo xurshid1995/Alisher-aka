@@ -3761,6 +3761,20 @@ def api_product_operations(product_id):
                 if u:
                     user_role = u.get_role_display() if hasattr(u, 'get_role_display') else u.role
                     user_phone = u.phone
+            elif op.username:
+                # user_id yo'q bo'lsa username bo'yicha qidirish
+                uname = op.username.strip()
+                cache_key = f'name_{uname}'
+                if cache_key not in user_cache:
+                    u = User.query.filter(
+                        (User.username == uname) |
+                        (User.first_name + ' ' + User.last_name == uname)
+                    ).first()
+                    user_cache[cache_key] = u
+                u = user_cache[cache_key]
+                if u:
+                    user_role = u.get_role_display() if hasattr(u, 'get_role_display') else u.role
+                    user_phone = u.phone
 
             result.append({
                 'operation_type': op.operation_type,
