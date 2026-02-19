@@ -3665,6 +3665,51 @@ def api_operations_history_users():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
+@app.route('/api/product/<int:product_id>/operations')
+@role_required('admin', 'kassir', 'sotuvchi')
+def api_product_operations(product_id):
+    """Mahsulot bo'yicha amaliyotlar tarixini olish"""
+    try:
+        product = Product.query.get(product_id)
+        if not product:
+            return jsonify({'success': False, 'error': 'Mahsulot topilmadi'}), 404
+
+        ops = OperationHistory.query.filter(
+            OperationHistory.record_id == product_id
+        ).order_by(OperationHistory.created_at.desc()).limit(15).all()
+
+        op_labels = {
+            'sale': '🛒 Sotish',
+            'sale_edit': '✏️ Savdo tahrirlash',
+            'add_product': '📦 Qo\'shish',
+            'edit_stock': '📝 Zaxira tahrirlash',
+            'transfer': '🔄 Transfer',
+            'return': '↩️ Qaytarish',
+            'debt_payment': '💳 Qarz to\'lash',
+            'edit': '✏️ Tahrirlash',
+            'delete': '🗑️ O\'chirish',
+            'delete_stock': '🗑️ Zaxira o\'chirish',
+            'edit_user': '👤 Foydalanuvchi tahrirlash',
+        }
+
+        result = []
+        for op in ops:
+            result.append({
+                'operation_type': op.operation_type,
+                'label': op_labels.get(op.operation_type, op.operation_type),
+                'description': op.description,
+                'username': op.username,
+                'location_name': op.location_name,
+                'amount': float(op.amount) if op.amount else None,
+                'created_at': op.created_at.strftime('%d.%m.%Y %H:%M') if op.created_at else None,
+            })
+
+        return jsonify({'success': True, 'product_name': product.name, 'operations': result})
+    except Exception as e:
+        logger.error(f"Product operations xatosi: {str(e)}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
 @app.route('/check_stock')
 @role_required('admin', 'kassir', 'sotuvchi')
 def check_stock():

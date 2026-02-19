@@ -620,10 +620,88 @@
         color: #333333;
         border: 2px solid #28a745;
     }
+
+    .hist-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 1rem;
+        padding: 0 4px 0 0;
+        line-height: 1;
+        vertical-align: middle;
+        opacity: 0.65;
+        transition: opacity 0.15s, transform 0.15s;
+    }
+    .hist-btn:hover {
+        opacity: 1;
+        transform: scale(1.2);
+    }
+
+    #prodOpsPopup {
+        display: none;
+        position: fixed;
+        z-index: 9999;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.22);
+        width: 380px;
+        max-height: 420px;
+        overflow-y: auto;
+        font-size: 0.88rem;
+    }
+    #prodOpsPopup .pop-header {
+        background: linear-gradient(135deg,#667eea,#764ba2);
+        color: white;
+        padding: 0.75rem 1rem;
+        border-radius: 10px 10px 0 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: sticky;
+        top: 0;
+    }
+    #prodOpsPopup .pop-header h4 { margin:0; font-size:0.95rem; }
+    #prodOpsPopup .pop-close {
+        background: rgba(255,255,255,0.25);
+        border: none;
+        color: white;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        cursor: pointer;
+        font-size: 14px;
+        line-height: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    #prodOpsPopup .op-row {
+        padding: 0.55rem 1rem;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    #prodOpsPopup .op-row:last-child { border-bottom: none; }
+    #prodOpsPopup .op-row .op-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2px;
+    }
+    #prodOpsPopup .op-badge {
+        font-size: 0.78rem;
+        font-weight: 600;
+        background: #667eea;
+        color: white;
+        padding: 1px 8px;
+        border-radius: 12px;
+    }
+    #prodOpsPopup .op-date { color: #888; font-size: 0.77rem; }
+    #prodOpsPopup .op-desc { color: #444; line-height: 1.4; }
+    #prodOpsPopup .op-user { color: #667eea; font-size: 0.77rem; }
 </style>
 {% endblock %}
 
 {% block content %}
+<div id="prodOpsPopup"></div>
 <div class="products-container" 
      data-user-store-id="{% if session.store_id %}{{ session.store_id }}{% else %}null{% endif %}"
      data-user-role="{{ session.role }}">
@@ -1054,7 +1132,7 @@
                 tableHtml += `
                     <tr>
                         <td style="text-align: center;">${barcodeCell}</td>
-                        <td class="product-name">${highlightedName}</td>
+                        <td class="product-name"><button class="hist-btn" data-pid="${product.id}" onclick="showProductOps(event,this)" title="Amaliyotlar tarixini ko'rish">🕐</button>${highlightedName}</td>
                         <td class="price-cell">
                             <span style="background-color: #5cb85c; color: white; font-weight: 600; padding: 2px 8px; border-radius: 0;">$${formatPrice(product.sell_price)}</span>
                             <span style="background-color: #5dade2; color: white; font-size: 0.9rem; margin-left: 0.5rem; padding: 2px 8px; border-radius: 0;">${formatPrice(product.sell_price * currencyRate)} so'm</span>
@@ -1389,5 +1467,61 @@
             </div>
         `;
     }
+
+    // Mahsulot amaliyotlari popup
+    const popup = document.getElementById('prodOpsPopup');
+
+    function showProductOps(event, btn) {
+        event.stopPropagation();
+        const productId = btn.dataset.pid;
+
+        // Popup ochish va pozitsiyalash
+        popup.style.display = 'block';
+        popup.innerHTML = `<div class="pop-header"><h4>🕐 Yuklanmoqda...</h4><button class="pop-close" onclick="closeProductOps()">✕</button></div><div style="padding:1.2rem;text-align:center;color:#667eea;">⏳ Yuklanmoqda...</div>`;
+
+        const rect = btn.getBoundingClientRect();
+        let top = rect.bottom + window.scrollY + 4;
+        let left = rect.left + window.scrollX;
+        // Ekrandan chiqib ketmaslik
+        if (left + 385 > window.innerWidth) left = window.innerWidth - 390;
+        if (top + 430 > window.scrollY + window.innerHeight) top = rect.top + window.scrollY - 434;
+        popup.style.top = top + 'px';
+        popup.style.left = left + 'px';
+
+        fetch(`/api/product/${productId}/operations`)
+            .then(r => r.json())
+            .then(data => {
+                if (!data.success) { popup.innerHTML += `<div style="padding:1rem;color:#dc3545;">Xatolik: ${data.error}</div>`; return; }
+                const ops = data.operations;
+                let html = `<div class="pop-header"><h4>🕐 ${data.product_name}</h4><button class="pop-close" onclick="closeProductOps()">✕</button></div>`;
+                if (ops.length === 0) {
+                    html += `<div style="padding:1.5rem;text-align:center;color:#888;">📢 Amaliyotlar topilmadi</div>`;
+                } else {
+                    ops.forEach(op => {
+                        html += `<div class="op-row">
+                            <div class="op-top">
+                                <span class="op-badge">${op.label}</span>
+                                <span class="op-date">${op.created_at || ''}</span>
+                            </div>
+                            <div class="op-desc">${op.description || ''}</div>
+                            <div class="op-user">👤 ${op.username || ''} ${op.location_name ? '&nbsp;•&nbsp;📍' + op.location_name : ''}</div>
+                        </div>`;
+                    });
+                }
+                popup.innerHTML = html;
+            })
+            .catch(() => { popup.innerHTML += '<div style="padding:1rem;color:#dc3545;">Yuklashda xatolik</div>'; });
+    }
+
+    function closeProductOps() {
+        popup.style.display = 'none';
+    }
+
+    // Boshqa joyga bosganda yopilsin
+    document.addEventListener('click', function(e) {
+        if (popup.style.display === 'block' && !popup.contains(e.target)) {
+            closeProductOps();
+        }
+    });
 </script>
 {% endblock %}
