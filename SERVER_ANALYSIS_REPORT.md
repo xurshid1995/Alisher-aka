@@ -169,7 +169,7 @@ Issue:    2GB RAM uchun optimallashtirilmagan
    ```bash
    scp postgresql_optimization_2gb.sql root@46.101.153.212:/tmp/
    ssh root@46.101.153.212
-   sudo -u postgres psql -d xurshid_db -f /tmp/postgresql_optimization_2gb.sql
+   sudo -u postgres psql -d alisher_aka_db -f /tmp/postgresql_optimization_2gb.sql
    sudo systemctl restart postgresql
    ```
 

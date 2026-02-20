@@ -7,7 +7,7 @@ echo "==========================================================================
 
 echo ""
 echo "=== 1. SALE 126 YARATILISH VA YANGILANISH VAQTLARI ==="
-psql -U xurshid_user -d xurshid_db -h localhost -c "
+psql -U alisher_aka_user -d alisher_aka_db -h localhost -c "
 SELECT 
     id,
     TO_CHAR(created_at, 'YYYY-MM-DD HH24:MI:SS.MS') as yaratildi,
@@ -22,7 +22,7 @@ WHERE id = 126;
 
 echo ""
 echo "=== 2. OPERATIONS_HISTORY - SALE 126 UCHUN BARCHA OPERATSIYALAR ==="
-psql -U xurshid_user -d xurshid_db -h localhost -c "
+psql -U alisher_aka_user -d alisher_aka_db -h localhost -c "
 SELECT 
     id,
     operation_type,
@@ -40,7 +40,7 @@ ORDER BY created_at;
 
 echo ""
 echo "=== 3. SALE_ITEMS OPERATIONS - 16:01:00-16:02:00 ORALIG'I ==="
-psql -U xurshid_user -d xurshid_db -h localhost -c "
+psql -U alisher_aka_user -d alisher_aka_db -h localhost -c "
 SELECT 
     id,
     operation_type,
@@ -57,7 +57,7 @@ ORDER BY created_at;
 
 echo ""
 echo "=== 4. TEYES Q8 MAHSULOTLARINI TEKSHIRISH ==="
-psql -U xurshid_user -d xurshid_db -h localhost -c "
+psql -U alisher_aka_user -d alisher_aka_db -h localhost -c "
 SELECT 
     id,
     name,
@@ -70,7 +70,7 @@ ORDER BY id;
 
 echo ""
 echo "=== 5. LENOVA VA TEYES STOCK OPERATSIYALARI (16:01:00-16:02:00) ==="
-psql -U xurshid_user -d xurshid_db -h localhost -c "
+psql -U alisher_aka_user -d alisher_aka_db -h localhost -c "
 SELECT 
     id,
     operation_type,

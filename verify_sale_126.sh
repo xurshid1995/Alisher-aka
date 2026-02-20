@@ -7,7 +7,7 @@ echo "   SALE 126 - TO'LIQ TEKSHIRUV"
 echo "========================================="
 echo ""
 
-psql -h localhost -U xurshid_user -d xurshid_db << 'EOF'
+psql -h localhost -U alisher_aka_user -d alisher_aka_db << 'EOF'
 
 \pset border 2
 \pset format wrapped

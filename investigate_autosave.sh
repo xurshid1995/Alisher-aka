@@ -11,7 +11,7 @@ grep "16:01:" /var/log/nginx/access.log 2>/dev/null | grep -E "pending-sales|cre
 
 echo ""
 echo "=== 2. SALE 126 GA BOG'LIQ BARCHA OPERATSIYALAR ==="
-psql -U xurshid_user -d xurshid_db -h localhost -c "
+psql -U alisher_aka_user -d alisher_aka_db -h localhost -c "
 SELECT 
     id,
     operation_type,
@@ -28,7 +28,7 @@ ORDER BY created_at;
 
 echo ""
 echo "=== 3. SALE 126 YARATILISH VA YANGILANISH JARAYONI ==="
-psql -U xurshid_user -d xurshid_db -h localhost -c "
+psql -U alisher_aka_user -d alisher_aka_db -h localhost -c "
 SELECT 
     TO_CHAR(created_at, 'HH24:MI:SS.MS') as yaratildi,
     TO_CHAR(updated_at, 'HH24:MI:SS.MS') as yangilandi,

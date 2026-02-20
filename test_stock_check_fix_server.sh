@@ -12,13 +12,13 @@ echo ""
 echo "📊 Database'dan tugatilgan sessiyalarni tekshirish:"
 echo "---------------------------------------------------"
 
-ssh root@46.101.153.212 'sudo -u postgres psql -d xurshid_db -t -c "SELECT COUNT(*) as completed_count FROM stock_check_sessions WHERE status = '"'"'completed'"'"';"'
+ssh root@46.101.153.212 'sudo -u postgres psql -d alisher_aka_db -t -c "SELECT COUNT(*) as completed_count FROM stock_check_sessions WHERE status = '"'"'completed'"'"';"'
 
 echo ""
 echo "📋 Oxirgi tugatilgan sessiyalar (completed_at bilan):"
 echo "---------------------------------------------------"
 
-ssh root@46.101.153.212 'sudo -u postgres psql -d xurshid_db -t -A -F"|" -c "SELECT id, location_name, status, to_char(started_at, '"'"'DD.MM.YYYY HH24:MI'"'"'), to_char(completed_at, '"'"'DD.MM.YYYY HH24:MI'"'"'), COALESCE(completed_by_user_id::text, '"'"'NULL'"'"') FROM stock_check_sessions WHERE status = '"'"'completed'"'"' ORDER BY id DESC LIMIT 5;"' | while IFS='|' read -r id loc status started completed user_id; do
+ssh root@46.101.153.212 'sudo -u postgres psql -d alisher_aka_db -t -A -F"|" -c "SELECT id, location_name, status, to_char(started_at, '"'"'DD.MM.YYYY HH24:MI'"'"'), to_char(completed_at, '"'"'DD.MM.YYYY HH24:MI'"'"'), COALESCE(completed_by_user_id::text, '"'"'NULL'"'"') FROM stock_check_sessions WHERE status = '"'"'completed'"'"' ORDER BY id DESC LIMIT 5;"' | while IFS='|' read -r id loc status started completed user_id; do
     echo "  📦 ID: $id | $loc | Started: $started | Completed: $completed | User: $user_id"
 done
 

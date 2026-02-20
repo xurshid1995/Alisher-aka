@@ -86,7 +86,7 @@ ALTER SYSTEM SET idle_in_transaction_session_timeout = '10min';
 --    ssh root@46.101.153.212
 --
 -- 2. Scriptni yuklash:
---    sudo -u postgres psql -d xurshid_db -f postgresql_optimization_2gb.sql
+--    sudo -u postgres psql -d alisher_aka_db -f postgresql_optimization_2gb.sql
 --
 -- 3. PostgreSQL restart:
 --    sudo systemctl restart postgresql
@@ -108,7 +108,7 @@ ALTER SYSTEM SET idle_in_transaction_session_timeout = '10min';
 -- ORDER BY mean_time DESC LIMIT 10;
 
 -- Database size:
--- SELECT pg_size_pretty(pg_database_size('xurshid_db'));
+-- SELECT pg_size_pretty(pg_database_size('alisher_aka_db'));
 
 -- Table sizes:
 -- SELECT schemaname, tablename, 

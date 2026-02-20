@@ -7,7 +7,7 @@ echo "=============================================="
 # 1. Umumiy statistika
 echo ""
 echo "1. UMUMIY STATISTIKA (barcha savdolar):"
-sudo -u postgres psql xurshid_db -c "
+sudo -u postgres psql alisher_aka_db -c "
 SELECT 
     COUNT(*) as savdolar_soni,
     ROUND(SUM(total_amount), 2) as total_amount,
@@ -23,7 +23,7 @@ WHERE DATE(sale_date) = CURRENT_DATE;
 # 2. Dashboard query (faqat to'lov bor savdolar)
 echo ""
 echo "2. DASHBOARD QUERY (faqat to'lov > 0):"
-sudo -u postgres psql xurshid_db -c "
+sudo -u postgres psql alisher_aka_db -c "
 SELECT 
     COUNT(*) as savdolar_soni,
     ROUND(SUM(total_amount), 2) as total_amount,
@@ -40,7 +40,7 @@ AND (cash_usd > 0 OR click_usd > 0 OR terminal_usd > 0 OR debt_usd > 0);
 # 3. total != to'lovlar jami bo'lgan savdolarni topish
 echo ""
 echo "3. MUAMMOLI SAVDOLAR (total != to'lovlar):"
-sudo -u postgres psql xurshid_db -c "
+sudo -u postgres psql alisher_aka_db -c "
 SELECT 
     id,
     TO_CHAR(sale_date, 'HH24:MI:SS') as vaqt,
@@ -61,7 +61,7 @@ LIMIT 10;
 # 4. Eng oxirgi 5 ta savdo
 echo ""
 echo "4. ENG OXIRGI 5 TA SAVDO:"
-sudo -u postgres psql xurshid_db -c "
+sudo -u postgres psql alisher_aka_db -c "
 SELECT 
     id,
     TO_CHAR(sale_date, 'HH24:MI:SS') as vaqt,

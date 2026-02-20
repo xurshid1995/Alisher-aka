@@ -4,9 +4,9 @@ import psycopg2
 import json
 
 conn = psycopg2.connect(
-    database='xurshid_db',
-    user='xurshid_user', 
-    password='Xurshid2025!Strong',
+    database='alisher_aka_db',
+    user='alisher_aka_user', 
+    password='Alisher2025!Strong',
     host='localhost'
 )
 cur = conn.cursor()

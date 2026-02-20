@@ -7,7 +7,7 @@ echo "Eski qiymat (xato tuzatish): cash_usd = 9.50"
 echo "Yangi qiymat: cash_usd = 19.00"
 echo ""
 
-sudo -u postgres psql xurshid_db -c "
+sudo -u postgres psql alisher_aka_db -c "
 UPDATE sales 
 SET cash_usd = 19.00,
     total_amount = 19.00
@@ -16,7 +16,7 @@ WHERE id = 115;
 
 echo ""
 echo "TUZATILGAN MA'LUMOT:"
-sudo -u postgres psql xurshid_db -c "
+sudo -u postgres psql alisher_aka_db -c "
 SELECT 
     id,
     total_amount,
@@ -33,7 +33,7 @@ WHERE id = 115;
 
 echo ""
 echo "MAHSULOTLAR JAMI:"
-sudo -u postgres psql xurshid_db -c "
+sudo -u postgres psql alisher_aka_db -c "
 SELECT 
     SUM(total_price) as jami_narx
 FROM sale_items 
@@ -42,7 +42,7 @@ WHERE sale_id = 115;
 
 echo ""
 echo "BUGUNGI YANGILANGAN STATISTIKA:"
-sudo -u postgres psql xurshid_db -c "
+sudo -u postgres psql alisher_aka_db -c "
 SELECT 
     COUNT(*) as savdolar,
     ROUND(SUM(total_amount), 2) as total,

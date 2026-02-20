@@ -47,7 +47,7 @@ echo ""
 echo "💾 DATABASE STATISTICS:"
 echo "─────────────────────────────────────────"
 
-sudo -u postgres psql -d xurshid_db -t << 'EOSQL'
+sudo -u postgres psql -d alisher_aka_db -t << 'EOSQL'
 \echo 'Locations:'
 SELECT 
     'Stores: ' || COUNT(*) FROM stores
@@ -69,7 +69,7 @@ SELECT 'Store Stocks: ' || COUNT(*) FROM store_stocks;
 
 \echo ''
 \echo 'Database Size:'
-SELECT pg_size_pretty(pg_database_size('xurshid_db')) as "Total Size";
+SELECT pg_size_pretty(pg_database_size('alisher_aka_db')) as "Total Size";
 
 \echo ''
 \echo 'Top 5 Largest Tables:'
@@ -90,7 +90,7 @@ echo ""
 echo "🔌 DATABASE CONNECTIONS:"
 echo "─────────────────────────────────────────"
 
-sudo -u postgres psql -d xurshid_db -t << 'EOSQL'
+sudo -u postgres psql -d alisher_aka_db -t << 'EOSQL'
 SELECT 
     'Active: ' || COUNT(*) FROM pg_stat_activity WHERE state = 'active'
 UNION ALL
@@ -110,8 +110,8 @@ echo "🐌 PERFORMANCE INSIGHTS:"
 echo "─────────────────────────────────────────"
 
 # Check if pg_stat_statements is enabled
-if sudo -u postgres psql -d xurshid_db -tAc "SELECT 1 FROM pg_extension WHERE extname='pg_stat_statements'" | grep -q 1; then
-    sudo -u postgres psql -d xurshid_db -t << 'EOSQL'
+if sudo -u postgres psql -d alisher_aka_db -tAc "SELECT 1 FROM pg_extension WHERE extname='pg_stat_statements'" | grep -q 1; then
+    sudo -u postgres psql -d alisher_aka_db -t << 'EOSQL'
 \echo 'Top 5 Slowest Queries (by mean time):'
 SELECT 
     LEFT(query, 60) as query,
@@ -192,7 +192,7 @@ else
 fi
 
 # Database connections
-ACTIVE_CONN=$(sudo -u postgres psql -d xurshid_db -tAc "SELECT COUNT(*) FROM pg_stat_activity WHERE state = 'active'")
+ACTIVE_CONN=$(sudo -u postgres psql -d alisher_aka_db -tAc "SELECT COUNT(*) FROM pg_stat_activity WHERE state = 'active'")
 echo ""
 echo "Active DB Connections: $ACTIVE_CONN"
 if [ "$ACTIVE_CONN" -gt 20 ]; then

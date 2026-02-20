@@ -22,10 +22,10 @@ apt install python3 python3-pip python3-venv postgresql postgresql-contrib nginx
 
 # Step 3: Setup PostgreSQL
 echo -e "${BLUE}🗄️  Step 3: Setting up PostgreSQL...${NC}"
-sudo -u postgres psql -c "CREATE DATABASE xurshid_db;" 2>/dev/null || echo "Database already exists"
-sudo -u postgres psql -c "CREATE USER xurshid_user WITH PASSWORD 'Xurshid2025!Strong';" 2>/dev/null || echo "User already exists"
-sudo -u postgres psql -c "ALTER DATABASE xurshid_db OWNER TO xurshid_user;"
-sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE xurshid_db TO xurshid_user;"
+sudo -u postgres psql -c "CREATE DATABASE alisher_aka_db;" 2>/dev/null || echo "Database already exists"
+sudo -u postgres psql -c "CREATE USER alisher_aka_user WITH PASSWORD 'Alisher2025!Strong';" 2>/dev/null || echo "User already exists"
+sudo -u postgres psql -c "ALTER DATABASE alisher_aka_db OWNER TO alisher_aka_user;"
+sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE alisher_aka_db TO alisher_aka_user;"
 
 # Step 4: Create project directory
 echo -e "${BLUE}📁 Step 4: Setting up project directory...${NC}"
@@ -62,9 +62,9 @@ cat > .env << EOF
 SECRET_KEY=$SECRET_KEY
 DB_HOST=localhost
 DB_PORT=5432
-DB_NAME=xurshid_db
-DB_USER=xurshid_user
-DB_PASSWORD=Xurshid2025!Strong
+DB_NAME=alisher_aka_db
+DB_USER=alisher_aka_user
+DB_PASSWORD=Alisher2025!Strong
 FLASK_ENV=production
 FLASK_APP=app.py
 EOF
@@ -156,10 +156,10 @@ apt install python3 python3-pip python3-venv postgresql postgresql-contrib nginx
 
 # Step 3: Setup PostgreSQL
 echo -e "${BLUE}🗄️  Step 3: Setting up PostgreSQL...${NC}"
-sudo -u postgres psql -c "CREATE DATABASE xurshid_db;" 2>/dev/null || echo "Database already exists"
-sudo -u postgres psql -c "CREATE USER xurshid_user WITH PASSWORD 'Xurshid2025!Strong';" 2>/dev/null || echo "User already exists"
-sudo -u postgres psql -c "ALTER DATABASE xurshid_db OWNER TO xurshid_user;"
-sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE xurshid_db TO xurshid_user;"
+sudo -u postgres psql -c "CREATE DATABASE alisher_aka_db;" 2>/dev/null || echo "Database already exists"
+sudo -u postgres psql -c "CREATE USER alisher_aka_user WITH PASSWORD 'Alisher2025!Strong';" 2>/dev/null || echo "User already exists"
+sudo -u postgres psql -c "ALTER DATABASE alisher_aka_db OWNER TO alisher_aka_user;"
+sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE alisher_aka_db TO alisher_aka_user;"
 
 # Step 4: Create project directory
 echo -e "${BLUE}📁 Step 4: Setting up project directory...${NC}"
@@ -196,9 +196,9 @@ cat > .env << EOF
 SECRET_KEY=$SECRET_KEY
 DB_HOST=localhost
 DB_PORT=5432
-DB_NAME=xurshid_db
-DB_USER=xurshid_user
-DB_PASSWORD=Xurshid2025!Strong
+DB_NAME=alisher_aka_db
+DB_USER=alisher_aka_user
+DB_PASSWORD=Alisher2025!Strong
 FLASK_ENV=production
 FLASK_APP=app.py
 EOF
@@ -313,10 +313,10 @@ apt install python3 python3-pip python3-venv postgresql postgresql-contrib nginx
 
 # Step 3: Setup PostgreSQL
 echo -e "${BLUE}🗄️  Step 3: Setting up PostgreSQL...${NC}"
-sudo -u postgres psql -c "CREATE DATABASE xurshid_db;" 2>/dev/null || echo "Database already exists"
-sudo -u postgres psql -c "CREATE USER xurshid_user WITH PASSWORD 'Xurshid2025!Strong';" 2>/dev/null || echo "User already exists"
-sudo -u postgres psql -c "ALTER DATABASE xurshid_db OWNER TO xurshid_user;"
-sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE xurshid_db TO xurshid_user;"
+sudo -u postgres psql -c "CREATE DATABASE alisher_aka_db;" 2>/dev/null || echo "Database already exists"
+sudo -u postgres psql -c "CREATE USER alisher_aka_user WITH PASSWORD 'Alisher2025!Strong';" 2>/dev/null || echo "User already exists"
+sudo -u postgres psql -c "ALTER DATABASE alisher_aka_db OWNER TO alisher_aka_user;"
+sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE alisher_aka_db TO alisher_aka_user;"
 
 # Step 4: Create project directory
 echo -e "${BLUE}📁 Step 4: Setting up project directory...${NC}"
@@ -353,9 +353,9 @@ cat > .env << EOF
 SECRET_KEY=$SECRET_KEY
 DB_HOST=localhost
 DB_PORT=5432
-DB_NAME=xurshid_db
-DB_USER=xurshid_user
-DB_PASSWORD=Xurshid2025!Strong
+DB_NAME=alisher_aka_db
+DB_USER=alisher_aka_user
+DB_PASSWORD=Alisher2025!Strong
 FLASK_ENV=production
 FLASK_APP=app.py
 EOF
@@ -481,10 +481,10 @@ apt install python3 python3-pip python3-venv postgresql postgresql-contrib nginx
 
 # Step 3: Setup PostgreSQL
 echo -e "${BLUE}🗄️  Step 3: Setting up PostgreSQL...${NC}"
-sudo -u postgres psql -c "CREATE DATABASE xurshid_db;" 2>/dev/null || echo "Database already exists"
-sudo -u postgres psql -c "CREATE USER xurshid_user WITH PASSWORD 'Xurshid2025!Strong';" 2>/dev/null || echo "User already exists"
-sudo -u postgres psql -c "ALTER DATABASE xurshid_db OWNER TO xurshid_user;"
-sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE xurshid_db TO xurshid_user;"
+sudo -u postgres psql -c "CREATE DATABASE alisher_aka_db;" 2>/dev/null || echo "Database already exists"
+sudo -u postgres psql -c "CREATE USER alisher_aka_user WITH PASSWORD 'Alisher2025!Strong';" 2>/dev/null || echo "User already exists"
+sudo -u postgres psql -c "ALTER DATABASE alisher_aka_db OWNER TO alisher_aka_user;"
+sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE alisher_aka_db TO alisher_aka_user;"
 
 # Step 4: Create project directory
 echo -e "${BLUE}📁 Step 4: Setting up project directory...${NC}"
@@ -521,9 +521,9 @@ cat > .env << EOF
 SECRET_KEY=$SECRET_KEY
 DB_HOST=localhost
 DB_PORT=5432
-DB_NAME=xurshid_db
-DB_USER=xurshid_user
-DB_PASSWORD=Xurshid2025!Strong
+DB_NAME=alisher_aka_db
+DB_USER=alisher_aka_user
+DB_PASSWORD=Alisher2025!Strong
 FLASK_ENV=production
 FLASK_APP=app.py
 EOF

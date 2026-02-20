@@ -21,12 +21,12 @@ apt install -y python3 python3-pip python3-venv postgresql postgresql-contrib ng
 sudo -u postgres psql
 
 # Database va user yaratish
-CREATE DATABASE xurshid_db;
-CREATE USER xurshid_user WITH PASSWORD 'KUCHLI_PAROL_KIRITING';
-ALTER ROLE xurshid_user SET client_encoding TO 'utf8';
-ALTER ROLE xurshid_user SET default_transaction_isolation TO 'read committed';
-ALTER ROLE xurshid_user SET timezone TO 'UTC';
-GRANT ALL PRIVILEGES ON DATABASE xurshid_db TO xurshid_user;
+CREATE DATABASE alisher_aka_db;
+CREATE USER alisher_aka_user WITH PASSWORD 'KUCHLI_PAROL_KIRITING';
+ALTER ROLE alisher_aka_user SET client_encoding TO 'utf8';
+ALTER ROLE alisher_aka_user SET default_transaction_isolation TO 'read committed';
+ALTER ROLE alisher_aka_user SET timezone TO 'UTC';
+GRANT ALL PRIVILEGES ON DATABASE alisher_aka_db TO alisher_aka_user;
 \q
 ```
 
@@ -57,8 +57,8 @@ nano .env
 # Database
 DB_HOST=localhost
 DB_PORT=5432
-DB_NAME=xurshid_db
-DB_USER=xurshid_user
+DB_NAME=alisher_aka_db
+DB_USER=alisher_aka_user
 DB_PASSWORD=KUCHLI_PAROL
 
 # Flask
@@ -157,12 +157,12 @@ apt install -y python3 python3-pip python3-venv postgresql postgresql-contrib ng
 sudo -u postgres psql
 
 # Database va user yaratish
-CREATE DATABASE xurshid_db;
-CREATE USER xurshid_user WITH PASSWORD 'KUCHLI_PAROL_KIRITING';
-ALTER ROLE xurshid_user SET client_encoding TO 'utf8';
-ALTER ROLE xurshid_user SET default_transaction_isolation TO 'read committed';
-ALTER ROLE xurshid_user SET timezone TO 'UTC';
-GRANT ALL PRIVILEGES ON DATABASE xurshid_db TO xurshid_user;
+CREATE DATABASE alisher_aka_db;
+CREATE USER alisher_aka_user WITH PASSWORD 'KUCHLI_PAROL_KIRITING';
+ALTER ROLE alisher_aka_user SET client_encoding TO 'utf8';
+ALTER ROLE alisher_aka_user SET default_transaction_isolation TO 'read committed';
+ALTER ROLE alisher_aka_user SET timezone TO 'UTC';
+GRANT ALL PRIVILEGES ON DATABASE alisher_aka_db TO alisher_aka_user;
 \q
 ```
 
@@ -193,8 +193,8 @@ nano .env
 # Database
 DB_HOST=localhost
 DB_PORT=5432
-DB_NAME=xurshid_db
-DB_USER=xurshid_user
+DB_NAME=alisher_aka_db
+DB_USER=alisher_aka_user
 DB_PASSWORD=KUCHLI_PAROL
 
 # Flask
@@ -398,12 +398,12 @@ netstat -tulpn | grep :443
 
 ### Database backup:
 ```bash
-sudo -u postgres pg_dump xurshid_db > backup_$(date +%Y%m%d).sql
+sudo -u postgres pg_dump alisher_aka_db > backup_$(date +%Y%m%d).sql
 ```
 
 ### Database restore:
 ```bash
-sudo -u postgres psql xurshid_db < backup_20260129.sql
+sudo -u postgres psql alisher_aka_db < backup_20260129.sql
 ```
 
 ## Foydali buyruqlar
@@ -462,12 +462,12 @@ apt install -y python3 python3-pip python3-venv postgresql postgresql-contrib ng
 sudo -u postgres psql
 
 # Database va user yaratish
-CREATE DATABASE xurshid_db;
-CREATE USER xurshid_user WITH PASSWORD 'KUCHLI_PAROL_KIRITING';
-ALTER ROLE xurshid_user SET client_encoding TO 'utf8';
-ALTER ROLE xurshid_user SET default_transaction_isolation TO 'read committed';
-ALTER ROLE xurshid_user SET timezone TO 'UTC';
-GRANT ALL PRIVILEGES ON DATABASE xurshid_db TO xurshid_user;
+CREATE DATABASE alisher_aka_db;
+CREATE USER alisher_aka_user WITH PASSWORD 'KUCHLI_PAROL_KIRITING';
+ALTER ROLE alisher_aka_user SET client_encoding TO 'utf8';
+ALTER ROLE alisher_aka_user SET default_transaction_isolation TO 'read committed';
+ALTER ROLE alisher_aka_user SET timezone TO 'UTC';
+GRANT ALL PRIVILEGES ON DATABASE alisher_aka_db TO alisher_aka_user;
 \q
 ```
 
@@ -498,8 +498,8 @@ nano .env
 # Database
 DB_HOST=localhost
 DB_PORT=5432
-DB_NAME=xurshid_db
-DB_USER=xurshid_user
+DB_NAME=alisher_aka_db
+DB_USER=alisher_aka_user
 DB_PASSWORD=KUCHLI_PAROL
 
 # Flask
@@ -703,12 +703,12 @@ netstat -tulpn | grep :443
 
 ### Database backup:
 ```bash
-sudo -u postgres pg_dump xurshid_db > backup_$(date +%Y%m%d).sql
+sudo -u postgres pg_dump alisher_aka_db > backup_$(date +%Y%m%d).sql
 ```
 
 ### Database restore:
 ```bash
-sudo -u postgres psql xurshid_db < backup_20260129.sql
+sudo -u postgres psql alisher_aka_db < backup_20260129.sql
 ```
 
 ## Foydali buyruqlar
@@ -767,12 +767,12 @@ apt install -y python3 python3-pip python3-venv postgresql postgresql-contrib ng
 sudo -u postgres psql
 
 # Database va user yaratish
-CREATE DATABASE xurshid_db;
-CREATE USER xurshid_user WITH PASSWORD 'KUCHLI_PAROL_KIRITING';
-ALTER ROLE xurshid_user SET client_encoding TO 'utf8';
-ALTER ROLE xurshid_user SET default_transaction_isolation TO 'read committed';
-ALTER ROLE xurshid_user SET timezone TO 'UTC';
-GRANT ALL PRIVILEGES ON DATABASE xurshid_db TO xurshid_user;
+CREATE DATABASE alisher_aka_db;
+CREATE USER alisher_aka_user WITH PASSWORD 'KUCHLI_PAROL_KIRITING';
+ALTER ROLE alisher_aka_user SET client_encoding TO 'utf8';
+ALTER ROLE alisher_aka_user SET default_transaction_isolation TO 'read committed';
+ALTER ROLE alisher_aka_user SET timezone TO 'UTC';
+GRANT ALL PRIVILEGES ON DATABASE alisher_aka_db TO alisher_aka_user;
 \q
 ```
 
@@ -803,8 +803,8 @@ nano .env
 # Database
 DB_HOST=localhost
 DB_PORT=5432
-DB_NAME=xurshid_db
-DB_USER=xurshid_user
+DB_NAME=alisher_aka_db
+DB_USER=alisher_aka_user
 DB_PASSWORD=KUCHLI_PAROL
 
 # Flask
@@ -1008,12 +1008,12 @@ netstat -tulpn | grep :443
 
 ### Database backup:
 ```bash
-sudo -u postgres pg_dump xurshid_db > backup_$(date +%Y%m%d).sql
+sudo -u postgres pg_dump alisher_aka_db > backup_$(date +%Y%m%d).sql
 ```
 
 ### Database restore:
 ```bash
-sudo -u postgres psql xurshid_db < backup_20260129.sql
+sudo -u postgres psql alisher_aka_db < backup_20260129.sql
 ```
 
 ## Foydali buyruqlar
@@ -1126,12 +1126,12 @@ apt install -y python3 python3-pip python3-venv postgresql postgresql-contrib ng
 sudo -u postgres psql
 
 # Database va user yaratish
-CREATE DATABASE xurshid_db;
-CREATE USER xurshid_user WITH PASSWORD 'KUCHLI_PAROL_KIRITING';
-ALTER ROLE xurshid_user SET client_encoding TO 'utf8';
-ALTER ROLE xurshid_user SET default_transaction_isolation TO 'read committed';
-ALTER ROLE xurshid_user SET timezone TO 'UTC';
-GRANT ALL PRIVILEGES ON DATABASE xurshid_db TO xurshid_user;
+CREATE DATABASE alisher_aka_db;
+CREATE USER alisher_aka_user WITH PASSWORD 'KUCHLI_PAROL_KIRITING';
+ALTER ROLE alisher_aka_user SET client_encoding TO 'utf8';
+ALTER ROLE alisher_aka_user SET default_transaction_isolation TO 'read committed';
+ALTER ROLE alisher_aka_user SET timezone TO 'UTC';
+GRANT ALL PRIVILEGES ON DATABASE alisher_aka_db TO alisher_aka_user;
 \q
 ```
 
@@ -1162,8 +1162,8 @@ nano .env
 # Database
 DB_HOST=localhost
 DB_PORT=5432
-DB_NAME=xurshid_db
-DB_USER=xurshid_user
+DB_NAME=alisher_aka_db
+DB_USER=alisher_aka_user
 DB_PASSWORD=KUCHLI_PAROL
 
 # Flask
@@ -1367,12 +1367,12 @@ netstat -tulpn | grep :443
 
 ### Database backup:
 ```bash
-sudo -u postgres pg_dump xurshid_db > backup_$(date +%Y%m%d).sql
+sudo -u postgres pg_dump alisher_aka_db > backup_$(date +%Y%m%d).sql
 ```
 
 ### Database restore:
 ```bash
-sudo -u postgres psql xurshid_db < backup_20260129.sql
+sudo -u postgres psql alisher_aka_db < backup_20260129.sql
 ```
 
 ## Foydali buyruqlar
@@ -1436,12 +1436,12 @@ apt install -y python3 python3-pip python3-venv postgresql postgresql-contrib ng
 sudo -u postgres psql
 
 # Database va user yaratish
-CREATE DATABASE xurshid_db;
-CREATE USER xurshid_user WITH PASSWORD 'KUCHLI_PAROL_KIRITING';
-ALTER ROLE xurshid_user SET client_encoding TO 'utf8';
-ALTER ROLE xurshid_user SET default_transaction_isolation TO 'read committed';
-ALTER ROLE xurshid_user SET timezone TO 'UTC';
-GRANT ALL PRIVILEGES ON DATABASE xurshid_db TO xurshid_user;
+CREATE DATABASE alisher_aka_db;
+CREATE USER alisher_aka_user WITH PASSWORD 'KUCHLI_PAROL_KIRITING';
+ALTER ROLE alisher_aka_user SET client_encoding TO 'utf8';
+ALTER ROLE alisher_aka_user SET default_transaction_isolation TO 'read committed';
+ALTER ROLE alisher_aka_user SET timezone TO 'UTC';
+GRANT ALL PRIVILEGES ON DATABASE alisher_aka_db TO alisher_aka_user;
 \q
 ```
 
@@ -1472,8 +1472,8 @@ nano .env
 # Database
 DB_HOST=localhost
 DB_PORT=5432
-DB_NAME=xurshid_db
-DB_USER=xurshid_user
+DB_NAME=alisher_aka_db
+DB_USER=alisher_aka_user
 DB_PASSWORD=KUCHLI_PAROL
 
 # Flask
@@ -1677,12 +1677,12 @@ netstat -tulpn | grep :443
 
 ### Database backup:
 ```bash
-sudo -u postgres pg_dump xurshid_db > backup_$(date +%Y%m%d).sql
+sudo -u postgres pg_dump alisher_aka_db > backup_$(date +%Y%m%d).sql
 ```
 
 ### Database restore:
 ```bash
-sudo -u postgres psql xurshid_db < backup_20260129.sql
+sudo -u postgres psql alisher_aka_db < backup_20260129.sql
 ```
 
 ## Foydali buyruqlar
@@ -1782,12 +1782,12 @@ netstat -tulpn | grep :443
 
 ### Database backup:
 ```bash
-sudo -u postgres pg_dump xurshid_db > backup_$(date +%Y%m%d).sql
+sudo -u postgres pg_dump alisher_aka_db > backup_$(date +%Y%m%d).sql
 ```
 
 ### Database restore:
 ```bash
-sudo -u postgres psql xurshid_db < backup_20260129.sql
+sudo -u postgres psql alisher_aka_db < backup_20260129.sql
 ```
 
 ## Foydali buyruqlar
@@ -1817,12 +1817,12 @@ apt install -y python3 python3-pip python3-venv postgresql postgresql-contrib ng
 sudo -u postgres psql
 
 # Database va user yaratish
-CREATE DATABASE xurshid_db;
-CREATE USER xurshid_user WITH PASSWORD 'KUCHLI_PAROL_KIRITING';
-ALTER ROLE xurshid_user SET client_encoding TO 'utf8';
-ALTER ROLE xurshid_user SET default_transaction_isolation TO 'read committed';
-ALTER ROLE xurshid_user SET timezone TO 'UTC';
-GRANT ALL PRIVILEGES ON DATABASE xurshid_db TO xurshid_user;
+CREATE DATABASE alisher_aka_db;
+CREATE USER alisher_aka_user WITH PASSWORD 'KUCHLI_PAROL_KIRITING';
+ALTER ROLE alisher_aka_user SET client_encoding TO 'utf8';
+ALTER ROLE alisher_aka_user SET default_transaction_isolation TO 'read committed';
+ALTER ROLE alisher_aka_user SET timezone TO 'UTC';
+GRANT ALL PRIVILEGES ON DATABASE alisher_aka_db TO alisher_aka_user;
 \q
 ```
 
@@ -1853,8 +1853,8 @@ nano .env
 # Database
 DB_HOST=localhost
 DB_PORT=5432
-DB_NAME=xurshid_db
-DB_USER=xurshid_user
+DB_NAME=alisher_aka_db
+DB_USER=alisher_aka_user
 DB_PASSWORD=KUCHLI_PAROL
 
 # Flask
@@ -2058,12 +2058,12 @@ netstat -tulpn | grep :443
 
 ### Database backup:
 ```bash
-sudo -u postgres pg_dump xurshid_db > backup_$(date +%Y%m%d).sql
+sudo -u postgres pg_dump alisher_aka_db > backup_$(date +%Y%m%d).sql
 ```
 
 ### Database restore:
 ```bash
-sudo -u postgres psql xurshid_db < backup_20260129.sql
+sudo -u postgres psql alisher_aka_db < backup_20260129.sql
 ```
 
 ## Foydali buyruqlar
@@ -2130,12 +2130,12 @@ apt install -y python3 python3-pip python3-venv postgresql postgresql-contrib ng
 sudo -u postgres psql
 
 # Database va user yaratish
-CREATE DATABASE xurshid_db;
-CREATE USER xurshid_user WITH PASSWORD 'KUCHLI_PAROL_KIRITING';
-ALTER ROLE xurshid_user SET client_encoding TO 'utf8';
-ALTER ROLE xurshid_user SET default_transaction_isolation TO 'read committed';
-ALTER ROLE xurshid_user SET timezone TO 'UTC';
-GRANT ALL PRIVILEGES ON DATABASE xurshid_db TO xurshid_user;
+CREATE DATABASE alisher_aka_db;
+CREATE USER alisher_aka_user WITH PASSWORD 'KUCHLI_PAROL_KIRITING';
+ALTER ROLE alisher_aka_user SET client_encoding TO 'utf8';
+ALTER ROLE alisher_aka_user SET default_transaction_isolation TO 'read committed';
+ALTER ROLE alisher_aka_user SET timezone TO 'UTC';
+GRANT ALL PRIVILEGES ON DATABASE alisher_aka_db TO alisher_aka_user;
 \q
 ```
 
@@ -2166,8 +2166,8 @@ nano .env
 # Database
 DB_HOST=localhost
 DB_PORT=5432
-DB_NAME=xurshid_db
-DB_USER=xurshid_user
+DB_NAME=alisher_aka_db
+DB_USER=alisher_aka_user
 DB_PASSWORD=KUCHLI_PAROL
 
 # Flask
@@ -2371,12 +2371,12 @@ netstat -tulpn | grep :443
 
 ### Database backup:
 ```bash
-sudo -u postgres pg_dump xurshid_db > backup_$(date +%Y%m%d).sql
+sudo -u postgres pg_dump alisher_aka_db > backup_$(date +%Y%m%d).sql
 ```
 
 ### Database restore:
 ```bash
-sudo -u postgres psql xurshid_db < backup_20260129.sql
+sudo -u postgres psql alisher_aka_db < backup_20260129.sql
 ```
 
 ## Foydali buyruqlar

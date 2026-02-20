@@ -39,7 +39,7 @@ echo "3️⃣ PostgreSQL CONNECTION va ACTIVITY:"
 echo "--------------------------------------------------------------"
 
 # Active connectionlar
-sudo -u postgres psql -d xurshid_db -c "
+sudo -u postgres psql -d alisher_aka_db -c "
     SELECT 
         datname, 
         usename,
@@ -49,7 +49,7 @@ sudo -u postgres psql -d xurshid_db -c "
         state_change,
         state
     FROM pg_stat_activity 
-    WHERE datname = 'xurshid_db'
+    WHERE datname = 'alisher_aka_db'
     ORDER BY state_change DESC
     LIMIT 10;
 "
@@ -58,7 +58,7 @@ sudo -u postgres psql -d xurshid_db -c "
 echo
 echo "4️⃣ OXIRGI BAJARILGAN QUERYLAR (pg_stat_statements):"
 echo "--------------------------------------------------------------"
-sudo -u postgres psql -d xurshid_db -c "
+sudo -u postgres psql -d alisher_aka_db -c "
     SELECT EXISTS (
         SELECT 1 FROM pg_extension WHERE extname = 'pg_stat_statements'
     ) as extension_installed;

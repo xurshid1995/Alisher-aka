@@ -3,14 +3,14 @@
 export PGPASSWORD='bwjtaUueHturzUv2TuNf'
 
 echo "=== Current idle connections ==="
-psql -h localhost -U xurshid_user -d xurshid_db << 'EOF'
+psql -h localhost -U alisher_aka_user -d alisher_aka_db << 'EOF'
 SELECT 
     pid,
     usename,
     state,
     EXTRACT(EPOCH FROM (NOW() - state_change)) as idle_seconds
 FROM pg_stat_activity
-WHERE datname = 'xurshid_db' 
+WHERE datname = 'alisher_aka_db' 
   AND state = 'idle' 
   AND state_change < NOW() - INTERVAL '5 minutes'
   AND pid != pg_backend_pid();

@@ -3,7 +3,7 @@
 export PGPASSWORD='bwjtaUueHturzUv2TuNf'
 
 echo "=== Fixing Sale 126 ==="
-psql -h localhost -U xurshid_user -d xurshid_db << 'EOF'
+psql -h localhost -U alisher_aka_user -d alisher_aka_db << 'EOF'
 
 BEGIN;
 

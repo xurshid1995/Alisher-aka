@@ -47,7 +47,7 @@ cp /etc/ssh/sshd_config "$BACKUP_DIR/sshd_config.backup"
 echo -e "${GREEN}   ✅ SSH config backup qilindi${NC}"
 
 # Database backup
-sudo -u postgres pg_dump xurshid_db > "$BACKUP_DIR/database_backup.sql"
+sudo -u postgres pg_dump alisher_aka_db > "$BACKUP_DIR/database_backup.sql"
 echo -e "${GREEN}   ✅ Database backup qilindi${NC}"
 
 # =====================================================
@@ -166,7 +166,7 @@ echo ""
 echo -e "${YELLOW}🗄️  6/9: Database paroli o'zgartirilmoqda...${NC}"
 
 # PostgreSQL parolini yangilash
-sudo -u postgres psql -c "ALTER USER xurshid_user WITH PASSWORD '$NEW_DB_PASSWORD';"
+sudo -u postgres psql -c "ALTER USER alisher_aka_user WITH PASSWORD '$NEW_DB_PASSWORD';"
 
 echo -e "${GREEN}   ✅ Database paroli yangilandi${NC}"
 
@@ -183,8 +183,8 @@ cat > /var/www/alisher-aka/.env << EOF
 # Database
 DB_HOST=localhost
 DB_PORT=5432
-DB_NAME=xurshid_db
-DB_USER=xurshid_user
+DB_NAME=alisher_aka_db
+DB_USER=alisher_aka_user
 DB_PASSWORD=$NEW_DB_PASSWORD
 
 # Flask

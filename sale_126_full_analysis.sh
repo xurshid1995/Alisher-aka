@@ -7,7 +7,7 @@ echo "==========================================================================
 
 echo ""
 echo "=== 1. SALE 126 TO'LIQ MA'LUMOT ==="
-psql -U xurshid_user -d xurshid_db -h localhost -c "
+psql -U alisher_aka_user -d alisher_aka_db -h localhost -c "
 SELECT 
     id,
     TO_CHAR(created_at, 'YYYY-MM-DD HH24:MI:SS') as yaratildi,
@@ -25,7 +25,7 @@ WHERE id = 126;
 
 echo ""
 echo "=== 2. HAQIQIY TO'LOV HISOB-KITOBI ==="
-psql -U xurshid_user -d xurshid_db -h localhost -c "
+psql -U alisher_aka_user -d alisher_aka_db -h localhost -c "
 SELECT 
     'To'\''lovda' as tur,
     241.00 as summa_usd,
@@ -50,7 +50,7 @@ SELECT
 
 echo ""
 echo "=== 3. TEYES Q8 NARXINI TEKSHIRISH ==="
-psql -U xurshid_user -d xurshid_db -h localhost -c "
+psql -U alisher_aka_user -d alisher_aka_db -h localhost -c "
 SELECT 
     id,
     name,
@@ -64,7 +64,7 @@ WHERE id IN (92, 141, 144);
 
 echo ""
 echo "=== 4. AGAR 185 USD = 5 TA TEYES Q8 BO'LSA ==="
-psql -U xurshid_user -d xurshid_db -h localhost -c "
+psql -U alisher_aka_user -d alisher_aka_db -h localhost -c "
 SELECT 
     'Agar Teyes Q8 1 ta' as holat,
     185.00 / 5 as narx_usd,
@@ -79,7 +79,7 @@ SELECT
 echo ""
 echo "=== 5. SALE 126 HAMMA OPERATSIYALARNI QIDIRISH ==="
 # Check if there are any audit logs or history
-psql -U xurshid_user -d xurshid_db -h localhost -c "
+psql -U alisher_aka_user -d alisher_aka_db -h localhost -c "
 SELECT table_name 
 FROM information_schema.tables 
 WHERE table_schema = 'public' 
@@ -89,7 +89,7 @@ ORDER BY table_name;
 
 echo ""
 echo "=== 6. O'CHIRILGAN SALE_ITEMS BORMI? ==="
-psql -U xurshid_user -d xurshid_db -h localhost -c "
+psql -U alisher_aka_user -d alisher_aka_db -h localhost -c "
 SELECT 
     MIN(id) as min_id,
     MAX(id) as max_id,
@@ -102,7 +102,7 @@ WHERE sale_id = 126;
 
 echo ""
 echo "=== 7. SALE 126 ATROFIDAGI SALE_ITEMS ==="
-psql -U xurshid_user -d xurshid_db -h localhost -c "
+psql -U alisher_aka_user -d alisher_aka_db -h localhost -c "
 SELECT 
     si.id,
     si.sale_id,

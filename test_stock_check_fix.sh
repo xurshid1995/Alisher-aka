@@ -8,14 +8,14 @@ echo ""
 
 # Check if there are active sessions in database
 echo "1. Checking database for active sessions..."
-ACTIVE_COUNT=$(sudo -u postgres psql -d xurshid_db -tAc "SELECT COUNT(*) FROM stock_check_sessions WHERE status = 'active';")
+ACTIVE_COUNT=$(sudo -u postgres psql -d alisher_aka_db -tAc "SELECT COUNT(*) FROM stock_check_sessions WHERE status = 'active';")
 echo "   Active sessions in DB: $ACTIVE_COUNT"
 
 if [ "$ACTIVE_COUNT" -gt 0 ]; then
     echo "   ✓ Found $ACTIVE_COUNT active session(s)"
     echo ""
     echo "   Sessions details:"
-    sudo -u postgres psql -d xurshid_db -c "SELECT id, location_name, location_type, user_id, started_at FROM stock_check_sessions WHERE status = 'active' ORDER BY started_at DESC;"
+    sudo -u postgres psql -d alisher_aka_db -c "SELECT id, location_name, location_type, user_id, started_at FROM stock_check_sessions WHERE status = 'active' ORDER BY started_at DESC;"
 else
     echo "   ℹ No active sessions found. Create one to test."
 fi
