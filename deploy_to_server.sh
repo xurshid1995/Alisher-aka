@@ -6,7 +6,7 @@ echo ""
 
 # 1. Loyiha papkasiga o'tish
 echo "📁 Loyiha papkasiga o'tish..."
-cd /var/www/xurshid || exit
+cd /var/www/alisher-aka || exit
 
 # 2. Yangi kodlarni pull qilish
 echo "⬇️ GitHub'dan yangi kodlarni pull qilish..."

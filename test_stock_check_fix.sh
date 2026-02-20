@@ -40,7 +40,7 @@ fi
 
 echo ""
 echo "4. Checking Flask error logs for stock_check issues..."
-ERRORS=$(sudo tail -20 /var/www/xurshid/logs/error.log 2>/dev/null | grep -i "stock_check\|NameError\|AttributeError" || echo "")
+ERRORS=$(sudo tail -20 /var/www/alisher-aka/logs/error.log 2>/dev/null | grep -i "stock_check\|NameError\|AttributeError" || echo "")
 if [ -z "$ERRORS" ]; then
     echo "   ✓ No errors found in recent logs"
 else
@@ -50,7 +50,7 @@ fi
 
 echo ""
 echo "5. Verifying Python syntax..."
-cd /var/www/xurshid
+cd /var/www/alisher-aka
 python3 -m py_compile app.py && echo "   ✓ Python syntax is correct"
 
 echo ""

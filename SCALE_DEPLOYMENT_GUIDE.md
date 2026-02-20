@@ -250,10 +250,10 @@ ssh root@46.101.153.212 "htop"
 ssh root@46.101.153.212 "watch -n 2 'sudo -u postgres psql -d xurshid_db -c \"SELECT count(*), state FROM pg_stat_activity GROUP BY state;\"'"
 
 # Application logs
-ssh root@46.101.153.212 "tail -f /var/www/xurshid/logs/error.log"
+ssh root@46.101.153.212 "tail -f /var/www/alisher-aka/logs/error.log"
 
 # Nginx access log
-ssh root@46.101.153.212 "tail -f /var/www/xurshid/logs/access.log"
+ssh root@46.101.153.212 "tail -f /var/www/alisher-aka/logs/access.log"
 
 # System resources
 ssh root@46.101.153.212 "free -h && df -h && uptime"

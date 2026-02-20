@@ -159,7 +159,7 @@ echo -e "${GREEN}      - DISK threshold: 90%${NC}"
 # =====================================================
 echo -e "${YELLOW}📱 4/4: Telegram bot token tekshiruvi...${NC}"
 
-CURRENT_TOKEN=$(grep "TELEGRAM_BOT_TOKEN" /var/www/xurshid/.env | cut -d= -f2)
+CURRENT_TOKEN=$(grep "TELEGRAM_BOT_TOKEN" /var/www/alisher-aka/.env | cut -d= -f2)
 
 if [ ! -z "$CURRENT_TOKEN" ]; then
     echo -e "${YELLOW}   ⚠️  Telegram bot token .env faylida${NC}"

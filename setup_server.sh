@@ -29,8 +29,8 @@ sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE xurshid_db TO xurshid
 
 # Step 4: Create project directory
 echo -e "${BLUE}📁 Step 4: Setting up project directory...${NC}"
-mkdir -p /var/www/xurshid
-cd /var/www/xurshid
+mkdir -p /var/www/alisher-aka
+cd /var/www/alisher-aka
 
 # Step 5: Clone from GitHub
 echo -e "${BLUE}📥 Step 5: Cloning project from GitHub...${NC}"
@@ -38,7 +38,7 @@ if [ -d ".git" ]; then
     echo "Git repository already exists, pulling latest changes..."
     git pull origin main
 else
-    git clone https://github.com/xurshid1995/xurshid.git .
+    git clone https://github.com/xurshid1995/Alisher-aka.git .
 fi
 
 # Step 6: Setup Python virtual environment
@@ -86,9 +86,9 @@ After=network.target
 [Service]
 User=www-data
 Group=www-data
-WorkingDirectory=/var/www/xurshid
-Environment="PATH=/var/www/xurshid/venv/bin"
-ExecStart=/var/www/xurshid/venv/bin/gunicorn -c gunicorn_config.py app:app
+WorkingDirectory=/var/www/alisher-aka
+Environment="PATH=/var/www/alisher-aka/venv/bin"
+ExecStart=/var/www/alisher-aka/venv/bin/gunicorn -c gunicorn_config.py app:app
 Restart=always
 
 [Install]
@@ -111,7 +111,7 @@ server {
     }
 
     location /static {
-        alias /var/www/xurshid/static;
+        alias /var/www/alisher-aka/static;
         expires 30d;
     }
 }
@@ -126,8 +126,8 @@ nginx -t
 
 # Step 13: Set proper permissions
 echo -e "${BLUE}🔒 Step 13: Setting permissions...${NC}"
-chown -R www-data:www-data /var/www/xurshid
-chmod -R 755 /var/www/xurshid
+chown -R www-data:www-data /var/www/alisher-aka
+chmod -R 755 /var/www/alisher-aka
 
 # Step 14: Start services
 echo -e "${BLUE}🚀 Step 14: Starting services...${NC}"

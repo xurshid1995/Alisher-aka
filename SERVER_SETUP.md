@@ -33,8 +33,8 @@ GRANT ALL PRIVILEGES ON DATABASE xurshid_db TO xurshid_user;
 ## 5. Loyihani deploy qilish
 ```bash
 # Loyiha papkasini yaratish
-mkdir -p /var/www/xurshid
-cd /var/www/xurshid
+mkdir -p /var/www/alisher-aka
+cd /var/www/alisher-aka
 
 # Git'dan clone qilish
 git clone https://github.com/xurshid1995/xurshid.git .
@@ -83,7 +83,7 @@ TIMEOUT=300
 
 ## 7. Database migratsiyalarini bajarish
 ```bash
-cd /var/www/xurshid
+cd /var/www/alisher-aka
 source venv/bin/activate
 
 # Jadvallarni yaratish
@@ -92,8 +92,8 @@ python -c "from app import db; db.create_all(); print('✅ Database tables creat
 
 ## 8. Logs papkasini yaratish
 ```bash
-mkdir -p /var/www/xurshid/logs
-chmod 755 /var/www/xurshid/logs
+mkdir -p /var/www/alisher-aka/logs
+chmod 755 /var/www/alisher-aka/logs
 ```
 
 ## 9. Systemd service sozlash
@@ -112,9 +112,9 @@ Wants=postgresql.service
 Type=notify
 User=root
 Group=root
-WorkingDirectory=/var/www/xurshid
-Environment="PATH=/var/www/xurshid/venv/bin"
-ExecStart=/var/www/xurshid/venv/bin/gunicorn -c gunicorn_config.py app:app
+WorkingDirectory=/var/www/alisher-aka
+Environment="PATH=/var/www/alisher-aka/venv/bin"
+ExecStart=/var/www/alisher-aka/venv/bin/gunicorn -c gunicorn_config.py app:app
 ExecReload=/bin/kill -s HUP $MAINPID
 KillMode=mixed
 TimeoutStopSec=5
@@ -142,7 +142,7 @@ sudo systemctl status xurshid.service
 ## 10. Nginx sozlash
 ```bash
 # Nginx konfiguratsiya fayl yaratish
-sudo cp /var/www/xurshid/nginx_sergeli0606.conf /etc/nginx/sites-available/xurshid
+sudo cp /var/www/alisher-aka/nginx_sergeli0606.conf /etc/nginx/sites-available/xurshid
 
 # Symlink yaratish
 sudo ln -s /etc/nginx/sites-available/xurshid /etc/nginx/sites-enabled/
@@ -189,7 +189,7 @@ sudo certbot renew --dry-run
 
 ## 14. Loyihani yangilash (deploy)
 ```bash
-cd /var/www/xurshid
+cd /var/www/alisher-aka
 git pull
 sudo systemctl restart xurshid.service
 ```
@@ -207,8 +207,8 @@ sudo tail -f /var/log/nginx/access.log
 sudo tail -f /var/log/nginx/error.log
 
 # Gunicorn loglarni ko'rish
-tail -f /var/www/xurshid/logs/error.log
-tail -f /var/www/xurshid/logs/access.log
+tail -f /var/www/alisher-aka/logs/error.log
+tail -f /var/www/alisher-aka/logs/access.log
 
 # Brauzerda ochish
 # https://www.sergeli0606.uz
@@ -283,7 +283,7 @@ sudo systemctl reload nginx
 sudo journalctl --vacuum-time=7d
 
 # Git'ni yangilash
-cd /var/www/xurshid && git pull && sudo systemctl restart xurshid.service
+cd /var/www/alisher-aka && git pull && sudo systemctl restart xurshid.service
 ```
 
 ## Xavfsizlik

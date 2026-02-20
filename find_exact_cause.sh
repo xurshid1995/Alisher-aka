@@ -68,7 +68,7 @@ sudo -u postgres psql -d xurshid_db -c "
 echo
 echo "5️⃣ 2026-02-06 KUNI O'ZGARTIRILGAN FAYLLAR:"
 echo "--------------------------------------------------------------"
-find /var/www/xurshid -type f -newermt "2026-02-06 17:00:00" ! -newermt "2026-02-06 18:00:00" -ls 2>/dev/null | head -20
+find /var/www/alisher-aka -type f -newermt "2026-02-06 17:00:00" ! -newermt "2026-02-06 18:00:00" -ls 2>/dev/null | head -20
 
 # 7. Who logged in
 echo

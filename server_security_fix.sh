@@ -33,8 +33,8 @@ echo ""
 echo -e "${YELLOW}📦 1/9: Backup yaratilmoqda...${NC}"
 
 # .env faylini backup qilish
-if [ -f /var/www/xurshid/.env ]; then
-    cp /var/www/xurshid/.env "$BACKUP_DIR/.env.backup"
+if [ -f /var/www/alisher-aka/.env ]; then
+    cp /var/www/alisher-aka/.env "$BACKUP_DIR/.env.backup"
     echo -e "${GREEN}   ✅ .env fayli backup qilindi${NC}"
 fi
 
@@ -177,7 +177,7 @@ echo ""
 echo -e "${YELLOW}⚙️  7/9: .env fayli yangilanmoqda...${NC}"
 
 # .env faylini yangilash
-cat > /var/www/xurshid/.env << EOF
+cat > /var/www/alisher-aka/.env << EOF
 # Production Environment - Updated $(date)
 
 # Database
@@ -208,8 +208,8 @@ WEEKLY_REPORT_DAY=1
 MINIMUM_DEBT_AMOUNT=1.0
 EOF
 
-chown www-data:www-data /var/www/xurshid/.env
-chmod 600 /var/www/xurshid/.env
+chown www-data:www-data /var/www/alisher-aka/.env
+chmod 600 /var/www/alisher-aka/.env
 
 echo -e "${GREEN}   ✅ .env fayli yangilandi${NC}"
 
@@ -230,10 +230,10 @@ Wants=postgresql.service
 Type=notify
 User=www-data
 Group=www-data
-WorkingDirectory=/var/www/xurshid
-Environment="PATH=/var/www/xurshid/venv/bin"
-EnvironmentFile=/var/www/xurshid/.env
-ExecStart=/var/www/xurshid/venv/bin/gunicorn -c gunicorn_config.py app:app
+WorkingDirectory=/var/www/alisher-aka
+Environment="PATH=/var/www/alisher-aka/venv/bin"
+EnvironmentFile=/var/www/alisher-aka/.env
+ExecStart=/var/www/alisher-aka/venv/bin/gunicorn -c gunicorn_config.py app:app
 ExecReload=/bin/kill -s HUP $MAINPID
 KillMode=mixed
 TimeoutStopSec=5
