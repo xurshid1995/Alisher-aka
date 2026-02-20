@@ -21,7 +21,7 @@ grep -A10 "UPDATE Sale ID: 126" /var/log/gunicorn/error.log 2>/dev/null | head -
 echo ""
 echo "=== 4. SYSTEMD JOURNAL - GUNICORN SERVICELARI ==="
 echo "Checking systemd journal for gunicorn errors..."
-journalctl -u gunicorn -u xurshid.service --since "2026-02-08 16:01:30" --until "2026-02-08 16:02:00" 2>/dev/null | tail -30
+journalctl -u gunicorn -u alisher-aka.service --since "2026-02-08 16:01:30" --until "2026-02-08 16:02:00" 2>/dev/null | tail -30
 
 echo ""
 echo "=== 5. PYTHON TRACEBACK QIDIRISH ==="
