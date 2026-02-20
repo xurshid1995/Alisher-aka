@@ -1,7 +1,7 @@
 #!/bin/bash
 # Server Performance Analysis Script
 # 5 ta do'kon + 5 ta sklad monitoring
-# Server: 164.92.177.172
+# Server: 46.101.153.212
 
 echo "╔════════════════════════════════════════════════════════════════╗"
 echo "║         SERVER PERFORMANCE MONITORING - $(date +%Y-%m-%d)          ║"

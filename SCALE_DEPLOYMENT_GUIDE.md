@@ -1,5 +1,5 @@
 # 5 TA DO'KON + 5 TA SKLAD UCHUN SERVER SOZLASH
-## Server: 164.92.177.172
+## Server: 46.101.153.212
 
 ## 📋 CURRENT STATUS
 
@@ -24,10 +24,10 @@
 
 ```bash
 # Serverga ulanish
-ssh root@164.92.177.172
+ssh root@46.101.153.212
 
 # Fayl yuklash (mahalliy kompyuterdan)
-scp d:\hisobot\Xurshid\postgresql_optimization_2gb.sql root@164.92.177.172:/tmp/
+scp d:\hisobot\Xurshid\postgresql_optimization_2gb.sql root@46.101.153.212:/tmp/
 
 # Serverda qo'llash
 sudo -u postgres psql -d xurshid_db -f /tmp/postgresql_optimization_2gb.sql
@@ -44,22 +44,22 @@ sudo -u postgres psql -c "SHOW effective_cache_size;"
 
 ```bash
 # Script yuklash
-scp d:\hisobot\Xurshid\server_monitoring.sh root@164.92.177.172:/root/
+scp d:\hisobot\Xurshid\server_monitoring.sh root@46.101.153.212:/root/
 
 # Ruxsat berish
-ssh root@164.92.177.172 "chmod +x /root/server_monitoring.sh"
+ssh root@46.101.153.212 "chmod +x /root/server_monitoring.sh"
 
 # Ishga tushirish
-ssh root@164.92.177.172 "/root/server_monitoring.sh"
+ssh root@46.101.153.212 "/root/server_monitoring.sh"
 
 # Cron job qo'shish (har kuni soat 9:00 da)
-ssh root@164.92.177.172 "echo '0 9 * * * /root/server_monitoring.sh > /var/log/server_monitoring.log 2>&1' | crontab -"
+ssh root@46.101.153.212 "echo '0 9 * * * /root/server_monitoring.sh > /var/log/server_monitoring.log 2>&1' | crontab -"
 ```
 
 ### 3️⃣ pg_stat_statements Extension (opsional, lekin tavsiya etiladi)
 
 ```bash
-ssh root@164.92.177.172
+ssh root@46.101.153.212
 
 # postgresql.conf edit qilish
 sudo nano /etc/postgresql/16/main/postgresql.conf
@@ -241,22 +241,22 @@ AND state_change < now() - interval '10 minutes';
 
 ```bash
 # Server monitoringni ishga tushirish
-ssh root@164.92.177.172 "/root/server_monitoring.sh"
+ssh root@46.101.153.212 "/root/server_monitoring.sh"
 
 # Real-time server ko'rish
-ssh root@164.92.177.172 "htop"
+ssh root@46.101.153.212 "htop"
 
 # PostgreSQL live activity
-ssh root@164.92.177.172 "watch -n 2 'sudo -u postgres psql -d xurshid_db -c \"SELECT count(*), state FROM pg_stat_activity GROUP BY state;\"'"
+ssh root@46.101.153.212 "watch -n 2 'sudo -u postgres psql -d xurshid_db -c \"SELECT count(*), state FROM pg_stat_activity GROUP BY state;\"'"
 
 # Application logs
-ssh root@164.92.177.172 "tail -f /var/www/xurshid/logs/error.log"
+ssh root@46.101.153.212 "tail -f /var/www/xurshid/logs/error.log"
 
 # Nginx access log
-ssh root@164.92.177.172 "tail -f /var/www/xurshid/logs/access.log"
+ssh root@46.101.153.212 "tail -f /var/www/xurshid/logs/access.log"
 
 # System resources
-ssh root@164.92.177.172 "free -h && df -h && uptime"
+ssh root@46.101.153.212 "free -h && df -h && uptime"
 ```
 
 ---
@@ -286,6 +286,6 @@ Agar quyidagi holatlar yuz bersa darhol tekshiring:
 ---
 
 **Last updated:** 2026-02-06
-**Server:** 164.92.177.172
+**Server:** 46.101.153.212
 **Target:** 5 do'kon + 5 sklad
 **Status:** ✅ Ready for deployment

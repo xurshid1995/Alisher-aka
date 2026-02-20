@@ -100,7 +100,7 @@ echo -e "${BLUE}🌐 Step 12: Setting up Nginx...${NC}"
 cat > /etc/nginx/sites-available/xurshid << 'EOF'
 server {
     listen 80;
-    server_name 164.92.177.172;
+    server_name 46.101.153.212;
 
     location / {
         proxy_pass http://127.0.0.1:8000;
@@ -142,7 +142,7 @@ echo -e "${GREEN}✅ ✅ ✅  INSTALLATION COMPLETE!  ✅ ✅ ✅${NC}"
 echo "================================"
 echo ""
 echo "🌐 Your application is now running at:"
-echo "   http://164.92.177.172"
+echo "   http://46.101.153.212"
 echo ""
 echo "📊 Check service status:"
 echo "   systemctl status xurshid"

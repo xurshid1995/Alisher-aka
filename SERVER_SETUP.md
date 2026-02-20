@@ -1,8 +1,8 @@
-# Server Setup - 164.92.177.172 (www.sergeli0606.uz)
+# Server Setup - 46.101.153.212 (www.sergeli0606.uz)
 
 ## 1. Server'ga kirish
 ```bash
-ssh root@164.92.177.172
+ssh root@46.101.153.212
 ```
 
 ## 2. Tizimni yangilash
@@ -72,7 +72,7 @@ SESSION_COOKIE_HTTPONLY=True
 SESSION_COOKIE_SAMESITE=None
 
 # Server
-SERVER_IP=164.92.177.172
+SERVER_IP=46.101.153.212
 DOMAIN=www.sergeli0606.uz
 
 # Gunicorn
@@ -299,6 +299,6 @@ cd /var/www/xurshid && git pull && sudo systemctl restart xurshid.service
 
 ## Support
 
-Server: 164.92.177.172
+Server: 46.101.153.212
 Domain: www.sergeli0606.uz
 Location: DigitalOcean Frankfurt

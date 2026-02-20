@@ -2,7 +2,7 @@
 
 # =====================================================
 # SERVER XAVFSIZLIK VA OPTIMIZATSIYA SCRIPTI
-# Server: 164.92.177.172 (sergeli0606.uz)
+# Server: 46.101.153.212 (sergeli0606.uz)
 # Sana: 2026-02-07
 # =====================================================
 
@@ -17,7 +17,7 @@ NC='\033[0m' # No Color
 
 echo -e "${BLUE}╔════════════════════════════════════════════════════════════╗${NC}"
 echo -e "${BLUE}║    SERVER XAVFSIZLIK VA OPTIMIZATSIYA SCRIPTI             ║${NC}"
-echo -e "${BLUE}║    sergeli0606.uz (164.92.177.172)                        ║${NC}"
+echo -e "${BLUE}║    sergeli0606.uz (46.101.153.212)                        ║${NC}"
 echo -e "${BLUE}╚════════════════════════════════════════════════════════════╝${NC}"
 echo ""
 

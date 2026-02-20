@@ -1,6 +1,6 @@
 #!/bin/bash
 # Enable pg_stat_statements for PostgreSQL performance monitoring
-# Server: 164.92.177.172
+# Server: 46.101.153.212
 
 echo "📊 Enabling pg_stat_statements..."
 echo ""

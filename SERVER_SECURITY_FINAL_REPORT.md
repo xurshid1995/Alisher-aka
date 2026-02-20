@@ -1,6 +1,6 @@
 # 🎉 SERVER XAVFSIZLIK TAHLILI - YAKUNIY HISOBOT
 
-**Server**: 164.92.177.172 (sergeli0606.uz)  
+**Server**: 46.101.153.212 (sergeli0606.uz)  
 **Sana**: 2026-02-07  
 **Holat**: ✅ **100% XAVFSIZ**
 
@@ -115,18 +115,18 @@ Customers: 15
 ### Darhol bajarish kerak:
 1. ✅ **SSH restart** (ixtiyoriy):
    ```bash
-   ssh root@164.92.177.172 "systemctl restart sshd"
+   ssh root@46.101.153.212 "systemctl restart sshd"
    ```
 
 2. ⚠️ **SSH key yarating** (parol auth o'chirilgan):
    ```bash
    ssh-keygen -t ed25519 -C "admin@sergeli0606.uz"
-   ssh-copy-id root@164.92.177.172
+   ssh-copy-id root@46.101.153.212
    ```
 
 3. ✅ **Backup kredensiallarni yuklab oling**:
    ```bash
-   scp root@164.92.177.172:/root/backup_20260207_185644/new_credentials.txt ./
+   scp root@46.101.153.212:/root/backup_20260207_185644/new_credentials.txt ./
    ```
 
 ### Monitoring

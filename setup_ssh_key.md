@@ -22,7 +22,7 @@ Get-Content $env:USERPROFILE\.ssh\id_ed25519.pub
 ### 3. Server'ga Public Kalitni Qo'shish
 
 PuTTY orqali server'ga ulaning:
-- Host: 139.59.154.185
+- Host: 46.101.153.212
 - User: root
 - Password: Teleport7799
 
@@ -47,7 +47,7 @@ Windows PowerShell'da:
 
 ```powershell
 # Endi parolsiz ulanish ishlashi kerak
-ssh root@139.59.154.185 "echo 'SSH kalit ishladi!'"
+ssh root@46.101.153.212 "echo 'SSH kalit ishladi!'"
 ```
 
 ### 5. Avtomatik Deploy Script
@@ -56,7 +56,7 @@ Kalit sozlangandan keyin deploy script ishlaydi:
 
 ```powershell
 # Bir buyruqda deploy
-ssh root@139.59.154.185 "cd /var/www/jamshid && git pull origin main && systemctl restart jamshid && systemctl status jamshid --no-pager"
+ssh root@46.101.153.212 "cd /var/www/jamshid && git pull origin main && systemctl restart jamshid && systemctl status jamshid --no-pager"
 ```
 
 ## Muqobil Yechim: SSH Config Fayli
@@ -65,7 +65,7 @@ ssh root@139.59.154.185 "cd /var/www/jamshid && git pull origin main && systemct
 
 ```
 Host jamshid-server
-    HostName 139.59.154.185
+    HostName 46.101.153.212
     User root
     IdentityFile ~/.ssh/id_ed25519
     StrictHostKeyChecking no
@@ -83,12 +83,12 @@ Agar SSH kalit o'rnatish vaqt oladigan bo'lsa, kamida birinchi marta qo'lda ulan
 
 ```powershell
 # Birinchi marta ulanish - kalitni qabul qiladi
-ssh root@139.59.154.185
+ssh root@46.101.153.212
 
 # "yes" deb yozing va Enter bosing
 # Keyin parol: Teleport7799
 # exit deb chiqing
 
 # Endi keyingi safar ishlaydi
-ssh root@139.59.154.185 -o PreferredAuthentications=password -o PubkeyAuthentication=no "cd /var/www/jamshid && git pull origin main && systemctl restart jamshid"
+ssh root@46.101.153.212 -o PreferredAuthentications=password -o PubkeyAuthentication=no "cd /var/www/jamshid && git pull origin main && systemctl restart jamshid"
 ```

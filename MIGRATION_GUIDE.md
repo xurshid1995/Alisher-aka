@@ -2,7 +2,7 @@
 
 ## SSH orqali serverga ulanish:
 ```bash
-ssh root@139.59.154.185
+ssh root@46.101.153.212
 ```
 
 ## Migration ishga tushirish:

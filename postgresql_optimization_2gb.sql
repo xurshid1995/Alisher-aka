@@ -1,6 +1,6 @@
 -- PostgreSQL Optimization for 2GB RAM Server
 -- 5 do'kon + 5 sklad uchun sozlash
--- Server: 164.92.177.172
+-- Server: 46.101.153.212
 
 -- ============================================
 -- MEMORY SETTINGS (2GB RAM)
@@ -83,7 +83,7 @@ ALTER SYSTEM SET idle_in_transaction_session_timeout = '10min';
 -- QANDAY QO'LLASH:
 -- ============================================
 -- 1. Serverga ulanish:
---    ssh root@164.92.177.172
+--    ssh root@46.101.153.212
 --
 -- 2. Scriptni yuklash:
 --    sudo -u postgres psql -d xurshid_db -f postgresql_optimization_2gb.sql
