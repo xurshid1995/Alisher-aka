@@ -1678,6 +1678,7 @@
                             html += `
                                 <div class="product-dropdown-item suggestion-item" 
                                      onclick="selectProduct('${productData.product.name}', ${lastBatchCost}, ${productData.product.sell_price}, ${productData.product.min_stock}, ${lastBatchCost}, '${lastBatchDate}', '${productData.product.barcode || ''}')"
+                                     onmousedown="selectProduct('${productData.product.name}', ${lastBatchCost}, ${productData.product.sell_price}, ${productData.product.min_stock}, ${lastBatchCost}, '${lastBatchDate}', '${productData.product.barcode || ''}')"
                                      onmouseenter="handleMouseEnterSuggestion(this)">
                                     <div class="product-dropdown-content">
                                         <strong style="color: #2c3e50; font-size: 1.1rem;">${productData.product.name}</strong> | 
@@ -1743,7 +1744,13 @@
             }
         }
         
+        let _selectProductLock = false;
         function selectProduct(name, costPrice, sellPrice, minStock, lastBatchCost, lastBatchDate, barcode) {
+            // Ikki marta chaqirilishini oldini olish (mousedown + click)
+            if (_selectProductLock) return;
+            _selectProductLock = true;
+            setTimeout(() => { _selectProductLock = false; }, 300);
+            
             console.log('✅ selectProduct chaqirildi:');
             console.log('   name:', name);
             console.log('   barcode:', barcode);
