@@ -2579,10 +2579,9 @@
         const btn = event.target.closest('.add-to-cart-btn');
         const row = event.target.closest('tr');
         
-        // Mobilda butun qatorni bosish (agar tugma bosilmagan bo'lsa)
+        // Butun qatorni bosish (agar tugma bosilmagan bo'lsa) - barcha ekranlar uchun
         if (!btn && row && row.hasAttribute('data-product-id')) {
-            // Faqat mobil ekranlarda ishlashi kerak (768px dan kichik)
-            if (window.innerWidth <= 768) {
+            {
                 event.preventDefault();
                 event.stopPropagation();
                 
