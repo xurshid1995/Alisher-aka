@@ -132,6 +132,9 @@ def generate_sale_receipt_pdf(
     # Mahsulotlar ro'yxati
     c.setFont("Helvetica-Bold", 8)
     for item in sale_data.get('items', []):
+        # Har bir item uchun matn rangini qora qilib o'rnatish
+        c.setFillColor(colors.black)
+
         # Mahsulot nomini qatorlarga bo'lish (uzun bo'lsa)
         product_name = item['name']
         max_width = col1_width - 4*mm  # 2mm padding har tarafdan
@@ -193,8 +196,7 @@ def generate_sale_receipt_pdf(
 
         c.drawRightString(table_right - 2*mm, y - 4*mm, price_str)
 
-        # Qator borderlari
-        c.setFillColor(colors.white)  # Border uchun to'ldirmaslik
+        # Qator borderlari (fill=0 bo'lgani uchun fillColor o'rnatish shart emas)
         c.rect(table_left, y - row_height, table_width, row_height, stroke=1, fill=0)
         c.line(table_left + col1_width, y - row_height, table_left + col1_width, y)
         c.line(table_left + col1_width + col2_width, y - row_height, table_left + col1_width + col2_width, y)
