@@ -141,6 +141,30 @@ class HostingPaymentBot:
                 query = query.filter_by(status=status)
             return query.order_by(HostingPaymentOrder.created_at.desc()).all()
 
+    def _get_balance_info(self, client):
+        """Balans va qolgan kunlar haqida ma'lumot"""
+        balance = float(client.balance or 0)
+        monthly_price = float(client.monthly_price_uzs or 0)
+        today = get_tashkent_time().date()
+
+        if monthly_price <= 0:
+            return ""
+
+        daily_price = monthly_price / 30
+        balance_days = int(balance / daily_price) if daily_price > 0 else 0
+
+        if balance <= 0:
+            return (
+                f"\n💳 Balans: 0 so'm\n"
+                f"❌ Balans tugagan! To'lov qiling."
+            )
+        else:
+            balance_end = today + timedelta(days=balance_days)
+            return (
+                f"\n💳 Balans: {self._format_money(balance)} so'm\n"
+                f"📅 {balance_end.strftime('%d.%m.%Y')}gacha yetadi ({balance_days} kun)"
+            )
+
     # ==========================================
     # COMMAND HANDLERS
     # ==========================================
@@ -168,7 +192,8 @@ class HostingPaymentBot:
             await update.message.reply_text(
                 f"👋 Assalomu alaykum, {client.name}!\n\n"
                 f"🖥️ Serveringiz: {client.droplet_name or 'N/A'}\n"
-                f"💰 Oylik to'lov: {self._format_money(client.monthly_price_uzs)} so'm\n\n"
+                f"💰 Oylik to'lov: {self._format_money(client.monthly_price_uzs)} so'm"
+                f"{self._get_balance_info(client)}\n\n"
                 f"Quyidagi tugmalardan birini tanlang:",
                 reply_markup=reply_markup
             )
@@ -449,7 +474,8 @@ class HostingPaymentBot:
         text = (
             f"👋 {client.name}\n\n"
             f"🖥️ Server: {client.droplet_name or 'N/A'}\n"
-            f"💰 Oylik: {self._format_money(client.monthly_price_uzs)} so'm\n\n"
+            f"💰 Oylik: {self._format_money(client.monthly_price_uzs)} so'm"
+            f"{self._get_balance_info(client)}\n\n"
             f"Tanlang:"
         )
 
@@ -1508,8 +1534,8 @@ class HostingPaymentBot:
             f"📞 Telefon: {client.phone or 'N/A'}\n"
             f"🖥️ Server: {client.droplet_name or 'N/A'}\n"
             f"🌐 IP: {client.server_ip or 'N/A'}\n"
-            f"💰 Oylik: {self._format_money(client.monthly_price_uzs)} so'm\n"
-            f"📅 To'lov kuni: Har oyning {client.payment_day}-kuni"
+            f"💰 Oylik: {self._format_money(client.monthly_price_uzs)} so'm"
+            f"{self._get_balance_info(client)}"
         )
 
         keyboard = [[InlineKeyboardButton("⬅️ Orqaga", callback_data="back_to_menu")]]
