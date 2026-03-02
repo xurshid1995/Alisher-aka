@@ -1,0 +1,742 @@
+{% extends "base.html" %}
+
+{% block title %}Hosting Boshqaruv - DOKON{% endblock %}
+
+{% block extra_css %}
+<style>
+    .hosting-container { padding: 20px; max-width: 1400px; margin: 0 auto; }
+    .hosting-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+    .hosting-header h2 { margin: 0; color: #333; font-size: 24px; }
+
+    /* Stats Cards */
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
+    .stat-card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); text-align: center; }
+    .stat-card .stat-value { font-size: 28px; font-weight: 700; color: #333; }
+    .stat-card .stat-label { font-size: 13px; color: #888; margin-top: 5px; }
+    .stat-card.primary { border-left: 4px solid #667eea; }
+    .stat-card.success { border-left: 4px solid #28a745; }
+    .stat-card.warning { border-left: 4px solid #ffc107; }
+    .stat-card.danger { border-left: 4px solid #dc3545; }
+    .stat-card.info { border-left: 4px solid #17a2b8; }
+
+    /* Tabs */
+    .hosting-tabs { display: flex; gap: 5px; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 0; }
+    .hosting-tab { padding: 10px 20px; cursor: pointer; border: none; background: none; font-size: 14px; color: #666; border-bottom: 3px solid transparent; transition: all 0.2s; }
+    .hosting-tab.active { color: #667eea; border-bottom-color: #667eea; font-weight: 600; }
+    .hosting-tab:hover { color: #667eea; }
+
+    /* Tab Content */
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* Table */
+    .hosting-table { width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    .hosting-table th { background: #f8f9fa; padding: 12px 15px; text-align: left; font-size: 13px; color: #555; font-weight: 600; border-bottom: 2px solid #eee; }
+    .hosting-table td { padding: 12px 15px; border-bottom: 1px solid #f0f0f0; font-size: 14px; }
+    .hosting-table tr:hover { background: #f8f9ff; }
+
+    /* Status badges */
+    .badge { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; display: inline-block; }
+    .badge-active { background: #d4edda; color: #155724; }
+    .badge-off { background: #f8d7da; color: #721c24; }
+    .badge-suspended { background: #fff3cd; color: #856404; }
+    .badge-ok { background: #d4edda; color: #155724; }
+    .badge-warning { background: #fff3cd; color: #856404; }
+    .badge-overdue { background: #f8d7da; color: #721c24; }
+    .badge-never-paid { background: #e2e3e5; color: #383d41; }
+    .badge-pending { background: #cce5ff; color: #004085; }
+    .badge-confirmed { background: #fff3cd; color: #856404; }
+    .badge-matched { background: #d1ecf1; color: #0c5460; }
+    .badge-approved { background: #d4edda; color: #155724; }
+    .badge-rejected { background: #f8d7da; color: #721c24; }
+    .badge-expired { background: #e2e3e5; color: #383d41; }
+
+    /* Buttons */
+    .btn-hosting { padding: 8px 16px; border-radius: 8px; border: none; cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.2s; display: inline-flex; align-items: center; gap: 5px; }
+    .btn-primary { background: #667eea; color: white; }
+    .btn-primary:hover { background: #5a6fd6; }
+    .btn-success-hosting { background: #28a745; color: white; }
+    .btn-success-hosting:hover { background: #218838; }
+    .btn-danger-hosting { background: #dc3545; color: white; }
+    .btn-danger-hosting:hover { background: #c82333; }
+    .btn-outline { background: white; color: #667eea; border: 1px solid #667eea; }
+    .btn-outline:hover { background: #667eea; color: white; }
+    .btn-sm { padding: 5px 10px; font-size: 12px; }
+
+    /* Modal */
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
+    .modal-overlay.show { display: flex; }
+    .modal-box { background: white; border-radius: 16px; padding: 30px; width: 90%; max-width: 550px; max-height: 85vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+    .modal-box h3 { margin: 0 0 20px 0; font-size: 20px; color: #333; }
+    .modal-box .form-group { margin-bottom: 15px; }
+    .modal-box label { display: block; margin-bottom: 5px; font-size: 13px; color: #555; font-weight: 500; }
+    .modal-box input, .modal-box select, .modal-box textarea { width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; box-sizing: border-box; }
+    .modal-box input:focus, .modal-box select:focus { border-color: #667eea; outline: none; box-shadow: 0 0 0 3px rgba(102,126,234,0.1); }
+    .modal-box textarea { resize: vertical; min-height: 60px; }
+    .modal-actions { display: flex; gap: 10px; margin-top: 20px; justify-content: flex-end; }
+
+    /* Money format */
+    .money { font-weight: 600; font-family: 'Courier New', monospace; }
+
+    /* Empty state */
+    .empty-state { text-align: center; padding: 40px; color: #aaa; }
+    .empty-state i { font-size: 48px; margin-bottom: 10px; }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .hosting-container { padding: 10px; }
+        .hosting-table { font-size: 12px; }
+        .hosting-table th, .hosting-table td { padding: 8px 10px; }
+        .stats-grid { grid-template-columns: repeat(2, 1fr); }
+        .hosting-tabs { overflow-x: auto; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="hosting-container">
+    <!-- Header -->
+    <div class="hosting-header">
+        <h2>🖥️ Hosting Boshqaruv</h2>
+        <div>
+            <button class="btn-hosting btn-primary" onclick="showAddClientModal()">
+                <i class="fas fa-plus"></i> Mijoz qo'shish
+            </button>
+            <button class="btn-hosting btn-outline" onclick="loadDroplets()" title="DigitalOcean serverlarni ko'rish">
+                <i class="fas fa-cloud"></i> DO Serverlar
+            </button>
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid">
+        <div class="stat-card primary">
+            <div class="stat-value" id="stat-clients">-</div>
+            <div class="stat-label">Jami mijozlar</div>
+        </div>
+        <div class="stat-card success">
+            <div class="stat-value" id="stat-monthly">-</div>
+            <div class="stat-label">Joriy oy tushumlari</div>
+        </div>
+        <div class="stat-card info">
+            <div class="stat-value" id="stat-total">-</div>
+            <div class="stat-label">Umumiy tushum</div>
+        </div>
+        <div class="stat-card warning">
+            <div class="stat-value" id="stat-pending">-</div>
+            <div class="stat-label">Kutilayotgan buyurtmalar</div>
+        </div>
+        <div class="stat-card danger">
+            <div class="stat-value" id="stat-overdue">-</div>
+            <div class="stat-label">Muddati o'tgan</div>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="hosting-tabs">
+        <button class="hosting-tab active" onclick="switchTab('clients')">👥 Mijozlar</button>
+        <button class="hosting-tab" onclick="switchTab('orders')">📋 Buyurtmalar</button>
+        <button class="hosting-tab" onclick="switchTab('payments')">💰 To'lovlar</button>
+    </div>
+
+    <!-- Clients Tab -->
+    <div class="tab-content active" id="tab-clients">
+        <table class="hosting-table">
+            <thead>
+                <tr>
+                    <th>Mijoz</th>
+                    <th>Server</th>
+                    <th>IP</th>
+                    <th>Oylik narx</th>
+                    <th>Holat</th>
+                    <th>To'lov</th>
+                    <th>Amallar</th>
+                </tr>
+            </thead>
+            <tbody id="clients-tbody">
+                <tr><td colspan="7" class="empty-state">Yuklanmoqda...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Orders Tab -->
+    <div class="tab-content" id="tab-orders">
+        <div style="margin-bottom: 10px;">
+            <select id="order-status-filter" onchange="loadOrders()" style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 8px;">
+                <option value="">Barchasi</option>
+                <option value="pending">Kutilmoqda</option>
+                <option value="client_confirmed">Mijoz tasdiqladi</option>
+                <option value="payment_matched">To'lov topildi</option>
+                <option value="approved">Tasdiqlangan</option>
+                <option value="rejected">Rad etilgan</option>
+                <option value="expired">Muddati o'tgan</option>
+            </select>
+        </div>
+        <table class="hosting-table">
+            <thead>
+                <tr>
+                    <th>Buyurtma</th>
+                    <th>Mijoz</th>
+                    <th>Summa</th>
+                    <th>Oylar</th>
+                    <th>Status</th>
+                    <th>Yaratilgan</th>
+                    <th>Amallar</th>
+                </tr>
+            </thead>
+            <tbody id="orders-tbody">
+                <tr><td colspan="7" class="empty-state">Yuklanmoqda...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Payments Tab -->
+    <div class="tab-content" id="tab-payments">
+        <table class="hosting-table">
+            <thead>
+                <tr>
+                    <th>Sana</th>
+                    <th>Mijoz</th>
+                    <th>Summa</th>
+                    <th>Oylar</th>
+                    <th>Davr</th>
+                    <th>Tasdiqlagan</th>
+                </tr>
+            </thead>
+            <tbody id="payments-tbody">
+                <tr><td colspan="6" class="empty-state">Yuklanmoqda...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Add/Edit Client Modal -->
+<div class="modal-overlay" id="clientModal">
+    <div class="modal-box">
+        <h3 id="clientModalTitle">➕ Yangi mijoz</h3>
+        <input type="hidden" id="edit-client-id">
+
+        <div class="form-group">
+            <label>Ism / Kompaniya *</label>
+            <input type="text" id="client-name" placeholder="Mijoz nomi" required>
+        </div>
+
+        <div class="form-group">
+            <label>Telefon</label>
+            <input type="text" id="client-phone" placeholder="+998 xx xxx xx xx">
+        </div>
+
+        <div class="form-group">
+            <label>Telegram Chat ID</label>
+            <input type="number" id="client-telegram-id" placeholder="123456789">
+        </div>
+
+        <div class="form-group">
+            <label>Telegram Username</label>
+            <input type="text" id="client-telegram-username" placeholder="@username">
+        </div>
+
+        <div class="form-group">
+            <label>DigitalOcean Droplet ID</label>
+            <input type="number" id="client-droplet-id" placeholder="Droplet ID">
+        </div>
+
+        <div class="form-group">
+            <label>Server nomi</label>
+            <input type="text" id="client-droplet-name" placeholder="my-server">
+        </div>
+
+        <div class="form-group">
+            <label>Server IP</label>
+            <input type="text" id="client-server-ip" placeholder="123.45.67.89">
+        </div>
+
+        <div class="form-group">
+            <label>Oylik narx (so'm) *</label>
+            <input type="number" id="client-price" placeholder="150000" required>
+        </div>
+
+        <div class="form-group">
+            <label>To'lov kuni (oyning nechanchi kuni)</label>
+            <input type="number" id="client-payment-day" value="1" min="1" max="28">
+        </div>
+
+        <div class="form-group">
+            <label>Izoh</label>
+            <textarea id="client-notes" placeholder="Qo'shimcha ma'lumot"></textarea>
+        </div>
+
+        <div class="modal-actions">
+            <button class="btn-hosting btn-outline" onclick="closeClientModal()">Bekor qilish</button>
+            <button class="btn-hosting btn-primary" onclick="saveClient()">💾 Saqlash</button>
+        </div>
+    </div>
+</div>
+
+<!-- Manual Payment Modal -->
+<div class="modal-overlay" id="paymentModal">
+    <div class="modal-box">
+        <h3>💰 Qo'lda to'lov qo'shish</h3>
+        <input type="hidden" id="pay-client-id">
+
+        <div class="form-group">
+            <label>Mijoz</label>
+            <input type="text" id="pay-client-name" readonly style="background: #f5f5f5;">
+        </div>
+
+        <div class="form-group">
+            <label>Summa (so'm) *</label>
+            <input type="number" id="pay-amount" placeholder="150000" required>
+        </div>
+
+        <div class="form-group">
+            <label>Nechi oylik</label>
+            <input type="number" id="pay-months" value="1" min="1" max="12">
+        </div>
+
+        <div class="form-group">
+            <label>Izoh</label>
+            <textarea id="pay-notes" placeholder="To'lov haqida izoh"></textarea>
+        </div>
+
+        <div class="modal-actions">
+            <button class="btn-hosting btn-outline" onclick="closePaymentModal()">Bekor qilish</button>
+            <button class="btn-hosting btn-success-hosting" onclick="saveManualPayment()">✅ To'lovni saqlash</button>
+        </div>
+    </div>
+</div>
+
+<!-- DO Droplets Modal -->
+<div class="modal-overlay" id="dropletsModal">
+    <div class="modal-box" style="max-width: 700px;">
+        <h3>☁️ DigitalOcean Serverlar</h3>
+        <div id="droplets-list" style="max-height: 400px; overflow-y: auto;">
+            <p style="text-align: center; color: #888;">Yuklanmoqda...</p>
+        </div>
+        <div class="modal-actions">
+            <button class="btn-hosting btn-outline" onclick="closeDropletsModal()">Yopish</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ==========================================
+// MA'LUMOTLARNI YUKLASH
+// ==========================================
+
+document.addEventListener('DOMContentLoaded', function() {
+    loadStats();
+    loadClients();
+});
+
+function formatMoney(amount) {
+    if (!amount) return '0';
+    return Number(amount).toLocaleString('uz-UZ').replace(/,/g, ' ');
+}
+
+async function loadStats() {
+    try {
+        const res = await fetch('/api/hosting/stats');
+        const data = await res.json();
+        if (data.success) {
+            const s = data.stats;
+            document.getElementById('stat-clients').textContent = s.total_clients;
+            document.getElementById('stat-monthly').textContent = formatMoney(s.monthly_revenue) + ' so\'m';
+            document.getElementById('stat-total').textContent = formatMoney(s.total_revenue) + ' so\'m';
+            document.getElementById('stat-pending').textContent = s.pending_orders;
+            document.getElementById('stat-overdue').textContent = s.overdue_clients;
+        }
+    } catch (e) {
+        console.error('Stats error:', e);
+    }
+}
+
+async function loadClients() {
+    try {
+        const res = await fetch('/api/hosting/clients');
+        const data = await res.json();
+        const tbody = document.getElementById('clients-tbody');
+
+        if (!data.success || !data.clients.length) {
+            tbody.innerHTML = '<tr><td colspan="7" class="empty-state"><i class="fas fa-server"></i><br>Hali mijozlar yo\'q</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = data.clients.map(c => {
+            const statusBadge = c.server_status === 'active' ? '<span class="badge badge-active">🟢 Faol</span>' :
+                               c.server_status === 'off' ? '<span class="badge badge-off">🔴 O\'chiq</span>' :
+                               c.server_status === 'suspended' ? '<span class="badge badge-suspended">⏸️ Bloklangan</span>' :
+                               '<span class="badge">' + (c.server_status || '?') + '</span>';
+
+            const payBadge = c.payment_status === 'ok' ? `<span class="badge badge-ok">${c.days_left} kun</span>` :
+                            c.payment_status === 'warning' ? `<span class="badge badge-warning">⚠️ ${c.days_left} kun</span>` :
+                            c.payment_status === 'overdue' ? `<span class="badge badge-overdue">❌ ${Math.abs(c.days_left)} kun o'tgan</span>` :
+                            c.payment_status === 'never_paid' ? '<span class="badge badge-never-paid">Hali to\'lanmagan</span>' :
+                            '<span class="badge">—</span>';
+
+            return `<tr>
+                <td><strong>${c.name}</strong>${c.telegram_username ? '<br><small style="color:#888">' + c.telegram_username + '</small>' : ''}</td>
+                <td>${c.droplet_name || '—'}</td>
+                <td><code>${c.server_ip || '—'}</code></td>
+                <td class="money">${formatMoney(c.monthly_price_uzs)}</td>
+                <td>${statusBadge}</td>
+                <td>${payBadge}</td>
+                <td>
+                    <button class="btn-hosting btn-sm btn-outline" onclick="editClient(${c.id})" title="Tahrirlash">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn-hosting btn-sm btn-success-hosting" onclick="showPaymentModal(${c.id}, '${c.name}', ${c.monthly_price_uzs})" title="To'lov qo'shish">
+                        <i class="fas fa-money-bill"></i>
+                    </button>
+                    ${c.droplet_id ? `<button class="btn-hosting btn-sm ${c.server_status === 'active' ? 'btn-danger-hosting' : 'btn-success-hosting'}" onclick="toggleServer(${c.droplet_id}, '${c.server_status}')" title="${c.server_status === 'active' ? 'O\'chirish' : 'Yoqish'}">
+                        <i class="fas ${c.server_status === 'active' ? 'fa-power-off' : 'fa-play'}"></i>
+                    </button>` : ''}
+                </td>
+            </tr>`;
+        }).join('');
+    } catch (e) {
+        console.error('Clients error:', e);
+        document.getElementById('clients-tbody').innerHTML = '<tr><td colspan="7" class="empty-state">Xatolik yuz berdi</td></tr>';
+    }
+}
+
+async function loadOrders() {
+    try {
+        const status = document.getElementById('order-status-filter').value;
+        const url = '/api/hosting/orders' + (status ? '?status=' + status : '');
+        const res = await fetch(url);
+        const data = await res.json();
+        const tbody = document.getElementById('orders-tbody');
+
+        if (!data.success || !data.orders.length) {
+            tbody.innerHTML = '<tr><td colspan="7" class="empty-state">Buyurtmalar yo\'q</td></tr>';
+            return;
+        }
+
+        const statusMap = {
+            'pending': ['Kutilmoqda', 'badge-pending'],
+            'client_confirmed': ['Mijoz tasdiqladi', 'badge-confirmed'],
+            'payment_matched': ['To\'lov topildi', 'badge-matched'],
+            'approved': ['Tasdiqlangan', 'badge-approved'],
+            'rejected': ['Rad etilgan', 'badge-rejected'],
+            'expired': ['Muddati o\'tgan', 'badge-expired']
+        };
+
+        tbody.innerHTML = data.orders.map(o => {
+            const [statusText, statusClass] = statusMap[o.status] || [o.status, ''];
+            const date = o.created_at ? new Date(o.created_at).toLocaleDateString('uz-UZ') : '—';
+
+            return `<tr>
+                <td><strong>#${o.order_code}</strong></td>
+                <td>${o.client_name || '—'}</td>
+                <td class="money">${formatMoney(o.amount_uzs)} so'm</td>
+                <td>${o.months} oy</td>
+                <td><span class="badge ${statusClass}">${statusText}</span></td>
+                <td>${date}</td>
+                <td>
+                    ${['client_confirmed', 'payment_matched'].includes(o.status) ?
+                        `<button class="btn-hosting btn-sm btn-success-hosting" onclick="approveOrder(${o.id})">✅ Tasdiqlash</button>` : ''}
+                </td>
+            </tr>`;
+        }).join('');
+    } catch (e) {
+        console.error('Orders error:', e);
+    }
+}
+
+async function loadPayments() {
+    try {
+        const res = await fetch('/api/hosting/payments');
+        const data = await res.json();
+        const tbody = document.getElementById('payments-tbody');
+
+        if (!data.success || !data.payments.length) {
+            tbody.innerHTML = '<tr><td colspan="6" class="empty-state">To\'lovlar yo\'q</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = data.payments.map(p => {
+            const period = p.period_start && p.period_end ?
+                `${new Date(p.period_start).toLocaleDateString('uz-UZ')} → ${new Date(p.period_end).toLocaleDateString('uz-UZ')}` : '—';
+
+            return `<tr>
+                <td>${p.payment_date || '—'}</td>
+                <td>${p.client_name || '—'}</td>
+                <td class="money">${formatMoney(p.amount_uzs)} so'm</td>
+                <td>${p.months_paid} oy</td>
+                <td>${period}</td>
+                <td>${p.confirmed_by || '—'}</td>
+            </tr>`;
+        }).join('');
+    } catch (e) {
+        console.error('Payments error:', e);
+    }
+}
+
+// ==========================================
+// TAB SWITCHING
+// ==========================================
+
+function switchTab(tab) {
+    document.querySelectorAll('.hosting-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+
+    event.target.classList.add('active');
+    document.getElementById('tab-' + tab).classList.add('active');
+
+    if (tab === 'clients') loadClients();
+    else if (tab === 'orders') loadOrders();
+    else if (tab === 'payments') loadPayments();
+}
+
+// ==========================================
+// CLIENT CRUD
+// ==========================================
+
+let clientsCache = {};
+
+function showAddClientModal() {
+    document.getElementById('clientModalTitle').textContent = '➕ Yangi mijoz';
+    document.getElementById('edit-client-id').value = '';
+    document.getElementById('client-name').value = '';
+    document.getElementById('client-phone').value = '';
+    document.getElementById('client-telegram-id').value = '';
+    document.getElementById('client-telegram-username').value = '';
+    document.getElementById('client-droplet-id').value = '';
+    document.getElementById('client-droplet-name').value = '';
+    document.getElementById('client-server-ip').value = '';
+    document.getElementById('client-price').value = '';
+    document.getElementById('client-payment-day').value = '1';
+    document.getElementById('client-notes').value = '';
+    document.getElementById('clientModal').classList.add('show');
+}
+
+async function editClient(id) {
+    try {
+        const res = await fetch('/api/hosting/clients');
+        const data = await res.json();
+        if (!data.success) return;
+
+        const c = data.clients.find(x => x.id === id);
+        if (!c) return;
+
+        document.getElementById('clientModalTitle').textContent = '✏️ Mijozni tahrirlash';
+        document.getElementById('edit-client-id').value = c.id;
+        document.getElementById('client-name').value = c.name || '';
+        document.getElementById('client-phone').value = c.phone || '';
+        document.getElementById('client-telegram-id').value = c.telegram_chat_id || '';
+        document.getElementById('client-telegram-username').value = c.telegram_username || '';
+        document.getElementById('client-droplet-id').value = c.droplet_id || '';
+        document.getElementById('client-droplet-name').value = c.droplet_name || '';
+        document.getElementById('client-server-ip').value = c.server_ip || '';
+        document.getElementById('client-price').value = c.monthly_price_uzs || '';
+        document.getElementById('client-payment-day').value = c.payment_day || 1;
+        document.getElementById('client-notes').value = c.notes || '';
+        document.getElementById('clientModal').classList.add('show');
+    } catch (e) {
+        alert('Xatolik: ' + e.message);
+    }
+}
+
+function closeClientModal() {
+    document.getElementById('clientModal').classList.remove('show');
+}
+
+async function saveClient() {
+    const id = document.getElementById('edit-client-id').value;
+    const data = {
+        name: document.getElementById('client-name').value.trim(),
+        phone: document.getElementById('client-phone').value.trim(),
+        telegram_chat_id: parseInt(document.getElementById('client-telegram-id').value) || null,
+        telegram_username: document.getElementById('client-telegram-username').value.trim() || null,
+        droplet_id: parseInt(document.getElementById('client-droplet-id').value) || null,
+        droplet_name: document.getElementById('client-droplet-name').value.trim() || null,
+        server_ip: document.getElementById('client-server-ip').value.trim() || null,
+        monthly_price_uzs: parseFloat(document.getElementById('client-price').value) || 0,
+        payment_day: parseInt(document.getElementById('client-payment-day').value) || 1,
+        notes: document.getElementById('client-notes').value.trim() || null
+    };
+
+    if (!data.name) { alert('Ism kiritilmagan!'); return; }
+    if (!data.monthly_price_uzs) { alert('Oylik narx kiritilmagan!'); return; }
+
+    try {
+        const url = id ? `/api/hosting/clients/${id}` : '/api/hosting/clients';
+        const method = id ? 'PUT' : 'POST';
+
+        const res = await fetch(url, {
+            method: method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        const result = await res.json();
+
+        if (result.success) {
+            closeClientModal();
+            loadClients();
+            loadStats();
+        } else {
+            alert('Xatolik: ' + (result.error || 'Noma\'lum'));
+        }
+    } catch (e) {
+        alert('Xatolik: ' + e.message);
+    }
+}
+
+// ==========================================
+// PAYMENT
+// ==========================================
+
+function showPaymentModal(clientId, clientName, price) {
+    document.getElementById('pay-client-id').value = clientId;
+    document.getElementById('pay-client-name').value = clientName;
+    document.getElementById('pay-amount').value = price || '';
+    document.getElementById('pay-months').value = 1;
+    document.getElementById('pay-notes').value = '';
+    document.getElementById('paymentModal').classList.add('show');
+}
+
+function closePaymentModal() {
+    document.getElementById('paymentModal').classList.remove('show');
+}
+
+async function saveManualPayment() {
+    const data = {
+        client_id: parseInt(document.getElementById('pay-client-id').value),
+        amount_uzs: parseFloat(document.getElementById('pay-amount').value) || 0,
+        months_paid: parseInt(document.getElementById('pay-months').value) || 1,
+        notes: document.getElementById('pay-notes').value.trim() || 'Qo\'lda qo\'shildi'
+    };
+
+    if (!data.amount_uzs) { alert('Summa kiritilmagan!'); return; }
+
+    try {
+        const res = await fetch('/api/hosting/payments', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        const result = await res.json();
+
+        if (result.success) {
+            closePaymentModal();
+            loadClients();
+            loadStats();
+            alert('✅ To\'lov saqlandi!');
+        } else {
+            alert('Xatolik: ' + (result.error || 'Noma\'lum'));
+        }
+    } catch (e) {
+        alert('Xatolik: ' + e.message);
+    }
+}
+
+// ==========================================
+// ORDERS
+// ==========================================
+
+async function approveOrder(orderId) {
+    if (!confirm('Bu buyurtmani tasdiqlaysizmi?')) return;
+
+    try {
+        const res = await fetch(`/api/hosting/orders/${orderId}/approve`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        const result = await res.json();
+
+        if (result.success) {
+            loadOrders();
+            loadStats();
+            loadClients();
+            let msg = '✅ Buyurtma tasdiqlandi!';
+            if (result.server_msg) msg += '\n' + result.server_msg;
+            alert(msg);
+        } else {
+            alert('Xatolik: ' + (result.error || 'Noma\'lum'));
+        }
+    } catch (e) {
+        alert('Xatolik: ' + e.message);
+    }
+}
+
+// ==========================================
+// SERVER POWER CONTROL
+// ==========================================
+
+async function toggleServer(dropletId, currentStatus) {
+    const action = currentStatus === 'active' ? 'off' : 'on';
+    const actionText = action === 'on' ? 'yoqish' : 'o\'chirish';
+
+    if (!confirm(`Serverni ${actionText}moqchimisiz?`)) return;
+
+    try {
+        const res = await fetch(`/api/hosting/droplets/${dropletId}/power`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: action })
+        });
+        const result = await res.json();
+
+        if (result.success) {
+            alert(`✅ Server ${actionText}ilmoqda...`);
+            setTimeout(() => loadClients(), 3000);
+        } else {
+            alert('Xatolik: ' + (result.error || 'Noma\'lum'));
+        }
+    } catch (e) {
+        alert('Xatolik: ' + e.message);
+    }
+}
+
+// ==========================================
+// DIGITALOCEAN DROPLETS
+// ==========================================
+
+async function loadDroplets() {
+    document.getElementById('dropletsModal').classList.add('show');
+    document.getElementById('droplets-list').innerHTML = '<p style="text-align:center;color:#888;">Yuklanmoqda...</p>';
+
+    try {
+        const res = await fetch('/api/hosting/droplets');
+        const data = await res.json();
+
+        if (!data.success) {
+            document.getElementById('droplets-list').innerHTML = `<p style="color:red;">Xatolik: ${data.error}</p>`;
+            return;
+        }
+
+        if (!data.droplets.length) {
+            document.getElementById('droplets-list').innerHTML = '<p style="text-align:center;color:#888;">Dropletlar topilmadi</p>';
+            return;
+        }
+
+        document.getElementById('droplets-list').innerHTML = data.droplets.map(d => {
+            const statusColor = d.status === 'active' ? '#28a745' : d.status === 'off' ? '#dc3545' : '#ffc107';
+            return `<div style="display:flex; justify-content:space-between; align-items:center; padding:12px; border-bottom:1px solid #eee;">
+                <div>
+                    <strong>${d.name}</strong>
+                    <br><small style="color:#888;">ID: ${d.id} | IP: ${d.ip_address || '—'} | ${d.memory}MB | ${d.vcpus}vCPU | ${d.region}</small>
+                </div>
+                <span style="color:${statusColor}; font-weight:600;">● ${d.status}</span>
+            </div>`;
+        }).join('');
+    } catch (e) {
+        document.getElementById('droplets-list').innerHTML = `<p style="color:red;">Xatolik: ${e.message}</p>`;
+    }
+}
+
+function closeDropletsModal() {
+    document.getElementById('dropletsModal').classList.remove('show');
+}
+
+// Close modals on overlay click
+document.querySelectorAll('.modal-overlay').forEach(modal => {
+    modal.addEventListener('click', function(e) {
+        if (e.target === this) this.classList.remove('show');
+    });
+});
+</script>
+{% endblock %}
