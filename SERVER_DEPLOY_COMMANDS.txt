@@ -1,54 +1,81 @@
-# ========================================
-# SERVERGA O'RNATISH KOMANDALAR
-# ========================================
+# ============================================
+# ALISHER AKA - SERVER DEPLOY BUYRUQLARI
+# Server: 46.101.153.212
+# Loyiha: /var/www/alisher-aka
+# GitHub: https://github.com/xurshid1995/Alisher-aka.git
+# Servis: alisher-aka.service
+# ============================================
 
-# 1. Serverga kirish
-ssh root@sergeli0606.uz
+# 1. Serverga ulanish
+ssh root@46.101.153.212
 
-# 2. Loyiha papkasiga o'tish
-cd /var/www/sayt2025
+# ============================================
+# DEPLOY (GitHub'dan yangilash)
+# ============================================
 
-# 3. Yangi kodlarni GitHub dan pull qilish
+# Loyiha papkasiga o'tish
+cd /var/www/alisher-aka
+
+# Yangi kodlarni pull qilish
 git pull origin main
 
-# 4. Virtual environment aktivlashtirish
+# Virtual environment aktivlashtirish
 source venv/bin/activate
 
-# 5. psutil o'rnatish
-pip install psutil==5.9.0
+# Dependencies yangilash
+pip install -r requirements.txt
 
-# 6. check_logs.sh ga ruxsat berish
-chmod +x check_logs.sh
+# Servisni restart qilish
+systemctl restart alisher-aka
 
-# 7. Gunicorn service restart
-sudo systemctl restart sayt2025
+# Servis statusini tekshirish
+systemctl status alisher-aka --no-pager -n 20
 
-# 8. Service holatini tekshirish
-sudo systemctl status sayt2025
+# ============================================
+# NGINX
+# ============================================
 
-# 9. Health check test
-curl http://localhost:5000/health
+# Nginx config fayli
+# /etc/nginx/sites-available/xurshid
 
-# 10. Loglarni tekshirish
-./check_logs.sh
+# Nginx configni tekshirish
+nginx -t
 
-# ========================================
-# TEKSHIRISH
-# ========================================
+# Nginx reload
+systemctl reload nginx
 
-# Browser orqali:
-# 1. https://sergeli0606.uz/health
-# 2. https://sergeli0606.uz/monitoring/dashboard (login qiling)
+# Nginx statusini tekshirish
+systemctl status nginx --no-pager -n 10
 
-# ========================================
-# MUAMMO BO'LSA
-# ========================================
+# ============================================
+# LOGLAR
+# ============================================
 
-# Error loglarni ko'rish:
-tail -50 logs/error.log
+# Servis loglari (real-time)
+journalctl -u alisher-aka -f
 
-# Gunicorn loglarni ko'rish:
-sudo journalctl -u sayt2025 -n 50
+# So'nggi 50 ta log
+journalctl -u alisher-aka -n 50 --no-pager
 
-# Service restart:
-sudo systemctl restart sayt2025
+# Nginx error loglari
+tail -50 /var/log/nginx/error.log
+
+# ============================================
+# FOYDALI BUYRUQLAR
+# ============================================
+
+# Servisni to'xtatish
+systemctl stop alisher-aka
+
+# Servisni ishga tushirish
+systemctl start alisher-aka
+
+# Ma'lumotlar bazasiga ulanish
+psql -U alisher_aka_user -d alisher_aka_db
+
+# Site tekshirish
+curl -I http://46.101.153.212/health
+
+# Server tekshirish
+# http://46.101.153.212
+# http://46.101.153.212/monitoring/dashboard
