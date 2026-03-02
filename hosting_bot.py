@@ -1544,7 +1544,7 @@ class HostingPaymentBot:
                 logger.info(f"{len(expired)} ta buyurtma expired")
 
     async def check_unpaid_clients(self):
-        """To'lov qilmagan mijozlarni tekshirish va eslatma yuborish"""
+        """Balansi kam qolgan mijozlarni tekshirish va eslatma yuborish"""
         from app import HostingClient, HostingPayment
 
         with self.app.app_context():
@@ -1557,24 +1557,21 @@ class HostingPaymentBot:
                 if not client.telegram_chat_id:
                     continue
 
-                # Oxirgi to'lovni tekshirish
-                last_payment = HostingPayment.query.filter_by(
-                    client_id=client.id
-                ).order_by(HostingPayment.payment_date.desc()).first()
+                balance = float(client.balance or 0)
+                monthly_price = float(client.monthly_price_uzs or 0)
+
+                if monthly_price <= 0:
+                    continue
+
+                daily_price = monthly_price / 30
+                balance_days = int(balance / daily_price) if daily_price > 0 else 0
 
                 should_remind = False
 
-                if not last_payment:
-                    # Hali hech qachon to'lamagan
+                if balance <= 0:
                     should_remind = True
-                elif last_payment.period_end and today > last_payment.period_end:
-                    # Davr tugagan
+                elif balance_days <= 3:
                     should_remind = True
-                elif last_payment.period_end:
-                    # Davr tugashiga 3 kun qolgan
-                    days_left = (last_payment.period_end - today).days
-                    if days_left <= 3:
-                        should_remind = True
 
                 if should_remind:
                     try:
@@ -1584,13 +1581,11 @@ class HostingPaymentBot:
                         )]]
                         reply_markup = InlineKeyboardMarkup(keyboard)
 
-                        period_info = ""
-                        if last_payment and last_payment.period_end:
-                            days_left = (last_payment.period_end - today).days
-                            if days_left <= 0:
-                                period_info = f"\n⚠️ Hosting muddati {abs(days_left)} kun oldin tugagan!"
-                            else:
-                                period_info = f"\n⏰ Hosting muddati {days_left} kundan keyin tugaydi."
+                        if balance <= 0:
+                            period_info = f"\n⚠️ Balans tugagan! ({self._format_money(balance)} so'm)"
+                        else:
+                            balance_end = today + timedelta(days=balance_days)
+                            period_info = f"\n⏰ Balans {balance_days} kunga yetadi ({balance_end.strftime('%d.%m.%Y')}gacha)"
 
                         await self.bot.send_message(
                             chat_id=client.telegram_chat_id,
@@ -1598,7 +1593,8 @@ class HostingPaymentBot:
                                 f"🔔 Hosting to'lov eslatmasi\n\n"
                                 f"👤 {client.name}\n"
                                 f"🖥️ Server: {client.droplet_name or 'N/A'}\n"
-                                f"💰 Oylik: {self._format_money(client.monthly_price_uzs)} so'm"
+                                f"💰 Oylik: {self._format_money(client.monthly_price_uzs)} so'm\n"
+                                f"💳 Balans: {self._format_money(balance)} so'm"
                                 f"{period_info}\n\n"
                                 f"To'lov qilish uchun tugmani bosing 👇"
                             ),
@@ -1608,15 +1604,11 @@ class HostingPaymentBot:
                         logger.error(f"Eslatma yuborishda xato ({client.name}): {e}")
 
     async def auto_suspend_unpaid(self):
-        """To'lov muddati o'tgan serverlarni o'chirish"""
-        from app import HostingClient, HostingPayment
+        """Balansi 0 yoki minus bo'lgan serverlarni o'chirish"""
+        from app import HostingClient
         from digitalocean_manager import DigitalOceanManager
 
         with self.app.app_context():
-            now = get_tashkent_time()
-            today = now.date()
-            grace_days = int(os.getenv('HOSTING_GRACE_DAYS', '3'))  # 3 kun kutish
-
             active_clients = HostingClient.query.filter_by(
                 is_active=True,
                 server_status='active'
@@ -1628,60 +1620,68 @@ class HostingPaymentBot:
                 if not client.droplet_id:
                     continue
 
-                last_payment = HostingPayment.query.filter_by(
-                    client_id=client.id
-                ).order_by(HostingPayment.payment_date.desc()).first()
+                balance = float(client.balance or 0)
 
-                should_suspend = False
-
-                if not last_payment:
-                    # Hali to'lamagan - yaratilganidan 30+grace kun o'tgan bo'lsa
-                    if client.created_at:
-                        days_since = (today - client.created_at.date()).days
-                        if days_since > 30 + grace_days:
-                            should_suspend = True
-                elif last_payment.period_end:
-                    days_overdue = (today - last_payment.period_end).days
-                    if days_overdue > grace_days:
-                        should_suspend = True
-
-                if should_suspend:
+                if balance <= 0:
                     try:
                         success = do_manager.shutdown(client.droplet_id)
                         if success:
                             client.server_status = 'suspended'
                             self.db.session.commit()
-                            logger.warning(f"⏹️ Server o'chirildi: {client.name} (droplet: {client.droplet_id})")
+                            logger.warning(f"\u23f9\ufe0f Server o'chirildi (balans 0): {client.name} (droplet: {client.droplet_id})")
 
                             # Admin ga xabar
                             if self.admin_chat_id:
                                 await self.bot.send_message(
                                     chat_id=self.admin_chat_id,
                                     text=(
-                                        f"⏹️ SERVER O'CHIRILDI (to'lov muddati o'tgan)\n\n"
-                                        f"👤 Mijoz: {client.name}\n"
-                                        f"🖥️ Server: {client.droplet_name}\n"
-                                        f"🌐 IP: {client.server_ip or 'N/A'}"
+                                        f"\u23f9\ufe0f SERVER O'CHIRILDI (balans tugagan)\n\n"
+                                        f"\ud83d\udc64 Mijoz: {client.name}\n"
+                                        f"\ud83d\udda5\ufe0f Server: {client.droplet_name}\n"
+                                        f"\ud83c\udf10 IP: {client.server_ip or 'N/A'}\n"
+                                        f"\ud83d\udcb3 Balans: {self._format_money(balance)} so'm"
                                     )
                                 )
 
                             # Mijozga xabar
                             if client.telegram_chat_id:
                                 keyboard = [[InlineKeyboardButton(
-                                    "💳 To'lov qilish",
+                                    "\ud83d\udcb3 To'lov qilish",
                                     callback_data="payment_start"
                                 )]]
                                 await self.bot.send_message(
                                     chat_id=client.telegram_chat_id,
                                     text=(
-                                        "⚠️ Serveringiz to'lov muddati o'tganligi sababli o'chirildi.\n\n"
-                                        "💳 To'lov qilib, serverni qayta yoqing.\n"
-                                        "To'lov qilish uchun tugmani bosing 👇"
+                                        "\u26a0\ufe0f Serveringiz balans tugaganligi sababli o'chirildi.\n\n"
+                                        "\ud83d\udcb3 To'lov qilib, serverni qayta yoqing.\n"
+                                        "To'lov qilish uchun tugmani bosing \ud83d\udc47"
                                     ),
                                     reply_markup=InlineKeyboardMarkup(keyboard)
                                 )
                     except Exception as e:
                         logger.error(f"Server o'chirishda xato ({client.name}): {e}")
+
+    async def deduct_daily_balance(self):
+        """Har kuni balansdan kunlik to'lovni ayirish (oylik_narx / 30)"""
+        from app import HostingClient
+
+        with self.app.app_context():
+            active_clients = HostingClient.query.filter_by(is_active=True).all()
+            deducted = 0
+
+            for client in active_clients:
+                monthly_price = float(client.monthly_price_uzs or 0)
+                if monthly_price <= 0:
+                    continue
+
+                daily_cost = Decimal(str(monthly_price)) / Decimal('30')
+                client.balance = (client.balance or Decimal('0')) - daily_cost
+                deducted += 1
+                logger.info(f"Balans ayirildi: {client.name} - {float(daily_cost):.0f} so'm, qoldiq: {float(client.balance):.0f} so'm")
+
+            if deducted:
+                self.db.session.commit()
+                logger.info(f"\ud83d\udcb8 {deducted} ta mijozdan kunlik to'lov ayirildi")
 
 
 # ==========================================

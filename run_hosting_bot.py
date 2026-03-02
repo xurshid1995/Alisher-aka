@@ -83,6 +83,13 @@ def main():
             name='auto_suspend'
         )
 
+        # Har kuni 00:01 da balansdan kunlik to'lov ayirish
+        job_queue.run_daily(
+            lambda context: hosting_bot.deduct_daily_balance(),
+            time=dt_time(hour=0, minute=1, tzinfo=tz),
+            name='daily_deduct'
+        )
+
         # Konfiguratsiya ma'lumotlari
         token = os.getenv('HOSTING_BOT_TOKEN', '')
         admin_id = os.getenv('HOSTING_ADMIN_CHAT_ID', 'sozlanmagan')
