@@ -620,7 +620,7 @@ async function editClient(id) {
         
         // Widget kodi
         if (c.status_token) {
-            const widgetCode = `<script src="https://sergeli0606.uz/static/js/hosting-widget.js" data-token="${c.status_token}"></script>`;
+            const widgetCode = '<scr' + 'ipt src="https://sergeli0606.uz/static/js/hosting-widget.js" data-token="' + c.status_token + '"><\/scr' + 'ipt>';
             document.getElementById('widget-code').value = widgetCode;
             document.getElementById('widget-code-group').style.display = 'block';
         } else {
