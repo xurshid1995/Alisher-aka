@@ -1675,7 +1675,10 @@ class HostingPaymentBot:
                     continue
 
                 daily_cost = Decimal(str(monthly_price)) / Decimal('30')
-                client.balance = (client.balance or Decimal('0')) - daily_cost
+                new_balance = (client.balance or Decimal('0')) - daily_cost
+                if new_balance < Decimal('0'):
+                    new_balance = Decimal('0')
+                client.balance = new_balance
                 deducted += 1
                 logger.info(f"Balans ayirildi: {client.name} - {float(daily_cost):.0f} so'm, qoldiq: {float(client.balance):.0f} so'm")
 
