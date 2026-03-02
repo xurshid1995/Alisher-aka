@@ -60,197 +60,6 @@
 .table tbody tr:hover {
     background: #f8f9fa !important;
 }
-
-/* Action tugmalar uchun umumiy stillar */
-.action-cell {
-    text-align: center;
-}
-.action-btn-continue {
-    padding: 8px 20px;
-    font-size: 14px;
-    font-weight: 600;
-}
-.action-btn-view {
-    margin-right: 5px;
-    padding: 4px 10px;
-    font-size: 12px;
-}
-.action-btn-delete {
-    padding: 4px 10px;
-    font-size: 12px;
-}
-
-/* ===== MOBILE RESPONSIVE ===== */
-@media (max-width: 576px) {
-    .page-header {
-        padding: 0.75rem 1rem;
-        border-radius: 8px;
-    }
-    .page-header h2 {
-        font-size: 1.1rem;
-    }
-    .page-header > div {
-        flex-direction: column !important;
-        gap: 0.75rem !important;
-    }
-    .page-header > div > div {
-        flex-direction: column !important;
-        width: 100%;
-        gap: 0.5rem !important;
-    }
-    .page-header select,
-    .page-header button {
-        width: 100% !important;
-        font-size: 0.9rem !important;
-        box-sizing: border-box !important;
-    }
-    .container-fluid {
-        padding-left: 6px !important;
-        padding-right: 6px !important;
-    }
-    .row {
-        margin-left: 0 !important;
-        margin-right: 0 !important;
-    }
-    .col-12 {
-        padding-left: 2px !important;
-        padding-right: 2px !important;
-    }
-    .card-body {
-        padding: 8px !important;
-    }
-    .card-body h5 {
-        font-size: 15px !important;
-    }
-
-    /* Jadval thead yashirish — card layout */
-    .table thead {
-        display: none;
-    }
-    .table-responsive {
-        overflow-x: visible !important;
-        overflow: visible !important;
-    }
-    .table {
-        display: block !important;
-        width: 100% !important;
-    }
-    .table tbody {
-        display: block !important;
-        width: 100% !important;
-    }
-
-    /* Joriy tekshiruvlar - card layout */
-    #activeSessionsTable tr {
-        display: block !important;
-        padding: 12px 8px;
-        margin-bottom: 8px;
-        border: 1px solid #e0e0e0;
-        border-radius: 8px;
-        background: #fff;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-    }
-    #activeSessionsTable td {
-        display: block !important;
-        padding: 4px 0 !important;
-        border-bottom: none !important;
-        text-align: left !important;
-        font-size: 13px !important;
-        width: 100% !important;
-        box-sizing: border-box !important;
-    }
-
-    /* Tugatilgan tekshiruvlar - card layout */
-    #completedSessionsTable tr {
-        display: block !important;
-        padding: 12px 8px;
-        margin-bottom: 8px;
-        border: 1px solid #e0e0e0;
-        border-radius: 8px;
-        background: #fff;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-    }
-    #completedSessionsTable td {
-        display: block !important;
-        padding: 4px 0 !important;
-        border-bottom: none !important;
-        text-align: left !important;
-        font-size: 13px !important;
-        width: 100% !important;
-        box-sizing: border-box !important;
-    }
-
-    /* Progress bar mobilga moslashtirish */
-    #activeSessionsTable td:nth-child(6) > div {
-        flex-direction: column !important;
-        gap: 4px !important;
-    }
-    #activeSessionsTable td:nth-child(6) > div > div {
-        max-width: 100% !important;
-        min-width: unset !important;
-        width: 100% !important;
-    }
-
-    /* Tugmalar mobilga - to'liq kenglik */
-    .action-cell {
-        text-align: left !important;
-        width: 100% !important;
-        display: block !important;
-    }
-    .action-btn-continue {
-        display: block !important;
-        width: 100% !important;
-        padding: 10px !important;
-        font-size: 14px !important;
-        box-sizing: border-box !important;
-        text-align: center !important;
-        margin: 6px 0 0 0 !important;
-    }
-    .action-btn-view,
-    .action-btn-delete {
-        display: inline-block !important;
-        padding: 8px 16px !important;
-        font-size: 13px !important;
-        margin: 4px 6px 4px 0 !important;
-        box-sizing: border-box !important;
-    }
-
-    /* data-label ko'rsatish mobilda */
-    #activeSessionsTable td[data-label]:not([data-label=""]):before,
-    #completedSessionsTable td[data-label]:not([data-label=""]):before {
-        content: attr(data-label) ": ";
-        font-weight: 600;
-        color: #555;
-    }
-
-    /* Pagination mobilga */
-    .pagination-btn {
-        padding: 6px 10px;
-        font-size: 12px;
-    }
-
-    .row.mb-5 {
-        margin-bottom: 1rem !important;
-    }
-}
-
-@media (max-width: 768px) and (min-width: 577px) {
-    .page-header > div {
-        flex-direction: column !important;
-        gap: 0.75rem !important;
-    }
-    .page-header > div > div {
-        width: 100%;
-    }
-    .table thead th {
-        font-size: 12px !important;
-        padding: 8px 4px !important;
-    }
-    .table tbody td {
-        font-size: 12px !important;
-        padding: 8px 4px !important;
-    }
-}
 </style>
 {% endblock %}
 
@@ -508,22 +317,22 @@ async function loadActiveSessions() {
             }
             
             row.innerHTML = `
-                <td style="text-align: center;" data-label="№">${index + 1}</td>
-                <td style="text-align: center;" data-label="Joylashuv">${locationIcon} <strong>${session.location_name}</strong></td>
-                <td style="text-align: center;" data-label="Foydalanuvchi">${session.user_name}</td>
-                <td style="text-align: center;" data-label="Boshlangan">
+                <td style="text-align: center;">${index + 1}</td>
+                <td style="text-align: center;">${locationIcon} <strong>${session.location_name}</strong></td>
+                <td style="text-align: center;">${session.user_name}</td>
+                <td style="text-align: center;">
                     <div style="line-height: 1.2;">
                         <div style="font-weight: 500;">${session.started_at.split(' ')[0]}</div>
                         <div style="font-size: 12px; color: #666;">${session.started_at.split(' ')[1]}</div>
                     </div>
                 </td>
-                <td style="text-align: center;" data-label="Yangilangan">
+                <td style="text-align: center;">
                     <div style="line-height: 1.2;">
                         <div style="font-weight: 500;">${session.updated_at.split(' ')[0]}</div>
                         <div style="font-size: 12px; color: #666;">${session.updated_at.split(' ')[1]}</div>
                     </div>
                 </td>
-                <td style="text-align: center;" data-label="Holat">
+                <td style="text-align: center;">
                     <div style="display: flex; align-items: center; gap: 8px; justify-content: center;">
                         <span class="badge bg-warning text-dark" style="min-width: 60px;">
                             <i class="fas fa-spinner fa-pulse"></i> Faol
@@ -538,9 +347,9 @@ async function loadActiveSessions() {
                         </div>
                     </div>
                 </td>
-                <td class="action-cell" data-label="">
-                    <button class="btn btn-sm btn-primary action-btn-continue" onclick="continueSession(${session.id})">
-                        ▶ DAVOM ETISH
+                <td style="text-align: center;">
+                    <button class="btn btn-sm btn-primary" onclick="continueSession(${session.id})">
+                        <i class="fas fa-play"></i> Davom etish
                     </button>
                 </td>
             `;
@@ -590,28 +399,28 @@ async function loadCompletedSessions(page = 1) {
             const globalIndex = (currentCompletedPage - 1) * 50 + index + 1;
             
             row.innerHTML = `
-                <td style="text-align: center;" data-label="№">${globalIndex}</td>
-                <td style="text-align: center;" data-label="Joylashuv">${locationIcon} <strong>${session.location_name}</strong></td>
-                <td style="text-align: center;" data-label="Boshlagan">${session.started_user_name}</td>
-                <td style="text-align: center;" data-label="Tugatgan">${session.completed_user_name}</td>
-                <td style="text-align: center;" data-label="Boshlangan vaqti">
+                <td style="text-align: center;">${globalIndex}</td>
+                <td style="text-align: center;">${locationIcon} <strong>${session.location_name}</strong></td>
+                <td style="text-align: center;">${session.started_user_name}</td>
+                <td style="text-align: center;">${session.completed_user_name}</td>
+                <td style="text-align: center;">
                     <div style="line-height: 1.2;">
                         <div style="font-weight: 500;">${session.started_at.split(' ')[0]}</div>
                         <div style="font-size: 12px; color: #666;">${session.started_at.split(' ')[1]}</div>
                     </div>
                 </td>
-                <td style="text-align: center;" data-label="Tugatilgan vaqti">
+                <td style="text-align: center;">
                     <div style="line-height: 1.2;">
                         <div style="font-weight: 500;">${session.updated_at.split(' ')[0]}</div>
                         <div style="font-size: 12px; color: #666;">${session.updated_at.split(' ')[1]}</div>
                     </div>
                 </td>
-                <td class="action-cell" data-label="">
-                    <button class="btn btn-sm btn-primary action-btn-view" onclick="viewSession(${session.id})">
+                <td style="text-align: center;">
+                    <button class="btn btn-sm btn-primary" onclick="viewSession(${session.id})" style="margin-right: 5px; padding: 4px 10px; font-size: 12px;">
                         <i class="fas fa-eye"></i> Ko'rish
                     </button>
                     ${userRole !== 'sotuvchi' ? `
-                    <button class="btn btn-sm btn-danger action-btn-delete" onclick="deleteSession(${session.id})">
+                    <button class="btn btn-sm btn-danger" onclick="deleteSession(${session.id})" style="padding: 4px 10px; font-size: 12px;">
                         <i class="fas fa-trash"></i> O'chirish
                     </button>
                     ` : ''}
