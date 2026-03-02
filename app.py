@@ -13776,6 +13776,29 @@ def api_hosting_client_update(client_id):
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
+@app.route('/api/hosting/clients/<int:client_id>/add-balance', methods=['POST'])
+@role_required('admin')
+def api_hosting_client_add_balance(client_id):
+    """Mijoz balansiga summa qo'shish"""
+    try:
+        client = HostingClient.query.get(client_id)
+        if not client:
+            return jsonify({'success': False, 'error': 'Mijoz topilmadi'}), 404
+
+        data = request.get_json()
+        amount = data.get('amount')
+        if not amount or float(amount) <= 0:
+            return jsonify({'success': False, 'error': 'Summa musbat bo\'lishi kerak'}), 400
+
+        client.balance = (client.balance or Decimal('0')) + Decimal(str(amount))
+        db.session.commit()
+        return jsonify({'success': True, 'balance': float(client.balance)})
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"Hosting balance qo'shishda xato: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
 @app.route('/api/hosting/clients/<int:client_id>', methods=['DELETE'])
 @role_required('admin')
 def api_hosting_client_delete(client_id):

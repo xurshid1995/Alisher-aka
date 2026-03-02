@@ -391,6 +391,9 @@ async function loadClients() {
                 <td>${payBadge}</td>
                 <td class="money">
                     ${formatMoney(c.balance || 0)}
+                    <button class="btn-hosting btn-sm btn-success-hosting" onclick="addBalance(${c.id})" title="Balansga qo'shish" style="margin-left:5px; padding:2px 6px; font-size:11px;">
+                        <i class="fas fa-plus"></i>
+                    </button>
                 </td>
                 <td>
                     <button class="btn-hosting btn-sm btn-outline" onclick="editBalance(${c.id}, ${c.balance || 0})" title="Balansni tahrirlash">
@@ -501,6 +504,29 @@ async function editBalance(clientId, currentBalance) {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ balance: val })
+        });
+        const data = await res.json();
+        if (data.success) {
+            loadClients();
+            loadStats();
+        } else {
+            alert('Xatolik: ' + (data.error || 'Noma\'lum'));
+        }
+    } catch (e) {
+        alert('Xatolik: ' + e.message);
+    }
+}
+
+async function addBalance(clientId) {
+    const amount = prompt('Qo\'shiladigan summa (so\'m):');
+    if (amount === null) return;
+    const val = parseFloat(amount);
+    if (isNaN(val) || val <= 0) { alert('Musbat summa kiriting!'); return; }
+    try {
+        const res = await fetch(`/api/hosting/clients/${clientId}/add-balance`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ amount: val })
         });
         const data = await res.json();
         if (data.success) {
