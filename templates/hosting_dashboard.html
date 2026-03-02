@@ -150,11 +150,12 @@
                     <th>Oylik narx</th>
                     <th>Holat</th>
                     <th>To'lov</th>
+                    <th>Balans</th>
                     <th>Amallar</th>
                 </tr>
             </thead>
             <tbody id="clients-tbody">
-                <tr><td colspan="7" class="empty-state">Yuklanmoqda...</td></tr>
+                <tr><td colspan="8" class="empty-state">Yuklanmoqda...</td></tr>
             </tbody>
         </table>
     </div>
@@ -360,7 +361,7 @@ async function loadClients() {
         const tbody = document.getElementById('clients-tbody');
 
         if (!data.success || !data.clients.length) {
-            tbody.innerHTML = '<tr><td colspan="7" class="empty-state"><i class="fas fa-server"></i><br>Hali mijozlar yo\'q</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="8" class="empty-state"><i class="fas fa-server"></i><br>Hali mijozlar yo\'q</td></tr>';
             return;
         }
 
@@ -383,6 +384,7 @@ async function loadClients() {
                 <td class="money">${formatMoney(c.monthly_price_uzs)}</td>
                 <td>${statusBadge}</td>
                 <td>${payBadge}</td>
+                <td class="money">${formatMoney(c.balance || 0)}</td>
                 <td>
                     <button class="btn-hosting btn-sm btn-outline" onclick="editClient(${c.id})" title="Tahrirlash">
                         <i class="fas fa-edit"></i>
@@ -398,7 +400,7 @@ async function loadClients() {
         }).join('');
     } catch (e) {
         console.error('Clients error:', e);
-        document.getElementById('clients-tbody').innerHTML = '<tr><td colspan="7" class="empty-state">Xatolik yuz berdi</td></tr>';
+        document.getElementById('clients-tbody').innerHTML = '<tr><td colspan="8" class="empty-state">Xatolik yuz berdi</td></tr>';
     }
 }
 

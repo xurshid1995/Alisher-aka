@@ -13685,6 +13685,12 @@ def api_hosting_clients():
                 data['days_left'] = None
                 data['payment_status'] = 'never_paid'
 
+            # Jami to'langan summa (balans)
+            total_paid = db.session.query(
+                db.func.coalesce(db.func.sum(HostingPayment.amount_uzs), 0)
+            ).filter(HostingPayment.client_id == c.id).scalar()
+            data['balance'] = float(total_paid)
+
             # Pending buyurtmalar soni
             pending_count = HostingPaymentOrder.query.filter(
                 HostingPaymentOrder.client_id == c.id,
