@@ -6,6 +6,7 @@ import os
 import sys
 import time
 import urllib.parse
+import secrets
 import uuid
 from datetime import datetime, timezone, timedelta
 from decimal import Decimal, getcontext, InvalidOperation
@@ -1625,6 +1626,7 @@ class HostingClient(db.Model):
     # Holat
     is_active = db.Column(db.Boolean, default=True)
     server_status = db.Column(db.String(20), default='active')  # active, off, suspended
+    status_token = db.Column(db.String(64), unique=True, nullable=True)  # Mijoz uchun maxfiy token
 
     # Vaqtlar
     created_at = db.Column(db.DateTime, default=lambda: get_tashkent_time())
@@ -1653,6 +1655,7 @@ class HostingClient(db.Model):
             'balance': float(self.balance or 0),
             'is_active': self.is_active,
             'server_status': self.server_status,
+            'status_token': self.status_token,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None,
             'notes': self.notes
@@ -13643,6 +13646,56 @@ def api_send_bulk_telegram():
 # HOSTING ADMIN PANEL ROUTES
 # ============================================
 
+@app.route('/api/hosting/widget/<token>')
+def api_hosting_widget_status(token):
+    """Mijoz saytidagi widget uchun public API (login kerak emas)"""
+    try:
+        client = HostingClient.query.filter_by(status_token=token, is_active=True).first()
+        if not client:
+            return jsonify({'success': False, 'error': 'Token noto\'g\'ri'}), 404
+
+        balance = float(client.balance or 0)
+        monthly_price = float(client.monthly_price_uzs or 0)
+        today = get_tashkent_time().date()
+
+        days_left = 0
+        end_date = None
+        status = 'overdue'
+
+        if monthly_price > 0 and balance > 0:
+            daily_price = monthly_price / 30
+            days_left = int(balance / daily_price)
+            end_date = (today + timedelta(days=days_left)).strftime('%d.%m.%Y')
+            if days_left > 7:
+                status = 'ok'
+            elif days_left > 3:
+                status = 'warning'
+            else:
+                status = 'danger'
+        elif balance <= 0:
+            status = 'overdue'
+            days_left = 0
+
+        # CORS header
+        response = jsonify({
+            'success': True,
+            'name': client.name,
+            'balance': balance,
+            'balance_formatted': f"{balance:,.0f}".replace(',', ' '),
+            'monthly_price': monthly_price,
+            'monthly_formatted': f"{monthly_price:,.0f}".replace(',', ' '),
+            'days_left': days_left,
+            'end_date': end_date,
+            'server_status': client.server_status,
+            'status': status
+        })
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        return response
+    except Exception as e:
+        logger.error(f"Widget API xatosi: {e}")
+        return jsonify({'success': False, 'error': 'Server xatosi'}), 500
+
+
 @app.route('/hosting')
 @role_required('admin')
 def hosting_dashboard():
@@ -13736,7 +13789,8 @@ def api_hosting_client_create():
             server_ip=data.get('server_ip'),
             monthly_price_uzs=Decimal(str(data.get('monthly_price_uzs', 0))),
             payment_day=data.get('payment_day', 1),
-            notes=data.get('notes')
+            notes=data.get('notes'),
+            status_token=secrets.token_hex(16)
         )
         db.session.add(client)
         db.session.commit()
