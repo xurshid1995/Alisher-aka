@@ -20,12 +20,13 @@ from typing import Optional, Dict, List
 from dotenv import load_dotenv
 from telegram import (
     Bot, Update, InlineKeyboardButton, InlineKeyboardMarkup,
-    ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove
+    ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove,
+    LabeledPrice
 )
 from telegram.ext import (
     Application, CommandHandler, ContextTypes,
     CallbackQueryHandler, MessageHandler, filters,
-    ConversationHandler
+    ConversationHandler, PreCheckoutQueryHandler
 )
 from telegram.error import TelegramError
 import pytz
@@ -51,6 +52,10 @@ class HostingPaymentBot:
         self.db = db
         self.app = app
         self.bot = None
+
+        # Telegram Payments - Click/Payme provider tokenlari
+        self.click_provider_token = os.getenv('CLICK_PROVIDER_TOKEN', '')
+        self.payme_provider_token = os.getenv('PAYME_PROVIDER_TOKEN', '')
 
         # Card Xabar matching uchun vaqt oynasi (daqiqa)
         self.match_window_minutes = int(os.getenv('PAYMENT_MATCH_WINDOW', '30'))
@@ -278,9 +283,11 @@ class HostingPaymentBot:
             "💡 To'lov qilish tartibi:\n"
             "1️⃣ /pay bosing yoki \"To'lov qilish\" tugmasini tanlang\n"
             "2️⃣ Nechi oylik to'lashni tanlang\n"
-            "3️⃣ Karta raqamiga pul o'tkazing\n"
-            "4️⃣ \"✅ To'ladim\" tugmasini bosing\n"
-            "5️⃣ Admin tasdiqlaydi va server yoqiladi"
+            "3️⃣ To'lov usulini tanlang:\n"
+            "   📱 Click - bot ichida to'g'ridan-to'g'ri\n"
+            "   📱 Payme - bot ichida to'g'ridan-to'g'ri\n"
+            "   💳 Karta - karta raqamiga o'tkazish\n"
+            "4️⃣ To'lov avtomatik tasdiqlanadi ✅"
         )
 
     async def cmd_pay(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -339,7 +346,21 @@ class HostingPaymentBot:
                 months = int(data.split("_")[2])
                 client = self._get_client_by_chat_id(chat_id)
                 if client:
+                    await self._show_payment_method(query.message, client, months, edit=True)
+
+            elif data.startswith("paymethod_card_"):
+                months = int(data.split("_")[2])
+                client = self._get_client_by_chat_id(chat_id)
+                if client:
                     await self._create_payment_order(query.message, client, months, edit=True)
+
+            elif data.startswith("paymethod_click_") or data.startswith("paymethod_payme_"):
+                parts = data.split("_")
+                provider = parts[1]  # click yoki payme
+                months = int(parts[2])
+                client = self._get_client_by_chat_id(chat_id)
+                if client:
+                    await self._send_telegram_invoice(query.message, client, months, provider, context)
 
             elif data.startswith("confirm_paid_"):
                 order_code = data.split("confirm_paid_")[1]
@@ -441,6 +462,330 @@ class HostingPaymentBot:
             await message.edit_text(text, reply_markup=reply_markup)
         else:
             await message.reply_text(text, reply_markup=reply_markup)
+
+    async def _show_payment_method(self, message, client, months: int, edit=False):
+        """To'lov usulini tanlash - Click, Payme yoki Karta"""
+        price = float(client.monthly_price_uzs or 0)
+        total = price * months
+
+        keyboard = []
+
+        # Click mavjud bo'lsa
+        if self.click_provider_token:
+            keyboard.append([InlineKeyboardButton(
+                "📱 Click orqali to'lash",
+                callback_data=f"paymethod_click_{months}"
+            )])
+
+        # Payme mavjud bo'lsa
+        if self.payme_provider_token:
+            keyboard.append([InlineKeyboardButton(
+                "📱 Payme orqali to'lash",
+                callback_data=f"paymethod_payme_{months}"
+            )])
+
+        # Karta orqali (har doim mavjud)
+        if self.card_number:
+            keyboard.append([InlineKeyboardButton(
+                "💳 Karta orqali o'tkazish",
+                callback_data=f"paymethod_card_{months}"
+            )])
+
+        keyboard.append([InlineKeyboardButton("⬅️ Orqaga", callback_data="payment_start")])
+        reply_markup = InlineKeyboardMarkup(keyboard)
+
+        # Agar faqat karta mavjud bo'lsa, to'g'ridan-to'g'ri karta sahifasiga o'tish
+        if not self.click_provider_token and not self.payme_provider_token:
+            await self._create_payment_order(message, client, months, edit=edit)
+            return
+
+        text = (
+            f"💳 To'lov usulini tanlang\n\n"
+            f"🖥️ Server: {client.droplet_name or 'N/A'}\n"
+            f"📅 Davr: {months} oy\n"
+            f"💰 Summa: {self._format_money(total)} so'm\n\n"
+            f"Quyidagi to'lov usullaridan birini tanlang 👇"
+        )
+
+        if edit:
+            await message.edit_text(text, reply_markup=reply_markup)
+        else:
+            await message.reply_text(text, reply_markup=reply_markup)
+
+    async def _send_telegram_invoice(
+        self, message, client, months: int,
+        provider: str, context: ContextTypes.DEFAULT_TYPE
+    ):
+        """Telegram Payments API orqali invoice yuborish (Click/Payme)"""
+        from app import HostingPaymentOrder
+
+        price = float(client.monthly_price_uzs or 0)
+        total = price * months
+        # Telegram UZS uchun tiyinda ishlaydi (1 so'm = 100 tiyin)
+        total_tiyin = int(total * 100)
+
+        # Provider tokenni aniqlash
+        if provider == 'click':
+            provider_token = self.click_provider_token
+            provider_name = 'Click'
+        elif provider == 'payme':
+            provider_token = self.payme_provider_token
+            provider_name = 'Payme'
+        else:
+            await message.reply_text("❌ Noto'g'ri to'lov usuli.")
+            return
+
+        if not provider_token:
+            await message.reply_text(f"❌ {provider_name} to'lov tizimi hozircha sozlanmagan.")
+            return
+
+        # Order yaratish
+        with self.app.app_context():
+            # Mavjud pending orderni expired qilish
+            existing = HostingPaymentOrder.query.filter_by(
+                client_id=client.id,
+                status='pending'
+            ).first()
+            if existing:
+                existing.status = 'expired'
+                self.db.session.commit()
+
+            order_code = self._generate_order_code()
+            while HostingPaymentOrder.query.filter_by(order_code=order_code).first():
+                order_code = self._generate_order_code()
+
+            order = HostingPaymentOrder(
+                client_id=client.id,
+                order_code=order_code,
+                amount_uzs=Decimal(str(total)),
+                months=months,
+                status='pending',
+                expires_at=get_tashkent_time() + timedelta(hours=24)
+            )
+            self.db.session.add(order)
+            self.db.session.commit()
+
+        # Telegram Invoice yuborish
+        title = f"Hosting - {months} oylik"
+        description = (
+            f"Server: {client.droplet_name or 'N/A'}\n"
+            f"Mijoz: {client.name}\n"
+            f"Davr: {months} oy"
+        )
+
+        prices = [LabeledPrice(
+            label=f"Hosting {months} oy",
+            amount=total_tiyin
+        )]
+
+        # payload ga order_code ni qo'yamiz - keyinroq successful_payment da ishlatiladi
+        payload = f"{order_code}|{client.id}|{months}|{provider}"
+
+        try:
+            # Avvalgi xabarni o'chirish/yangilash
+            try:
+                await message.edit_text(
+                    f"📱 {provider_name} orqali to'lov...\n\n"
+                    f"💰 Summa: {self._format_money(total)} so'm\n"
+                    f"📋 Buyurtma: #{order_code}\n\n"
+                    f"⬇️ Quyidagi to'lov tugmasini bosing:"
+                )
+            except Exception:
+                pass
+
+            await context.bot.send_invoice(
+                chat_id=message.chat_id,
+                title=title,
+                description=description,
+                payload=payload,
+                provider_token=provider_token,
+                currency="UZS",
+                prices=prices,
+                need_name=False,
+                need_phone_number=True,
+                need_email=False,
+                is_flexible=False,
+                start_parameter=f"pay_{order_code}",
+            )
+            logger.info(f"✅ Invoice yuborildi: #{order_code} - {provider_name} - {total} so'm")
+
+        except Exception as e:
+            logger.error(f"❌ Invoice yuborishda xato: {e}", exc_info=True)
+            keyboard = [
+                [InlineKeyboardButton("💳 Karta orqali to'lash", callback_data=f"paymethod_card_{months}")],
+                [InlineKeyboardButton("⬅️ Orqaga", callback_data="back_to_menu")]
+            ]
+            await message.reply_text(
+                f"❌ {provider_name} orqali to'lov xatosi.\n\n"
+                f"Iltimos, karta orqali to'lang yoki keyinroq urinib ko'ring.\n"
+                f"Xato: {str(e)[:100]}",
+                reply_markup=InlineKeyboardMarkup(keyboard)
+            )
+
+    async def handle_pre_checkout(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Pre-checkout so'rovi - to'lovni tasdiqlash/rad etish"""
+        query = update.pre_checkout_query
+
+        try:
+            payload = query.invoice_payload
+            parts = payload.split("|")
+
+            if len(parts) != 4:
+                await query.answer(ok=False, error_message="Noto'g'ri to'lov ma'lumotlari.")
+                return
+
+            order_code, client_id, months, provider = parts
+
+            # Orderni tekshirish
+            from app import HostingPaymentOrder
+            with self.app.app_context():
+                order = HostingPaymentOrder.query.filter_by(order_code=order_code).first()
+
+                if not order:
+                    await query.answer(ok=False, error_message="Buyurtma topilmadi.")
+                    return
+
+                if order.status not in ['pending']:
+                    await query.answer(ok=False, error_message="Bu buyurtma allaqachon qayta ishlangan.")
+                    return
+
+                if order.expires_at and get_tashkent_time() > order.expires_at:
+                    order.status = 'expired'
+                    self.db.session.commit()
+                    await query.answer(ok=False, error_message="Buyurtma muddati o'tgan.")
+                    return
+
+            # Hammasi OK - to'lovga ruxsat berish
+            await query.answer(ok=True)
+            logger.info(f"✅ Pre-checkout tasdiqlandi: #{order_code}")
+
+        except Exception as e:
+            logger.error(f"Pre-checkout xatosi: {e}", exc_info=True)
+            await query.answer(ok=False, error_message="Tizim xatosi. Keyinroq urinib ko'ring.")
+
+    async def handle_successful_payment(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Muvaffaqiyatli to'lov - avtomatik tasdiqlash va server yoqish"""
+        from app import HostingPaymentOrder, HostingPayment, HostingClient
+        from digitalocean_manager import DigitalOceanManager
+
+        payment_info = update.message.successful_payment
+        payload = payment_info.invoice_payload
+
+        try:
+            parts = payload.split("|")
+            order_code = parts[0]
+            client_id = int(parts[1])
+            months = int(parts[2])
+            provider = parts[3]
+
+            provider_name = 'Click' if provider == 'click' else 'Payme'
+            total_amount = payment_info.total_amount / 100  # tiyindan so'mga
+
+            logger.info(f"💰 Muvaffaqiyatli to'lov: #{order_code} - {provider_name} - {total_amount} so'm")
+
+            with self.app.app_context():
+                order = HostingPaymentOrder.query.filter_by(order_code=order_code).first()
+                client = HostingClient.query.get(client_id)
+
+                if not order or not client:
+                    logger.error(f"Order yoki client topilmadi: {order_code}, {client_id}")
+                    return
+
+                # Order ni yangilash
+                now = get_tashkent_time()
+                order.status = 'approved'
+                order.confirmed_at = now
+                order.matched_at = now
+                order.approved_at = now
+                order.admin_notes = f"{provider_name} orqali avtomatik to'langan. Telegram Payment ID: {payment_info.telegram_payment_charge_id}"
+
+                # To'lov yozuvini yaratish
+                period_start = now.date()
+                end_month = period_start.month + months
+                end_year = period_start.year + (end_month - 1) // 12
+                end_month = ((end_month - 1) % 12) + 1
+                try:
+                    period_end = period_start.replace(year=end_year, month=end_month)
+                except ValueError:
+                    import calendar
+                    last_day = calendar.monthrange(end_year, end_month)[1]
+                    period_end = period_start.replace(year=end_year, month=end_month, day=min(period_start.day, last_day))
+
+                payment = HostingPayment(
+                    client_id=client.id,
+                    order_id=order.id,
+                    amount_uzs=Decimal(str(total_amount)),
+                    months_paid=months,
+                    payment_date=now,
+                    period_start=period_start,
+                    period_end=period_end,
+                    confirmed_by=f'{provider_name}_auto',
+                    notes=f"{provider_name} orqali to'langan. Charge ID: {payment_info.telegram_payment_charge_id}, Provider Charge ID: {payment_info.provider_payment_charge_id}"
+                )
+                self.db.session.add(payment)
+
+                # Server yoqish (agar o'chiq bo'lsa)
+                server_msg = ""
+                if client.droplet_id:
+                    try:
+                        do_manager = DigitalOceanManager()
+                        status = do_manager.get_droplet_status(client.droplet_id)
+                        if status == 'off':
+                            success = do_manager.power_on(client.droplet_id)
+                            if success:
+                                client.server_status = 'active'
+                                server_msg = "\n🟢 Server avtomatik yoqildi!"
+                            else:
+                                server_msg = "\n⚠️ Server yoqishda xato - admin tekshiradi."
+                        else:
+                            server_msg = f"\n🖥️ Server holati: {status}"
+                    except Exception as e:
+                        logger.error(f"DO server yoqishda xato: {e}")
+                        server_msg = "\n⚠️ Server yoqishda xato - admin tekshiradi."
+
+                self.db.session.commit()
+
+            # Mijozga muvaffaqiyat xabari
+            keyboard = [[InlineKeyboardButton("⬅️ Bosh menyu", callback_data="back_to_menu")]]
+            await update.message.reply_text(
+                f"✅ To'lov muvaffaqiyatli qabul qilindi!\n\n"
+                f"📋 Buyurtma: #{order_code}\n"
+                f"💳 To'lov usuli: {provider_name}\n"
+                f"💰 Summa: {self._format_money(total_amount)} so'm\n"
+                f"📅 Davr: {months} oy\n"
+                f"📆 {period_start.strftime('%d.%m.%Y')} → {period_end.strftime('%d.%m.%Y')}\n"
+                f"{server_msg}\n\n"
+                f"Rahmat! 🙏",
+                reply_markup=InlineKeyboardMarkup(keyboard)
+            )
+
+            # Admin ga xabar
+            if self.admin_chat_id:
+                try:
+                    await context.bot.send_message(
+                        chat_id=self.admin_chat_id,
+                        text=(
+                            f"✅ AVTOMATIK TO'LOV QABUL QILINDI\n\n"
+                            f"👤 Mijoz: {client.name}\n"
+                            f"📋 Buyurtma: #{order_code}\n"
+                            f"💳 Usul: {provider_name}\n"
+                            f"💰 Summa: {self._format_money(total_amount)} so'm\n"
+                            f"📅 Davr: {months} oy\n"
+                            f"📆 {period_start.strftime('%d.%m.%Y')} → {period_end.strftime('%d.%m.%Y')}"
+                            f"{server_msg}\n\n"
+                            f"🆔 Telegram Payment: {payment_info.telegram_payment_charge_id}\n"
+                            f"🆔 Provider: {payment_info.provider_payment_charge_id}"
+                        )
+                    )
+                except Exception as e:
+                    logger.error(f"Admin ga xabar yuborishda xato: {e}")
+
+        except Exception as e:
+            logger.error(f"Successful payment handler xatosi: {e}", exc_info=True)
+            await update.message.reply_text(
+                "✅ To'lov qabul qilindi!\n\n"
+                "⚠️ Ma'lumotlarni saqlashda xatolik. Admin tekshiradi."
+            )
 
     async def _create_payment_order(self, message, client, months: int, edit=False):
         """To'lov buyurtmasini yaratish va karta ma'lumotlarini ko'rsatish"""
@@ -1242,6 +1587,13 @@ def create_hosting_bot_app(db=None, app=None) -> Optional[Application]:
         # Callback handler
         application.add_handler(CallbackQueryHandler(hosting_bot.handle_callback))
 
+        # Telegram Payments handlers
+        application.add_handler(PreCheckoutQueryHandler(hosting_bot.handle_pre_checkout))
+        application.add_handler(MessageHandler(
+            filters.SUCCESSFUL_PAYMENT,
+            hosting_bot.handle_successful_payment
+        ))
+
         # Contact handler - telefon raqam orqali auto-identifikatsiya
         application.add_handler(MessageHandler(
             filters.CONTACT,
@@ -1253,6 +1605,14 @@ def create_hosting_bot_app(db=None, app=None) -> Optional[Application]:
             filters.TEXT & ~filters.COMMAND,
             hosting_bot.handle_card_xabar
         ))
+
+        # Payment provider ma'lumotlarini log qilish
+        if hosting_bot.click_provider_token:
+            logger.info("✅ Click to'lov tizimi sozlangan")
+        if hosting_bot.payme_provider_token:
+            logger.info("✅ Payme to'lov tizimi sozlangan")
+        if not hosting_bot.click_provider_token and not hosting_bot.payme_provider_token:
+            logger.info("ℹ️ Click/Payme sozlanmagan - faqat karta orqali to'lov")
 
         logger.info("✅ Hosting Bot application tayyor")
         return application
