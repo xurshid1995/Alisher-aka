@@ -1811,8 +1811,8 @@ function generateExcelHTML(sale) {
 <head>
     <meta charset="UTF-8">
     <style>
-        table { width: 100%; border-collapse: collapse; font-size: 16pt; }
-        td, th { padding: 6px 10px; }
+        table { width: 100%; border-collapse: collapse; font-size: 16pt; table-layout: fixed; }
+        td, th { padding: 6px 10px; word-wrap: break-word; overflow: hidden; }
     </style>
     <!--[if gte mso 9]>
     <xml>
@@ -1861,34 +1861,30 @@ function generateExcelHTML(sale) {
     </table>
     <br>
     <table border="1" width="100%">
-        <col width="420" style="mso-width-source:userset;">
-        <col width="60" style="mso-width-source:userset;">
-        <col width="120" style="mso-width-source:userset;">
-        <col width="120" style="mso-width-source:userset;">
         <tr style="background-color: #f0f0f0; font-weight: bold;">
-            <td>Mahsulot nomi</td>
-            <td>Miqdor</td>
-            <td>Birlik narxi ($)</td>
-            <td>Jami narx ($)</td>
+            <td style="mso-width-pct:6000; width:60%;">Mahsulot nomi</td>
+            <td style="mso-width-pct:800; width:8%;">Miqdor</td>
+            <td style="mso-width-pct:1600; width:16%;">Birlik narxi ($)</td>
+            <td style="mso-width-pct:1600; width:16%;">Jami narx ($)</td>
         </tr>`;
     
     sale.items.forEach(item => {
         html += `
         <tr>
-            <td>${item.product_name}</td>
-            <td>${item.quantity}</td>
-            <td>$${parseFloat(item.unit_price).toFixed(2)}</td>
-            <td>$${parseFloat(item.total_price).toFixed(2)}</td>
+            <td style="width:60%;">${item.product_name}</td>
+            <td style="width:8%;">${item.quantity}</td>
+            <td style="width:16%;">$${parseFloat(item.unit_price).toFixed(2)}</td>
+            <td style="width:16%;">$${parseFloat(item.total_price).toFixed(2)}</td>
         </tr>`;
     });
     
     html += `
         <tr><td colspan="4">&nbsp;</td></tr>
         <tr style="font-weight: bold;">
-            <td></td>
-            <td></td>
-            <td>Jami summa:</td>
-            <td>$${parseFloat(sale.total_amount).toFixed(2)}</td>
+            <td style="width:60%;"></td>
+            <td style="width:8%;"></td>
+            <td style="width:16%;">Jami summa:</td>
+            <td style="width:16%;">$${parseFloat(sale.total_amount).toFixed(2)}</td>
         </tr>
     </table>
 </body>
