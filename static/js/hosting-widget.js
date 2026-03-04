@@ -281,6 +281,11 @@
                         <span class="hw-label">Server</span>
                         <span class="hw-server ${serverClass}">${serverText}</span>
                     </div>
+                    <div class="hw-row" style="justify-content:center;">
+                      <a href="https://t.me/YOUR_BOT_USERNAME" target="_blank" class="btn-hosting btn-primary" style="margin-top:10px;display:inline-block;text-decoration:none;padding:8px 18px;border-radius:8px;background:#667eea;color:#fff;font-weight:600;">
+                        To'lov: Bot orqali
+                      </a>
+                    </div>
                 `;
             })
             .catch(function(err) {
