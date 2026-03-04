@@ -2172,10 +2172,18 @@ table:not(.cart-table) {
     
     /* Mobile sidebar ultra compact */
     .sidebar {
-        width: 220px;
-        left: -220px;
+        width: 220px !important;
+        left: -220px !important;
+    }
+
+    .sidebar.active {
+        left: 0 !important;
     }
     
+    .sidebar-menu {
+        padding-bottom: 100px !important; /* Oxirgi element ko'rinishi uchun */
+    }
+
     .sidebar-menu li a {
         padding: 12px 15px;
         font-size: 0.95rem;
