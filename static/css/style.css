@@ -2110,6 +2110,14 @@ table:not(.cart-table) {
         z-index: 10;
         font-weight: 600;
     }
+
+    .transfer-product-table th {
+        color: #222 !important;
+        font-size: 16px !important;
+        font-weight: 600 !important;
+        background: white !important;
+    }
+    }
     
     /* Scroll hint - foydalanuvchiga scroll qilish mumkinligini ko'rsatish */
     .table-responsive::after {
