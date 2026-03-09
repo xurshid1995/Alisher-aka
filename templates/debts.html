@@ -1616,7 +1616,7 @@
                         <div class="action-buttons">
                             <a href="/debts/customer/${debt.customer_id}" class="btn-view" style="text-decoration: none;">👁️ Ko'rish</a>
                             ${remainingDebt > 0 ? `<button class="btn-pay" onclick="openPaymentModal(${debt.customer_id})">💳 To'lov</button>` : ''}
-                            ${remainingDebt > 0 && debt.customer_phone ? `<button class="btn-sms" onclick="sendDebtSMS(${debt.customer_id}, '${debt.customer_name}', ${remainingDebt})"><img src='https://img.icons8.com/fluency/150/telegram-app.png' alt='Telegram' style='width:16px; height:16px; vertical-align:middle;'> SMS</button>` : ''}
+                            ${remainingDebt > 0 && debt.customer_phone ? `<button class="btn-sms" onclick="sendDebtSMS(${debt.customer_id}, '${debt.customer_name}', ${remainingDebt}, ${debt.nearest_due_date ? "'" + debt.nearest_due_date + "'" : 'null'})"><img src='https://img.icons8.com/fluency/150/telegram-app.png' alt='Telegram' style='width:16px; height:16px; vertical-align:middle;'> SMS</button>` : ''}
                         </div>
                     </td>
                 </tr>
@@ -1682,7 +1682,7 @@
                         <div class="action-buttons">
                             <a href="/debts/customer/${debt.customer_id}" class="btn-view" style="text-decoration: none;">👁️ Ko'rish</a>
                             ${remainingDebt > 0 ? `<button class="btn-pay" onclick="openPaymentModal(${debt.customer_id})">💳 To'lov</button>` : ''}
-                            ${remainingDebt > 0 && debt.customer_phone ? `<button class="btn-sms" onclick="sendDebtSMS(${debt.customer_id}, '${debt.customer_name}', ${remainingDebt})"><img src='https://img.icons8.com/fluency/150/telegram-app.png' alt='Telegram' style='width:16px; height:16px; vertical-align:middle;'> SMS</button>` : ''}
+                            ${remainingDebt > 0 && debt.customer_phone ? `<button class="btn-sms" onclick="sendDebtSMS(${debt.customer_id}, '${debt.customer_name}', ${remainingDebt}, ${debt.nearest_due_date ? "'" + debt.nearest_due_date + "'" : 'null'})"><img src='https://img.icons8.com/fluency/150/telegram-app.png' alt='Telegram' style='width:16px; height:16px; vertical-align:middle;'> SMS</button>` : ''}
                         </div>
                     </td>
                 </tr>
@@ -1901,8 +1901,35 @@
     }
 
     // Telegram yuborish funksiyasi
-    async function sendDebtSMS(customerId, customerName, debtAmount) {
-        if (!confirm(`${customerName}ga qarz eslatmasi Telegram orqali yuborilsinmi?\n\nQarz: $${debtAmount.toFixed(2)}`)) {
+    async function sendDebtSMS(customerId, customerName, debtAmount, nearestDueDate) {
+        // Muddat holatini aniqlash
+        let messageType = 'general';
+        let statusInfo = '';
+        
+        if (nearestDueDate) {
+            const dueDate = new Date(nearestDueDate);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            dueDate.setHours(0, 0, 0, 0);
+            const diffDays = Math.round((dueDate - today) / (1000 * 60 * 60 * 24));
+            const formatted = dueDate.toLocaleDateString('uz-UZ', {day: '2-digit', month: '2-digit', year: 'numeric'});
+            
+            if (diffDays === 1) {
+                messageType = 'pre_reminder';
+                statusInfo = `\n⚠️ Muddat: ertaga (${formatted})`;
+            } else if (diffDays === 0) {
+                messageType = 'due_today';
+                statusInfo = `\n💰 Muddat: bugun (${formatted})`;
+            } else if (diffDays < 0) {
+                messageType = 'overdue';
+                statusInfo = `\n🔴 Muddat: ${Math.abs(diffDays)} kun o'tgan! (${formatted})`;
+            } else {
+                messageType = 'pre_reminder';
+                statusInfo = `\n📅 Muddat: ${formatted} (${diffDays} kun qoldi)`;
+            }
+        }
+        
+        if (!confirm(`${customerName}ga qarz eslatmasi Telegram orqali yuborilsinmi?\n\nQarz: $${debtAmount.toFixed(2)}${statusInfo}`)) {
             return;
         }
 
@@ -1915,7 +1942,7 @@
             const response = await fetch('/api/sms/send-debt-reminder', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({customer_id: customerId})
+                body: JSON.stringify({customer_id: customerId, message_type: messageType})
             });
 
             const result = await response.json();

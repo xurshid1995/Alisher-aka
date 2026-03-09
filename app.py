@@ -13443,6 +13443,7 @@ def api_send_debt_sms():
     try:
         data = request.get_json()
         customer_id = data.get('customer_id')
+        message_type = data.get('message_type', 'general')  # general, pre_reminder, due_today, overdue
 
         if not customer_id:
             return jsonify({'success': False, 'error': 'Mijoz ID kiritilmagan'}), 400
@@ -13486,6 +13487,15 @@ def api_send_debt_sms():
             warehouse = Warehouse.query.get(sale_with_location.location_id)
             location_name = warehouse.name if warehouse else "Ombor"
 
+        # Eng yaqin payment_due_date ni olish
+        nearest_due = db.session.query(
+            db.func.min(Sale.payment_due_date)
+        ).filter(
+            Sale.customer_id == customer_id,
+            Sale.debt_usd > 0,
+            Sale.payment_due_date.isnot(None)
+        ).scalar()
+
         # Telegram orqali yuborish
         try:
             from debt_scheduler import get_scheduler_instance
@@ -13499,7 +13509,9 @@ def api_send_debt_sms():
                 debt_usd=debt_usd,
                 debt_uzs=debt_uzs,
                 location_name=location_name,
-                customer_id=customer_id  # Customer ID qo'shamiz
+                customer_id=customer_id,
+                message_type=message_type,
+                payment_due_date=nearest_due
             )
 
             if telegram_result:

@@ -230,7 +230,9 @@ class DebtTelegramBot:
         debt_uzs: float,
         location_name: str,
         sale_date: Optional[datetime] = None,
-        customer_id: Optional[int] = None
+        customer_id: Optional[int] = None,
+        message_type: str = 'general',
+        payment_due_date=None
     ) -> bool:
         """
         Mijozga qarz eslatmasi yuborish (sync versiya - Flask uchun)
@@ -242,7 +244,9 @@ class DebtTelegramBot:
             debt_uzs: Qarz miqdori (UZS)
             location_name: Do'kon/ombor nomi
             sale_date: Savdo sanasi
-            customer_id: Mijoz ID (to'lov turlarini ko'rsatish uchun)
+            customer_id: Mijoz ID
+            message_type: Xabar turi (general, pre_reminder, due_today, overdue)
+            payment_due_date: Qarz to'lash muddati
 
         Returns:
             bool: Yuborildi/yuborilmadi
@@ -254,27 +258,86 @@ class DebtTelegramBot:
         try:
             # Qarz miqdorini formatlash
             debt_usd_str = f"${debt_usd:,.2f}"
-            debt_uzs_str = f"{debt_uzs:,.0f} so'm"
-
-            # Sana formatlash
-            date_str = ""
-            if sale_date:
-                date_str = f"\n📅 Savdo sanasi: {sale_date.strftime('%d.%m.%Y')}"
 
             # Bugungi sana
-            from datetime import datetime as dt
+            from datetime import datetime as dt, date as d_date
             today_str = dt.now().strftime('%d.%m.%Y')
             
-            # Xabar matni
-            message = (
-                f"💰 <b>QARZ ESLATMASI</b>\n\n"
-                f"Hurmatli: {customer_name}!\n\n"
-                f"📍 {location_name}dan\n\n"
-                f"💸 Qarzingiz: {debt_usd_str}\n\n"
-                f"Qarzingizni to'lash muddati bugun ({today_str}) iltimos qarzingizni bugunoq to'lang\n"
-                "Qarz bu sizga omonat\n"
-                "Rahmat! 🙏"
-            )
+            # Muddat sanasini formatlash
+            due_date_str = ''
+            if payment_due_date:
+                if isinstance(payment_due_date, str):
+                    from datetime import datetime as dtt
+                    payment_due_date = dtt.strptime(payment_due_date, '%Y-%m-%d').date()
+                due_date_str = payment_due_date.strftime('%d.%m.%Y')
+                
+                # message_type ni avtomatik aniqlash (agar 'general' bo'lsa)
+                if message_type == 'general':
+                    today = d_date.today()
+                    diff = (payment_due_date - today).days
+                    if diff == 1:
+                        message_type = 'pre_reminder'
+                    elif diff == 0:
+                        message_type = 'due_today'
+                    elif diff < 0:
+                        message_type = 'overdue'
+            
+            # Xabar turlariga qarab xabar tuzish
+            if message_type == 'pre_reminder' and due_date_str:
+                message = (
+                    f"⚠️ <b>QARZ ESLATMASI</b>\n"
+                    f"━━━━━━━━━━━━━━━━━━━━\n\n"
+                    f"Hurmatli <b>{customer_name}</b>!\n\n"
+                    f"📍 {location_name}dan\n\n"
+                    f"💵 Qarzingiz: <b>{debt_usd_str}</b>\n\n"
+                    f"📅 Qarzingizni to'lash muddati <b>ertaga ({due_date_str})</b>\n\n"
+                    f"Iltimos, ertaga qarzingizni to'lashni unutmang!\n\n"
+                    f"━━━━━━━━━━━━━━━━━━━━\n"
+                    f"Qarz bu sizga omonat 🤝\n"
+                    f"Rahmat! 🙏"
+                )
+            elif message_type == 'due_today' and due_date_str:
+                message = (
+                    f"💰 <b>QARZ TO'LASH MUDDATI BUGUN!</b>\n"
+                    f"━━━━━━━━━━━━━━━━━━━━\n\n"
+                    f"Hurmatli <b>{customer_name}</b>!\n\n"
+                    f"📍 {location_name}dan\n\n"
+                    f"💵 Qarzingiz: <b>{debt_usd_str}</b>\n\n"
+                    f"📅 Qarzingizni to'lash muddati <b>bugun ({today_str})</b>\n"
+                    f"🔔 Iltimos, qarzingizni bugunoq to'lang!\n\n"
+                    f"━━━━━━━━━━━━━━━━━━━━\n"
+                    f"Qarz bu sizga omonat 🤝\n"
+                    f"Rahmat! 🙏"
+                )
+            elif message_type == 'overdue' and due_date_str:
+                today = d_date.today()
+                days_overdue = (today - payment_due_date).days
+                message = (
+                    f"🔴 <b>DIQQAT! QARZ MUDDATI O'TGAN!</b>\n"
+                    f"━━━━━━━━━━━━━━━━━━━━\n\n"
+                    f"Hurmatli <b>{customer_name}</b>!\n\n"
+                    f"📍 {location_name}dan\n\n"
+                    f"💵 Qarzingiz: <b>{debt_usd_str}</b>\n\n"
+                    f"📅 To'lash muddati: <b>{due_date_str}</b>\n"
+                    f"❗ Muddatdan <b>{days_overdue} kun</b> o'tgan!\n\n"
+                    f"🚨 Iltimos, qarzingizni imkon qadar tezroq to'lang!\n\n"
+                    f"━━━━━━━━━━━━━━━━━━━━\n"
+                    f"Qarz bu sizga omonat 🤝\n"
+                    f"Rahmat! 🙏"
+                )
+            else:
+                # Umumiy xabar (muddat belgilanmagan)
+                message = (
+                    f"💰 <b>QARZ ESLATMASI</b>\n"
+                    f"━━━━━━━━━━━━━━━━━━━━\n\n"
+                    f"Hurmatli <b>{customer_name}</b>!\n\n"
+                    f"📍 {location_name}dan\n\n"
+                    f"💵 Qarzingiz: <b>{debt_usd_str}</b>\n\n"
+                    f"Iltimos, qarzingizni to'lang!\n\n"
+                    f"━━━━━━━━━━━━━━━━━━━━\n"
+                    f"Qarz bu sizga omonat 🤝\n"
+                    f"Rahmat! 🙏"
+                )
 
             # HTTP API orqali yuborish
             url = f"https://api.telegram.org/bot{self.token}/sendMessage"
