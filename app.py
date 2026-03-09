@@ -9995,6 +9995,19 @@ def finalize_sale(sale_id):
         sale.currency_rate = Decimal(str(exchange_rate))
         sale.sale_date = get_tashkent_time()  # Tasdiqlash vaqti
 
+        # Qarz to'lash muddatini o'rnatish
+        payment_due_date_str = data.get('payment_due_date')
+        if payment_due_date_str:
+            try:
+                sale.payment_due_date = datetime.strptime(payment_due_date_str, '%Y-%m-%d').date()
+                logger.info(f"📅 Finalize: payment_due_date saqlandi: {sale.payment_due_date}")
+            except (ValueError, TypeError) as e:
+                logger.warning(f"⚠️ Finalize: payment_due_date parse xatolik: {e}")
+        elif payment_status in ('partial', 'debt') and sale.debt_usd > 0:
+            # Qarz bor lekin muddat berilmagan - 7 kun default
+            sale.payment_due_date = (get_tashkent_time() + timedelta(days=7)).date()
+            logger.info(f"📅 Finalize: default 7 kun muddat: {sale.payment_due_date}")
+
         # Mijoz ID ni yangilash (agar kiritilgan bo'lsa)
         if customer_id:
             sale.customer_id = int(customer_id)
@@ -11445,6 +11458,18 @@ def create_pending_sale(data):
         current_rate = get_current_currency_rate()
 
         # Pending savdoni yaratish
+        # Qarz to'lash muddati
+        payment_due_date = None
+        payment_due_date_str = data.get('payment_due_date')
+        print(f"📅 PENDING: payment_due_date_str = '{payment_due_date_str}'")
+        if payment_due_date_str:
+            try:
+                from datetime import datetime as dt_parse
+                payment_due_date = dt_parse.strptime(payment_due_date_str, '%Y-%m-%d').date()
+                print(f"📅 ✅ PENDING: Qarz muddati parsed: {payment_due_date}")
+            except (ValueError, TypeError):
+                print(f"📅 ❌ PENDING: Noto'g'ri sana: {payment_due_date_str}")
+
         new_sale = Sale(
             customer_id=final_customer_id,
             store_id=store_id,
@@ -11455,7 +11480,8 @@ def create_pending_sale(data):
             payment_status='pending',  # Pending holatda
             notes=notes,
             currency_rate=current_rate,
-            created_by=f'{current_user.first_name} {current_user.last_name} - Pending'
+            created_by=f'{current_user.first_name} {current_user.last_name} - Pending',
+            payment_due_date=payment_due_date
         )
 
         logger.info(f"✅ Pending savdo yaratildi: location_id={new_sale.location_id}, location_type={new_sale.location_type}")
