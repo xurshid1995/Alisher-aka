@@ -4926,6 +4926,7 @@
                 if (paymentDebtUSD_elem) {
                     paymentDebtUSD_elem.value = (uzs / exchangeRate).toFixed(4);
                 }
+                showHideDueDateSection();
             });
         }
         
@@ -5580,6 +5581,11 @@
             console.error('❌ UZS maydoni topilmadi:', uzsFieldId);
         }
         
+        // Qarz maydoniga qiymat qo'shilganda muddat seksiyasini ko'rsatish
+        if (fieldId === 'paymentDebtUSD') {
+            showHideDueDateSection();
+        }
+        
         // Double-click himoyasini 300ms dan keyin ochish
         setTimeout(() => {
             isAddingRemaining = false;
@@ -5594,23 +5600,28 @@
         document.getElementById('paymentDueDate').value = dateStr;
     }
     
-    // Qarz inputga event listener - muddat seksiyasini ko'rsatish/yashirish
-    document.addEventListener('DOMContentLoaded', function() {
+    // Qarz muddat seksiyasini ko'rsatish/yashirish (umumiy funksiya)
+    function showHideDueDateSection() {
         const debtInput = document.getElementById('paymentDebtUSD');
         const dueDateSection = document.getElementById('paymentDueDateSection');
+        if (!debtInput || !dueDateSection) return;
         
-        if (debtInput && dueDateSection) {
-            function checkDebtForDueDate() {
-                const debtVal = parseFloat(debtInput.value) || 0;
-                if (debtVal > 0) {
-                    dueDateSection.style.display = 'block';
-                } else {
-                    dueDateSection.style.display = 'none';
-                    document.getElementById('paymentDueDate').value = '';
-                }
-            }
-            debtInput.addEventListener('input', checkDebtForDueDate);
-            debtInput.addEventListener('change', checkDebtForDueDate);
+        const debtVal = parseFloat(debtInput.value) || 0;
+        if (debtVal > 0) {
+            dueDateSection.style.display = 'block';
+        } else {
+            dueDateSection.style.display = 'none';
+            const dueDateEl = document.getElementById('paymentDueDate');
+            if (dueDateEl) dueDateEl.value = '';
+        }
+    }
+    
+    // Qarz inputga event listener
+    document.addEventListener('DOMContentLoaded', function() {
+        const debtInput = document.getElementById('paymentDebtUSD');
+        if (debtInput) {
+            debtInput.addEventListener('input', showHideDueDateSection);
+            debtInput.addEventListener('change', showHideDueDateSection);
         }
     });
     
