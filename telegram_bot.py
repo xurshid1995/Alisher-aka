@@ -194,10 +194,10 @@ class DebtTelegramBot:
             # Xabar matni (qarz eslatmasida to'lov turlari ko'rsatilmaydi)
             message = (
                 f"💰 <b>QARZ ESLATMASI</b>\n\n"
-                f"Hurmatli {customer_name}!\n\n"
-                f"📍 Joylashuv: {location_name}\n\n"
-                f"💸 Qarz: {debt_uzs:,.0f} so'm{date_str}\n\n"
-                "Iltimos, qarzingizni to'lashni unutmang. Qarz bu omonat.\n"
+                f"Hurmatli: {customer_name}!\n\n"
+                f"📍 {location_name}dan\n\n"
+                f"💸 Qarz: {debt_usd_str}\n\n"
+                "Iltimos, qarzingizni to'lashni unutmang. Qarz bu sizga omonat.\n"
                 "Rahmat! 🙏"
             )
 
@@ -259,10 +259,10 @@ class DebtTelegramBot:
             # Xabar matni (qarz eslatmasida to'lov turlari ko'rsatilmaydi)
             message = (
                 f"💰 <b>QARZ ESLATMASI</b>\n\n"
-                f"Hurmatli {customer_name}!\n\n"
-                f"📍 Joylashuv: {location_name}\n\n"
-                f"💸 Qarz: {debt_uzs_str}{date_str}\n\n"
-                "Iltimos, qarzingizni to'lashni unutmang. Qarz bu omonat.\n"
+                f"Hurmatli: {customer_name}!\n\n"
+                f"📍 {location_name}dan\n\n"
+                f"💸 Qarz: {debt_usd_str}\n\n"
+                "Iltimos, qarzingizni to'lashni unutmang. Qarz bu sizga omonat.\n"
                 "Rahmat! 🙏"
             )
 
