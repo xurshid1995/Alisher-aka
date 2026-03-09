@@ -6456,6 +6456,43 @@ def api_debt_details(customer_id):
         }), 500
 
 
+@app.route('/api/debts/update-due-date', methods=['POST'])
+@role_required('admin', 'kassir')
+def api_update_due_date():
+    """Mijozning barcha qarz sotuvlari uchun payment_due_date yangilash"""
+    try:
+        data = request.get_json()
+        customer_id = data.get('customer_id')
+        due_date_str = data.get('payment_due_date')
+
+        if not customer_id:
+            return jsonify({'success': False, 'error': 'customer_id talab qilinadi'}), 400
+
+        # Parse date
+        due_date = None
+        if due_date_str:
+            from datetime import datetime as dt_parse
+            due_date = dt_parse.strptime(due_date_str, '%Y-%m-%d').date()
+
+        # Mijozning barcha qarzli sotuvlarini yangilash
+        updated = Sale.query.filter(
+            Sale.customer_id == customer_id,
+            Sale.debt_usd > 0
+        ).update({'payment_due_date': due_date}, synchronize_session=False)
+
+        db.session.commit()
+
+        return jsonify({
+            'success': True,
+            'updated_sales': updated,
+            'payment_due_date': due_date_str
+        })
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
 @app.route('/api/debts/payment', methods=['POST'])
 @role_required('admin', 'kassir', 'sotuvchi')
 @timeout_monitor(max_seconds=10, operation_name='DebtPayment')

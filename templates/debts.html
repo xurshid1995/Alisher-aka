@@ -1246,6 +1246,31 @@
     </div>
 </div>
 
+<!-- Qarz muddati tahrirlash modal -->
+<div id="dueDateEditModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:10000; justify-content:center; align-items:center;">
+    <div style="background:#fff; border-radius:12px; padding:24px; max-width:400px; width:90%; box-shadow:0 8px 32px rgba(0,0,0,0.3);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+            <h3 style="margin:0; font-size:18px;">📅 Qarz muddatini tahrirlash</h3>
+            <button onclick="closeDueDateEditModal()" style="background:none; border:none; font-size:24px; cursor:pointer; color:#999;">&times;</button>
+        </div>
+        <div style="margin-bottom:16px;">
+            <label style="display:block; font-weight:600; margin-bottom:6px; color:#495057;">Yangi muddat:</label>
+            <input type="date" id="editDueDateInput" style="width:100%; padding:10px 12px; border:2px solid #dee2e6; border-radius:8px; font-size:14px; box-sizing:border-box;">
+        </div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;">
+            <button onclick="setEditDueDate(3)" style="padding:6px 12px; border:1px solid #17a2b8; background:#e8f8fb; color:#17a2b8; border-radius:6px; cursor:pointer; font-size:12px; font-weight:600;">3 kun</button>
+            <button onclick="setEditDueDate(7)" style="padding:6px 12px; border:1px solid #17a2b8; background:#e8f8fb; color:#17a2b8; border-radius:6px; cursor:pointer; font-size:12px; font-weight:600;">1 hafta</button>
+            <button onclick="setEditDueDate(14)" style="padding:6px 12px; border:1px solid #17a2b8; background:#e8f8fb; color:#17a2b8; border-radius:6px; cursor:pointer; font-size:12px; font-weight:600;">2 hafta</button>
+            <button onclick="setEditDueDate(30)" style="padding:6px 12px; border:1px solid #17a2b8; background:#e8f8fb; color:#17a2b8; border-radius:6px; cursor:pointer; font-size:12px; font-weight:600;">1 oy</button>
+            <button onclick="clearEditDueDate()" style="padding:6px 12px; border:1px solid #dc3545; background:#fff0f0; color:#dc3545; border-radius:6px; cursor:pointer; font-size:12px; font-weight:600;">❌ O'chirish</button>
+        </div>
+        <div style="display:flex; gap:10px;">
+            <button onclick="closeDueDateEditModal()" style="flex:1; padding:10px; background:#6c757d; color:#fff; border:none; border-radius:8px; cursor:pointer; font-size:14px;">Bekor qilish</button>
+            <button onclick="saveDueDateEdit()" style="flex:1; padding:10px; background:#17a2b8; color:#fff; border:none; border-radius:8px; cursor:pointer; font-size:14px; font-weight:600;">✅ Saqlash</button>
+        </div>
+    </div>
+</div>
+
 <!-- Eslatma belgilash modal -->
 <div class="reminder-modal-overlay" id="reminderModal">
     <div class="reminder-modal">
@@ -1554,8 +1579,10 @@
     }
 
     // Qarz muddati ustuni uchun yordamchi funksiya
-    function formatDueDateCell(nearestDueDate) {
-        if (!nearestDueDate) return '<span style="color: #999;">—</span>';
+    function formatDueDateCell(nearestDueDate, customerId) {
+        const editBtn = `<button onclick="openDueDateEditModal(${customerId}, ${nearestDueDate ? "'" + nearestDueDate + "'" : 'null'})" style="background:none;border:none;cursor:pointer;font-size:14px;padding:2px 4px;" title="Muddatni tahrirlash">✏️</button>`;
+        
+        if (!nearestDueDate) return `<span style="color: #999;">—</span> ${editBtn}`;
         
         const dueDate = new Date(nearestDueDate);
         const today = new Date();
@@ -1575,7 +1602,7 @@
             color = '#2e7d32'; icon = '🟢'; label = `${diffDays} kun qoldi`;
         }
         
-        return `<span style="color: ${color}; font-weight: 600; font-size: 12px;">${icon} ${formatted}<br><small>${label}</small></span>`;
+        return `<span style="color: ${color}; font-weight: 600; font-size: 12px;">${icon} ${formatted}<br><small>${label}</small></span> ${editBtn}`;
     }
 
     // Jadvalni render qilish
@@ -1594,7 +1621,7 @@
             const lastPayment = debt.last_payment_date || '-';
             const lastPaymentAmount = debt.last_payment_amount || 0;
             const lastPaymentRate = debt.last_payment_rate || exchangeRate;
-            const dueDateHtml = formatDueDateCell(debt.nearest_due_date);
+            const dueDateHtml = formatDueDateCell(debt.nearest_due_date, debt.customer_id);
 
             return `
                 <tr>
@@ -1660,7 +1687,7 @@
             const lastPayment = debt.last_payment_date || '-';
             const lastPaymentAmount = debt.last_payment_amount || 0;
             const lastPaymentRate = debt.last_payment_rate || exchangeRate;
-            const dueDateHtml = formatDueDateCell(debt.nearest_due_date);
+            const dueDateHtml = formatDueDateCell(debt.nearest_due_date, debt.customer_id);
 
             return `
                 <tr>
@@ -1897,6 +1924,70 @@
         } catch (error) {
             console.error('Xatolik:', error);
             alert('❌ To\'lovni amalga oshirishda xatolik yuz berdi');
+        }
+    }
+
+    // =============================================
+    // QARZ MUDDATI TAHRIRLASH FUNKSIYALARI
+    // =============================================
+    let editDueDateCustomerId = null;
+
+    function openDueDateEditModal(customerId, currentDueDate) {
+        editDueDateCustomerId = customerId;
+        const input = document.getElementById('editDueDateInput');
+        if (currentDueDate) {
+            input.value = currentDueDate;
+        } else {
+            // Default: 1 hafta keyin
+            const d = new Date();
+            d.setDate(d.getDate() + 7);
+            input.value = d.toISOString().split('T')[0];
+        }
+        document.getElementById('dueDateEditModal').style.display = 'flex';
+    }
+
+    function closeDueDateEditModal() {
+        document.getElementById('dueDateEditModal').style.display = 'none';
+        editDueDateCustomerId = null;
+    }
+
+    function setEditDueDate(days) {
+        const d = new Date();
+        d.setDate(d.getDate() + days);
+        document.getElementById('editDueDateInput').value = d.toISOString().split('T')[0];
+    }
+
+    function clearEditDueDate() {
+        document.getElementById('editDueDateInput').value = '';
+    }
+
+    async function saveDueDateEdit() {
+        if (!editDueDateCustomerId) return;
+        
+        const dueDateValue = document.getElementById('editDueDateInput').value;
+        
+        try {
+            const response = await fetch('/api/debts/update-due-date', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    customer_id: editDueDateCustomerId,
+                    payment_due_date: dueDateValue || null
+                })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                alert(`✅ Qarz muddati ${dueDateValue ? 'yangilandi' : "o'chirildi"}!`);
+                closeDueDateEditModal();
+                loadDebts(); // Jadvalni yangilash
+            } else {
+                alert('❌ Xatolik: ' + (result.error || "Noma'lum xatolik"));
+            }
+        } catch (error) {
+            console.error('Xatolik:', error);
+            alert('❌ Muddat saqlashda xatolik yuz berdi');
         }
     }
 
