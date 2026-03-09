@@ -1104,12 +1104,13 @@
                     <th>💵 Oxirgi to'lov</th>
                     <th>📅 Oxirgi to'lov sanasi</th>
                     <th>🏷️ Status</th>
+                    <th>📅 Qarz muddati</th>
                     <th>⚙️ Amallar</th>
                 </tr>
             </thead>
             <tbody id="debtsTableBody">
                 <tr>
-                    <td colspan="8" class="no-data">Ma'lumotlar yuklanmoqda...</td>
+                    <td colspan="9" class="no-data">Ma'lumotlar yuklanmoqda...</td>
                 </tr>
             </tbody>
         </table>
@@ -1552,12 +1553,37 @@
         document.getElementById('totalDebt').textContent = `$${totalDebt.toFixed(2)}`;
     }
 
+    // Qarz muddati ustuni uchun yordamchi funksiya
+    function formatDueDateCell(nearestDueDate) {
+        if (!nearestDueDate) return '<span style="color: #999;">—</span>';
+        
+        const dueDate = new Date(nearestDueDate);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        dueDate.setHours(0, 0, 0, 0);
+        const diffDays = Math.round((dueDate - today) / (1000 * 60 * 60 * 24));
+        const formatted = dueDate.toLocaleDateString('uz-UZ', {day: '2-digit', month: '2-digit', year: 'numeric'});
+        
+        let color, icon, label;
+        if (diffDays < 0) {
+            color = '#dc3545'; icon = '🔴'; label = `${Math.abs(diffDays)} kun o'tgan`;
+        } else if (diffDays === 0) {
+            color = '#e65100'; icon = '🟡'; label = 'Bugun!';
+        } else if (diffDays <= 3) {
+            color = '#f57c00'; icon = '🟠'; label = `${diffDays} kun qoldi`;
+        } else {
+            color = '#2e7d32'; icon = '🟢'; label = `${diffDays} kun qoldi`;
+        }
+        
+        return `<span style="color: ${color}; font-weight: 600; font-size: 12px;">${icon} ${formatted}<br><small>${label}</small></span>`;
+    }
+
     // Jadvalni render qilish
     function renderDebtsTable() {
         const tbody = document.getElementById('debtsTableBody');
         
         if (debts.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="8" class="no-data">📭 Qarzlar yo\'q</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="9" class="no-data">📭 Qarzlar yo\'q</td></tr>';
             return;
         }
 
@@ -1568,6 +1594,7 @@
             const lastPayment = debt.last_payment_date || '-';
             const lastPaymentAmount = debt.last_payment_amount || 0;
             const lastPaymentRate = debt.last_payment_rate || exchangeRate;
+            const dueDateHtml = formatDueDateCell(debt.nearest_due_date);
 
             return `
                 <tr>
@@ -1584,6 +1611,7 @@
                     </td>
                     <td>${lastPayment}</td>
                     <td><span class="status-badge ${status}">${statusText}</span></td>
+                    <td>${dueDateHtml}</td>
                     <td>
                         <div class="action-buttons">
                             <a href="/debts/customer/${debt.customer_id}" class="btn-view" style="text-decoration: none;">👁️ Ko'rish</a>
@@ -1622,7 +1650,7 @@
         // Jadvalni yangilash
         const tbody = document.getElementById('debtsTableBody');
         if (filtered.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="8" class="no-data">📭 Natija topilmadi</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="9" class="no-data">📭 Natija topilmadi</td></tr>';
             return;
         }
 
@@ -1633,6 +1661,7 @@
             const lastPayment = debt.last_payment_date || '-';
             const lastPaymentAmount = debt.last_payment_amount || 0;
             const lastPaymentRate = debt.last_payment_rate || exchangeRate;
+            const dueDateHtml = formatDueDateCell(debt.nearest_due_date);
 
             return `
                 <tr>
@@ -1649,6 +1678,7 @@
                     </td>
                     <td>${lastPayment}</td>
                     <td><span class="status-badge ${status}">${statusText}</span></td>
+                    <td>${dueDateHtml}</td>
                     <td>
                         <div class="action-buttons">
                             <a href="/debts/customer/${debt.customer_id}" class="btn-view" style="text-decoration: none;">👁️ Ko'rish</a>
