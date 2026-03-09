@@ -10509,13 +10509,18 @@ def create_sale():
         # Qarz to'lash muddati
         payment_due_date = None
         payment_due_date_str = data.get('payment_due_date')
+        print(f"📅 DEBUG: payment_due_date_str = '{payment_due_date_str}', type = {type(payment_due_date_str)}, debt_usd = {debt_usd}")
         if payment_due_date_str and debt_usd > 0:
             try:
                 from datetime import datetime as dt_parse
                 payment_due_date = dt_parse.strptime(payment_due_date_str, '%Y-%m-%d').date()
+                print(f"📅 ✅ Qarz to'lash muddati SAQLANDI: {payment_due_date}")
                 logger.info(f"📅 Qarz to'lash muddati: {payment_due_date}")
             except (ValueError, TypeError):
+                print(f"📅 ❌ Noto'g'ri sana formati: {payment_due_date_str}")
                 logger.warning(f"⚠️ Noto'g'ri sana formati: {payment_due_date_str}")
+        else:
+            print(f"📅 ⚠️ Muddat saqlanMADI: payment_due_date_str={payment_due_date_str}, debt_usd={debt_usd}")
 
         # Barcha qiymatlarni USD da saqlaymiz
         # cash_amount, click_amount, terminal_amount, debt_amount - hammasi USD!

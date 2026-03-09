@@ -5828,7 +5828,12 @@
                 // Payment status ni avtomatik aniqlash
                 payment_status: debtUSD > 0 ? 'partial' : 'paid',
                 // Qarz to'lash muddati
-                payment_due_date: debtUSD > 0 ? (document.getElementById('paymentDueDate') ? document.getElementById('paymentDueDate').value : null) : null,
+                payment_due_date: (() => {
+                    const dueDateEl = document.getElementById('paymentDueDate');
+                    const val = dueDateEl ? dueDateEl.value : null;
+                    console.log('📅 DEBUG payment_due_date:', val, 'debtUSD:', debtUSD, 'element:', dueDateEl);
+                    return (debtUSD > 0 && val) ? val : null;
+                })(),
                 // Agar tahrirlash rejimida bo'lsa
                 original_sale_id: editingSaleId,
                 is_edit_mode: editingSaleId !== null,
