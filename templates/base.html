@@ -214,19 +214,19 @@
     <script>
         // Tarjimalar - JS uchun
         const LANG = {
-            rate_change: '{{ t("rate_change") }}',
-            current_rate: '{{ t("current_rate") }}',
-            enter_rate: '{{ t("enter_rate") }}',
-            invalid_rate: '{{ t("invalid_rate") }}',
-            rate_update_success: '{{ t("rate_update_success") }}',
-            rate_not_loaded: '{{ t("rate_not_loaded") }}',
-            rate_update_error: '{{ t("rate_update_error") }}',
-            server_error: '{{ t("server_error") }}',
-            exit_confirm: '{{ t("exit_confirm") }}',
-            session_expiring: '{{ t("session_expiring") }}',
-            session_expiring_desc: '{{ t("session_expiring_desc") }}',
-            understood: '{{ t("understood") }}',
-            session_expired: '{{ t("session_expired") }}',
+            rate_change: {{ t("rate_change")|tojson }},
+            current_rate: {{ t("current_rate")|tojson }},
+            enter_rate: {{ t("enter_rate")|tojson }},
+            invalid_rate: {{ t("invalid_rate")|tojson }},
+            rate_update_success: {{ t("rate_update_success")|tojson }},
+            rate_not_loaded: {{ t("rate_not_loaded")|tojson }},
+            rate_update_error: {{ t("rate_update_error")|tojson }},
+            server_error: {{ t("server_error")|tojson }},
+            exit_confirm: {{ t("exit_confirm")|tojson }},
+            session_expiring: {{ t("session_expiring")|tojson }},
+            session_expiring_desc: {{ t("session_expiring_desc")|tojson }},
+            understood: {{ t("understood")|tojson }},
+            session_expired: {{ t("session_expired")|tojson }},
         };
 
         // Til o'zgartirish
