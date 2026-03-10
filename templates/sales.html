@@ -707,7 +707,7 @@
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
                         <label style="font-size: 14px; font-weight: 500; color: #495057;">{{ t('label_customer_optional') }}</label>
                         <button id="addCustomerBtn" onclick="openAddCustomerModal()" style="padding: 3px 8px; background: #007bff; color: white; border: none; border-radius: 4px; font-size: 11px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; gap: 3px;">
-                            <span style="filter: grayscale(100%) brightness(200%);">➕</span> {{ t('btn_new') }}
+                            <span style="filter: grayscale(100%) brightness(200%);"></span> {{ t('btn_new') }}
                         </button>
                     </div>
                     <input type="text" id="customerSearch" placeholder="{{ t('placeholder_customer_name') }}" autocomplete="off" style="width: 100%; padding: 10px; border: 1px solid #ced4da; border-radius: 6px; font-size: 14px;">
@@ -1018,6 +1018,41 @@
 
 <script>
     // ============================================
+    // TRANSLATIONS
+    // ============================================
+    const SLANG = {
+        select_option: {{ t('sl_select_option')|tojson }},
+        select_store: {{ t('sl_select_store')|tojson }},
+        warehouse_label: {{ t('sl_warehouse_label')|tojson }},
+        store_label: {{ t('sl_store_label')|tojson }},
+        unit_pcs: {{ t('sl_unit_pcs')|tojson }},
+        select_location_msg: {{ t('sl_select_location_msg')|tojson }},
+        select_location_first: {{ t('sl_select_location_first')|tojson }},
+        product_prefix: {{ t('sl_product_prefix')|tojson }},
+        stock_only: {{ t('sl_stock_only')|tojson }},
+        available: {{ t('sl_available')|tojson }},
+        remove_confirm: {{ t('sl_remove_confirm')|tojson }},
+        quantity_label: {{ t('sl_quantity_label')|tojson }},
+        price_label: {{ t('sl_price_label')|tojson }},
+        stock_not_enough: {{ t('sl_stock_not_enough')|tojson }},
+        needed_extra: {{ t('sl_needed_extra')|tojson }},
+        available_stock: {{ t('sl_available_stock')|tojson }},
+        already_in_cart: {{ t('sl_already_in_cart')|tojson }},
+        already_in_cart_hint: {{ t('sl_already_in_cart_hint')|tojson }},
+        cart_cleared: {{ t('sl_cart_cleared')|tojson }},
+        stock_return_error: {{ t('sl_stock_return_error')|tojson }},
+        select_location_required: {{ t('sl_select_location_required')|tojson }},
+        stock_warning: {{ t('sl_stock_warning')|tojson }},
+        savdo: {{ t('sl_savdo')|tojson }},
+        unit_litr: {{ t('sl_unit_litr')|tojson }},
+        qty_must_positive: {{ t('sl_qty_must_positive')|tojson }},
+        pcs_step_hint: {{ t('sl_pcs_step_hint')|tojson }},
+        store_required: {{ t('sl_store_required')|tojson }},
+        savat_bosh: {{ t('sl_savat_bosh')|tojson }},
+        last_tab_warn: {{ t('sl_last_tab_warn')|tojson }}
+    };
+
+    // ============================================
     // DEBUG MODE & HELPER FUNCTIONS
     // ============================================
     const DEBUG = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
@@ -1101,7 +1136,7 @@
             // Tab raqamlarini qayta hisoblash (1, 2, 3, ...)
             savedTabs.forEach((tab, index) => {
                 const newTabNumber = index + 1;
-                tab.title = `Savdo ${newTabNumber}`;
+                tab.title = `${SLANG.savdo} ${newTabNumber}`;
                 salesTabs.push(tab);
                 createTabElement(tab.id, tab.title);
                 createTabContent(tab.id);
@@ -1124,7 +1159,7 @@
         const tabId = ++tabCounter;
         // Tab nomini hozirgi mavjud tablar soni asosida berish (1, 2, 3, ...)
         const tabNumber = salesTabs.length + 1;
-        const tabTitle = `Savdo ${tabNumber}`;
+        const tabTitle = `${SLANG.savdo} ${tabNumber}`;
         
         console.log(`➕ Yangi tab yaratilmoqda: ${tabTitle} (ID: ${tabId})`);
         
@@ -1409,7 +1444,7 @@
         
         // Agar faqat bitta tab qolgan bo'lsa, yopishga ruxsat bermaslik
         if (salesTabs.length <= 1) {
-            alert('❌ Oxirgi tabni yopib bo\'lmaydi! Kamida bitta savdo tab ochiq bo\'lishi kerak.');
+            alert('❌ ' + SLANG.last_tab_warn);
             return;
         }
         
@@ -1577,7 +1612,7 @@
             return;
         }
         console.log(`📍 Tab ${tabId} uchun joylashuvlar yuklanmoqda`);
-        locationSelect.innerHTML = '<option value="">Tanlang...</option>';
+        locationSelect.innerHTML = '<option value="">' + SLANG.select_option + '</option>';
         
         // Foydalanuvchining default store_id'sini olish
         const userStoreId = {{ session.store_id if session.store_id else 'null' }};
@@ -1585,7 +1620,7 @@
         locations.forEach(location => {
             const option = document.createElement('option');
             option.value = `${location.type}_${location.id}`;
-            const locationType = location.type === 'warehouse' ? '🏭 Ombor' : '🏪 Do\'kon';
+            const locationType = location.type === 'warehouse' ? '🏭 ' + SLANG.warehouse_label : '🏪 ' + SLANG.store_label;
             option.textContent = `${locationType}: ${location.name}`;
             
             // Agar user'ning default store'i bo'lsa va bu location mos kelsa, avtomatik tanlash
@@ -1652,7 +1687,7 @@
             const stores = await response.json();
             
             const storeSelect = document.getElementById('newCustomerStore');
-            storeSelect.innerHTML = '<option value="">Dokonni tanlang...</option>';
+            storeSelect.innerHTML = '<option value="">' + SLANG.select_store + '</option>';
             
             stores.forEach(store => {
                 const option = document.createElement('option');
@@ -1721,7 +1756,7 @@
         }
         
         if (!storeId) {
-            errorDiv.textContent = '⚠️ Dokonni tanlash shart!';
+            errorDiv.textContent = '⚠️ ' + SLANG.store_required;
             errorDiv.style.display = 'block';
             return;
         }
@@ -1864,7 +1899,7 @@
         
         // Joylashuv tanlanganligini tekshirish
         if (!selectedLocationId || !selectedLocationType) {
-            showBarcodeStatus('⚠️ Avval joylashuvni tanlang!', 'error');
+            showBarcodeStatus('⚠️ ' + SLANG.select_location_first, 'error');
             return;
         }
         
@@ -2681,7 +2716,7 @@
         const locationValue = locationSelect.value;
         
         if (!locationValue) {
-            tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; padding: 30px; color: #999;">Joylashuvni tanlang</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; padding: 30px; color: #999;">' + SLANG.select_location_msg + '</td></tr>';
             selectedLocationId = null;
             selectedLocationType = null;
             document.getElementById(`productsPagination_tab${tabId}`).innerHTML = '';
@@ -2772,9 +2807,9 @@
                 // Miqdorni format qilish
                 const quantityDisplay = unitType === 'litr' 
                     ? `${parseFloat(quantity).toFixed(2)} L` 
-                    : (quantity % 1 === 0 ? `${Math.floor(quantity)} dona` : `${parseFloat(quantity).toFixed(1)} dona`);
+                    : (quantity % 1 === 0 ? `${Math.floor(quantity)} ${SLANG.unit_pcs}` : `${parseFloat(quantity).toFixed(1)} ${SLANG.unit_pcs}`);
                 
-                const productName = product.name || `Mahsulot #${product.id}`;
+                const productName = product.name || `${SLANG.product_prefix} #${product.id}`;
                 const safeProductName = productName.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"');
                 const htmlSafeProductName = escapeHtml(productName);
                 const costPrice = product.cost_price || 0;
@@ -3032,7 +3067,7 @@
         modalProductName.textContent = productName;
         
         // Mavjud miqdorni unit type bilan ko'rsatish
-        const unitText = unitType === 'litr' ? 'L' : 'dona';
+        const unitText = unitType === 'litr' ? 'L' : SLANG.unit_pcs;
         const formattedQuantity = unitType === 'litr' 
             ? `${parseFloat(quantity).toFixed(2)} ${unitText}`
             : (quantity % 1 === 0 ? `${Math.floor(quantity)} ${unitText}` : `${parseFloat(quantity).toFixed(1)} ${unitText}`);
@@ -3209,23 +3244,23 @@
         const quantity = parseFloat(modalQuantity.value) || 0;
         const available = parseFloat(currentProduct.available) || 0;
         const unitType = currentProduct.unitType || 'dona';
-        const unitText = unitType === 'litr' ? 'litr' : 'dona';
+        const unitText = unitType === 'litr' ? SLANG.unit_litr : SLANG.unit_pcs;
         
         // Miqdor mavjud miqdordan oshib ketsa yoki 0 dan kichik bo'lsa
         if (quantity > available) {
             warningDiv.style.display = 'block';
-            warningText.textContent = `Stokda faqat ${available.toFixed(2)} ${unitText} mavjud!`;
+            warningText.textContent = `${SLANG.stock_only} ${available.toFixed(2)} ${unitText} ${SLANG.stock_warning}`;
             modalQuantity.style.borderColor = '#dc3545';
             modalQuantity.style.backgroundColor = '#ffe6e6';
         } else if (quantity <= 0) {
             warningDiv.style.display = 'block';
-            warningText.textContent = 'Miqdor 0 dan katta bo\'lishi kerak!';
+            warningText.textContent = SLANG.qty_must_positive;
             modalQuantity.style.borderColor = '#dc3545';
             modalQuantity.style.backgroundColor = '#ffe6e6';
         } else if (unitType === 'dona' && (quantity % 0.5 !== 0)) {
             // Dona uchun: faqat 0.5 qadam (0.5, 1, 1.5, 2...)
             warningDiv.style.display = 'block';
-            warningText.textContent = 'Dona uchun faqat 0.5, 1, 1.5, 2... miqdor mumkin!';
+            warningText.textContent = SLANG.pcs_step_hint;
             modalQuantity.style.borderColor = '#dc3545';
             modalQuantity.style.backgroundColor = '#ffe6e6';
         } else {
@@ -3420,7 +3455,7 @@
             if (quantityDifference > 0) {
                 // Mavjud stokda yetarli borligini tekshirish
                 if (quantityDifference > currentProduct.available) {
-                    alert(`Stokda yetarli mahsulot yo'q!\n\nKerakli qo'shimcha: ${quantityDifference}\nMavjud stok: ${currentProduct.available}`);
+                    alert(`${SLANG.stock_not_enough}\n\n${SLANG.needed_extra}: ${quantityDifference}\n${SLANG.available_stock}: ${currentProduct.available}`);
                     return;
                 }
                 
@@ -3517,7 +3552,7 @@
         // Mahsulot allaqachon savatda borligini tekshirish
         const existingItem = cart.find(item => item.id === currentProduct.id);
         if (existingItem) {
-            alert('⚠️ Bu mahsulot allaqachon savatda mavjud!\n\nAgar miqdorini o\'zgartirmoqchi bo\'lsangiz, savatdagi "✏️ Tahrirlash" tugmasini bosing.');
+            alert('⚠️ ' + SLANG.already_in_cart + '\n\n' + SLANG.already_in_cart_hint);
             closeModal();
             return;
         }
@@ -3561,7 +3596,7 @@
         // Savatga yangi mahsulot qo'shish (duplicate allaqachon tekshirilgan)
         cart.push({
             id: currentProduct.id,
-            name: currentProduct?.name || `Mahsulot #${currentProduct?.id || 'Unknown'}`,
+            name: currentProduct?.name || `${SLANG.product_prefix} #${currentProduct?.id || 'Unknown'}`,
             priceUSD: priceUSD,
             priceUZS: priceUZS,
             quantity: quantity
@@ -3577,7 +3612,7 @@
         
         // currentProduct ma'lumotlarini saqlab qo'yish (closeModal() uni null qiladi)
         const addedProduct = {
-            name: currentProduct?.name || `Mahsulot #${currentProduct?.id}`,
+            name: currentProduct?.name || `${SLANG.product_prefix} #${currentProduct?.id}`,
             id: currentProduct?.id
         };
         
@@ -3643,7 +3678,7 @@
         }
         
         if (cart.length === 0) {
-            cartItemsDiv.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 50px; color: #999;">Savat bo\'sh</td></tr>';
+            cartItemsDiv.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 50px; color: #999;">' + SLANG.savat_bosh + '</td></tr>';
             cartTotalDiv.innerHTML = '';
             cartTotalHeader.innerHTML = '';
             
@@ -3757,7 +3792,7 @@
         const item = cart[index];
         
         // Tasdiqlash so'rovi
-        const confirmMessage = `"${item.name}" mahsulotini savatdan o'chirmoqchimisiz?\n\nMiqdor: ${item.quantity} dona\nNarx: $${item.priceUSD.toFixed(2)}`;
+        const confirmMessage = `"${item.name}" ${SLANG.remove_confirm}\n\n${SLANG.quantity_label}: ${item.quantity} ${SLANG.unit_pcs}\n${SLANG.price_label}: $${item.priceUSD.toFixed(2)}`;
         if (!confirm(confirmMessage)) {
             console.log('❌ Foydalanuvchi o\'chirishni bekor qildi');
             return;
@@ -3805,7 +3840,7 @@
                 
                 if (!result.success) {
                     console.error('❌ Stokka qaytarishda xatolik:', result.error);
-                    alert('Stokka qaytarishda xatolik: ' + result.error);
+                    alert(SLANG.stock_return_error + ': ' + result.error);
                     console.log(`${'='.repeat(80)}\n`);
                     return; // Xatolik bo'lsa savatdan o'chirmaymiz
                 } else {
@@ -4005,7 +4040,7 @@
         if (quantityDiff > 0 && value > (maxStock + originalQuantity)) {
             input.style.borderColor = '#dc3545';
             input.style.backgroundColor = '#ffe6e6';
-            input.title = `Stokda faqat ${maxStock + originalQuantity} dona mavjud!`;
+            input.title = `${SLANG.stock_only} ${maxStock + originalQuantity} ${SLANG.unit_pcs} ${SLANG.stock_warning}`;
             return;
         }
         
@@ -4315,7 +4350,7 @@
         
         const locationValue = locationSelect.value;
         if (!locationValue) {
-            tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; padding: 30px; color: #999;">Joylashuvni tanlang</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; padding: 30px; color: #999;">' + SLANG.select_location_msg + '</td></tr>';
             return;
         }
         
@@ -4369,7 +4404,7 @@
                     }
                 }
                 
-                const productName = product.name || `Mahsulot #${product.id}`;
+                const productName = product.name || `${SLANG.product_prefix} #${product.id}`;
                 const safeProductName = productName.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"');
                 const htmlSafeProductName = escapeHtml(productName);
                 const costPrice = product.cost_price || 0;
@@ -5063,7 +5098,7 @@
         await loadProducts();
         
         console.log('🗑️ Savat tozalandi va barcha mahsulotlar stokga qaytarildi');
-        alert('✅ Savat tozalandi va mahsulotlar stokga qaytarildi');
+        alert('✅ ' + SLANG.cart_cleared);
     }
     
     // Avtomatik pending savdo yaratish/yangilash
@@ -5187,7 +5222,7 @@
     // Keyinroq tasdiqlash
     async function savePending() {
         if (cart.length === 0) {
-            alert('Savat bo\'sh!');
+            alert(SLANG.savat_bosh);
             return;
         }
         
@@ -5195,7 +5230,7 @@
         const customerId = selectedCustomerIdElement ? selectedCustomerIdElement.value || null : null;
         
         if (!selectedLocationId || !selectedLocationType) {
-            alert('Joylashuvni tanlang!');
+            alert(SLANG.select_location_required);
             return;
         }
         
@@ -5307,7 +5342,7 @@
     // Savdoni yakunlash
     function completeSale() {
         if (cart.length === 0) {
-            alert('Savat bo\'sh!');
+            alert(SLANG.savat_bosh);
             return;
         }
         
@@ -6179,7 +6214,7 @@
                 if (customerSearch) customerSearch.value = '';
                 if (selectedCustomerId) selectedCustomerId.value = '';
                 if (cartCustomerInfo) cartCustomerInfo.innerHTML = '<h3 style="margin: 0; color: #333;">🛒 Savdo Korzinasi</h3>';
-                if (productsTable) productsTable.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 30px; color: #999;">Joylashuvni tanlang</td></tr>';
+                if (productsTable) productsTable.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 30px; color: #999;">' + SLANG.select_location_msg + '</td></tr>';
                 
                 // Tab sarlavhasini tozalash
                 const activeTab = document.querySelector('.sales-tab.active');
@@ -6187,8 +6222,8 @@
                     const tabTitle = activeTab.querySelector('.tab-title');
                     if (tabTitle) {
                         const tabId = activeTab.dataset.tabId;
-                        tabTitle.textContent = `Savdo ${tabId}`;
-                        tabTitle.title = `Savdo ${tabId}`;
+                        tabTitle.textContent = `${SLANG.savdo} ${tabId}`;
+                        tabTitle.title = `${SLANG.savdo} ${tabId}`;
                     }
                     
                     // Yangi mijoz qo'shish tugmasini qayta yoqish
