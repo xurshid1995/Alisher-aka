@@ -1,6 +1,6 @@
 {% extends "base_with_sidebar.html" %}
 
-{% block title %}Yangi Foydalanuvchi - Sayt 2025{% endblock %}
+{% block title %}{{ t('heading_add_user') }} - Sayt 2025{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -269,14 +269,14 @@
 {% block content %}
 <div class="add-user-container">
     <div class="page-header" style="padding: 0.25rem 2rem; margin-bottom: 0.25rem; text-align: right;">
-        <h1 style="margin: 0; font-size: 2rem;">👤 Yangi Foydalanuvchi</h1>
+        <h1 style="margin: 0; font-size: 2rem;">{{ t('heading_add_user') }}</h1>
     </div>
 
     <div class="form-layout">
         <!-- Form qismi -->
         <div class="form-section">
             <h3 style="margin: 0 0 1.5rem 0; color: #333; font-size: 1.25rem; border-bottom: 2px solid #007bff; padding-bottom: 0.5rem;">
-                📝 Foydalanuvchi ma'lumotlari
+                {{ t('label_user_info') }}
             </h3>
             
             <div class="success-message" id="successMessage"></div>
@@ -284,27 +284,27 @@
             <form id="addUserForm">
             <div class="form-row">
                 <div class="form-group">
-                    <label for="last_name">Familya <span class="required">*</span></label>
-                    <input type="text" id="last_name" name="last_name" required placeholder="Karimov">
+                    <label for="last_name">{{ t('label_last_name') }} <span class="required">*</span></label>
+                    <input type="text" id="last_name" name="last_name" required placeholder="{{ t('placeholder_last_name') }}">
                     <div class="error-message" id="lastNameError"></div>
                 </div>
 
                 <div class="form-group">
-                    <label for="first_name">Ism <span class="required">*</span></label>
-                    <input type="text" id="first_name" name="first_name" required placeholder="Aziz">
+                    <label for="first_name">{{ t('label_first_name') }} <span class="required">*</span></label>
+                    <input type="text" id="first_name" name="first_name" required placeholder="{{ t('placeholder_first_name') }}">
                     <div class="error-message" id="firstNameError"></div>
                 </div>
             </div>
 
             <div class="form-row">
                 <div class="form-group">
-                    <label for="email">Email <span class="required">*</span></label>
+                    <label for="email">{{ t('label_email_required') }} <span class="required">*</span></label>
                     <input type="email" id="email" name="email" required placeholder="aziz@sayt2025.uz">
                     <div class="error-message" id="emailError"></div>
                 </div>
 
                 <div class="form-group">
-                    <label for="phone">Telefon raqami</label>
+                    <label for="phone">{{ t('phone_number_label') }}</label>
                     <input type="tel" id="phone" name="phone" placeholder="+998901234567">
                     <div class="error-message" id="phoneError"></div>
                 </div>
@@ -312,23 +312,23 @@
 
             <div class="form-row">
                 <div class="form-group">
-                    <label for="username">Login (Username) <span class="required">*</span></label>
-                    <input type="text" id="username" name="username" required placeholder="akarimov">
+                    <label for="username">{{ t('label_username_required') }} <span class="required">*</span></label>
+                    <input type="text" id="username" name="username" required placeholder="{{ t('placeholder_username') }}">
                     <div class="error-message" id="usernameError"></div>
                 </div>
 
                 <div class="form-group">
-                    <label for="password">Parol <span class="required">*</span></label>
-                    <input type="password" id="password" name="password" required placeholder="••••••••">
+                    <label for="password">{{ t('label_password_required') }} <span class="required">*</span></label>
+                    <input type="password" id="password" name="password" required placeholder="{{ t('placeholder_password') }}">
                     <div class="error-message" id="passwordError"></div>
                 </div>
             </div>
 
             <div class="form-group">
-                <label for="role">Rol <span class="required">*</span></label>
+                <label for="role">{{ t('label_role_required') }} <span class="required">*</span></label>
                 <select id="role" name="role" required>
-                    <option value="sotuvchi">Sotuvchi</option>
-                    <option value="admin">Admin</option>
+                    <option value="sotuvchi">{{ t('role_seller') }}</option>
+                    <option value="admin">{{ t('role_admin') }}</option>
                 </select>
             </div>
 
@@ -336,15 +336,15 @@
 
             <div class="form-group checkbox">
                 <input type="checkbox" id="is_active" name="is_active" checked>
-                <label for="is_active">Faol foydalanuvchi</label>
+                <label for="is_active">{{ t('label_active_user') }}</label>
             </div>
 
             <div class="form-actions">
                 <button type="button" class="btn btn-secondary" onclick="goBack()">
-                    ← Orqaga
+                    {{ t('btn_back') }}
                 </button>
                 <button type="submit" class="btn btn-primary" id="submitBtn">
-                    💾 Saqlash
+                    {{ t('btn_save') }}
                 </button>
             </div>
         </form>
@@ -352,30 +352,30 @@
 
         <!-- Sotuvchi huquqlari boshqaruvi -->
         <div class="info-section">
-            <h3>⚙️ Sotuvchi huquqlari</h3>
+            <h3>{{ t('seller_rights_title') }}</h3>
             
             <div class="permissions-control" id="sellerPermissions" style="display: none;">
                 
                 <!-- 1. Savdo qilish huquqi -->
                 <div class="permission-group">
-                    <h4>🛍️ Savdo qilish</h4>
+                    <h4>{{ t('perm_sales_title') }}</h4>
                     <div class="permission-info">
                         <p style="color: #666; font-size: 0.9rem; margin-bottom: 1rem;">
-                            Foydalanuvchi qaysi joylashuv(lar)da savdo qilishi mumkin
+                            {{ t('perm_sales_desc') }}
                         </p>
                     </div>
                     
                     <label class="permission-item">
                         <input type="checkbox" name="can_sell" id="canSell" onchange="toggleSalesLocations()">
-                        <span><strong>Savdo qilish ruxsati</strong></span>
+                        <span><strong>{{ t('perm_sales_label') }}</strong></span>
                     </label>
                     
                     <div class="location-selection" id="salesLocations" style="margin-left: 20px; margin-top: 10px; display: none;">
-                        <h5>📍 Savdo qilish uchun ruxsat etilgan joylashuvlar:</h5>
+                        <h5>{{ t('perm_allowed_locations') }}</h5>
                         <div style="margin-bottom: 10px;">
                             <label class="permission-item">
                                 <input type="checkbox" id="selectAllSalesLocations" onchange="toggleAllSalesLocations()">
-                                <span><strong>Barcha joylashuvlar</strong></span>
+                                <span><strong>{{ t('perm_all_locations') }}</strong></span>
                             </label>
                         </div>
                         <div id="salesLocationsList">
@@ -386,24 +386,24 @@
 
                 <!-- 2. Transfer qilish huquqi -->
                 <div class="permission-group">
-                    <h4>🔄 Transfer qilish</h4>
+                    <h4>{{ t('perm_transfer_title') }}</h4>
                     <div class="permission-info">
                         <p style="color: #666; font-size: 0.9rem; margin-bottom: 1rem;">
-                            Foydalanuvchi qaysi joylashuv(lar)dan mahsulot transfer qilishi mumkin
+                            {{ t('perm_transfer_desc') }}
                         </p>
                     </div>
                     
                     <label class="permission-item">
                         <input type="checkbox" name="can_transfer" id="canTransfer" onchange="toggleTransferLocations()">
-                        <span><strong>Transfer qilish ruxsati</strong></span>
+                        <span><strong>{{ t('perm_transfer_label') }}</strong></span>
                     </label>
                     
                     <div class="location-selection" id="transferLocations" style="margin-left: 20px; margin-top: 10px; display: none;">
-                        <h5>📍 Transfer qilish uchun ruxsat etilgan joylashuvlar:</h5>
+                        <h5>{{ t('perm_transfer_locations') }}</h5>
                         <div style="margin-bottom: 10px;">
                             <label class="permission-item">
                                 <input type="checkbox" id="selectAllTransferLocations" onchange="toggleAllTransferLocations()">
-                                <span><strong>Barcha joylashuvlar</strong></span>
+                                <span><strong>{{ t('perm_all_locations') }}</strong></span>
                             </label>
                         </div>
                         <div id="transferLocationsList">
@@ -414,24 +414,24 @@
 
                 <!-- 3. Qoldiqni tekshirish huquqi -->
                 <div class="permission-group">
-                    <h4>📊 Qoldiqni tekshirish</h4>
+                    <h4>{{ t('perm_stock_check_title') }}</h4>
                     <div class="permission-info">
                         <p style="color: #666; font-size: 0.9rem; margin-bottom: 1rem;">
-                            Foydalanuvchi qoldiqni tekshirish sahifasiga kirib, inventarizatsiya qila oladi
+                            {{ t('perm_stock_check_desc') }}
                         </p>
                     </div>
                     
                     <label class="permission-item">
                         <input type="checkbox" name="can_stock_check" id="canStockCheck" onchange="toggleStockCheckLocations()">
-                        <span><strong>Qoldiqni tekshirish ruxsati</strong></span>
+                        <span><strong>{{ t('perm_stock_check_label') }}</strong></span>
                     </label>
                     
                     <div class="location-selection" id="stockCheckLocations" style="margin-left: 20px; margin-top: 10px; display: none;">
-                        <h5>📍 Qoldiqni tekshirish uchun ruxsat etilgan joylashuvlar:</h5>
+                        <h5>{{ t('perm_stock_check_locations') }}</h5>
                         <div style="margin-bottom: 10px;">
                             <label class="permission-item">
                                 <input type="checkbox" id="selectAllStockCheckLocations" onchange="toggleAllStockCheckLocations()">
-                                <span><strong>Barcha joylashuvlar</strong></span>
+                                <span><strong>{{ t('perm_all_locations') }}</strong></span>
                             </label>
                         </div>
                         <div id="stockCheckLocationsList">
@@ -442,17 +442,17 @@
 
                 <!-- 4. Asosiy dokon/ombor -->
                 <div class="permission-group">
-                    <h4>🏪 Asosiy joylashuv</h4>
+                    <h4>{{ t('primary_location_title') }}</h4>
                     <div class="permission-info">
                         <p style="color: #666; font-size: 0.9rem; margin-bottom: 1rem;">
-                            Foydalanuvchining asosiy ishi joylashuvi (avtomatik tanlash uchun)
+                            {{ t('primary_location_desc') }}
                         </p>
                     </div>
                     
                     <div class="form-group">
-                        <label for="primaryLocation">Asosiy dokon/ombor:</label>
+                        <label for="primaryLocation">{{ t('primary_location_label') }}</label>
                         <select id="primaryLocation" name="primary_location">
-                            <option value="">-- Tanlang --</option>
+                            <option value="">{{ t('select_option') }}</option>
                         </select>
                     </div>
                 </div>
@@ -460,13 +460,30 @@
             </div>
 
             <div class="admin-note" id="adminNote" style="display: none;">
-                <p><strong>Admin huquqlari:</strong> Barcha imkoniyatlarga ega</p>
+                <p><strong>{{ t('admin_rights_text') }}</strong> {{ t('admin_all_capabilities') }}</p>
             </div>
         </div>
     </div>
 </div>
 
 <script>
+
+    const AULANG = {
+        user_added_success: "{{ t('user_added_success') }}",
+        error_occurred: "{{ t('error_occurred') }}",
+        connection_error: "{{ t('connection_error') }}",
+        user_saving: "{{ t('user_saving') }}",
+        btn_save: "{{ t('btn_save') }}",
+        data_will_be_lost: "{{ t('data_will_be_lost') }}",
+        lastname_required: "{{ t('lastname_required') }}",
+        firstname_required: "{{ t('firstname_required') }}",
+        email_required_msg: "{{ t('email_required_msg') }}",
+        email_format_error: "{{ t('email_format_error') }}",
+        login_required: "{{ t('login_required') }}",
+        password_required: "{{ t('password_required') }}",
+        password_min_length: "{{ t('password_min_length') }}",
+        select_option: "{{ t('select_option') }}"
+    };
 
 
     // Telefon raqamini formatlash
@@ -643,7 +660,7 @@
         }
         
         // Selectni tozalash
-        primaryLocationSelect.innerHTML = '<option value="">-- Tanlang --</option>';
+        primaryLocationSelect.innerHTML = '<option value="">' + AULANG.select_option + '</option>';
         
         if (data.success) {
             // Dokonlar va omborlarni qo'shish
@@ -900,7 +917,7 @@
             const result = await response.json();
 
             if (response.ok) {
-                showSuccess('Foydalanuvchi muvaffaqiyatli qo\'shildi!');
+                showSuccess(AULANG.user_added_success);
                 // Formni tozalash
                 document.getElementById('addUserForm').reset();
                 document.getElementById('is_active').checked = true;
@@ -910,11 +927,11 @@
                     window.location.href = '/users';
                 }, 2000);
             } else {
-                showError('general', result.error || 'Xatolik yuz berdi');
+                showError('general', result.error || AULANG.error_occurred);
             }
         } catch (error) {
             console.error('Xatolik:', error);
-            showError('general', 'Aloqa xatosi yuz berdi');
+            showError('general', AULANG.connection_error);
         } finally {
             setLoading(false);
         }
@@ -925,33 +942,33 @@
         let isValid = true;
 
         if (!data.last_name) {
-            showError('lastName', 'Familya talab qilinadi');
+            showError('lastName', AULANG.lastname_required);
             isValid = false;
         }
 
         if (!data.first_name) {
-            showError('firstName', 'Ism talab qilinadi');
+            showError('firstName', AULANG.firstname_required);
             isValid = false;
         }
 
         if (!data.email) {
-            showError('email', 'Email talab qilinadi');
+            showError('email', AULANG.email_required_msg);
             isValid = false;
         } else if (!isValidEmail(data.email)) {
-            showError('email', 'Email formati noto\'g\'ri');
+            showError('email', AULANG.email_format_error);
             isValid = false;
         }
 
         if (!data.username) {
-            showError('username', 'Login talab qilinadi');
+            showError('username', AULANG.login_required);
             isValid = false;
         }
 
         if (!data.password) {
-            showError('password', 'Parol talab qilinadi');
+            showError('password', AULANG.password_required);
             isValid = false;
         } else if (data.password.length < 6) {
-            showError('password', 'Parol kamida 6 ta belgidan iborat bo\'lishi kerak');
+            showError('password', AULANG.password_min_length);
             isValid = false;
         }
 
@@ -1003,18 +1020,18 @@
         
         if (loading) {
             form.classList.add('loading');
-            submitBtn.textContent = '⏳ Saqlanmoqda...';
+            submitBtn.textContent = AULANG.user_saving;
             submitBtn.disabled = true;
         } else {
             form.classList.remove('loading');
-            submitBtn.textContent = '💾 Saqlash';
+            submitBtn.textContent = AULANG.btn_save;
             submitBtn.disabled = false;
         }
     }
 
     // Orqaga qaytish
     function goBack() {
-        if (confirm('Kiritilgan ma\'lumotlar yo\'qoladi. Davom etasizmi?')) {
+        if (confirm(AULANG.data_will_be_lost)) {
             window.location.href = '/users';
         }
     }

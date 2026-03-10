@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Transfer - Dokon Boshqaruv Tizimi{% endblock %}
+{% block title %}{{ t('tr1_title') }} - DOKON{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -91,32 +91,32 @@
 
 {% block content %}
 <div class="content-header">
-    <h1>🔄 Transfer Sahifasi</h1>
+    <h1>🔄 {{ t('tr1_title') }}</h1>
     <a href="{{ url_for('transfer_old') }}?new=true" class="btn btn-success">
-        <i class="fas fa-exchange-alt"></i> Yangi Transfer
+        <i class="fas fa-exchange-alt"></i> {{ t('tr1_new_transfer') }}
     </a>
 </div>
 
 <!-- Tasdiqlanmagan Transferlar -->
 <div class="card" style="margin-bottom: 20px;">
     <div class="card-body" style="padding: 15px;">
-        <h3 style="margin: 0 0 15px 0; font-size: 18px; color: #333;">⏳ Tasdiqlanmagan Transferlar</h3>
+        <h3 style="margin: 0 0 15px 0; font-size: 18px; color: #333;">⏳ {{ t('tr1_pending') }}</h3>
         <div style="overflow-x: auto;">
             <table class="table transfer-list-table" id="pendingTransfersTable">
                 <thead>
                     <tr>
-                        <th style="color: white; background: #5DADE2;">Qayerdan</th>
-                        <th style="color: white; background: #5DADE2;">Qayerga</th>
-                        <th style="color: white; background: #5DADE2;">Yaratilgan vaqti</th>
-                        <th style="color: white; background: #5DADE2;">Nechta mahsulot</th>
-                        <th style="color: white; background: #5DADE2;">Foydalanuvchi</th>
-                        <th style="color: white; background: #5DADE2;">Amallar</th>
+                        <th style="color: white; background: #5DADE2;">{{ t('tr1_th_from') }}</th>
+                        <th style="color: white; background: #5DADE2;">{{ t('tr1_th_to') }}</th>
+                        <th style="color: white; background: #5DADE2;">{{ t('tr1_th_created') }}</th>
+                        <th style="color: white; background: #5DADE2;">{{ t('tr1_th_products') }}</th>
+                        <th style="color: white; background: #5DADE2;">{{ t('tr1_th_user') }}</th>
+                        <th style="color: white; background: #5DADE2;">{{ t('tr1_th_actions') }}</th>
                     </tr>
                 </thead>
                 <tbody id="pendingTransfersBody">
                     <tr>
                         <td colspan="6" style="text-align: center; padding: 20px; color: #666;">
-                            📭 Tasdiqlanmagan transferlar yo'q
+                            📭 {{ t('tr1_no_pending') }}
                         </td>
                     </tr>
                 </tbody>
@@ -128,26 +128,26 @@
 <!-- Transfer Tarixi -->
 <div class="card">
     <div class="card-body" style="padding: 15px;">
-        <h3 style="margin: 0 0 15px 0; font-size: 18px; color: #333;">📋 Transfer Tarixi</h3>
+        <h3 style="margin: 0 0 15px 0; font-size: 18px; color: #333;">📋 {{ t('tr1_history') }}</h3>
         <div style="margin-bottom: 15px;">
-            <input type="text" id="historySearch" class="form-control" placeholder="🔍 Transfer tarixidan qidirish..." style="padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
+            <input type="text" id="historySearch" class="form-control" placeholder="🔍 {{ t('tr1_search') }}" style="padding: 10px; border: 2px solid #ddd; border-radius: 4px;">
         </div>
         <div style="overflow-x: auto;">
             <table class="table transfer-list-table" id="transferHistoryTable">
                 <thead>
                     <tr>
-                        <th style="color: white; background: #5DADE2;">Sana</th>
-                        <th style="color: white; background: #5DADE2;">Qayerdan</th>
-                        <th style="color: white; background: #5DADE2;">Qayerga</th>
-                        <th style="color: white; background: #5DADE2;">Mahsulotlar</th>
-                        <th style="color: white; background: #5DADE2;">Miqdor</th>
-                        <th style="color: white; background: #5DADE2;">Foydalanuvchi</th>
+                        <th style="color: white; background: #5DADE2;">{{ t('tr1_th_date') }}</th>
+                        <th style="color: white; background: #5DADE2;">{{ t('tr1_th_from') }}</th>
+                        <th style="color: white; background: #5DADE2;">{{ t('tr1_th_to') }}</th>
+                        <th style="color: white; background: #5DADE2;">{{ t('tr1_th_products2') }}</th>
+                        <th style="color: white; background: #5DADE2;">{{ t('tr1_th_quantity') }}</th>
+                        <th style="color: white; background: #5DADE2;">{{ t('tr1_th_user') }}</th>
                     </tr>
                 </thead>
                 <tbody id="transferHistoryBody">
                     <tr>
                         <td colspan="6" style="text-align: center; padding: 20px; color: #666;">
-                            ⏳ Yuklanmoqda...
+                            ⏳ {{ t('tr1_loading') }}
                         </td>
                     </tr>
                 </tbody>
@@ -160,6 +160,19 @@
 
 {% block extra_js %}
 <script>
+    const TR1LANG = {
+        no_pending: "{{ t('tr1_no_pending') }}",
+        edit: "{{ t('tr1_edit') }}",
+        delete_btn: "{{ t('tr1_delete') }}",
+        no_permission: "{{ t('tr1_no_permission') }}",
+        empty_history: "{{ t('tr1_empty_history') }}",
+        error: "{{ t('tr1_error') }}",
+        delete_confirm: "{{ t('tr1_delete_confirm') }}",
+        delete_success: "{{ t('tr1_delete_success') }}",
+        delete_error: "{{ t('tr1_delete_error') }}",
+        delete_no_perm: "{{ t('tr1_delete_no_perm') }}"
+    };
+
     // Session ma'lumotlari
     const userRole = '{{ session.get("role", "") }}';
     const userTransferLocations = {{ session.get("transfer_locations", []) | tojson }};
@@ -236,17 +249,17 @@
                         actionButtons = `
                             <a href="/transfer_old?id=${pending.id}" 
                                class="btn-sm btn-success-sm">
-                                ✏️ Tahrirlash
+                                ✏️ ${TR1LANG.edit}
                             </a>
                             <button class="btn-sm btn-danger-sm" 
                                     onclick="deletePendingTransfer(${pending.id}); return false;" 
                                     style="margin-left: 5px;">
-                                🗑️ O'chirish
+                                🗑️ ${TR1LANG.delete_btn}
                             </button>
                         `;
                     } else {
                         actionButtons = `
-                            <span style="color: #999; font-size: 0.9em;">🔒 Ruxsat yo'q</span>
+                            <span style="color: #999; font-size: 0.9em;">🔒 ${TR1LANG.no_permission}</span>
                         `;
                     }
                     
@@ -269,19 +282,19 @@
                 tbody.innerHTML = `
                     <tr>
                         <td colspan="6" style="text-align: center; padding: 20px; color: #666;">
-                            📭 Tasdiqlanmagan transferlar yo'q
+                            📭 ${TR1LANG.no_pending}
                         </td>
                     </tr>
                 `;
             }
         } catch (error) {
-            console.error('Tasdiqlanmagan transferlarni yuklashda xatolik:', error);
+            console.error('Error loading pending transfers:', error);
         }
     }
     
     // Pending transferni o'chirish
     async function deletePendingTransfer(pendingId) {
-        if (!confirm('Bu transferni o\'chirmoqchimisiz?')) {
+        if (!confirm(TR1LANG.delete_confirm)) {
             return;
         }
         
@@ -291,23 +304,23 @@
             });
             
             if (response.ok) {
-                alert('✅ Transfer o\'chirildi');
+                alert('✅ ' + TR1LANG.delete_success);
                 await loadPendingTransfers(); // Jadvalni yangilash
             } else {
                 // Xatolik xabarini olish
                 const errorData = await response.json().catch(() => ({}));
-                const errorMsg = errorData.error || 'Transferni o\'chirishda xatolik';
+                const errorMsg = errorData.error || TR1LANG.delete_error;
                 
                 // Permission xatoligi uchun aniq xabar
                 if (response.status === 403) {
-                    alert('❌ Sizga bu transferni o\'chirish uchun ruxsat yo\'q');
+                    alert('❌ ' + TR1LANG.delete_no_perm);
                 } else {
                     alert('❌ ' + errorMsg);
                 }
             }
         } catch (error) {
-            console.error('Transferni o\'chirishda xatolik:', error);
-            alert('❌ Transferni o\'chirishda xatolik');
+            console.error('Error deleting transfer:', error);
+            alert('❌ ' + TR1LANG.delete_error);
         }
     }
     
@@ -348,17 +361,17 @@
                 tbody.innerHTML = `
                     <tr>
                         <td colspan="6" style="text-align: center; padding: 20px; color: #666;">
-                            📭 Transfer tarixi bo'sh
+                            📭 ${TR1LANG.empty_history}
                         </td>
                     </tr>
                 `;
             }
         } catch (error) {
-            console.error('Transfer tarixini yuklashda xatolik:', error);
+            console.error('Error loading transfer history:', error);
             document.getElementById('transferHistoryBody').innerHTML = `
                 <tr>
                     <td colspan="5" style="text-align: center; padding: 20px; color: #dc3545;">
-                        ❌ Xatolik yuz berdi
+                        ❌ ${TR1LANG.error}
                     </td>
                 </tr>
             `;

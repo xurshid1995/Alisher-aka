@@ -1,6 +1,6 @@
 {% extends "base_with_sidebar.html" %}
 
-{% block title %}{{ customer.name }} - Mijoz ma'lumotlari{% endblock %}
+{% block title %}{{ customer.name }} - {{ t('cd_title_suffix') }}{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -708,7 +708,7 @@
                     <span class="quick-info-item">📍 {{ customer.address or "Kiritilmagan" }}</span>
                 </div>
             </div>
-            <a href="/customers" class="back-btn">← Orqaga</a>
+            <a href="/customers" class="back-btn">← {{ t('cd_back') }}</a>
         </div>
 
 
@@ -719,14 +719,14 @@
                 <i class="fas fa-shopping-cart stat-icon"></i>
                 <div class="stat-content">
                     <div class="stat-value" id="totalOrders">-</div>
-                    <div class="stat-label">Jami savdolar</div>
+                    <div class="stat-label">{{ t('cd_total_purchases') }}</div>
                 </div>
             </div>
             <div class="stat-card">
                 <i class="fas fa-dollar-sign stat-icon"></i>
                 <div class="stat-content">
                     <div class="stat-value" id="totalAmount">-</div>
-                    <div class="stat-label">Jami summa</div>
+                    <div class="stat-label">{{ t('cd_total_amount') }}</div>
                 </div>
             </div>
             {% if session.role in ['admin', 'manager'] %}
@@ -747,7 +747,7 @@
             <div class="search-filter-row">
                 <div class="search-input-container">
                     <i class="fas fa-search search-icon"></i>
-                    <input type="text" id="customerSearchInput" placeholder="Qidirish..." class="search-input">
+                    <input type="text" id="customerSearchInput" placeholder="{{ t('cd_search') }}" class="search-input">
                     <button id="customerClearSearch" class="clear-search-btn" style="display: none;">
                         <i class="fas fa-times"></i>
                     </button>
@@ -778,11 +778,11 @@
         </div>
 
         <div id="loadingSales" class="loading-message">
-            ⏳ Yuklanmoqda...
+            ⏳ {{ t('cd_loading') }}
         </div>
 
         <div id="noSalesMessage" style="display: none;" class="no-data-message">
-            📭 Hozircha savdolar mavjud emas
+            📭 {{ t('cd_no_data') }}
         </div>
 
         <div class="table-responsive">
@@ -807,7 +807,7 @@
                     <tbody id="salesTableBody">
                         <tr>
                             <td colspan="10" style="text-align: center; padding: 20px;">
-                                <div class="loading-state">Yuklanmoqda...</div>
+                                <div class="loading-state">${CDLANG.loading}</div>
                             </td>
                         </tr>
                     </tbody>
@@ -824,6 +824,13 @@
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 <script>
+// CDLANG - Customer Detail translations
+const CDLANG = {
+    loading: "{{ t('cd_loading') }}",
+    no_data: "{{ t('cd_no_data') }}",
+    view: "{{ t('cd_view') }}"
+};
+
 // Global o'zgaruvchilar
 let userRole = '';
 let currentSaleData = null;
@@ -884,7 +891,7 @@ function loadCustomerOrders(customerId) {
 function displayEmptyTable() {
     const tbody = document.getElementById('salesTableBody');
     const colspan = (userRole === 'admin' || userRole === 'manager') ? 10 : 9;
-    tbody.innerHTML = '<tr><td colspan="' + colspan + '" class="no-data-message">Hozircha savdolar mavjud emas</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="' + colspan + '" class="no-data-message">' + CDLANG.no_data + '</td></tr>';
 }
 
 function displayOrders(orders) {

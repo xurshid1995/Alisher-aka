@@ -1,6 +1,6 @@
 {% extends "base_with_sidebar.html" %}
 
-{% block title %}Foydalanuvchilar - Sayt 2025{% endblock %}
+{% block title %}{{ t('heading_users') }} - Sayt 2025{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -303,29 +303,29 @@
 {% block content %}
 <div class="users-container">
     <div class="controls-section">
-        <h1>👤 Foydalanuvchilar</h1>
+        <h1>{{ t('heading_users') }}</h1>
         <div style="margin-left:auto">
-            <a href="/add-user" class="btn-add" style="text-decoration: none; display: inline-block;">➕ Yangi foydalanuvchi</a>
+            <a href="/add-user" class="btn-add" style="text-decoration: none; display: inline-block;">{{ t('btn_add_user') }}</a>
         </div>
     </div>
 
-    <div id="loadingState">Mijozlar yuklanmoqda...</div>
-    <div id="emptyState" style="display:none"> <h3>📭 Foydalanuvchilar topilmadi</h3> </div>
+    <div id="loadingState">{{ t('loading_users') }}</div>
+    <div id="emptyState" style="display:none"> <h3>{{ t('empty_users') }}</h3> </div>
 
     <div class="table-responsive">
         <div class="users-table-container">
         <table class="users-table" id="usersTable" style="display:none">
             <thead>
                 <tr>
-                    <th>Do'kon</th>
-                    <th>Login</th>
-                    <th>Ism</th>
-                    <th>Email</th>
-                    <th>Telefon</th>
-                    <th>Rol</th>
-                    <th>Status</th>
-                    <th>Qo'shilgan</th>
-                    <th>Harakatlar</th>
+                    <th>{{ t('th_store') }}</th>
+                    <th>{{ t('th_login') }}</th>
+                    <th>{{ t('th_fullname') }}</th>
+                    <th>{{ t('th_email') }}</th>
+                    <th>{{ t('th_phone') }}</th>
+                    <th>{{ t('th_role') }}</th>
+                    <th>{{ t('th_status') }}</th>
+                    <th>{{ t('th_joined') }}</th>
+                    <th>{{ t('th_actions') }}</th>
                 </tr>
             </thead>
             <tbody id="usersTableBody"></tbody>
@@ -343,6 +343,30 @@
 </div>
 
 <script>
+    const ULANG = {
+        all_stores: '{{ t("all_stores") }}',
+        status_active: '{{ t("status_active") }}',
+        status_inactive: '{{ t("status_inactive") }}',
+        your_account: '{{ t("your_account") }}',
+        btn_edit: '{{ t("btn_edit") }}',
+        deactivate_btn: '{{ t("deactivate_btn") }}',
+        activate_btn: '{{ t("activate_btn") }}',
+        modal_delete: '{{ t("modal_delete") }}',
+        confirm_delete_user: '{{ t("confirm_delete_user") }}',
+        user_deleted: '{{ t("user_deleted") }}',
+        confirm_toggle_user: '{{ t("confirm_toggle_user") }}',
+        action_deactivate: '{{ t("action_deactivate") }}',
+        action_activate: '{{ t("action_activate") }}',
+        users_load_error: '{{ t("users_load_error") }}',
+        error_prefix: '{{ t("error_prefix") }}',
+        th_store: '{{ t("th_store") }}',
+        th_login: '{{ t("th_login") }}',
+        th_email: '{{ t("th_email") }}',
+        th_phone: '{{ t("th_phone") }}',
+        th_joined: '{{ t("th_joined") }}',
+        th_status: '{{ t("th_status") }}'
+    };
+
     let allUsers = [];
     let editingUserId = null;
     let currentUserId = null; // Hozirgi login qilgan foydalanuvchi ID
@@ -361,7 +385,7 @@
             allUsers = data.users || data; // Yangi format yoki eski format
             currentUserId = data.current_user_id; // Hozirgi foydalanuvchi ID
             displayUsers();
-        } catch (e) { console.error('Users load error', e); showError('Foydalanuvchilarni yuklashda xatolik'); }
+        } catch (e) { console.error('Users load error', e); showError(ULANG.users_load_error); }
     }
 
     function displayUsers() {
@@ -390,9 +414,9 @@
         
         allUsers.forEach(u => {
             const created = new Date(u.created_at).toLocaleDateString('uz-UZ', { timeZone: 'Asia/Tashkent' });
-            const storeName = u.store_name || 'Barcha dokonlar';
-            const isActiveTxt = u.is_active ? 'Faol' : 'Faol emas';
-            const isActiveIcon = u.is_active ? '✅ Faol' : '❌ Faol emas';
+            const storeName = u.store_name || ULANG.all_stores;
+            const isActiveTxt = u.is_active ? ULANG.status_active : ULANG.status_inactive;
+            const isActiveIcon = u.is_active ? '✅ ' + ULANG.status_active : '❌ ' + ULANG.status_inactive;
             const safeName = u.full_name.replace(/'/g, '');
             
             // Hozirgi foydalanuvchi o'zini o'chira/faol emas qila olmasligi kerak
@@ -409,14 +433,14 @@
                 <td title="${isActiveTxt}">${isActiveIcon}</td>
                 <td title="${created}">${created}</td>
                 <td class="actions">
-                    <button onclick="editUser(${u.id})" title="Tahrirlash">✏️</button>
+                    <button onclick="editUser(${u.id})" title="${ULANG.btn_edit}">✏️</button>
                     ${!isCurrentUser ? `
                     <button onclick="toggleUserStatus(${u.id}, '${safeName}', ${u.is_active})" 
-                            title="${u.is_active ? 'Faol emas qilish' : 'Faol qilish'}">
+                            title="${u.is_active ? ULANG.deactivate_btn : ULANG.activate_btn}">
                         ${u.is_active ? '❌' : '✅'}
                     </button>
-                    <button onclick="confirmDeleteUser(${u.id}, '${safeName}')" title="Ochirish">🗑️</button>
-                    ` : '<span style="color: #6c757d; font-size: 0.9em;">O\'z akkauntingiz</span>'}
+                    <button onclick="confirmDeleteUser(${u.id}, '${safeName}')" title="${ULANG.modal_delete}">🗑️</button>
+                    ` : '<span style="color: #6c757d; font-size: 0.9em;">' + ULANG.your_account + '</span>'}}
                 </td>
             </tr>`;
             
@@ -429,39 +453,39 @@
                     </div>
                     <div class="user-info">
                         <div class="info-item">
-                            <div class="info-label">🏪 Dokon</div>
+                            <div class="info-label">🏪 ${ULANG.th_store}</div>
                             <div class="info-value">${storeName}</div>
                         </div>
                         <div class="info-item">
-                            <div class="info-label">👤 Login</div>
+                            <div class="info-label">👤 ${ULANG.th_login}</div>
                             <div class="info-value">${u.username}</div>
                         </div>
                         <div class="info-item">
-                            <div class="info-label">📧 Email</div>
+                            <div class="info-label">📧 ${ULANG.th_email}</div>
                             <div class="info-value">${u.email || '-'}</div>
                         </div>
                         <div class="info-item">
-                            <div class="info-label">📞 Telefon</div>
+                            <div class="info-label">📞 ${ULANG.th_phone}</div>
                             <div class="info-value">${u.phone || '-'}</div>
                         </div>
                         <div class="info-item">
-                            <div class="info-label">📅 Qoshilgan</div>
+                            <div class="info-label">📅 ${ULANG.th_joined}</div>
                             <div class="info-value">${created}</div>
                         </div>
                         <div class="info-item">
-                            <div class="info-label">🔄 Status</div>
+                            <div class="info-label">🔄 ${ULANG.th_status}</div>
                             <div class="info-value">${isActiveIcon}</div>
                         </div>
                     </div>
                     <div class="user-actions">
-                        <button onclick="editUser(${u.id})" class="btn-edit">✏️ Tahrirlash</button>
+                        <button onclick="editUser(${u.id})" class="btn-edit">✏️ ${ULANG.btn_edit}</button>
                         ${!isCurrentUser ? `
                         <button onclick="toggleUserStatus(${u.id}, '${safeName}', ${u.is_active})" 
                                 class="btn-toggle">
-                            ${u.is_active ? '❌ Faol emas qilish' : '✅ Faol qilish'}
+                            ${u.is_active ? '❌ ' + ULANG.deactivate_btn : '✅ ' + ULANG.activate_btn}
                         </button>
-                        <button onclick="confirmDeleteUser(${u.id}, '${safeName}')" class="btn-delete">🗑️ Ochirish</button>
-                        ` : '<div style="text-align:center; color: #6c757d; padding: 10px; font-size: 0.95em;">O\'z akkauntingiz</div>'}
+                        <button onclick="confirmDeleteUser(${u.id}, '${safeName}')" class="btn-delete">🗑️ ${ULANG.modal_delete}</button>
+                        ` : '<div style="text-align:center; color: #6c757d; padding: 10px; font-size: 0.95em;">' + ULANG.your_account + '</div>'}}
                     </div>
                 </div>
             `;
@@ -479,24 +503,23 @@
     }
 
     function confirmDeleteUser(id, name) {
-        if (confirm(`Haqiqatan ham "${name}" foydalanuvchisini ochirmoqchimisiz?`)) deleteUser(id);
+        if (confirm(ULANG.confirm_delete_user.replace('{name}', name))) deleteUser(id);
     }
 
     async function deleteUser(id) {
         try {
             const res = await fetch(`/api/users/${id}`, { method: 'DELETE' });
             const data = await res.json();
-            if (!res.ok) throw new Error(data.error || 'Xato');
+            if (!res.ok) throw new Error(data.error || 'Error');
             loadUsers();
-            alert(data.message || 'Ochirildi');
-        } catch (e) { alert('Xatolik: ' + e.message); }
+            alert(data.message || ULANG.user_deleted);
+        } catch (e) { alert(ULANG.error_prefix + e.message); }
     }
 
     async function toggleUserStatus(id, name, isActive) {
-        const action = isActive ? 'faol emas qilish' : 'faol qilish';
-        const actionText = isActive ? 'faol emas qilinadi' : 'faol qilinadi';
+        const actionText = isActive ? ULANG.action_deactivate : ULANG.action_activate;
         
-        if (!confirm(`Haqiqatan ham "${name}" foydalanuvchisini ${actionText}?`)) {
+        if (!confirm(ULANG.confirm_toggle_user.replace('{name}', name).replace('{action}', actionText))) {
             return;
         }
         
@@ -509,12 +532,12 @@
             });
             const data = await res.json();
             
-            if (!res.ok) throw new Error(data.error || 'Xato');
+            if (!res.ok) throw new Error(data.error || 'Error');
             
-            loadUsers(); // Sahifani yangilash
-            alert(data.message || `Foydalanuvchi ${action}di`);
+            loadUsers();
+            alert(data.message || ULANG.user_deleted);
         } catch (e) { 
-            alert('Xatolik: ' + e.message); 
+            alert(ULANG.error_prefix + e.message); 
         }
     }
 

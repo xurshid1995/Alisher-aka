@@ -1,6 +1,6 @@
 {% extends "base_with_sidebar.html" %}
 
-{% block title %}Tekshiruv tafsilotlari{% endblock %}
+{% block title %}{{ t('csv_title') }}{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -97,19 +97,19 @@
     <div class="page-header-view">
         <div style="display: flex; justify-content: space-between; align-items: center;">
             <div>
-                <h2><i class="fas fa-clipboard-check"></i> Tekshiruv tafsilotlari</h2>
+                <h2><i class="fas fa-clipboard-check"></i> {{ t('csv_title') }}</h2>
                 <div style="margin-top: 10px; display: flex; gap: 20px; flex-wrap: wrap; font-size: 14px;">
-                    <div><strong>Sana va vaqt:</strong> {{ check_session.started_at.strftime('%d.%m.%Y - %H:%M') }}</div>
-                    <div><strong>Boshlagan:</strong> {{ check_session.user.first_name }} {{ check_session.user.last_name }}</div>
+                    <div><strong>{{ t('csv_datetime') }}</strong> {{ check_session.started_at.strftime('%d.%m.%Y - %H:%M') }}</div>
+                    <div><strong>{{ t('csv_started_by') }}</strong> {{ check_session.user.first_name }} {{ check_session.user.last_name }}</div>
                     {% if check_session.completed_by %}
-                    <div><strong>Tugatgan:</strong> {{ check_session.completed_by.first_name }} {{ check_session.completed_by.last_name }}</div>
+                    <div><strong>{{ t('csv_completed_by') }}</strong> {{ check_session.completed_by.first_name }} {{ check_session.completed_by.last_name }}</div>
                     {% endif %}
-                    <div><strong>Joylashuv:</strong> {{ '🏪' if check_session.location_type == 'store' else '📦' }} {{ check_session.location_name }}</div>
+                    <div><strong>{{ t('csv_location') }}</strong> {{ '🏪' if check_session.location_type == 'store' else '📦' }} {{ check_session.location_name }}</div>
                 </div>
             </div>
             <div>
                 <a href="/check_stock" class="btn btn-light btn-lg">
-                    <i class="fas fa-arrow-left me-2"></i>Orqaga qaytish
+                    <i class="fas fa-arrow-left me-2"></i>{{ t('csv_back') }}
                 </a>
             </div>
         </div>
@@ -121,48 +121,48 @@
             <div class="stats-card" style="background: #007bff; color: white;">
                 <div class="stats-icon">📦</div>
                 <div class="stats-value" id="totalProducts">0</div>
-                <div class="stats-label">Jami mahsulotlar</div>
-                <div class="stats-sublabel">dona</div>
+                <div class="stats-label">{{ t('csv_total_products') }}</div>
+                <div class="stats-sublabel">{{ t('csv_pcs') }}</div>
             </div>
         </div>
         <div style="flex: 1; min-width: 150px;">
             <div class="stats-card" style="background: #28a745; color: white;">
                 <div class="stats-icon">✅</div>
                 <div class="stats-value" id="checkedProducts">0</div>
-                <div class="stats-label">Tekshirildi</div>
-                <div class="stats-sublabel">dona</div>
+                <div class="stats-label">{{ t('csv_checked') }}</div>
+                <div class="stats-sublabel">{{ t('csv_pcs') }}</div>
             </div>
         </div>
         <div style="flex: 1; min-width: 150px;">
             <div class="stats-card" style="background: #17a2b8; color: white;">
                 <div class="stats-icon">✔️</div>
                 <div class="stats-value" id="correctProducts">0</div>
-                <div class="stats-label">To'g'ri</div>
-                <div class="stats-sublabel">xatoliksiz</div>
+                <div class="stats-label">{{ t('csv_correct') }}</div>
+                <div class="stats-sublabel">{{ t('csv_no_errors') }}</div>
             </div>
         </div>
         <div style="flex: 1; min-width: 150px;">
             <div class="stats-card" style="background: #6c757d; color: white;">
                 <div class="stats-icon">❓</div>
                 <div class="stats-value" id="uncheckedProducts">0</div>
-                <div class="stats-label">Tekshirilmagan</div>
-                <div class="stats-sublabel">dona</div>
+                <div class="stats-label">{{ t('csv_unchecked') }}</div>
+                <div class="stats-sublabel">{{ t('csv_pcs') }}</div>
             </div>
         </div>
         <div style="flex: 1; min-width: 150px;">
             <div class="stats-card" style="background: #dc3545; color: white;">
                 <div class="stats-icon">⚠️</div>
                 <div class="stats-value" id="errorProducts">0</div>
-                <div class="stats-label">Xatoliklar</div>
-                <div class="stats-sublabel">ta xatolik</div>
+                <div class="stats-label">{{ t('csv_errors') }}</div>
+                <div class="stats-sublabel">{{ t('csv_error_count') }}</div>
             </div>
         </div>
         <div style="flex: 1; min-width: 150px;">
             <div class="stats-card" style="background: #ffc107; color: white;">
                 <div class="stats-icon">⚡</div>
                 <div class="stats-value" id="accuracyPercent">0%</div>
-                <div class="stats-label">Aniqlik</div>
-                <div class="stats-sublabel">foiz</div>
+                <div class="stats-label">{{ t('csv_accuracy') }}</div>
+                <div class="stats-sublabel">{{ t('csv_percent') }}</div>
             </div>
         </div>
     </div>
@@ -170,29 +170,29 @@
     <!-- Mahsulotlar jadvali -->
     <div class="view-box">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-            <h4 style="margin: 0; color: #333;"><i class="fas fa-list"></i> Barcha mahsulotlar</h4>
+            <h4 style="margin: 0; color: #333;"><i class="fas fa-list"></i> {{ t('csv_all_products') }}</h4>
             <div style="color: #666;">
-                <span id="tableCount" style="font-weight: 600; font-size: 18px; color: #007bff;">0</span> ta mahsulot
+                <span id="tableCount" style="font-weight: 600; font-size: 18px; color: #007bff;">0</span> {{ t('csv_product_count') }}
             </div>
         </div>
 
         <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
             <input type="text" 
                    id="searchInput" 
-                   placeholder="🔍 Mahsulot qidirish..." 
+                   placeholder="🔍 {{ t('csv_search') }}" 
                    style="flex: 1; min-width: 250px; padding: 10px 12px; border: 1px solid #ced4da; border-radius: 25px; font-size: 14px;">
             
             <button onclick="filterProducts('all')" id="filterAll" class="filter-btn" style="background: #007bff; color: white;">
-                📊 Barchasi <span id="allCount" class="badge-count">0</span>
+                📊 {{ t('csv_filter_all') }} <span id="allCount" class="badge-count">0</span>
             </button>
             <button onclick="filterProducts('checked')" id="filterChecked" class="filter-btn" style="background: #28a745; color: white;">
-                ✅ Tekshirilgan <span id="checkedCount" class="badge-count">0</span>
+                ✅ {{ t('csv_filter_checked') }} <span id="checkedCount" class="badge-count">0</span>
             </button>
             <button onclick="filterProducts('unchecked')" id="filterUnchecked" class="filter-btn" style="background: #6c757d; color: white;">
-                ❓ Tekshirilmagan <span id="uncheckedCount" class="badge-count">0</span>
+                ❓ {{ t('csv_filter_unchecked') }} <span id="uncheckedCount" class="badge-count">0</span>
             </button>
             <button onclick="filterProducts('error')" id="filterError" class="filter-btn" style="background: #dc3545; color: white;">
-                ⚠️ Xatoliklar <span id="errorCount" class="badge-count">0</span>
+                ⚠️ {{ t('csv_filter_errors') }} <span id="errorCount" class="badge-count">0</span>
             </button>
         </div>
 
@@ -200,20 +200,20 @@
             <table style="width: 100%; border-collapse: collapse;">
                 <thead style="position: sticky; top: 0; background: #f8f9fa; z-index: 10;">
                     <tr>
-                        <th style="padding: 12px; text-align: left; border-bottom: 2px solid #dee2e6; font-weight: 600;">№</th>
-                        <th style="padding: 12px; text-align: left; border-bottom: 2px solid #dee2e6; font-weight: 600;">Mahsulot nomi</th>
-                        <th style="padding: 12px; text-align: center; border-bottom: 2px solid #dee2e6; font-weight: 600;">Narx</th>
-                        <th style="padding: 12px; text-align: center; border-bottom: 2px solid #dee2e6; font-weight: 600;">Tizimda</th>
-                        <th style="padding: 12px; text-align: center; border-bottom: 2px solid #dee2e6; font-weight: 600;">Haqiqiy</th>
-                        <th style="padding: 12px; text-align: center; border-bottom: 2px solid #dee2e6; font-weight: 600;">Farq</th>
-                        <th style="padding: 12px; text-align: center; border-bottom: 2px solid #dee2e6; font-weight: 600;">Holat</th>
+                        <th style="padding: 12px; text-align: left; border-bottom: 2px solid #dee2e6; font-weight: 600;">{{ t('csv_th_num') }}</th>
+                        <th style="padding: 12px; text-align: left; border-bottom: 2px solid #dee2e6; font-weight: 600;">{{ t('csv_th_product') }}</th>
+                        <th style="padding: 12px; text-align: center; border-bottom: 2px solid #dee2e6; font-weight: 600;">{{ t('csv_th_price') }}</th>
+                        <th style="padding: 12px; text-align: center; border-bottom: 2px solid #dee2e6; font-weight: 600;">{{ t('csv_th_system') }}</th>
+                        <th style="padding: 12px; text-align: center; border-bottom: 2px solid #dee2e6; font-weight: 600;">{{ t('csv_th_actual') }}</th>
+                        <th style="padding: 12px; text-align: center; border-bottom: 2px solid #dee2e6; font-weight: 600;">{{ t('csv_th_diff') }}</th>
+                        <th style="padding: 12px; text-align: center; border-bottom: 2px solid #dee2e6; font-weight: 600;">{{ t('csv_th_status') }}</th>
                     </tr>
                 </thead>
                 <tbody id="productsTableBody">
                     <tr>
                         <td colspan="7" style="text-align: center; padding: 40px 20px; color: #999;">
                             <div style="font-size: 48px; margin-bottom: 10px; opacity: 0.5;">📋</div>
-                            <div>Ma'lumotlar yuklanmoqda...</div>
+                            <div>{{ t('csv_loading') }}</div>
                         </td>
                     </tr>
                 </tbody>
@@ -223,6 +223,15 @@
 </div>
 
 <script>
+const CSVLANG = {
+    not_found: '{{ t("csv_not_found") }}',
+    status_unchecked: '{{ t("csv_status_unchecked") }}',
+    status_excess: '{{ t("csv_status_excess") }}',
+    status_deficit: '{{ t("csv_status_deficit") }}',
+    status_normal: '{{ t("csv_status_normal") }}',
+    loading: '{{ t("csv_loading") }}'
+};
+
 const sessionId = {{ check_session.id }};
 const locationType = '{{ check_session.location_type }}';
 const locationId = {{ check_session.location_id }};
@@ -377,7 +386,7 @@ function displayTable(products) {
             <tr>
                 <td colspan="7" style="text-align: center; padding: 40px 20px; color: #999;">
                     <div style="font-size: 48px; margin-bottom: 10px; opacity: 0.5;">🔍</div>
-                    <div>Mahsulot topilmadi</div>
+                    <div>${CSVLANG.not_found}</div>
                 </td>
             </tr>
         `;
@@ -395,14 +404,14 @@ function displayTable(products) {
         if (product.difference < 0) diffColor = '#dc3545';
         
         // Badge
-        let statusBadge = '<span style="background: #6c757d; color: white; padding: 3px 10px; border-radius: 12px; font-size: 11px;">Tekshirilmagan</span>';
+        let statusBadge = '<span style="background: #6c757d; color: white; padding: 3px 10px; border-radius: 12px; font-size: 11px;">' + CSVLANG.status_unchecked + '</span>';
         if (product.status !== 'unchecked') {
             if (product.difference > 0) {
-                statusBadge = '<span style="background: #28a745; color: white; padding: 3px 10px; border-radius: 12px; font-size: 11px;">Ortiqcha</span>';
+                statusBadge = '<span style="background: #28a745; color: white; padding: 3px 10px; border-radius: 12px; font-size: 11px;">' + CSVLANG.status_excess + '</span>';
             } else if (product.difference < 0) {
-                statusBadge = '<span style="background: #dc3545; color: white; padding: 3px 10px; border-radius: 12px; font-size: 11px;">Kamomad</span>';
+                statusBadge = '<span style="background: #dc3545; color: white; padding: 3px 10px; border-radius: 12px; font-size: 11px;">' + CSVLANG.status_deficit + '</span>';
             } else {
-                statusBadge = '<span style="background: #17a2b8; color: white; padding: 3px 10px; border-radius: 12px; font-size: 11px;">Normal</span>';
+                statusBadge = '<span style="background: #17a2b8; color: white; padding: 3px 10px; border-radius: 12px; font-size: 11px;">' + CSVLANG.status_normal + '</span>';
             }
         }
         

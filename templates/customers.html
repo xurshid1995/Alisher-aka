@@ -7,7 +7,7 @@
 <meta http-equiv="Expires" content="0">
 {% endblock %}
 
-{% block title %}Mijozlar - Sayt 2025{% endblock %}
+{% block title %}{{ t('customers') }} - DOKON{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -708,16 +708,16 @@
     <div class="modal-content">
         <div class="modal-header">
             <i class="fas fa-exclamation-triangle"></i>
-            <h3>DIQQAT! Mijozni o'chirish</h3>
+            <h3>{{ t('delete') }}! {{ t('header_customer') }}</h3>
         </div>
         <div class="modal-body">
-            <p><strong>Siz quyidagi mijozni o'chirmoqchisiz:</strong></p>
+            <p><strong>{{ t('delete') }}:</strong></p>
             <div class="customer-name-highlight" id="modalCustomerName"></div>
             <p style="color: #e74c3c; font-weight: bold;">⚠️ Bu amal qaytarib bo'lmaydi!</p>
-            <p>Davom etish uchun mijoz nomini quyidagi maydonga kiriting:</p>
+            <p>{{ t('header_customer_name') }}:</p>
             
             <div class="modal-input-group">
-                <label for="confirmInput">Mijoz nomi:</label>
+                <label for="confirmInput">{{ t('header_customer_name') }}:</label>
                 <input 
                     type="text" 
                     id="confirmInput" 
@@ -729,10 +729,10 @@
         </div>
         <div class="modal-actions">
             <button class="modal-btn modal-btn-cancel" onclick="closeDeleteModal()">
-                ❌ Bekor qilish
+                ❌ {{ t('btn_cancel_payment') }}
             </button>
             <button class="modal-btn modal-btn-delete" id="confirmDeleteBtn" disabled>
-                🗑️ O'chirish
+                🗑️ {{ t('btn_delete_item') }}
             </button>
         </div>
     </div>
@@ -743,7 +743,7 @@
     <div class="page-header">
         <h1>
             <span>👥</span>
-            Mijozlar Boshqaruvi
+            {{ t('customer_management') }}
         </h1>
     </div>
 
@@ -752,7 +752,7 @@
         <div class="inline-filters">
             <div class="store-filter-buttons">
                 <button class="store-filter-btn active" onclick="filterByStore('')" id="allStoresBtn">
-                    📊 Hammasi
+                    📊 {{ t('btn_all_stores') }}
                 </button>
                 <div id="storeFilterButtons">
                     <!-- Dokon tugmalari bu yerga yuklanadi -->
@@ -762,7 +762,7 @@
         
         <a href="/add-customer" class="add-customer-btn">
             <span>➕</span>
-            Mijoz qo'shish
+            {{ t('add_customer') }}
         </a>
     </div>
 
@@ -774,21 +774,21 @@
             <div style="display: flex; align-items: center; gap: 0.3rem; flex-wrap: nowrap;">
                 <div class="search-box" style="flex: 1 1 auto; max-width: 450px; min-width: 250px;">
                     <span class="search-icon">🔍</span>
-                    <input type="text" id="customerSearch" placeholder="Mijozlarni qidirish..." oninput="searchCustomers()">
+                    <input type="text" id="customerSearch" placeholder="{{ t('customer_search') }}" oninput="searchCustomers()">
                     <button class="clear-search-btn" id="clearSearchBtn" onclick="clearSearch()">❌</button>
                 </div>
-                <span id="resultsInfo">Mijozlar yuklanmoqda...</span>
+                <span id="resultsInfo">{{ t('loading') }}</span>
                 <div class="time-filter-buttons">
-                    <button class="time-filter-btn" onclick="filterByTime('today')">Bugun</button>
-                    <button class="time-filter-btn" onclick="filterByTime('week')">Bu hafta</button>
-                    <button class="time-filter-btn" onclick="filterByTime('month')">Bu oy</button>
-                    <button class="time-filter-btn" onclick="filterByTime('year')">Bu yil</button>
+                    <button class="time-filter-btn" onclick="filterByTime('today')">{{ t('today') }}</button>
+                    <button class="time-filter-btn" onclick="filterByTime('week')">{{ t('this_week') }}</button>
+                    <button class="time-filter-btn" onclick="filterByTime('month')">{{ t('this_month') }}</button>
+                    <button class="time-filter-btn" onclick="filterByTime('year')">{{ t('this_year') }}</button>
                 </div>
                 <div class="time-filter-buttons">
-                    <button class="analysis-filter-btn" onclick="filterByAnalysis('count')">🔢 Savdo soni</button>
-                    <button class="analysis-filter-btn" onclick="filterByAnalysis('sum')">💰 Savdo summasi</button>
+                    <button class="analysis-filter-btn" onclick="filterByAnalysis('count')">{{ t('sales_count_label') }}</button>
+                    <button class="analysis-filter-btn" onclick="filterByAnalysis('sum')">{{ t('sales_amount_label') }}</button>
                     {% if session.role != 'sotuvchi' %}
-                    <button class="analysis-filter-btn" onclick="filterByAnalysis('profit')">📊 Jami foyda</button>
+                    <button class="analysis-filter-btn" onclick="filterByAnalysis('profit')">{{ t('total_profit_label') }}</button>
                     {% endif %}
                 </div>
             </div>
@@ -796,27 +796,27 @@
 
         <!-- Loading holati -->
         <div id="loadingState" class="loading-state">
-            <h3>⏳ Yuklanmoqda...</h3>
-            <p>Mijozlar ma'lumotlari yuklanmoqda, biroz kuting.</p>
+            <h3>⏳ {{ t('loading') }}...</h3>
+            <p>{{ t('customers_loading_msg') }}</p>
         </div>
 
         <!-- Bo'sh holat -->
         <div id="emptyState" class="empty-state" style="display: none;">
-            <h3>📭 Mijozlar topilmadi</h3>
-            <p>Hech qanday mijoz ma'lumoti mavjud emas yoki filter shartlariga mos mijoz yo'q.</p>
+            <h3>📭 {{ t('no_customers_found') }}</h3>
+            <p>{{ t('no_customer_data') }}</p>
         </div>
 
         <!-- Mijozlar jadvali -->
         <table class="customers-table" id="customersTable" style="display: none;">
             <thead>
                 <tr>
-                    <th><span class="emoji">🏪</span>Dokon</th>
-                    <th><span class="emoji">👤</span>Mijoz nomi</th>
-                    <th><span class="emoji">📞</span>Telefon</th>
-                    <th><span class="emoji">📊</span>Savdoni tahlili</th>
-                    <th><span class="emoji">📍</span>Manzil</th>
-                    <th><span class="emoji">📅</span>Qo'shilgan sana</th>
-                    <th><span class="emoji">⚙️</span>Amallar</th>
+                    <th><span class="emoji">🏪</span>{{ t('header_store') }}</th>
+                    <th><span class="emoji">👤</span>{{ t('header_customer_name') }}</th>
+                    <th><span class="emoji">📞</span>{{ t('header_phone') }}</th>
+                    <th><span class="emoji">📊</span>{{ t('sales_history') }}</th>
+                    <th><span class="emoji">📍</span>{{ t('header_address') }}</th>
+                    <th><span class="emoji">📅</span>{{ t('header_added_date') }}</th>
+                    <th><span class="emoji">⚙️</span>{{ t('actions') }}</th>
                 </tr>
             </thead>
             <tbody id="customersTableBody">

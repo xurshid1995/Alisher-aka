@@ -1,6 +1,6 @@
 {% extends "base_with_sidebar.html" %}
 
-{% block title %}{{ stock.product.name }} - Mahsulotni tahrirlash{% endblock %}
+{% block title %}{{ stock.product.name }} - {{ t('es_edit_product') }}{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -74,25 +74,25 @@
 {% block content %}
 <div class="edit-container">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-        <h1 style="margin: 0;">Mahsulotni tahrirlash</h1>
+        <h1 style="margin: 0;">{{ t('es_edit_product') }}</h1>
         {% if stock.product.barcode %}
         <button onclick="printBarcode('{{ stock.product.name }}', '{{ stock.product.barcode }}')" 
                 style="padding: 8px 16px; background: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px;">
-            🖨️ Barcode chop etish
+            🖨️ {{ t('es_print_barcode') }}
         </button>
         {% endif %}
     </div>
     
     <div class="info-text" style="background: #e7f3ff; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; border-left: 4px solid #3498db;">
         <div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: center;">
-            <span><strong>Mahsulot:</strong> {{ stock.product.name }}</span>
+            <span><strong>{{ t('es_product_label') }}</strong> {{ stock.product.name }}</span>
             {% if stock.product.barcode %}
-            <span><strong>Barcode:</strong> {{ stock.product.barcode }}</span>
+            <span><strong>{{ t('es_barcode_label') }}</strong> {{ stock.product.barcode }}</span>
             {% endif %}
-            <span><strong>Miqdor:</strong> {{ stock.quantity }} dona</span>
-            <span><strong>Tan narxi:</strong> ${{ "%.2f"|format(stock.purchase_price) }}</span>
-            <span><strong>Savdo narxi:</strong> ${{ "%.2f"|format(stock.product.sell_price) }}</span>
-            <span><strong>Min zaxira:</strong> {{ stock.product.min_stock }} dona</span>
+            <span><strong>{{ t('es_quantity_label') }}</strong> {{ stock.quantity }} {{ t('es_pcs') }}</span>
+            <span><strong>{{ t('es_cost_label') }}</strong> ${{ "%.2f"|format(stock.purchase_price) }}</span>
+            <span><strong>{{ t('es_sell_label') }}</strong> ${{ "%.2f"|format(stock.product.sell_price) }}</span>
+            <span><strong>{{ t('es_min_stock') }}</strong> {{ stock.product.min_stock }} {{ t('es_pcs') }}</span>
         </div>
     </div>
     
@@ -106,52 +106,52 @@
         <form method="POST">
             <div class="form-row">
                 <div class="form-group">
-                    <label for="productName">Mahsulot nomi:</label>
+                    <label for="productName">{{ t('es_product_name') }}</label>
                     <input type="text" id="productName" name="productName" value="{{ stock.product.name }}" required>
                 </div>
                 <div class="form-group">
-                    <label for="barcode">📷 Barcode:</label>
+                    <label for="barcode">📷 {{ t('es_barcode_label') }}</label>
                     <input type="text" id="barcode" name="barcode" value="{{ stock.product.barcode or '' }}" 
-                           placeholder="Barcode raqami (optional)" 
+                           placeholder="{{ t('es_barcode_opt') }}" 
                            style="border: 2px solid #28a745;">
                 </div>
             </div>
 
             <div class="form-row">
                 <div class="form-group">
-                    <label for="quantity">Miqdor:</label>
+                    <label for="quantity">{{ t('es_quantity_label') }}</label>
                     <input type="number" id="quantity" name="quantity" value="{{ stock.quantity }}" min="0" required>
                 </div>
                 <div class="form-group">
-                    <label for="minStock">Minimal zaxira:</label>
+                    <label for="minStock">{{ t('es_min_stock_label') }}</label>
                     <input type="number" id="minStock" name="minStock" value="{{ stock.product.min_stock }}" min="0">
                 </div>
             </div>
 
             <div class="form-row">
                 <div class="form-group">
-                    <label for="costPrice">Tan narxi (USD):</label>
+                    <label for="costPrice">{{ t('es_cost_usd') }}</label>
                     <input type="number" id="costPrice" name="costPrice" value="{{ "%.2f"|format(calculations.cost_price) }}" step="0.01" min="0" required>
                 </div>
                 <div class="form-group">
-                    <label for="sellPrice">Savdo narxi (USD):</label>
+                    <label for="sellPrice">{{ t('es_sell_usd') }}</label>
                     <input type="number" id="sellPrice" name="sellPrice" value="{{ "%.2f"|format(calculations.sell_price) }}" step="0.01" min="0" required>
                 </div>
             </div>
 
             <div class="form-row">
                 <div class="form-group">
-                    <label for="profitInfo">Foyda ma'lumotlari:</label>
+                    <label for="profitInfo">{{ t('es_profit_info') }}</label>
                     <input type="text" id="profitInfo" readonly style="background-color: #f8f9fa;" placeholder="$0.00 (0.0%)">
                 </div>
             </div>
 
             <div class="form-actions">
                 <a href="javascript:history.back()" class="btn-cancel">
-                    Bekor qilish
+                    {{ t('es_cancel') }}
                 </a>
                 <button type="submit" class="submit-btn">
-                    Saqlash
+                    {{ t('es_save') }}
                 </button>
             </div>
         </form>
@@ -159,6 +159,14 @@
 </div>
 
 <script>
+const ESLANG = {
+    sell_below_cost: '{{ t("es_sell_below_cost") }}',
+    name_exists: '{{ t("es_name_exists") }}',
+    sell_below_cost_err: '{{ t("es_sell_below_cost_err") }}',
+    quantity_negative: '{{ t("es_quantity_negative") }}',
+    price_negative: '{{ t("es_price_negative") }}'
+};
+
 // Foyda hisobi
 function calculateProfit() {
     const costPrice = parseFloat(document.getElementById('costPrice').value) || 0;
@@ -176,7 +184,7 @@ function calculateProfit() {
         sellPriceInput.style.borderColor = '#e74c3c';
         sellPriceInput.style.backgroundColor = '#fdf2f2';
         profitInfoInput.style.color = '#e74c3c';
-        profitInfoInput.value = '⚠️ Sotish narxi tan narxidan past!';
+        profitInfoInput.value = '⚠️ ' + ESLANG.sell_below_cost;
     } else {
         // Normal rang
         sellPriceInput.style.borderColor = '#ddd';
@@ -250,7 +258,7 @@ document.querySelector('form').addEventListener('submit', function(e) {
         const nameInput = document.getElementById('productName');
         if (nameInput.style.borderColor === 'rgb(231, 76, 60)') {
             e.preventDefault();
-            alert('⚠️ Bu mahsulot nomi allaqachon mavjud!');
+            alert('⚠️ ' + ESLANG.name_exists);
             return false;
         }
     }
@@ -258,19 +266,19 @@ document.querySelector('form').addEventListener('submit', function(e) {
     // Sotish narxi tekshiruvi
     if (sellPrice < costPrice && sellPrice > 0 && costPrice > 0) {
         e.preventDefault();
-        alert('⚠️ Sotish narxi tan narxidan past bo\'lishi mumkin emas!');
+        alert('⚠️ ' + ESLANG.sell_below_cost_err);
         return false;
     }
     
     if (quantity < 0) {
         e.preventDefault();
-        alert('⚠️ Miqdor manfiy bo\'lishi mumkin emas!');
+        alert('⚠️ ' + ESLANG.quantity_negative);
         return false;
     }
     
     if (costPrice < 0 || sellPrice < 0) {
         e.preventDefault();
-        alert('⚠️ Narxlar manfiy bo\'lishi mumkin emas!');
+        alert('⚠️ ' + ESLANG.price_negative);
         return false;
     }
 });

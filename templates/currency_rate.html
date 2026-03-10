@@ -1,6 +1,6 @@
 {% extends "base_with_sidebar.html" %}
 
-{% block title %}Valyuta Kursi - Omborxona Boshqaruv Tizimi{% endblock %}
+{% block title %}{{ t('currency_management') }} - {{ t('app_title') }}{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -204,7 +204,7 @@
     <div class="page-header">
         <h1>
             <span>💱</span>
-            Valyuta Kursi Boshqaruvi
+            {{ t('currency_management') }}
         </h1>
     </div>
 
@@ -214,27 +214,27 @@
 
     <!-- Current Rate Display -->
     <div class="current-rate" id="currentRateDisplay">
-        <h2>Joriy Valyuta Kursi</h2>
+        <h2>{{ t('current_rate') }}</h2>
         <p class="rate-value" id="currentRateValue">12,500 UZS</p>
         <p class="rate-info">
-            <span id="currentRateInfo">Oxirgi yangilanish: Yuklanmoqda...</span>
+            <span id="currentRateInfo">{{ t('last_updated') }} {{ t('loading_text') }}</span>
         </p>
     </div>
 
     <!-- Update Rate Form -->
     <div class="currency-form">
-        <h3>📝 Valyuta Kursini Yangilash</h3>
+        <h3>📝 {{ t('update_rate') }}</h3>
         <form id="updateRateForm">
             <div class="form-group">
-                <label for="newRate">💵 Yangi kurs (1 USD = ? UZS):</label>
-                <input type="number" id="newRate" name="newRate" step="0.01" min="1" placeholder="Masalan: 13500" required>
+                <label for="newRate">💵 {{ t('new_rate_label') }}</label>
+                <input type="number" id="newRate" name="newRate" step="0.01" min="1" placeholder="{{ t('rate_example') }}" required>
             </div>
             <div class="form-group">
-                <label for="updatedBy">👤 Yangilagan kishi:</label>
-                <input type="text" id="updatedBy" name="updatedBy" placeholder="Admin nomi" value="admin">
+                <label for="updatedBy">👤 {{ t('updated_by_label') }}:</label>
+                <input type="text" id="updatedBy" name="updatedBy" placeholder="{{ t('admin_name') }}" value="admin">
             </div>
             <button type="submit" class="btn-update">
-                🔄 Kursni Yangilash
+                🔄 {{ t('update_rate') }}
             </button>
         </form>
     </div>
@@ -242,21 +242,21 @@
     <!-- Rate History -->
     <div class="history-section">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-            <h3>📊 Valyuta Kursi Tarixi</h3>
+            <h3>📊 {{ t('rate_history') }}</h3>
             <button type="button" onclick="clearCurrencyHistory()" class="btn-clear-history" id="clearHistoryBtn" style="display: none;">
-                🗑️ Tarixni Tozalash
+                🗑️ {{ t('btn_clear_history') }}
             </button>
         </div>
         <div id="historyLoading" style="text-align: center; padding: 2rem;">
-            <p>📥 Tarix yuklanmoqda...</p>
+            <p>📥 {{ t('loading_text') }}</p>
         </div>
         <table class="history-table" id="historyTable" style="display: none;">
             <thead>
                 <tr>
-                    <th>📅 Sana</th>
-                    <th>💱 Kurs (UZS)</th>
-                    <th>👤 Yangilagan</th>
-                    <th>📊 Holat</th>
+                    <th>📅 {{ t('header_date') }}</th>
+                    <th>💱 {{ t('header_rate') }}</th>
+                    <th>👤 {{ t('updated_by_label') }}</th>
+                    <th>📊 {{ t('header_status') }}</th>
                 </tr>
             </thead>
             <tbody id="historyTableBody">
@@ -267,7 +267,25 @@
 </div>
 
 <script>
-    let currentRate = null; // API dan yuklanadi
+    const CLANG = {
+        last_updated: '{{ t("last_updated") }}',
+        status_active: '{{ t("status_active") }}',
+        status_inactive: '{{ t("status_inactive") }}',
+        rate_load_error: '{{ t("rate_load_error") }}',
+        history_load_error: '{{ t("history_load_error") }}',
+        rate_updated_success: '{{ t("rate_updated_success") }}',
+        rate_update_error: '{{ t("rate_update_error") }}',
+        enter_correct_rate: '{{ t("enter_correct_rate") }}',
+        server_error: '{{ t("server_error") }}',
+        clear_history_confirm1: '{{ t("clear_history_confirm1") }}',
+        clear_history_confirm2: '{{ t("clear_history_confirm2") }}',
+        clearing: '{{ t("clearing") }}',
+        records_deleted: '{{ t("records_deleted") }}',
+        no_history: '{{ t("no_history") }}',
+        clear_history_error: '{{ t("clear_history_error") }}'
+    };
+
+    let currentRate = null;
 
     // Sahifa yuklanganda ma'lumotlarni olish
     document.addEventListener('DOMContentLoaded', function() {
@@ -287,7 +305,7 @@
             }
         } catch (error) {
             console.error('Error loading current rate:', error);
-            showAlert('error', 'Joriy kursni yuklashda xatolik yuz berdi');
+            showAlert('error', CLANG.rate_load_error);
         }
     }
 
@@ -304,8 +322,8 @@
         const updateDate = new Date(rate.updated_date || Date.now());
         const formattedDate = updateDate.toLocaleString('uz-UZ', { timeZone: 'Asia/Tashkent' });
         rateInfoElement.innerHTML = `
-            Oxirgi yangilanish: ${formattedDate}<br>
-            Yangilagan: ${rate.updated_by || 'System'}
+            ${CLANG.last_updated} ${formattedDate}<br>
+            ${rate.updated_by || 'System'}
         `;
     }
 
@@ -323,7 +341,7 @@
             document.getElementById('historyTable').style.display = 'table';
         } catch (error) {
             console.error('Error loading rate history:', error);
-            document.getElementById('historyLoading').innerHTML = '<p style="color: red;">Tarix yuklashda xatolik</p>';
+            document.getElementById('historyLoading').innerHTML = '<p style="color: red;">' + CLANG.history_load_error + '</p>';
         }
     }
 
@@ -352,7 +370,7 @@
             
             // Holatni aniqlash
             const statusClass = rate.is_active ? 'status-active' : 'status-inactive';
-            const statusText = rate.is_active ? 'Faol' : 'Nofaol';
+            const statusText = rate.is_active ? CLANG.status_active : CLANG.status_inactive;
             
             row.innerHTML = `
                 <td>${formattedDate}</td>
@@ -374,7 +392,7 @@
         const updatedBy = formData.get('updatedBy') || 'admin';
         
         if (!newRate || newRate <= 0) {
-            showAlert('error', 'Iltimos, to\'g\'ri kurs kiriting');
+            showAlert('error', CLANG.enter_correct_rate);
             return;
         }
         
@@ -397,7 +415,7 @@
             const data = await response.json();
             
             if (data.success) {
-                showAlert('success', 'Valyuta kursi muvaffaqiyatli yangilandi!');
+                showAlert('success', CLANG.rate_updated_success);
                 
                 // Ma'lumotlarni qayta yuklash
                 await loadCurrentRate();
@@ -406,11 +424,11 @@
                 // Formni tozalash
                 form.reset();
             } else {
-                showAlert('error', data.error || 'Kursni yangilashda xatolik');
+                showAlert('error', data.error || CLANG.rate_update_error);
             }
         } catch (error) {
             console.error('Error updating rate:', error);
-            showAlert('error', 'Server bilan aloqa qilishda xatolik');
+            showAlert('error', CLANG.server_error);
         } finally {
             form.classList.remove('loading');
         }
@@ -420,10 +438,7 @@
     async function clearCurrencyHistory() {
         // Tasdiqlash dialog
         const confirmed = confirm(
-            '⚠️ DIQQAT!\n\n' +
-            'Barcha valyuta kursi tarixini o\'chirishni xohlaysizmi?\n\n' +
-            'Bu amal qaytarib bo\'lmaydi!\n\n' +
-            'Davom etishni xohlaysizmi?'
+            '⚠️ ' + CLANG.clear_history_confirm1
         );
         
         if (!confirmed) {
@@ -432,9 +447,7 @@
         
         // Ikkinchi tasdiqlash
         const doubleConfirmed = confirm(
-            '🚨 OXIRGI OGOHLANTIRISH!\n\n' +
-            'Haqiqatan ham BARCHA valyuta kursi tarixini o\'chirishni xohlaysizmi?\n\n' +
-            'Bu amal QAYTARIB BO\'LMAYDI!'
+            '🚨 ' + CLANG.clear_history_confirm2
         );
         
         if (!doubleConfirmed) {
@@ -446,7 +459,7 @@
         const originalText = clearBtn.innerHTML;
         
         try {
-            clearBtn.innerHTML = '⏳ Tozalanmoqda...';
+            clearBtn.innerHTML = '⏳ ' + CLANG.clearing;
             clearBtn.disabled = true;
             
             const response = await fetch('/api/currency-rate/clear-history', {
@@ -459,7 +472,7 @@
             const data = await response.json();
             
             if (data.success) {
-                showAlert('success', `✅ ${data.deleted_count} ta yozuv o'chirildi`);
+                showAlert('success', `✅ ${data.deleted_count} ${CLANG.records_deleted}`);
                 
                 // Tarix jadvalini tozalash
                 const tbody = document.getElementById('historyTableBody');
@@ -471,14 +484,14 @@
                 
                 // Loading text ko'rsatish
                 document.getElementById('historyLoading').style.display = 'block';
-                document.getElementById('historyLoading').innerHTML = '<p>📝 Hech qanday tarix mavjud emas</p>';
+                document.getElementById('historyLoading').innerHTML = '<p>📝 ' + CLANG.no_history + '</p>';
                 
             } else {
-                showAlert('error', data.message || 'Tarixni tozalashda xatolik yuz berdi');
+                showAlert('error', data.message || CLANG.clear_history_error);
             }
         } catch (error) {
             console.error('Clear history error:', error);
-            showAlert('error', 'Server bilan bog\'lanishda xatolik yuz berdi');
+            showAlert('error', CLANG.server_error);
         } finally {
             // Loading holatini bekor qilish
             clearBtn.innerHTML = originalText;

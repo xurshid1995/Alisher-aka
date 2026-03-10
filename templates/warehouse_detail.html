@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}{{ warehouse.name }} - Ombor ma'lumotlari{% endblock %}
+{% block title %}{{ warehouse.name }} - {{ t('wd_title_suffix') }}{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -163,13 +163,13 @@
         <h1 style="margin: 0;">🏭 {{ warehouse.name }}</h1>
         <div style="display: flex; flex-wrap: wrap; gap: 15px; font-size: 16px; color: #666;">
             <span style="display: flex; align-items: center; gap: 5px;">
-                <span style="color: #3498db; font-size: 20px;">📍</span>{{ warehouse.address or 'Manzil belgilanmagan' }}
+                <span style="color: #3498db; font-size: 20px;">📍</span>{{ warehouse.address or t('wd_address_empty') }}
             </span>
             <span style="display: flex; align-items: center; gap: 5px;">
-                <span style="color: #3498db; font-size: 20px;">👤</span>{{ warehouse.manager_name or 'Mas\'ul belgilanmagan' }}
+                <span style="color: #3498db; font-size: 20px;">👤</span>{{ warehouse.manager_name or t('wd_manager_empty') }}
             </span>
             <span style="display: flex; align-items: center; gap: 5px;">
-                <span style="color: #3498db; font-size: 20px;">📞</span>{{ warehouse.phone or 'Telefon belgilanmagan' }}
+                <span style="color: #3498db; font-size: 20px;">📞</span>{{ warehouse.phone or t('wd_phone_empty') }}
             </span>
         </div>
     </div>
@@ -177,34 +177,34 @@
        style="padding: 0.6rem 1.5rem; background: #3498db; color: white; text-decoration: none; border-radius: 20px; font-size: 0.9rem; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: background 0.3s; font-weight: 500;"
        onmouseover="this.style.background='#2980b9'" 
        onmouseout="this.style.background='#3498db'">
-        ← Omborlarga qaytish
+        ← {{ t('wd_back') }}
     </a>
 </div>
 
 <!-- Statistika kartalari -->
 <div class="info-grid">
     <div class="info-card card-1">
-        <h3>📦 Mahsulot turlari</h3>
+        <h3>📦 {{ t('sd_product_types') }}</h3>
         <div class="value">{{ total_products }}</div>
     </div>
     <div class="info-card card-2">
-        <h3>📊 Jami miqdor</h3>
+        <h3>📊 {{ t('sd_total_quantity') }}</h3>
         <div class="value">{{ total_quantity }}</div>
     </div>
     <div class="info-card card-3">
-        <h3>💰 Jami tan qiymat</h3>
+        <h3>💰 {{ t('sd_total_cost') }}</h3>
         <div class="value">${{ "%.2f"|format(total_cost_value) }}</div>
     </div>
     <div class="info-card card-4">
-        <h3>💵 Jami sotuv qiymat</h3>
+        <h3>💵 {{ t('sd_total_sell') }}</h3>
         <div class="value">${{ "%.2f"|format(total_value) }}</div>
     </div>
     <div class="info-card card-5">
-        <h3>💎 Jami foyda</h3>
+        <h3>💎 {{ t('sd_total_profit') }}</h3>
         <div class="value">${{ "%.2f"|format(total_profit) }}</div>
     </div>
     <div class="info-card card-6">
-        <h3>📊 Foyda foizi</h3>
+        <h3>📊 {{ t('sd_profit_percent') }}</h3>
         <div class="value">{{ "%.1f"|format(profit_percentage) }}%</div>
     </div>
 </div>
@@ -213,12 +213,12 @@
 <div style="background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); overflow: hidden;">
     <div style="overflow-x: auto;">
         <div class="search-container" style="padding: 1rem; background: #f8f9fa; border-bottom: 1px solid #eee; display: flex; justify-content: flex-start; gap: 10px; align-items: center;">
-            <input type="text" id="search-input" class="search-box" placeholder="Qidirish..." onkeyup="filterTable()" style="width: 500px !important; max-width: 500px; border-radius: 25px; padding: 12px 20px; border: 2px solid #ddd;">
+            <input type="text" id="search-input" class="search-box" placeholder="{{ t('sd_search') }}" onkeyup="filterTable()" style="width: 500px !important; max-width: 500px; border-radius: 25px; padding: 12px 20px; border: 2px solid #ddd;">
             <select id="status-filter" class="filter-select" onchange="handleFilterChange()" style="border-radius: 20px; padding: 10px 15px;">
-                <option value="">Barcha holatlar</option>
-                <option value="normal">Yetarli</option>
-                <option value="low">Kam qolgan</option>
-                <option value="critical">Tugagan</option>
+                <option value="">{{ t('sd_all_statuses') }}</option>
+                <option value="normal">{{ t('sd_status_enough') }}</option>
+                <option value="low">{{ t('sd_status_low') }}</option>
+                <option value="critical">{{ t('sd_status_out') }}</option>
             </select>
             <button onclick="exportToExcel()" style="padding: 10px 20px; background: white; color: #27ae60; border: 2px solid #27ae60; border-radius: 20px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 5px; transition: all 0.3s;" onmouseover="this.style.background='#f0fff0'" onmouseout="this.style.background='white'">
                 <img src="https://img.icons8.com/color/48/ms-excel.png" alt="Excel" style="width: 20px; height: 20px;"> Excel
@@ -228,16 +228,16 @@
         <table id="stock-table" style="width: 100%; border-collapse: collapse; font-size: 14px;">
             <thead>
                 <tr style="background-color: #f8f9fa;">
-                    <th style="padding: 12px; text-align: center; border-bottom: 2px solid #dee2e6; font-weight: 600; width: 90px;">Barcode</th>
-                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #dee2e6; font-weight: 600;">Mahsulot nomi</th>
-                    <th style="padding: 12px; text-align: center; border-bottom: 2px solid #dee2e6; font-weight: 600; width: 80px;">Miqdor</th>
-                    <th style="padding: 12px; text-align: center; border-bottom: 2px solid #dee2e6; font-weight: 600; width: 110px;">Asl tan narx</th>
-                    <th style="padding: 12px; text-align: center; border-bottom: 2px solid #dee2e6; font-weight: 600; width: 100px;">Tan narx</th>
-                    <th style="padding: 12px; text-align: center; border-bottom: 2px solid #dee2e6; font-weight: 600; width: 100px;">Sotish narx</th>
-                    <th style="padding: 12px; text-align: center; border-bottom: 2px solid #dee2e6; font-weight: 600; width: 100px;">Birlik foyda</th>
-                    <th style="padding: 12px; text-align: center; border-bottom: 2px solid #dee2e6; font-weight: 600; width: 90px;">Foyda %</th>
-                    <th style="padding: 12px; text-align: center; border-bottom: 2px solid #dee2e6; font-weight: 600; width: 110px;">Holat</th>
-                    <th style="padding: 12px; text-align: center; border-bottom: 2px solid #dee2e6; font-weight: 600; width: 230px;">Amallar</th>
+                    <th style="padding: 12px; text-align: center; border-bottom: 2px solid #dee2e6; font-weight: 600; width: 90px;">{{ t('sd_th_barcode') }}</th>
+                    <th style="padding: 12px; text-align: left; border-bottom: 2px solid #dee2e6; font-weight: 600;">{{ t('sd_th_product') }}</th>
+                    <th style="padding: 12px; text-align: center; border-bottom: 2px solid #dee2e6; font-weight: 600; width: 80px;">{{ t('sd_th_quantity') }}</th>
+                    <th style="padding: 12px; text-align: center; border-bottom: 2px solid #dee2e6; font-weight: 600; width: 110px;">{{ t('sd_th_orig_cost') }}</th>
+                    <th style="padding: 12px; text-align: center; border-bottom: 2px solid #dee2e6; font-weight: 600; width: 100px;">{{ t('sd_th_cost') }}</th>
+                    <th style="padding: 12px; text-align: center; border-bottom: 2px solid #dee2e6; font-weight: 600; width: 100px;">{{ t('sd_th_sell') }}</th>
+                    <th style="padding: 12px; text-align: center; border-bottom: 2px solid #dee2e6; font-weight: 600; width: 100px;">{{ t('sd_th_unit_profit') }}</th>
+                    <th style="padding: 12px; text-align: center; border-bottom: 2px solid #dee2e6; font-weight: 600; width: 90px;">{{ t('sd_th_profit_pct') }}</th>
+                    <th style="padding: 12px; text-align: center; border-bottom: 2px solid #dee2e6; font-weight: 600; width: 110px;">{{ t('sd_th_status') }}</th>
+                    <th style="padding: 12px; text-align: center; border-bottom: 2px solid #dee2e6; font-weight: 600; width: 230px;">{{ t('sd_th_actions') }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -245,7 +245,7 @@
                     <td colspan="10" style="text-align: center; color: #666; padding: 2rem;">
                         <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
                             <div style="width: 20px; height: 20px; border: 2px solid #f3f3f3; border-top: 2px solid #3498db; border-radius: 50%; animation: spin 1s linear infinite;"></div>
-                            Ma'lumotlar yuklanmoqda...
+                            {{ t('sd_loading') }}
                         </div>
                     </td>
                 </tr>
@@ -270,6 +270,28 @@
 <script src="https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
 <script>
+    const WDLANG = {
+        loading: "{{ t('sd_loading') }}",
+        not_found: "{{ t('sd_not_found') }}",
+        litr: "{{ t('sd_litr') }}",
+        pcs: "{{ t('sd_pcs') }}",
+        status_out: "{{ t('sd_status_out') }}",
+        status_low: "{{ t('sd_status_low') }}",
+        status_enough: "{{ t('sd_status_enough') }}",
+        edit: "{{ t('sd_edit') }}",
+        delete: "{{ t('sd_delete') }}",
+        products_count: "{{ t('sd_products_count') }}",
+        prev: "{{ t('sd_prev') }}",
+        next: "{{ t('sd_next') }}",
+        load_error: "{{ t('sd_load_error') }}",
+        excel_not_loaded: "{{ t('sd_excel_not_loaded') }}",
+        table_not_found: "{{ t('sd_table_not_found') }}",
+        excel_error: "{{ t('sd_excel_error') }}",
+        confirm_delete: "{{ t('wd_confirm_delete') }}",
+        delete_error: "{{ t('sd_delete_error') }}",
+        warehouse_info: "{{ t('wd_warehouse_info') }}"
+    };
+
     let searchTimeout;
     let currentPage = 1;
     let totalPages = 1;
@@ -322,7 +344,7 @@
                 <td colspan="9" style="text-align: center; color: #666; padding: 2rem;">
                     <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
                         <div style="width: 20px; height: 20px; border: 2px solid #f3f3f3; border-top: 2px solid #3498db; border-radius: 50%; animation: spin 1s linear infinite;"></div>
-                        Ma'lumotlar yuklanmoqda...
+                        ${WDLANG.loading}
                     </div>
                 </td>
             </tr>
@@ -353,7 +375,7 @@
                 tbody.innerHTML = `
                     <tr>
                         <td colspan="10" style="text-align: center; color: #e74c3c; padding: 2rem;">
-                            Ma'lumotlarni yuklashda xatolik yuz berdi. Sahifani yangilang.
+                            ${WDLANG.load_error}
                         </td>
                     </tr>
                 `;
@@ -368,7 +390,7 @@
             tbody.innerHTML = `
                 <tr>
                     <td colspan="10" style="text-align: center; color: #666; padding: 2rem;">
-                        Mahsulotlar topilmadi
+                        ${WDLANG.not_found}
                     </td>
                 </tr>
             `;
@@ -383,8 +405,8 @@
             const unitType = item.stock.product.unit_type || 'dona';
             const quantity = item.stock.quantity;
             const quantityDisplay = unitType === 'litr' 
-                ? `${parseFloat(quantity).toFixed(2)} litr`
-                : (quantity % 1 === 0 ? `${Math.floor(quantity)} dona` : `${parseFloat(quantity).toFixed(1)} dona`);
+                ? `${parseFloat(quantity).toFixed(2)} ${WDLANG.litr}`
+                : (quantity % 1 === 0 ? `${Math.floor(quantity)} ${WDLANG.pcs}` : `${parseFloat(quantity).toFixed(1)} ${WDLANG.pcs}`);
             
             return `
             <tr class="stock-row" data-status="${item.status}" style="border-bottom: 1px solid #dee2e6;">
@@ -397,9 +419,9 @@
                 <td style="padding: 5px; text-align: center; color: #27ae60; font-weight: bold; width: 100px;">$${item.unit_profit.toFixed(2)}</td>
                 <td style="padding: 5px; text-align: center; color: #3498db; font-weight: bold; width: 90px;">${item.profit_percentage.toFixed(1)}%</td>
                 <td style="padding: 5px; text-align: center; width: 110px;">
-                    ${item.status === 'critical' ? '<span style="color: #000000; font-weight: bold;">🚫 Tugagan</span>' :
-                      item.status === 'low' ? '<span style="color: #e74c3c; font-weight: bold;">⚠️ Kam qolgan</span>' :
-                      '<span style="color: #27ae60; font-weight: bold;">✓ Yetarli</span>'}
+                    ${item.status === 'critical' ? `<span style="color: #000000; font-weight: bold;">🚫 ${WDLANG.status_out}</span>` :
+                      item.status === 'low' ? `<span style="color: #e74c3c; font-weight: bold;">⚠️ ${WDLANG.status_low}</span>` :
+                      `<span style="color: #27ae60; font-weight: bold;">✓ ${WDLANG.status_enough}</span>`}
                 </td>
                 <td class="actions" style="padding: 5px; text-align: center; width: 230px;">
                     <a href="/edit_stock/${warehouseId}/${item.stock.product.id}" 
@@ -407,14 +429,14 @@
                               cursor: pointer; font-size: 12px; font-weight: 500; text-decoration: none; 
                               display: inline-block; margin: 2px; transition: all 0.3s ease; min-width: 95px;"
                        onmouseover="this.style.background='#2980b9'" 
-                       onmouseout="this.style.background='#3498db'">✏️ Tahrirlash</a>
+                       onmouseout="this.style.background='#3498db'">✏️ ${WDLANG.edit}</a>
                     <button onclick="deleteStock(${warehouseId}, ${item.stock.product.id}, this)" 
                             data-product-name="${item.stock.product.name}"
                             style="background: #e74c3c; color: white; padding: 6px 12px; border: none; border-radius: 4px; 
                                    cursor: pointer; font-size: 12px; font-weight: 500; text-decoration: none; 
                                    display: inline-block; margin: 2px; transition: all 0.3s ease; min-width: 95px;"
                             onmouseover="this.style.background='#c0392b'" 
-                            onmouseout="this.style.background='#e74c3c'">🗑️ O'chirish</button>
+                            onmouseout="this.style.background='#e74c3c'">🗑️ ${WDLANG.delete}</button>
                 </td>
             </tr>
         `;
@@ -428,14 +450,14 @@
         // Ma'lumot ko'rsatish
         const startItem = (currentPage - 1) * itemsPerPage + 1;
         const endItem = Math.min(currentPage * itemsPerPage, totalItems);
-        paginationInfo.textContent = `${startItem}-${endItem} / ${totalItems} ta mahsulot`;
+        paginationInfo.textContent = `${startItem}-${endItem} / ${totalItems} ${WDLANG.products_count}`;
         
         // Pagination tugmalarini yaratish
         let buttonsHTML = '';
         
         // Oldingi sahifa tugmasi
         if (currentPage > 1) {
-            buttonsHTML += `<button onclick="loadStockData(${currentPage - 1}, document.querySelector('#search-input').value, document.querySelector('#status-filter').value)" class="pagination-btn">‹ Oldingi</button>`;
+            buttonsHTML += `<button onclick="loadStockData(${currentPage - 1}, document.querySelector('#search-input').value, document.querySelector('#status-filter').value)" class="pagination-btn">‹ ${WDLANG.prev}</button>`;
         }
         
         // Sahifa raqamlari
@@ -449,7 +471,7 @@
         
         // Keyingi sahifa tugmasi
         if (currentPage < totalPages) {
-            buttonsHTML += `<button onclick="loadStockData(${currentPage + 1}, document.querySelector('#search-input').value, document.querySelector('#status-filter').value)" class="pagination-btn">Keyingi ›</button>`;
+            buttonsHTML += `<button onclick="loadStockData(${currentPage + 1}, document.querySelector('#search-input').value, document.querySelector('#status-filter').value)" class="pagination-btn">${WDLANG.next} ›</button>`;
         }
         
         paginationButtons.innerHTML = buttonsHTML;
@@ -477,33 +499,33 @@
     function exportToExcel() {
         // XLSX kutubxonasi yuklanganini tekshirish
         if (typeof XLSX === 'undefined') {
-            alert('❌ Excel kutubxonasi yuklanmagan!\n\nSahifani qayta yuklang yoki internet ulanishingizni tekshiring.');
+            alert('❌ ' + WDLANG.excel_not_loaded);
             return;
         }
 
         try {
             const table = document.getElementById('stock-table');
             if (!table) {
-                alert('❌ Jadval topilmadi!');
+                alert('❌ ' + WDLANG.table_not_found);
                 return;
             }
 
             const ws = XLSX.utils.table_to_sheet(table);
             const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Ombor ma'lumotlari");
+            XLSX.utils.book_append_sheet(wb, ws, WDLANG.warehouse_info);
             XLSX.writeFile(wb, "{{ warehouse.name }}_mahsulotlar.xlsx");
             
             console.log('✅ Excel fayl muvaffaqiyatli eksport qilindi');
         } catch (error) {
             console.error('Excel eksport xatoligi:', error);
-            alert('❌ Excel faylni eksport qilishda xatolik yuz berdi!\n\nXatolik: ' + error.message);
+            alert('❌ ' + WDLANG.excel_error + error.message);
         }
     }
 
     // Mahsulotni o'chirish funksiyasi
     function deleteStock(warehouseId, productId, button) {
         const productName = button.getAttribute('data-product-name');
-        if (confirm(`Haqiqatan ham "${productName}" mahsulotini bu ombordan o'chirmoqchimisiz?`)) {
+        if (confirm(WDLANG.confirm_delete.replace('{name}', productName))) {
             fetch(`/api/warehouse_stock/${warehouseId}/${productId}`, {
                 method: 'DELETE',
                 headers: {
@@ -524,7 +546,7 @@
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('❌ Mahsulotni o\'chirishda xatolik yuz berdi!\n\n' + error.message);
+                alert('❌ ' + WDLANG.delete_error + '\n\n' + error.message);
             });
         }
     }

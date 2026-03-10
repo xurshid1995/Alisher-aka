@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Sozlamalar - DOKON{% endblock %}
+{% block title %}{{ t('settings') }} - DOKON{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -98,84 +98,96 @@
 {% endblock %}
 
 {% block content %}    <div class="settings-container">
-        <h1>Tizim Sozlamalari</h1>
+        <h1>{{ t('heading_system_settings') }}</h1>
         
         <!-- Qoldiq tekshirish sahifasi sozlamasi -->
         <div class="setting-group">
-            <div class="setting-title">Qoldiq Tekshirish Sahifasi</div>
+            <div class="setting-title">{{ t('label_stock_check_page') }}</div>
             <div class="setting-description">
-                Sotuvchi roli uchun qoldiq tekshirish sahifasini ko'rsatish yoki yashirish
+                {{ t('description_stock_check_visible') }}
             </div>
             
             <div class="toggle-container">
                 <div class="toggle-switch" id="stockToggle" onclick="toggleSetting('stock_check_visible')">
                     <div class="toggle-slider"></div>
                 </div>
-                <span class="toggle-label" id="stockLabel">Yashirilgan</span>
+                <span class="toggle-label" id="stockLabel">{{ t('status_hidden') }}</span>
             </div>
             
             <div class="role-restriction">
-                <strong>Eslatma:</strong> Bu sozlama faqat sotuvchi roli uchun qo'llaniladi. 
-                Admin va Manager rollari doimo barcha sahifalarni ko'ra oladi.
+                <strong>{{ t('label_note') }}</strong> {{ t('stock_check_restriction') }}
             </div>
         </div>
         
         <!-- Til sozlamalari -->
         <div class="setting-group">
-            <div class="setting-title">🌐 Interfeys Tili</div>
+            <div class="setting-title">{{ t('label_ui_language') }}</div>
             <div class="setting-description">
-                Tizim interfeysining tilini tanlang. Til o'zgargandan keyin "Sozlamalarni saqlash" tugmasini bosing.
+                {{ t('description_language_selection') }}
             </div>
             
             <div style="margin-top: 15px;">
                 <select id="languageSelect" style="padding: 8px 12px; font-size: 16px; border: 1px solid #ddd; border-radius: 4px; width: 100%; max-width: 300px;">
-                    <option value="uz_latin">🇺🇿 O'zbek tili (Lotin)</option>
-                    <option value="uz_cyrillic">🇺🇿 Ўзбек тили (Кирилл)</option>
-                    <option value="ru">🇷🇺 Русский язык</option>
+                    <option value="uz_latin">{{ t('language_uzbek_latin') }}</option>
+                    <option value="uz_cyrillic">{{ t('language_uzbek_cyrillic') }}</option>
+                    <option value="ru">{{ t('language_russian') }}</option>
                 </select>
             </div>
         </div>
         
         <!-- Currency sozlamalari -->
         <div class="setting-group">
-            <div class="setting-title">Valyuta Sozlamalari</div>
+            <div class="setting-title">{{ t('label_currency_settings') }}</div>
             <div class="setting-description">
-                Valyuta kursi avtomatik yangilanishini boshqarish
+                {{ t('description_auto_currency') }}
             </div>
             
             <div class="toggle-container">
                 <div class="toggle-switch" id="currencyToggle" onclick="toggleSetting('auto_currency_update')">
                     <div class="toggle-slider"></div>
                 </div>
-                <span class="toggle-label" id="currencyLabel">O'chiq</span>
+                <span class="toggle-label" id="currencyLabel">{{ t('status_off') }}</span>
             </div>
         </div>
         
         <!-- Backup sozlamalari -->
         <div class="setting-group">
-            <div class="setting-title">Avtomatik Backup</div>
+            <div class="setting-title">{{ t('label_auto_backup') }}</div>
             <div class="setting-description">
-                Ma'lumotlar bazasining avtomatik zaxira nusxasini yaratish
+                {{ t('description_auto_backup') }}
             </div>
             
             <div class="toggle-container">
                 <div class="toggle-switch" id="backupToggle" onclick="toggleSetting('auto_backup')">
                     <div class="toggle-slider"></div>
                 </div>
-                <span class="toggle-label" id="backupLabel">O'chiq</span>
+                <span class="toggle-label" id="backupLabel">{{ t('status_off') }}</span>
             </div>
         </div>
         
-        <button class="save-button" onclick="saveSettings()">Sozlamalarni Saqlash</button>
+        <button class="save-button" onclick="saveSettings()">{{ t('btn_save_settings') }}</button>
     </div>
 
 {% endblock %}
 
 {% block extra_js %}
 <script>
+        // Translation strings for JS
+        const SLANG = {
+            status_shown: '{{ t("status_shown") }}',
+            status_hidden: '{{ t("status_hidden") }}',
+            status_enabled: '{{ t("status_enabled") }}',
+            status_off: '{{ t("status_off") }}',
+            alert_settings_saved: '{{ t("alert_settings_saved") }}',
+            alert_lang_error: '{{ t("alert_lang_error") }}',
+            alert_settings_error: '{{ t("alert_settings_error") }}',
+            alert_currency_updated: '{{ t("alert_currency_updated") }}',
+            prompt_currency_rate: '{{ t("prompt_currency_rate") }}'
+        };
+
         // Currency va logout funksiyalari
         async function editCurrency() {
-            const rate = prompt('Yangi valyuta kursini kiriting (1 USD = ? UZS):');
+            const rate = prompt(SLANG.prompt_currency_rate);
             if (rate && !isNaN(rate) && parseFloat(rate) > 0) {
                 try {
                     const response = await fetch('/api/currency-rate', {
@@ -185,7 +197,7 @@
                     });
                     if (response.ok) {
                         loadCurrencyRate();
-                        alert('Valyuta kursi yangilandi!');
+                        alert(SLANG.alert_currency_updated);
                     }
                 } catch (error) {
                     console.error('Valyuta kursini yangilashda xato:', error);
@@ -265,10 +277,10 @@
             const stockLabel = document.getElementById('stockLabel');
             if (settings.stock_check_visible) {
                 stockToggle.classList.add('active');
-                stockLabel.textContent = 'Ko\'rsatilgan';
+                stockLabel.textContent = SLANG.status_shown;
             } else {
                 stockToggle.classList.remove('active');
-                stockLabel.textContent = 'Yashirilgan';
+                stockLabel.textContent = SLANG.status_hidden;
             }
 
             // Currency toggle
@@ -276,10 +288,10 @@
             const currencyLabel = document.getElementById('currencyLabel');
             if (settings.auto_currency_update) {
                 currencyToggle.classList.add('active');
-                currencyLabel.textContent = 'Yoqilgan';
+                currencyLabel.textContent = SLANG.status_enabled;
             } else {
                 currencyToggle.classList.remove('active');
-                currencyLabel.textContent = 'O\'chiq';
+                currencyLabel.textContent = SLANG.status_off;
             }
 
             // Backup toggle
@@ -287,10 +299,10 @@
             const backupLabel = document.getElementById('backupLabel');
             if (settings.auto_backup) {
                 backupToggle.classList.add('active');
-                backupLabel.textContent = 'Yoqilgan';
+                backupLabel.textContent = SLANG.status_enabled;
             } else {
                 backupToggle.classList.remove('active');
-                backupLabel.textContent = 'O\'chiq';
+                backupLabel.textContent = SLANG.status_off;
             }
         }
 
@@ -330,19 +342,19 @@
                     });
                     
                     if (langResponse.ok) {
-                        alert('✅ Sozlamalar va til muvaffaqiyatli saqlandi! Sahifa yangilanadi...');
+                        alert(SLANG.alert_settings_saved);
                         setTimeout(() => {
                             window.location.reload();
                         }, 1000);
                     } else {
-                        alert('⚠️ Sozlamalar saqlandi, lekin tilni o\'zgartirishda xato!');
+                        alert(SLANG.alert_lang_error);
                     }
                 } else {
-                    alert('❌ Sozlamalarni saqlashda xato yuz berdi!');
+                    alert(SLANG.alert_settings_error);
                 }
             } catch (error) {
                 console.error('Sozlamalarni saqlashda xato:', error);
-                alert('❌ Sozlamalarni saqlashda xato yuz berdi!');
+                alert(SLANG.alert_settings_error);
             }
         }
 </script>

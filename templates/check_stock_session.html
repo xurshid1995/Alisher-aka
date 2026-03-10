@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}{{ location_name }} - Qoldiqni tekshirish{% endblock %}
+{% block title %}{{ location_name }} - {{ t('css_check_stock') }}{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -172,14 +172,14 @@
             <div class="page-header">
                 <div class="session-header-wrapper" style="display: flex; justify-content: space-between; align-items: center;">
                     <div>
-                        <h2 style="margin: 0;"><i class="fas fa-clipboard-check"></i> {{ location_name }} - Qoldiqni tekshirish</h2>
+                        <h2 style="margin: 0;"><i class="fas fa-clipboard-check"></i> {{ location_name }} - {{ t('css_check_stock') }}</h2>
                     </div>
                     <div class="session-header-buttons" style="display: flex; gap: 1rem; align-items: center;">
                         <button type="button" onclick="finishCheck()" style="background-color: #dc3545 !important; color: white !important; border: none !important; padding: 0.5rem 1rem; font-size: 1.25rem; border-radius: 0.5rem; cursor: pointer;">
-                            <i class="fas fa-check me-2"></i>Tekshiruvni yakunlash
+                            <i class="fas fa-check me-2"></i>{{ t('css_finish_check') }}
                         </button>
                         <a href="/check_stock" class="btn btn-secondary btn-lg">
-                            <i class="fas fa-arrow-left me-2"></i>Orqaga
+                            <i class="fas fa-arrow-left me-2"></i>{{ t('css_back') }}
                         </a>
                     </div>
                 </div>
@@ -192,16 +192,16 @@
         <!-- Chap jadval - Mahsulotlar ro'yxati -->
         <div class="check-stock-box">
             <div style="background: #3498db; padding: 15px; border-radius: 8px; margin-bottom: 10px; height: 54px; display: flex; align-items: center; justify-content: space-between;">
-                <div style="color: white; font-weight: 600; font-size: 16px;">📦 Mahsulotlar ro'yxati</div>
+                <div style="color: white; font-weight: 600; font-size: 16px;">📦 {{ t('css_products_list') }}</div>
                 <div style="color: white; font-size: 16px;">
-                    <span id="productsCount" style="background: rgba(255,255,255,0.25); padding: 2px 8px; border-radius: 10px; font-weight: 600;">0</span> ta
+                    <span id="productsCount" style="background: rgba(255,255,255,0.25); padding: 2px 8px; border-radius: 10px; font-weight: 600;">0</span> {{ t('css_count_suffix') }}
                 </div>
             </div>
 
             <div style="margin-bottom: 10px;">
                 <input type="text" 
                        id="productSearch" 
-                       placeholder="🔍 Mahsulot / Barcode qidirish..." 
+                       placeholder="🔍 {{ t('css_search_product') }}" 
                        style="width: 100%; padding: 10px 12px; border: 2px solid #28a745; border-radius: 25px; font-size: 14px;"
                        autofocus>
             </div>
@@ -210,17 +210,17 @@
                 <table style="width: 100%; min-width: 500px; max-width: 100%; border-collapse: collapse;">
                     <thead style="position: sticky; top: 0; background: white; z-index: 10;">
                         <tr>
-                            <th style="width: 280px; color: #333; padding: 10px; text-align: left; border-bottom: 2px solid #dee2e6; font-weight: 600; font-size: 13px;">Mahsulot</th>
-                            <th style="width: 80px; text-align: center; color: #333; padding: 10px; border-bottom: 2px solid #dee2e6; font-weight: 600; font-size: 13px;">Narx</th>
-                            <th style="width: 80px; text-align: center; color: #333; padding: 10px; border-bottom: 2px solid #dee2e6; font-weight: 600; font-size: 13px;">Mavjud</th>
-                            <th style="width: 70px; text-align: center; color: #333; padding: 10px; border-bottom: 2px solid #dee2e6; font-weight: 600; font-size: 13px;">Amal</th>
+                            <th style="width: 280px; color: #333; padding: 10px; text-align: left; border-bottom: 2px solid #dee2e6; font-weight: 600; font-size: 13px;">{{ t('css_th_product') }}</th>
+                            <th style="width: 80px; text-align: center; color: #333; padding: 10px; border-bottom: 2px solid #dee2e6; font-weight: 600; font-size: 13px;">{{ t('css_th_price') }}</th>
+                            <th style="width: 80px; text-align: center; color: #333; padding: 10px; border-bottom: 2px solid #dee2e6; font-weight: 600; font-size: 13px;">{{ t('css_th_available') }}</th>
+                            <th style="width: 70px; text-align: center; color: #333; padding: 10px; border-bottom: 2px solid #dee2e6; font-weight: 600; font-size: 13px;">{{ t('css_th_action') }}</th>
                         </tr>
                     </thead>
                     <tbody id="productsTableBody">
                         <tr>
                             <td colspan="4" style="text-align: center; padding: 40px 20px; color: #999;">
                                 <div style="font-size: 48px; margin-bottom: 10px; opacity: 0.5;">📦</div>
-                                <div>Qidirish orqali mahsulot tanlang</div>
+                                <div>{{ t('css_select_product') }}</div>
                             </td>
                         </tr>
                     </tbody>
@@ -230,11 +230,11 @@
             <!-- Pagination -->
             <div id="productsPagination" style="display: none; margin-top: 15px; text-align: center; padding: 10px;">
                 <button id="prevPageBtn" onclick="prevProductsPage()" style="padding: 8px 16px; margin: 0 5px; background: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px;">
-                    ← Oldingi
+                    ← {{ t('css_prev') }}
                 </button>
                 <span id="pageInfo" style="margin: 0 15px; font-weight: 600; font-size: 14px;"></span>
                 <button id="nextPageBtn" onclick="nextProductsPage()" style="padding: 8px 16px; margin: 0 5px; background: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px;">
-                    Keyingi →
+                    {{ t('css_next') }} →
                 </button>
             </div>
         </div>
@@ -242,29 +242,29 @@
         <!-- O'ng jadval - Tekshirilgan mahsulotlar -->
         <div class="check-stock-box">
             <div style="background: #3498db; padding: 15px; border-radius: 8px; margin-bottom: 10px; height: 54px; display: flex; align-items: center; justify-content: space-between;">
-                <div style="color: white; font-weight: 600; font-size: 16px;">✅ Tekshirilgan mahsulotlar</div>
+                <div style="color: white; font-weight: 600; font-size: 16px;">✅ {{ t('css_checked_products') }}</div>
                 <div style="color: white; font-size: 16px;">
-                    <span id="checkedCount" style="background: rgba(255,255,255,0.25); padding: 2px 8px; border-radius: 10px; font-weight: 600;">0</span> ta
+                    <span id="checkedCount" style="background: rgba(255,255,255,0.25); padding: 2px 8px; border-radius: 10px; font-weight: 600;">0</span> {{ t('css_count_suffix') }}
                 </div>
             </div>
 
             <div style="display: flex; gap: 10px; margin-bottom: 10px;">
                 <input type="text" 
                        id="checkedSearch" 
-                       placeholder="🔍 Tekshirilganlardan qidirish..." 
+                       placeholder="🔍 {{ t('css_search_checked') }}" 
                        style="flex: 1; padding: 10px 12px; border: 1px solid #ced4da; border-radius: 25px; font-size: 14px;">
                 <div style="display: flex; gap: 5px;">
                     <button onclick="filterChecked('all')" id="filterAll" 
                             style="background: #007bff; color: white; border: none; padding: 8px 16px; border-radius: 25px; cursor: pointer; font-size: 13px; font-weight: 600; white-space: nowrap;">
-                        📊 Tekshirilgan <span id="allCount" style="background: rgba(255,255,255,0.3); padding: 2px 8px; border-radius: 50px; margin-left: 4px; min-width: 25px; display: inline-block; text-align: center;">0</span>
+                        📊 {{ t('css_filter_checked') }} <span id="allCount" style="background: rgba(255,255,255,0.3); padding: 2px 8px; border-radius: 50px; margin-left: 4px; min-width: 25px; display: inline-block; text-align: center;">0</span>
                     </button>
                     <button onclick="filterChecked('error')" id="filterError" 
                             style="background: #dc3545; color: white; border: none; padding: 8px 16px; border-radius: 25px; cursor: pointer; font-size: 13px; font-weight: 600; white-space: nowrap;">
-                        ⚠️ Xatolik <span id="errorCount" style="background: rgba(255,255,255,0.3); padding: 2px 8px; border-radius: 50px; margin-left: 4px; min-width: 25px; display: inline-block; text-align: center;">0</span>
+                        ⚠️ {{ t('css_filter_error') }} <span id="errorCount" style="background: rgba(255,255,255,0.3); padding: 2px 8px; border-radius: 50px; margin-left: 4px; min-width: 25px; display: inline-block; text-align: center;">0</span>
                     </button>
                     <button onclick="filterChecked('correct')" id="filterCorrect" 
                             style="background: #28a745; color: white; border: none; padding: 8px 16px; border-radius: 25px; cursor: pointer; font-size: 13px; font-weight: 600; white-space: nowrap;">
-                        ✅ To'g'ri <span id="correctCount" style="background: rgba(255,255,255,0.3); padding: 2px 8px; border-radius: 50px; margin-left: 4px; min-width: 25px; display: inline-block; text-align: center;">0</span>
+                        ✅ {{ t('css_filter_correct') }} <span id="correctCount" style="background: rgba(255,255,255,0.3); padding: 2px 8px; border-radius: 50px; margin-left: 4px; min-width: 25px; display: inline-block; text-align: center;">0</span>
                     </button>
                 </div>
             </div>
@@ -273,20 +273,20 @@
                 <table style="width: 100%; min-width: 560px; max-width: 100%; border-collapse: collapse;">
                     <thead style="position: sticky; top: 0; background: white; z-index: 10;">
                         <tr>
-                            <th style="width: 350px; color: #333; padding: 10px; text-align: left; border-bottom: 2px solid #dee2e6; font-weight: 600; font-size: 13px;">Mahsulot nomi</th>
-                            <th style="width: 90px; text-align: center; color: #333; padding: 10px; border-bottom: 2px solid #dee2e6; font-weight: 600; font-size: 13px;">Narxi</th>
-                            <th style="width: 80px; text-align: center; color: #333; padding: 10px; border-bottom: 2px solid #dee2e6; font-weight: 600; font-size: 13px;">Tizimda</th>
-                            <th style="width: 80px; text-align: center; color: #333; padding: 10px; border-bottom: 2px solid #dee2e6; font-weight: 600; font-size: 13px;">Haqiqiy</th>
-                            <th style="width: 80px; text-align: center; color: #333; padding: 10px; border-bottom: 2px solid #dee2e6; font-weight: 600; font-size: 13px;">Xatolik</th>
-                            <th style="width: 80px; text-align: center; color: #333; padding: 10px; border-bottom: 2px solid #dee2e6; font-weight: 600; font-size: 13px;">Holat</th>
-                            <th style="width: 70px; text-align: center; color: #333; padding: 10px; border-bottom: 2px solid #dee2e6; font-weight: 600; font-size: 13px;">Amal</th>
+                            <th style="width: 350px; color: #333; padding: 10px; text-align: left; border-bottom: 2px solid #dee2e6; font-weight: 600; font-size: 13px;">{{ t('css_th_product_name') }}</th>
+                            <th style="width: 90px; text-align: center; color: #333; padding: 10px; border-bottom: 2px solid #dee2e6; font-weight: 600; font-size: 13px;">{{ t('css_th_price2') }}</th>
+                            <th style="width: 80px; text-align: center; color: #333; padding: 10px; border-bottom: 2px solid #dee2e6; font-weight: 600; font-size: 13px;">{{ t('css_th_system') }}</th>
+                            <th style="width: 80px; text-align: center; color: #333; padding: 10px; border-bottom: 2px solid #dee2e6; font-weight: 600; font-size: 13px;">{{ t('css_th_actual') }}</th>
+                            <th style="width: 80px; text-align: center; color: #333; padding: 10px; border-bottom: 2px solid #dee2e6; font-weight: 600; font-size: 13px;">{{ t('css_th_error') }}</th>
+                            <th style="width: 80px; text-align: center; color: #333; padding: 10px; border-bottom: 2px solid #dee2e6; font-weight: 600; font-size: 13px;">{{ t('css_th_status') }}</th>
+                            <th style="width: 70px; text-align: center; color: #333; padding: 10px; border-bottom: 2px solid #dee2e6; font-weight: 600; font-size: 13px;">{{ t('css_th_action') }}</th>
                         </tr>
                     </thead>
                     <tbody id="checkedTableBody">
                         <tr>
                             <td colspan="7" style="text-align: center; padding: 40px 20px; color: #999;">
                                 <div style="font-size: 48px; margin-bottom: 10px; opacity: 0.5;">📋</div>
-                                <div>Hali mahsulot tekshirilmagan</div>
+                                <div>{{ t('css_not_checked_yet') }}</div>
                             </td>
                         </tr>
                     </tbody>
@@ -300,22 +300,22 @@
 <div id="quantityModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; justify-content: center; align-items: center;">
     <div style="background: white; border-radius: 12px; padding: 30px; width: 450px; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h4 style="margin: 0; color: #333; font-weight: 600;">📦 Haqiqiy miqdorni kiriting</h4>
+            <h4 style="margin: 0; color: #333; font-weight: 600;">📦 {{ t('css_enter_actual') }}</h4>
             <button onclick="closeModal()" style="background: transparent; border: none; font-size: 24px; cursor: pointer; color: #999; line-height: 1;">&times;</button>
         </div>
         
         <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-            <div style="color: #666; font-size: 14px; margin-bottom: 5px;">Mahsulot:</div>
+            <div style="color: #666; font-size: 14px; margin-bottom: 5px;">{{ t('css_product_label') }}</div>
             <div id="modalProductName" style="font-weight: 600; font-size: 16px; color: #333;"></div>
-            <div style="color: #666; font-size: 14px; margin-top: 10px;">Tizimdagi miqdor:</div>
+            <div style="color: #666; font-size: 14px; margin-top: 10px;">{{ t('css_system_quantity') }}</div>
             <div id="modalSystemQuantity" style="font-weight: 600; font-size: 18px; color: #17a2b8;"></div>
         </div>
         
         <div style="margin-bottom: 25px;">
-            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">Haqiqiy miqdor:</label>
+            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">{{ t('css_actual_quantity') }}</label>
             <input type="number" 
                    id="actualQuantityInput" 
-                   placeholder="Miqdorni kiriting..."
+                   placeholder="{{ t('css_enter_quantity') }}"
                    min="0"
                    step="0.01"
                    style="width: 100%; padding: 12px; border: 2px solid #28a745; border-radius: 8px; font-size: 16px; box-sizing: border-box;"
@@ -325,11 +325,11 @@
         <div style="display: flex; gap: 10px;">
             <button onclick="saveQuantity()" 
                     style="flex: 1; background: linear-gradient(135deg, #28a745, #20c997); color: white; border: none; padding: 12px; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer;">
-                <i class="fas fa-check"></i> Saqlash
+                <i class="fas fa-check"></i> {{ t('css_save') }}
             </button>
             <button onclick="closeModal()" 
                     style="flex: 1; background: #6c757d; color: white; border: none; padding: 12px; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer;">
-                <i class="fas fa-times"></i> Bekor qilish
+                <i class="fas fa-times"></i> {{ t('css_cancel') }}
             </button>
         </div>
     </div>
@@ -394,6 +394,37 @@
 </style>
 
 <script>
+const CSSLANG = {
+    not_found: '{{ t("css_not_found") }}',
+    already_checked: '{{ t("css_already_checked") }}',
+    save_error: '{{ t("css_save_error") }}',
+    save_fetch_error: '{{ t("css_save_fetch_error") }}',
+    already_checked_alert: '{{ t("css_already_checked_alert") }}',
+    load_error: '{{ t("css_load_error") }}',
+    products_not_found: '{{ t("css_products_not_found") }}',
+    search_not_found: '{{ t("css_search_not_found") }}',
+    total_label: '{{ t("css_total_label") }}',
+    product_suffix: '{{ t("css_product_suffix") }}',
+    page: '{{ t("css_page") }}',
+    search_label: '{{ t("css_search_label") }}',
+    search_error: '{{ t("css_search_error") }}',
+    status_normal: '{{ t("css_status_normal") }}',
+    status_excess: '{{ t("css_status_excess") }}',
+    status_deficit: '{{ t("css_status_deficit") }}',
+    not_checked_yet: '{{ t("css_not_checked_yet") }}',
+    no_error_products: '{{ t("css_no_error_products") }}',
+    no_correct_products: '{{ t("css_no_correct_products") }}',
+    search_no_result: '{{ t("css_search_no_result") }}',
+    delete_error: '{{ t("css_delete_error") }}',
+    delete_fetch_error: '{{ t("css_delete_fetch_error") }}',
+    confirm_finish_empty: '{{ t("css_confirm_finish_empty") }}',
+    confirm_finish: '{{ t("css_confirm_finish") }}',
+    finished_empty: '{{ t("css_finished_empty") }}',
+    finished_success: '{{ t("css_finished_success") }}',
+    finish_error: '{{ t("css_finish_error") }}',
+    finish_fetch_error: '{{ t("css_finish_fetch_error") }}'
+};
+
 const sessionId = '{{ session_id }}';
 const locationType = '{{ location_type }}';
 const locationId = {{ location_id }};
@@ -504,14 +535,14 @@ async function loadAllProducts() {
                 <tr>
                     <td colspan="4" style="text-align: center; padding: 40px 20px; color: #999;">
                         <div style="font-size: 48px; margin-bottom: 10px; opacity: 0.5;">📦</div>
-                        <div>Mahsulotlar topilmadi</div>
+                        <div>${CSSLANG.products_not_found}</div>
                     </td>
                 </tr>
             `;
         }
     } catch (error) {
         console.error('Mahsulotlarni yuklashda xatolik:', error);
-        alert('Mahsulotlarni yuklashda xatolik yuz berdi');
+        alert(CSSLANG.load_error);
     }
 }
 
@@ -547,8 +578,8 @@ document.getElementById('productSearch').addEventListener('input', function(e) {
                 <tr>
                     <td colspan="4" style="text-align: center; padding: 40px 20px; color: #999;">
                         <div style="font-size: 48px; margin-bottom: 10px; opacity: 0.5;">🔍</div>
-                        <div>"${query}" bo'yicha mahsulot topilmadi</div>
-                        <div style="font-size: 12px; margin-top: 10px;">Jami: ${allProducts.length} ta mahsulot</div>
+                        <div>"${query}" ${CSSLANG.search_not_found}</div>
+                        <div style="font-size: 12px; margin-top: 10px;">${CSSLANG.total_label} ${allProducts.length} ${CSSLANG.product_suffix}</div>
                     </td>
                 </tr>
             `;
@@ -676,11 +707,11 @@ async function searchProducts(query) {
         if (data.success && data.products.length > 0) {
             displayProducts(data.products);
         } else {
-            alert('Mahsulot topilmadi');
+            alert(CSSLANG.not_found);
         }
     } catch (error) {
         console.error('Qidiruv xatosi:', error);
-        alert('Qidiruvda xatolik yuz berdi');
+        alert(CSSLANG.search_error);
     }
 }
 
@@ -704,7 +735,7 @@ function renderProductsPage() {
             <tr>
                 <td colspan="4" style="text-align: center; padding: 40px 20px; color: #999;">
                     <div style="font-size: 48px; margin-bottom: 10px; opacity: 0.5;">🔍</div>
-                    <div>Mahsulot topilmadi</div>
+                    <div>${CSSLANG.not_found}</div>
                 </td>
             </tr>
         `;
@@ -767,9 +798,9 @@ function renderProductsPage() {
         
         // Qidiruv bo'lsa, qo'shimcha ma'lumot
         const searchQuery = document.getElementById('productSearch').value.trim();
-        let pageText = `Sahifa ${currentProductsPage} / ${totalPages} (${startIndex + 1}-${endIndex} / ${products.length})`;
+        let pageText = `${CSSLANG.page} ${currentProductsPage} / ${totalPages} (${startIndex + 1}-${endIndex} / ${products.length})`;
         if (searchQuery && products.length < allProducts.length) {
-            pageText += ` | Qidiruv: "${searchQuery}"`;
+            pageText += ` | ${CSSLANG.search_label} "${searchQuery}"`;
         }
         
         document.getElementById('pageInfo').textContent = pageText;
@@ -806,7 +837,7 @@ function addToChecked(product) {
     // Avval tekshirilganlar ichida bormi deb tekshirish
     const exists = checkedProducts.find(p => p.id === product.id);
     if (exists) {
-        alert('Bu mahsulot allaqachon tekshirilgan!');
+        alert(CSSLANG.already_checked);
         return;
     }
     
@@ -878,7 +909,7 @@ async function saveQuantity() {
         if (data.success) {
             // Agar mahsulot allaqachon tekshirilgan bo'lsa
             if (data.updated) {
-                alert('⚠️ Diqqat: Bu mahsulot allaqachon boshqa odam tomonidan tekshirilgan edi!\n\nMa\'lumotlar yangilandi.');
+                alert(CSSLANG.already_checked_alert);
             }
             
             // Tekshirilganlarga qo'shish yoki yangilash
@@ -906,11 +937,11 @@ async function saveQuantity() {
             
             closeModal();
         } else {
-            alert('Saqlashda xatolik: ' + data.message);
+            alert(CSSLANG.save_error + ': ' + data.message);
         }
     } catch (error) {
         console.error('Saqlash xatosi:', error);
-        alert('Saqlashda xatolik yuz berdi');
+        alert(CSSLANG.save_fetch_error);
     }
 }
 
@@ -925,13 +956,13 @@ function displayCheckedTable(products) {
     const tbody = document.getElementById('checkedTableBody');
     
     if (products.length === 0) {
-        let message = 'Hali mahsulot tekshirilmagan';
+        let message = CSSLANG.not_checked_yet;
         if (currentFilter === 'error') {
-            message = 'Xatolik bilan tekshirilgan mahsulot yo\'q';
+            message = CSSLANG.no_error_products;
         } else if (currentFilter === 'correct') {
-            message = 'To\'g\'ri tekshirilgan mahsulot yo\'q';
+            message = CSSLANG.no_correct_products;
         } else if (checkedProducts.length > 0) {
-            message = 'Qidiruv bo\'yicha mahsulot topilmadi';
+            message = CSSLANG.search_no_result;
         }
         
         tbody.innerHTML = `
@@ -956,9 +987,9 @@ function displayCheckedTable(products) {
         if (product.difference < 0) errorColor = '#dc3545';
         
         // Holat badge
-        let statusBadge = '<span style="background: #6c757d; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px;">Normal</span>';
-        if (product.difference > 0) statusBadge = '<span style="background: #28a745; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px;">Ortiqcha</span>';
-        if (product.difference < 0) statusBadge = '<span style="background: #dc3545; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px;">Kamomad</span>';
+        let statusBadge = '<span style="background: #6c757d; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px;">' + CSSLANG.status_normal + '</span>';
+        if (product.difference > 0) statusBadge = '<span style="background: #28a745; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px;">' + CSSLANG.status_excess + '</span>';
+        if (product.difference < 0) statusBadge = '<span style="background: #dc3545; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px;">' + CSSLANG.status_deficit + '</span>';
         
         row.innerHTML = `
             <td style="padding: 8px 10px; border-bottom: 1px solid #f0f0f0; font-size: 14px;">
@@ -1052,11 +1083,11 @@ async function removeFromChecked(productId) {
             updateCheckedTable();
             updateCheckedCount();
         } else {
-            alert('O\'chirishda xatolik: ' + data.message);
+            alert(CSSLANG.delete_error + ': ' + data.message);
         }
     } catch (error) {
         console.error('O\'chirish xatosi:', error);
-        alert('O\'chirishda xatolik yuz berdi');
+        alert(CSSLANG.delete_fetch_error);
     }
 }
 
@@ -1082,9 +1113,9 @@ async function finishCheck() {
     // Ogohlantirish xabari
     let confirmMessage;
     if (checkedProducts.length === 0) {
-        confirmMessage = 'DIQQAT: Hech qanday mahsulot tekshirilmagan!\n\nTekshiruv yakunlanadi va hisobotda ma\'lumot bo\'lmaydi.\n\nDavom etishni xohlaysizmi?';
+        confirmMessage = CSSLANG.confirm_finish_empty;
     } else {
-        confirmMessage = `${checkedProducts.length} ta mahsulot tekshirildi.\n\nTekshiruvni yakunlaysizmi?`;
+        confirmMessage = `${checkedProducts.length} ${CSSLANG.confirm_finish}`;
     }
     
     if (!confirm(confirmMessage)) {
@@ -1106,17 +1137,17 @@ async function finishCheck() {
         
         if (data.success) {
             if (checkedProducts.length === 0) {
-                alert('Tekshiruv yakunlandi (mahsulot tekshirilmagan)');
+                alert(CSSLANG.finished_empty);
             } else {
-                alert('Tekshiruv muvaffaqiyatli yakunlandi!');
+                alert(CSSLANG.finished_success);
             }
             window.location.href = '/check_stock';
         } else {
-            alert('Xatolik: ' + (data.message || 'Tekshiruvni yakunlab bo\'lmadi'));
+            alert(CSSLANG.finish_error + ': ' + (data.message || ''));
         }
     } catch (error) {
         console.error('Tekshiruvni yakunlashda xatolik:', error);
-        alert('Tekshiruvni yakunlashda xatolik yuz berdi');
+        alert(CSSLANG.finish_fetch_error);
     }
 }
 </script>

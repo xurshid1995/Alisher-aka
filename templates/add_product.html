@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Mahsulot Qo'shish - DOKON{% endblock %}
+{% block title %}{{ t('heading_add_product') }} - DOKON{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -559,7 +559,7 @@
 
 {% block content %}
         <div class="page-header">
-            <h1>➕ Mahsulot Qo'shish</h1>
+            <h1>{{ t('heading_add_product') }}</h1>
         </div>
 
         <div class="dual-panel-container">
@@ -568,7 +568,7 @@
                 <div class="panel-header">
                     <div class="header-left">
                         <span style="font-size: 1.5rem;">📦</span>
-                        <h2>Mahsulot Ma'lumotlari</h2>
+                        <h2>{{ t('label_product_info') }}</h2>
                     </div>
                 </div>
                 
@@ -579,21 +579,21 @@
                     <!-- 1-qator: Joylashuv va Excel Import -->
                     <div class="form-row">
                         <div class="form-group" style="flex: 1;">
-                            <label for="location">📍 Joylashuv:</label>
+                            <label for="location">{{ t('ap_location_label') }}</label>
                             <select id="location" name="location" class="form-control" onchange="onLocationChange()">
-                                <option value="">Joylashuvni tanlang...</option>
+                                <option value="">{{ t('ap_select_location') }}</option>
                             </select>
                         </div>
                         <div class="form-group" style="flex: 1;">
-                            <label style="display: block; margin-bottom: 0.3rem; font-weight: 600; color: #495057;">📊 Excel Import:</label>
+                            <label style="display: block; margin-bottom: 0.3rem; font-weight: 600; color: #495057;">{{ t('ap_excel_import_label') }}</label>
                             <div style="display: flex; gap: 0.5rem;">
                                 <button type="button" class="btn btn-outline-success" onclick="openExcelImport()" 
                                         style="flex: 1; padding: 0.5rem 0.75rem; background: white; border: 2px solid #28a745; color: #28a745; border-radius: 8px; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(40, 167, 69, 0.15);">
-                                    <img src="https://img.icons8.com/color/48/ms-excel.png" alt="Excel" style="width: 20px; height: 20px; vertical-align: middle; margin-right: 4px;"> Import
+                                    <img src="https://img.icons8.com/color/48/ms-excel.png" alt="Excel" style="width: 20px; height: 20px; vertical-align: middle; margin-right: 4px;"> {{ t('ap_excel_import_btn') }}
                                 </button>
                                 <button type="button" class="btn btn-outline-primary" onclick="downloadExcelTemplate()" 
                                         style="flex: 1; padding: 0.5rem 0.75rem; background: white; border: 2px solid #007bff; color: #007bff; border-radius: 8px; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(0, 123, 255, 0.15);">
-                                    <img src="https://img.icons8.com/color/48/ms-excel.png" alt="Excel" style="width: 20px; height: 20px; vertical-align: middle; margin-right: 4px;"> Namuna
+                                    <img src="https://img.icons8.com/color/48/ms-excel.png" alt="Excel" style="width: 20px; height: 20px; vertical-align: middle; margin-right: 4px;"> {{ t('ap_excel_template_btn') }}
                                 </button>
                             </div>
                         </div>
@@ -602,10 +602,10 @@
                     <!-- 2-qator: Mahsulot nomi (to'liq kenglik) -->
                     <div class="form-row" style="grid-template-columns: 1fr;">
                         <div class="form-group">
-                            <label for="product_name">📝 Mahsulot nomi:</label>
+                            <label for="product_name">{{ t('ap_product_name_label') }}</label>
                             <div class="product-name-container">
                                 <input type="text" id="product_name" name="product_name" class="form-control" 
-                                       placeholder="Mahsulot nomini kiriting..." 
+                                       placeholder="{{ t('ap_product_name_placeholder') }}" 
                                        oninput="searchProduct(); calculateProfit();"
                                        onfocus="showSearchResults()"
                                        onkeydown="handleProductNameKeyDown(event)"
@@ -619,18 +619,18 @@
                     <!-- 3-qator: Miqdor va O'lchov birligi -->
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="quantity">📊 Miqdor:</label>
+                            <label for="quantity">{{ t('ap_quantity_label') }}</label>
                             <input type="number" id="quantity" name="quantity" class="form-control" 
                                    placeholder="0" min="0" step="any"
                                    oninput="validateQuantityInput(); calculateProfit();">
                         </div>
                         <div class="form-group">
-                            <label for="unit_type">📏 O'lchov birligi:</label>
+                            <label for="unit_type">{{ t('ap_unit_type_label') }}</label>
                             <select id="unit_type" name="unit_type" class="form-control" 
                                     onchange="updateQuantityStep(); validateQuantityInput();"
                                     style="padding: 0.75rem; border: 2px solid #ced4da; border-radius: 8px; font-size: 1rem; height: 48px;">
-                                <option value="dona" selected>🔢 Dona</option>
-                                <option value="litr">💧 Litr</option>
+                                <option value="dona" selected>{{ t('ap_unit_dona') }}</option>
+                                <option value="litr">{{ t('ap_unit_litr') }}</option>
                             </select>
                         </div>
                     </div>
@@ -638,17 +638,17 @@
                     <!-- 4-qator: Minimal qoldiq va Barcode -->
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="min_stock">⚠️ Minimal qoldiq:</label>
+                            <label for="min_stock">{{ t('ap_min_stock_label') }}</label>
                             <input type="number" id="min_stock" name="min_stock" class="form-control" 
                                    placeholder="0" min="0">
                         </div>
                         <div class="form-group">
-                            <label for="barcode">📷 Barcode:</label>
+                            <label for="barcode">{{ t('ap_barcode_label') }}</label>
                             <!-- Barcode xatolik xabari - label dan keyingi qator -->
                             <div id="barcodeErrorContainer" style="margin-top: 4px; margin-bottom: 4px;"></div>
                             <div style="display: flex; gap: 5px;">
                                 <input type="text" id="barcode" name="barcode" class="form-control" 
-                                       placeholder="8 xonali raqam" 
+                                       placeholder="{{ t('ap_barcode_placeholder') }}" 
                                        autocomplete="off"
                                        maxlength="8"
                                        pattern="[0-9]{8}"
@@ -658,14 +658,14 @@
                                         id="autoGenerateBtn"
                                         onclick="generateBarcode()" 
                                         style="padding: 8px 12px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 13px; white-space: nowrap;"
-                                        title="Avtomatik barcode yaratish">
+                                        title="{{ t('ap_auto_barcode_title') }}">
                                     🔄 Auto
                                 </button>
                                 <button type="button" 
                                         onclick="printBarcodeFromForm()" 
                                         id="printBarcodeBtn"
                                         style="padding: 8px 12px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 13px; white-space: nowrap;"
-                                        title="Barcode chop etish">
+                                        title="{{ t('ap_print_barcode_title') }}">
                                     🖨️
                                 </button>
                             </div>
@@ -680,7 +680,7 @@
                     <!-- 5-qator: Tan narxi va Sotish narxi -->
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="cost_price">💰 Tan narxi ($):</label>
+                            <label for="cost_price">{{ t('ap_cost_price_label') }}</label>
                             <input type="number" id="cost_price" name="cost_price" class="form-control" 
                                    placeholder="0.00" step="0.01" min="0" 
                                    oninput="calculateProfit();"
@@ -688,7 +688,7 @@
                                    onblur="updateOriginalCostPreview(); enableAutoUpdate(); comparePrices();">
                         </div>
                         <div class="form-group">
-                            <label for="sell_price">💵 Sotish narxi ($):</label>
+                            <label for="sell_price">{{ t('ap_sell_price_label') }}</label>
                             <input type="number" id="sell_price" name="sell_price" class="form-control" 
                                    placeholder="0.00" step="0.01" min="0" 
                                    oninput="calculateProfit();">
@@ -698,12 +698,12 @@
                     <!-- 6-qator: Asl tan narx va Foyda -->
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="original_cost">🏷️ Asl tan narx ($):</label>
+                            <label for="original_cost">{{ t('ap_original_cost_label') }}</label>
                             <input type="text" id="original_cost" name="original_cost" class="form-control" 
                                    placeholder="-" readonly style="background-color: #f8f9fa;">
                         </div>
                         <div class="form-group">
-                            <label for="profit_display">💰 Foyda:</label>
+                            <label for="profit_display">{{ t('ap_profit_label') }}</label>
                             <input type="text" id="profit_display" name="profit_display" class="form-control" 
                                    placeholder="$0.00 (0%)" readonly style="background-color: #f8f9fa;">
                         </div>
@@ -717,7 +717,7 @@
                     <!-- Tugmalar -->
                     <div style="margin-top: 2rem;">
                         <button type="button" id="addToListBtn" onclick="addToTempList()" class="btn btn-primary btn-large">
-                            ➕ Ro'yxatga qo'shish
+                            {{ t('ap_add_to_list') }}
                         </button>
                     </div>
                 </form>
@@ -727,28 +727,28 @@
             <div class="panel">
                 <div class="panel-header">
                     <span style="font-size: 1.5rem;">📋</span>
-                    <h2>Vaqtinchalik Ro'yxat</h2>
+                    <h2>{{ t('ap_temp_list_title') }}</h2>
                 </div>
 
                 <div class="panel-content">
                     <div class="list-header">
-                        <span>📦 Jami: <strong id="totalProducts">0</strong> ta mahsulot</span>
-                        <span>💰 Umumiy qiymat: <strong id="totalValue">$0.00</strong></span>
+                        <span>{{ t('ap_total_products') }} <strong id="totalProducts">0</strong> {{ t('ap_total_products_suffix') }}</span>
+                        <span>{{ t('ap_total_value') }} <strong id="totalValue">$0.00</strong></span>
                     </div>
 
                     <div id="tempProductsList">
                         <div class="empty-state">
-                            <p>🎯 Hozircha hech qanday mahsulot qo'shilmagan</p>
-                            <p>Chap paneldagi formani to'ldiring va "Ro'yxatga qo'shish" tugmasini bosing</p>
+                            <p>{{ t('ap_empty_state') }}</p>
+                            <p>{{ t('ap_empty_state_hint') }}</p>
                         </div>
                     </div>
 
                     <div class="final-actions" id="finalActions" style="display: none;">
                         <button onclick="submitAllProducts()" class="btn btn-success btn-large">
-                            ✅ Barcha mahsulotlarni saqlash
+                            {{ t('ap_save_all') }}
                         </button>
                         <button onclick="clearTempList()" class="btn btn-danger" style="margin-top: 1rem; width: 100%;">
-                            🗑️ Barchasini o'chirish
+                            {{ t('ap_delete_all') }}
                         </button>
                     </div>
                 </div>
@@ -758,28 +758,28 @@
         <!-- Mahsulotlar Tarixi Bo'limi -->
         <div class="history-section">
             <div style="display: flex; justify-content: space-between; align-items: center; padding: 1.5rem; background: linear-gradient(135deg, #f8f9fa, #e9ecef); border-bottom: 2px solid #dee2e6;">
-                <h2 style="color: #495057; margin: 0; font-size: 1.4rem;">📊 Qo'shilgan Mahsulotlar Tarixi</h2>
+                <h2 style="color: #495057; margin: 0; font-size: 1.4rem;">{{ t('ap_history_title') }}</h2>
                 <button type="button" onclick="refreshHistory()" class="btn-refresh-history" id="refreshHistoryBtn">
-                    🔄 Yangilash
+                    {{ t('ap_refresh') }}
                 </button>
             </div>
             
             <div id="historyLoading" style="text-align: center; padding: 2rem;">
-                <p style="color: #6c757d;">📥 Tarix yuklanmoqda...</p>
+                <p style="color: #6c757d;">{{ t('ap_history_loading') }}</p>
             </div>
             
             <div class="history-table-container" id="historyTableContainer" style="display: none;">
                 <table class="history-table" id="productHistoryTable">
                     <thead>
                         <tr>
-                            <th>📅 Sana</th>
-                            <th>📍 Joylashuv</th>
-                            <th>📦 Mahsulot</th>
-                            <th>📊 Miqdor</th>
-                            <th>💰 Tan Narx</th>
-                            <th>💸 Sotish Narx</th>
-                            <th>💵 Jami Qiymat</th>
-                            <th>👤 Kim qo'shdi</th>
+                            <th>{{ t('ap_th_date') }}</th>
+                            <th>{{ t('ap_th_location') }}</th>
+                            <th>{{ t('ap_th_product') }}</th>
+                            <th>{{ t('ap_th_quantity') }}</th>
+                            <th>{{ t('ap_th_cost_price') }}</th>
+                            <th>{{ t('ap_th_sell_price') }}</th>
+                            <th>{{ t('ap_th_total_value') }}</th>
+                            <th>{{ t('ap_th_added_by') }}</th>
                         </tr>
                     </thead>
                     <tbody id="productHistoryBody">
@@ -832,6 +832,41 @@
     </script>
 
     <script>
+        const APLANG = {
+            select_location: "{{ t('ap_select_location') }}",
+            excel_lib_not_loaded: "{{ t('ap_excel_lib_not_loaded') }}",
+            select_location_first: "{{ t('ap_select_location_first') }}",
+            excel_select_location_hint: "{{ t('ap_excel_select_location_hint') }}",
+            excel_template_error: "{{ t('ap_excel_template_error') }}",
+            excel_lib_not_loaded2: "{{ t('ap_excel_lib_not_loaded2') }}",
+            excel_no_sheet: "{{ t('ap_excel_no_sheet') }}",
+            excel_no_data: "{{ t('ap_excel_no_data') }}",
+            excel_read_error: "{{ t('ap_excel_read_error') }}",
+            file_read_error: "{{ t('ap_file_read_error') }}",
+            enter_product_name: "{{ t('ap_enter_product_name') }}",
+            barcode_8_digits: "{{ t('ap_barcode_8_digits') }}",
+            barcode_exists: "{{ t('ap_barcode_exists') }}",
+            enter_cost_price: "{{ t('ap_enter_cost_price') }}",
+            enter_sell_price: "{{ t('ap_enter_sell_price') }}",
+            enter_quantity: "{{ t('ap_enter_quantity') }}",
+            select_location_error: "{{ t('ap_select_location_error') }}",
+            product_loaded_for_edit: "{{ t('ap_product_loaded_for_edit') }}",
+            barcode_generate_error: "{{ t('ap_barcode_generate_error') }}",
+            enter_barcode: "{{ t('ap_enter_barcode') }}",
+            clear_all_confirm: "{{ t('ap_clear_all_confirm') }}",
+            no_products_added: "{{ t('ap_no_products_added') }}",
+            all_products_saved: "{{ t('ap_all_products_saved') }}",
+            save_error: "{{ t('ap_save_error') }}",
+            barcode_exists_in: "{{ t('ap_barcode_exists_in') }}",
+            optgroup_warehouses: "{{ t('ap_optgroup_warehouses') }}",
+            optgroup_stores: "{{ t('ap_optgroup_stores') }}",
+            total_products_suffix: "{{ t('ap_total_products_suffix') }}",
+            total_products: "{{ t('ap_total_products') }}",
+            total_value: "{{ t('ap_total_value') }}",
+            empty_state: "{{ t('ap_empty_state') }}",
+            empty_state_hint: "{{ t('ap_empty_state_hint') }}"
+        };
+
         let tempProducts = [];
         let priceComparisonTimeout;
         let autoUpdateDisabled = false;
@@ -842,7 +877,7 @@
         function openExcelImport() {
             // XLSX kutubxonasi yuklanganini tekshirish
             if (typeof XLSX === 'undefined' || !xlsxLoaded) {
-                alert('❌ Excel kutubxonasi hali yuklanmagan!\n\nIltimos bir necha soniya kuting va qayta urinib ko\'ring.\n\nAgar muammo davom etsa, sahifani qayta yuklang.');
+                alert(APLANG.excel_lib_not_loaded);
                 
                 // Backup yuklashga harakat qilish
                 if (typeof loadXLSXBackup === 'function') {
@@ -853,7 +888,7 @@
 
             const locationSelect = document.getElementById('location');
             if (!locationSelect.value) {
-                alert('⚠️ Avval joylashuvni tanlang!\n\nExcel orqali mahsulot qo\'shish uchun avvalo qaysi joylashuvga qo\'shmoqchi ekanligingizni belgilang.');
+                alert(APLANG.select_location_first + '\n\n' + APLANG.excel_select_location_hint);
                 return;
             }
             
@@ -864,7 +899,7 @@
         function downloadExcelTemplate() {
             // XLSX kutubxonasi yuklanganini tekshirish
             if (typeof XLSX === 'undefined' || !xlsxLoaded) {
-                alert('❌ Excel kutubxonasi hali yuklanmagan!\n\nIltimos bir necha soniya kuting va qayta urinib ko\'ring.');
+                alert(APLANG.excel_lib_not_loaded);
                 return;
             }
             
@@ -932,7 +967,7 @@
                 console.log('✅ Excel namuna fayl yuklandi');
             } catch (error) {
                 console.error('Excel namuna yaratishda xatolik:', error);
-                alert('❌ Excel namuna yaratishda xatolik yuz berdi!\n\nXatolik: ' + error.message);
+                alert(APLANG.excel_template_error + '\n\n' + error.message);
             }
         }
 
@@ -942,7 +977,7 @@
 
             // XLSX kutubxonasi yuklanganini tekshirish
             if (typeof XLSX === 'undefined') {
-                alert('❌ Excel kutubxonasi yuklanmagan!\n\nSahifani qayta yuklang yoki internet ulanishingizni tekshiring.');
+                alert(APLANG.excel_lib_not_loaded2);
                 return;
             }
 
@@ -958,7 +993,7 @@
                     const workbook = XLSX.read(data, {type: 'array'});
                     
                     if (!workbook.SheetNames || workbook.SheetNames.length === 0) {
-                        alert('❌ Excel faylda sheet topilmadi!');
+                        alert(APLANG.excel_no_sheet);
                         return;
                     }
 
@@ -969,19 +1004,19 @@
                     console.log('📊 O\'qilgan ma\'lumotlar:', jsonData);
 
                     if (jsonData.length === 0) {
-                        alert('❌ Excel faylda ma\'lumot topilmadi!\n\nFaylda kamida bitta qator ma\'lumot bo\'lishi kerak.');
+                        alert(APLANG.excel_no_data);
                         return;
                     }
 
                     processExcelData(jsonData);
                 } catch (error) {
                     console.error('Excel fayl o\'qishda xatolik:', error);
-                    alert('❌ Excel faylni o\'qishda xatolik yuz berdi!\n\nXatolik: ' + error.message + '\n\nFayl formati to\'g\'ri emasligini tekshiring.');
+                    alert(APLANG.excel_read_error + '\n\n' + error.message);
                 }
             };
             
             reader.onerror = function() {
-                alert('❌ Faylni o\'qishda xatolik yuz berdi!');
+                alert(APLANG.file_read_error);
             };
             
             reader.readAsArrayBuffer(file);
@@ -998,7 +1033,7 @@
             // Joylashuv tanlanganini tekshirish
             const locationSelect = document.getElementById('location');
             if (!locationSelect || !locationSelect.value) {
-                alert('⚠️ Avval joylashuvni tanlang!\n\nExcel import qilishdan oldin qaysi joylashuvga mahsulot qo\'shmoqchi ekanligingizni belgilang.');
+                alert(APLANG.select_location_first + '\n\n' + APLANG.excel_select_location_hint);
                 return;
             }
             
@@ -1279,7 +1314,7 @@
                                         border-radius: 6px;
                                         display: inline-block;
                                     ">
-                                        ⚠️ Bu barcode "${data.product.name}" mahsulotida mavjud!
+                                        ⚠️ ${data.product.name} - ${APLANG.barcode_exists_in}
                                     </div>
                                 `;
                             }
@@ -1359,12 +1394,12 @@
                 storesData = stores;
                 
                 const locationSelect = document.getElementById('location');
-                locationSelect.innerHTML = '<option value="">Joylashuvni tanlang...</option>';
+                locationSelect.innerHTML = '<option value="">' + APLANG.select_location + '</option>';
                 
                 // Omborlar guruhi
                 if (warehouses.length > 0) {
                     const warehouseGroup = document.createElement('optgroup');
-                    warehouseGroup.label = '🏭 OMBORLAR';
+                    warehouseGroup.label = APLANG.optgroup_warehouses;
                     
                     warehouses.forEach(warehouse => {
                         const option = document.createElement('option');
@@ -1381,7 +1416,7 @@
                 // Do'konlar guruhi
                 if (stores.length > 0) {
                     const storeGroup = document.createElement('optgroup');
-                    storeGroup.label = '🏪 DO\'KONLAR';
+                    storeGroup.label = APLANG.optgroup_stores;
                     
                     stores.forEach(store => {
                         const option = document.createElement('option');
@@ -1975,7 +2010,7 @@
             
             // Validatsiya
             if (!productName) {
-                alert('❌ Mahsulot nomini kiriting!');
+                alert(APLANG.enter_product_name);
                 return;
             }
             
@@ -1983,7 +2018,7 @@
             if (barcode) {
                 // 8 xonali raqam emasligini tekshirish
                 if (barcode.length !== 8 || !/^[0-9]{8}$/.test(barcode)) {
-                    alert('❌ Barcode 8 xonali raqam bo\'lishi kerak!');
+                    alert(APLANG.barcode_8_digits);
                     document.getElementById('barcode').focus();
                     return;
                 }
@@ -1991,24 +2026,24 @@
                 // Duplicate tekshiruvi
                 const barcodeError = document.querySelector('.barcode-error-msg');
                 if (barcodeError) {
-                    alert('❌ Bu barcode allaqachon boshqa mahsulotda mavjud!');
+                    alert(APLANG.barcode_exists);
                     return;
                 }
             }
             
             if (!finalCostPrice || finalCostPrice <= 0) {
-                alert('❌ To\'g\'ri tan narxini kiriting!');
+                alert(APLANG.enter_cost_price);
                 return;
             }
             
             if (!sellPrice || sellPrice <= 0) {
-                alert('❌ To\'g\'ri sotish narxini kiriting!');
+                alert(APLANG.enter_sell_price);
                 return;
             }
             
             // Miqdor validatsiyasi - unitType ga qarab
             if (!quantity || quantity <= 0) {
-                alert('❌ To\'g\'ri miqdorni kiriting!');
+                alert(APLANG.enter_quantity);
                 return;
             }
             
@@ -2019,7 +2054,7 @@
             }
             
             if (!location) {
-                alert('❌ Joylashuvni tanlang!');
+                alert(APLANG.select_location_error);
                 return;
             }
             
@@ -2175,7 +2210,7 @@
                     z-index: 1000;
                     font-weight: bold;
                 `;
-                notification.textContent = 'Mahsulot tahrirlash uchun formaga yuklandi';
+                notification.textContent = APLANG.product_loaded_for_edit;
                 document.body.appendChild(notification);
                 
                 setTimeout(() => {
@@ -2275,7 +2310,7 @@
                             console.log('📦 Vaqtinchalik ro\'yxatda:', data.temp_barcodes_count, 'ta barcode');
                         }
                     } else {
-                        alert('❌ Barcode yaratishda xatolik: ' + data.error);
+                        alert(APLANG.barcode_generate_error + ' ' + data.error);
                         barcodeInput.value = '';
                         barcodeInput.disabled = false;
                         autoGenerateBtn.disabled = false;
@@ -2283,7 +2318,7 @@
                 })
                 .catch(error => {
                     console.error('❌ API xatolik:', error);
-                    alert('❌ Barcode yaratishda xatolik yuz berdi!');
+                    alert(APLANG.barcode_generate_error);
                     barcodeInput.value = '';
                     barcodeInput.disabled = false;
                     autoGenerateBtn.disabled = false;
@@ -2296,12 +2331,12 @@
             const barcode = document.getElementById('barcode').value.trim();
             
             if (!productName) {
-                alert('❌ Mahsulot nomini kiriting!');
+                alert(APLANG.enter_product_name);
                 return;
             }
             
             if (!barcode) {
-                alert('❌ Avval barcode yarating yoki kiriting!');
+                alert(APLANG.enter_barcode);
                 return;
             }
             
@@ -2311,7 +2346,7 @@
 
         // Barchasini o'chirish
         function clearTempList() {
-            if (confirm('Barcha qo\'shilgan mahsulotlarni o\'chirmoqchimisiz?')) {
+            if (confirm(APLANG.clear_all_confirm)) {
                 tempProducts = [];
                 updateTempList();
             }
@@ -2320,7 +2355,7 @@
         // Barchasini saqlash
         function submitAllProducts() {
             if (tempProducts.length === 0) {
-                alert('❌ Hech qanday mahsulot qo\'shilmagan!');
+                alert(APLANG.no_products_added);
                 return;
             }
             
@@ -2393,18 +2428,18 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    alert('✅ Barcha mahsulotlar muvaffaqiyatli saqlandi!');
+                    alert(APLANG.all_products_saved);
                     tempProducts = [];
                     updateTempList();
                     // Tarixni avtomatik yangilash
                     refreshHistory();
                 } else {
-                    alert('❌ Xatolik: ' + (data.error || 'Noma\'lum xatolik'));
+                    alert(data.error || APLANG.save_error);
                 }
             })
             .catch(error => {
                 console.error('Saqlashda xatolik:', error);
-                alert('❌ Saqlashda xatolik yuz berdi!');
+                alert(APLANG.save_error);
             });
         }
 

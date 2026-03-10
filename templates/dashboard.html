@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Dashboard{% endblock %}
+{% block title %}{{ t('dashboard') }}{% endblock %}
 
 {% block extra_css %}
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
@@ -16,7 +16,7 @@
             <div class="location-filter-wrapper">
                 <div id="locationButtons">
                     <button class="btn btn-sm me-2 mb-2 location-btn active" data-location="" onclick="selectLocation(this, '')">
-                        🏢 Barchasi
+                        🏢 {{ t('all') }}
                     </button>
                 </div>
             </div>
@@ -28,7 +28,7 @@
         <div class="col-md-10 col-lg-8 mx-auto">
             <div class="card">
                 <div class="card-header text-center">
-                    <h2>📊 Savdo Dinamikasi</h2>
+                    <h2>📊 {{ t('sales_dynamics') }}</h2>
                     
                     <!-- Vaqt filtri va Statistika bir qatorda -->
                     <div class="mt-2" id="timeFiltersAndStats">
@@ -37,13 +37,13 @@
                             <div class="col-lg-6 text-center text-lg-start mb-2">
                                 <div id="timeFilters">
                                     <button class="btn btn-sm me-2 mb-2 time-btn active" data-period="today" onclick="selectTimePeriod(this, 'today')">
-                                        📅 Bugun
+                                        📅 {{ t('today') }}
                                     </button>
                                     <button class="btn btn-sm me-2 mb-2 time-btn" data-period="week" onclick="selectTimePeriod(this, 'week')">
-                                        📊 Bu hafta
+                                        📊 {{ t('this_week') }}
                                     </button>
                                     <button class="btn btn-sm me-2 mb-2 time-btn" data-period="month" onclick="selectTimePeriod(this, 'month')">
-                                        📈 Bu oy
+                                        📈 {{ t('this_month') }}
                                     </button>
                                 </div>
                             </div>
@@ -52,12 +52,12 @@
                             <div class="col-lg-6">
                                 <div class="stats-horizontal" id="statsRow">
                                     <div class="stat-item">
-                                        <span class="stat-label-inline">📊 Savdo</span>
+                                        <span class="stat-label-inline">📊 {{ t('total_sales') }}</span>
                                         <span class="stat-number-inline" id="totalSales">0</span>
                                     </div>
                                     <div class="stat-separator">|</div>
                                     <div class="stat-item">
-                                        <span class="stat-label-inline">💰 Summa</span>
+                                        <span class="stat-label-inline">💰 {{ t('total_amount') }}</span>
                                         <div style="display: flex; flex-direction: column; align-items: flex-start;">
                                             <span class="stat-number-inline" id="totalAmount">0$</span>
                                             <span style="font-size: 11px; color: #666; margin-top: 2px;" id="totalAmountUZS">0 UZS</span>
@@ -65,13 +65,13 @@
                                     </div>
                                     <div class="stat-separator">|</div>
                                     <div class="stat-item" id="paymentMethodsContainer" style="display: flex; gap: 5px; align-items: center;">
-                                        <span class="stat-label-inline" style="margin-right: 5px;">To'lovlar:</span>
+                                        <span class="stat-label-inline" style="margin-right: 5px;">{{ t('payments') }}:</span>
                                         <span id="paymentMethods" style="font-size: 12px; color: #666;">-</span>
                                     </div>
                                     {% if session.role != 'sotuvchi' %}
                                     <div class="stat-separator">|</div>
                                     <div class="stat-item">
-                                        <span class="stat-label-inline">💵 Foyda</span>
+                                        <span class="stat-label-inline">💵 {{ t('profit') }}</span>
                                         <div style="display: flex; flex-direction: column; align-items: flex-start;">
                                             <span class="stat-number-inline" id="totalProfit">0$</span>
                                             <span style="font-size: 11px; color: #666; margin-top: 2px;" id="totalProfitUZS">0 UZS</span>
@@ -408,6 +408,19 @@
 <script src="{{ url_for('static', filename='js/chart.min.js') }}"></script>
 <!-- Cache buster: v2.0 -->
 <script>
+const DLANG = {
+    sales_count: '{{ t("sales_count") }}',
+    sales_amount: '{{ t("sales_amount") }}',
+    sales_amount_usd: '{{ t("sales_amount_usd") }}',
+    debts_usd: '{{ t("debts_usd") }}',
+    all_locations: '{{ t("all_locations") }}',
+    selected_location: '{{ t("selected_location") }}',
+    profit: '{{ t("profit") }}',
+    payments: '{{ t("payments") }}',
+    cash: '{{ t("cash") }}',
+    debt: '{{ t("debt") }}',
+};
+
 let salesChart;
 let currentSalesData = null;
 const userRole = '{{ session.role }}';
@@ -563,8 +576,8 @@ async function loadSalesChart(locationId = null, period = null, locationType = n
         }
         
         const selectedLocationName = locationId ? 
-            document.querySelector(`.location-btn[data-location="${locationId}"]`)?.textContent.trim() || 'Tanlangan joylashuv' :
-            'Barcha joylashuvlar';
+            document.querySelector(`.location-btn[data-location="${locationId}"]`)?.textContent.trim() || DLANG.selected_location :
+            DLANG.all_locations;
         
         salesChart = new Chart(ctx, {
             type: 'bar',
@@ -572,7 +585,7 @@ async function loadSalesChart(locationId = null, period = null, locationType = n
                 labels: data.labels || [],
                 datasets: [
                     {
-                        label: 'Savdo summasi ($)',
+                        label: DLANG.sales_amount_usd,
                         data: data.amounts || [],
                         backgroundColor: 'rgba(40, 167, 69, 0.8)',
                         borderColor: '#28a745',
@@ -582,7 +595,7 @@ async function loadSalesChart(locationId = null, period = null, locationType = n
                         yAxisID: 'y',
                     },
                     {
-                        label: 'Qarzlar ($)',
+                        label: DLANG.debts_usd,
                         data: data.debts || [],
                         type: 'line',
                         borderColor: '#dc3545',
@@ -681,8 +694,8 @@ async function loadSalesChart(locationId = null, period = null, locationType = n
                                 if (!exchangeRateTooltip) {
                                     // Kurs yo'q bo'lsa, faqat USD ko'rsatish
                                     return [
-                                        `📊Savdo soni: ${savdoSoni}`,
-                                        `💰 Savdo summasi: ${Math.floor(savdoSummasi).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} $`
+                                        `📊 ${DLANG.sales_count}: ${savdoSoni}`,
+                                        `💰 ${DLANG.sales_amount}: ${Math.floor(savdoSummasi).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} $`
                                     ];
                                 }
                                 const formattedAmount = Math.floor(savdoSummasi).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
@@ -699,17 +712,17 @@ async function loadSalesChart(locationId = null, period = null, locationType = n
                                 const formattedTerminalUZS = Math.floor(terminal * exchangeRateTooltip).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
                                 
                                 const tooltipLines = [
-                                    `📊 Savdo soni: ${savdoSoni}`,
-                                    `💰 Savdo summasi: ${formattedAmount} $`,
+                                    `📊 ${DLANG.sales_count}: ${savdoSoni}`,
+                                    `💰 ${DLANG.sales_amount}: ${formattedAmount} $`,
                                     `   (${formattedAmountUZS} UZS)`,
                                     '' // Bo'sh qator
                                 ];
                                 
                                 // To'lov ma'lumotlarini ko'rsatish
                                 if (naqdPul > 0 || click > 0 || terminal > 0 || qarzSummasi > 0) {
-                                    tooltipLines.push('💳 To\'lovlar:');
+                                    tooltipLines.push(`💳 ${DLANG.payments}:`);
                                     if (naqdPul > 0) {
-                                        tooltipLines.push(`   💵 Naqd: ${formattedCash} $`);
+                                        tooltipLines.push(`   💵 ${DLANG.cash}: ${formattedCash} $`);
                                         tooltipLines.push(`      (${formattedCashUZS} UZS)`);
                                     }
                                     if (click > 0) {
@@ -721,7 +734,7 @@ async function loadSalesChart(locationId = null, period = null, locationType = n
                                         tooltipLines.push(`      (${formattedTerminalUZS} UZS)`);
                                     }
                                     if (qarzSummasi > 0) {
-                                        tooltipLines.push(`   📝 Qarz: ${formattedDebt} $`);
+                                        tooltipLines.push(`   📝 ${DLANG.debt}: ${formattedDebt} $`);
                                         tooltipLines.push(`      (${formattedDebtUZS} UZS)`);
                                     }
                                     tooltipLines.push(''); // Bo'sh qator
@@ -729,7 +742,7 @@ async function loadSalesChart(locationId = null, period = null, locationType = n
                                 
                                 // Faqat sotuvchi emas bo'lsa foydani ko'rsatish
                                 if (userRole !== 'sotuvchi') {
-                                    tooltipLines.push(`💵 Foyda: ${formattedProfit} $`);
+                                    tooltipLines.push(`💵 ${DLANG.profit}: ${formattedProfit} $`);
                                     tooltipLines.push(`   (${formattedProfitUZS} UZS)`);
                                 }
                                 

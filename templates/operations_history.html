@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Amaliyotlar tarixi{% endblock %}
+{% block title %}{{ t('operations_history') }}{% endblock %}
 
 {% block content %}
 <div class="container" style="max-width: 1400px; margin: 2rem auto; padding: 0 1rem;">
@@ -9,57 +9,57 @@
     <div style="background: white; padding: 0.75rem 1rem; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 1.25rem;">
         <div style="display: flex; align-items: flex-end; gap: 0.6rem; flex-wrap: wrap;">
             <div style="flex: 1; min-width: 130px;">
-                <label style="display: block; margin-bottom: 0.25rem; font-size: 0.78rem; font-weight: 600; color: #4a5568;">📅 Boshlanish</label>
+                <label style="display: block; margin-bottom: 0.25rem; font-size: 0.78rem; font-weight: 600; color: #4a5568;">{{ t('label_start_date') }}</label>
                 <div class="filter-wrap">
                     <input type="date" id="startDate" class="form-control fc-sm" onchange="onFilterChange('startDate')">
                     <button class="filter-clear" id="clearStartDate" onclick="clearFilter('startDate')" title="Tozalash" style="display:none">✕</button>
                 </div>
             </div>
             <div style="flex: 1; min-width: 130px;">
-                <label style="display: block; margin-bottom: 0.25rem; font-size: 0.78rem; font-weight: 600; color: #4a5568;">📅 Tugash</label>
+                <label style="display: block; margin-bottom: 0.25rem; font-size: 0.78rem; font-weight: 600; color: #4a5568;">{{ t('label_end_date') }}</label>
                 <div class="filter-wrap">
                     <input type="date" id="endDate" class="form-control fc-sm" onchange="onFilterChange('endDate')">
                     <button class="filter-clear" id="clearEndDate" onclick="clearFilter('endDate')" title="Tozalash" style="display:none">✕</button>
                 </div>
             </div>
             <div style="flex: 1; min-width: 150px;">
-                <label style="display: block; margin-bottom: 0.25rem; font-size: 0.78rem; font-weight: 600; color: #4a5568;">🏷️ Amaliyot turi</label>
+                <label style="display: block; margin-bottom: 0.25rem; font-size: 0.78rem; font-weight: 600; color: #4a5568;">{{ t('label_operation_type') }}</label>
                 <div class="filter-wrap">
                     <select id="operationType" class="form-control fc-sm" onchange="onFilterChange('operationType')">
-                        <option value="">Barchasi</option>
-                        <option value="sale">🛒 Sotish</option>
-                        <option value="sale_edit">✏️ Savdo tahrirlash</option>
-                        <option value="add_product">📦 Mahsulot qo'shish</option>
-                        <option value="edit_stock">📝 Zaxira tahrirlash</option>
-                        <option value="transfer">🔄 Transfer</option>
-                        <option value="return">↩️ Qaytarish</option>
-                        <option value="debt_payment">💳 Qarz to'lash</option>
-                        <option value="edit">✏️ Tahrirlash</option>
-                        <option value="delete">🗑️ O'chirish</option>
-                        <option value="edit_user">👤 Foydalanuvchi tahrirlash</option>
-                        <option value="create_customer">➕ Mijoz qo'shish</option>
-                        <option value="delete_customer">🗑️ Mijoz o'chirish</option>
-                        <option value="edit_customer">✏️ Mijoz tahrirlash</option>
-                        <option value="create_store">🏬 Do'kon qo'shish</option>
-                        <option value="create_warehouse">🏭 Ombor qo'shish</option>
-                        <option value="create_user">👤 Foydalanuvchi qo'shish</option>
-                        <option value="delete_stock">🗑️ Zaxira o'chirish</option>
+                        <option value="">{{ t('all_types') }}</option>
+                        <option value="sale">{{ t('operation_sale') }}</option>
+                        <option value="sale_edit">{{ t('operation_sale_edit') }}</option>
+                        <option value="add_product">{{ t('operation_add_product') }}</option>
+                        <option value="edit_stock">{{ t('operation_edit_stock') }}</option>
+                        <option value="transfer">{{ t('operation_transfer') }}</option>
+                        <option value="return">{{ t('operation_return') }}</option>
+                        <option value="debt_payment">{{ t('operation_debt_payment') }}</option>
+                        <option value="edit">{{ t('operation_edit') }}</option>
+                        <option value="delete">{{ t('operation_delete') }}</option>
+                        <option value="edit_user">{{ t('operation_edit_user') }}</option>
+                        <option value="create_customer">{{ t('operation_create_customer') }}</option>
+                        <option value="delete_customer">{{ t('operation_delete_customer') }}</option>
+                        <option value="edit_customer">{{ t('operation_edit_customer') }}</option>
+                        <option value="create_store">{{ t('operation_create_store') }}</option>
+                        <option value="create_warehouse">{{ t('operation_create_warehouse') }}</option>
+                        <option value="create_user">{{ t('operation_create_user') }}</option>
+                        <option value="delete_stock">{{ t('operation_delete_stock') }}</option>
                     </select>
                     <button class="filter-clear" id="clearOperationType" onclick="clearFilter('operationType')" title="Tozalash" style="display:none">✕</button>
                 </div>
             </div>
             <div style="flex: 1; min-width: 150px;">
-                <label style="display: block; margin-bottom: 0.25rem; font-size: 0.78rem; font-weight: 600; color: #4a5568;">👤 Foydalanuvchi</label>
+                <label style="display: block; margin-bottom: 0.25rem; font-size: 0.78rem; font-weight: 600; color: #4a5568;">👤 {{ t('header_user') }}</label>
                 <div class="filter-wrap">
                     <select id="userFilter" class="form-control fc-sm" onchange="onFilterChange('userFilter')">
-                        <option value="">Barchasi</option>
+                        <option value="">{{ t('all_users') }}</option>
                     </select>
                     <button class="filter-clear" id="clearUserFilter" onclick="clearFilter('userFilter')" title="Tozalash" style="display:none">✕</button>
                 </div>
             </div>
             <div style="flex: 0 0 auto; padding-bottom: 1px;">
                 <button onclick="exportHistory()" class="btn btn-success fc-sm" style="white-space: nowrap;">
-                    📊 Excel
+                    📊 {{ t('btn_excel') }}
                 </button>
             </div>
         </div>
@@ -68,27 +68,27 @@
     <!-- Amaliyotlar jadvali -->
     <div style="background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); overflow: hidden;">
         <div style="padding: 1.5rem; background: linear-gradient(135deg, #f8f9fa, #e9ecef); border-bottom: 2px solid #dee2e6;">
-            <h2 id="tableTitle" style="margin: 0; color: #495057; font-size: 1.4rem;">📋 Amaliyotlar ro'yxati</h2>
+            <h2 id="tableTitle" style="margin: 0; color: #495057; font-size: 1.4rem;">📋 {{ t('operations_list') }}</h2>
         </div>
         <div style="overflow-x: auto;">
             <table id="historyTable" style="width: 100%; border-collapse: collapse;">
                 <thead style="background: #667eea; color: white;">
                     <tr>
                         <th style="padding: 12px; text-align: left;">№</th>
-                        <th style="padding: 12px; text-align: left;">Sana/Vaqt</th>
-                        <th style="padding: 12px; text-align: left;">Amaliyot</th>
-                        <th style="padding: 12px; text-align: left;">Tavsif</th>
-                        <th style="padding: 12px; text-align: left;">Joylashuv</th>
-                        <th style="padding: 12px; text-align: left;">Foydalanuvchi</th>
-                        <th style="padding: 12px; text-align: right;">Summa</th>
-                        <th style="padding: 12px; text-align: center;">Harakat</th>
+                        <th style="padding: 12px; text-align: left;">{{ t('date_time') }}</th>
+                        <th style="padding: 12px; text-align: left;">{{ t('header_operation') }}</th>
+                        <th style="padding: 12px; text-align: left;">{{ t('header_description') }}</th>
+                        <th style="padding: 12px; text-align: left;">{{ t('header_location') }}</th>
+                        <th style="padding: 12px; text-align: left;">{{ t('header_user') }}</th>
+                        <th style="padding: 12px; text-align: right;">{{ t('header_amount') }}</th>
+                        <th style="padding: 12px; text-align: center;">{{ t('header_action') }}</th>
                     </tr>
                 </thead>
                 <tbody id="historyTableBody">
                     <tr>
                         <td colspan="9" style="padding: 3rem; text-align: center; color: #718096;">
                             <div style="font-size: 3rem; margin-bottom: 1rem;">📜</div>
-                            <div style="font-size: 1.1rem;">Filterlarni tanlang va "Qidirish" tugmasini bosing</div>
+                            <div style="font-size: 1.1rem;">{{ t('empty_operations') }}</div>
                         </td>
                     </tr>
                 </tbody>

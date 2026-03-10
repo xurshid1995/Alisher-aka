@@ -6,58 +6,58 @@
     <!-- Content Header -->
     <div class="content-header">
         <h1>{{ page_title }}</h1>
-        <div class="breadcrumb">Dokon boshqaruvi / {{ page_title }}</div>
+        <div class="breadcrumb">{{ t('cs_breadcrumb_prefix') }} / {{ page_title }}</div>
     </div>
 
     <!-- Coming Soon Card -->
     <div class="card" style="text-align: center; padding: 4rem 2rem;">
         <div style="font-size: 120px; margin-bottom: 2rem;">{{ icon }}</div>
-        <h2 style="color: #2c3e50; margin-bottom: 1rem;">{{ page_title }} sahifasi</h2>
-        <h3 style="color: #7f8c8d; margin-bottom: 2rem;">Tez orada...</h3>
+        <h2 style="color: #2c3e50; margin-bottom: 1rem;">{{ page_title }} {{ t('cs_page_suffix') }}</h2>
+        <h3 style="color: #7f8c8d; margin-bottom: 2rem;">{{ t('coming_soon_title') }}</h3>
         <p style="color: #95a5a6; font-size: 1.1rem; margin-bottom: 3rem;">
-            Bu sahifa hali ishlab chiqilmoqda. Tez orada yangi funksiyalar bilan qaytib kelamiz!
+            {{ t('coming_soon_message') }}
         </p>
         
         <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
             <a href="/" class="btn">
-                🏠 Bosh sahifaga qaytish
+                {{ t('btn_go_home') }}
             </a>
             <a href="/add_product" class="btn btn-success">
-                ➕ Mahsulot qo'shish
+                {{ t('heading_add_product') }}
             </a>
         </div>
     </div>
 
     <!-- Funksiya rejalari -->
     <div class="card">
-        <h3 style="color: #2c3e50; margin-bottom: 1rem;">📋 Rejalashtirilgan funksiyalar</h3>
+        <h3 style="color: #2c3e50; margin-bottom: 1rem;">{{ t('label_planned_features') }}</h3>
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
             {% if page_title == 'Savdo' %}
             <div style="background: #ecf0f1; padding: 1rem; border-radius: 6px;">
-                <h4>💳 Savdo operatsiyalari</h4>
-                <p>Mahsulot sotish va to'lov qabul qilish</p>
+                <h4>{{ t('cs_sales_ops') }}</h4>
+                <p>{{ t('cs_sales_ops_desc') }}</p>
             </div>
             <div style="background: #ecf0f1; padding: 1rem; border-radius: 6px;">
-                <h4>🧾 Chek chop etish</h4>
-                <p>Avtomatik chek generatsiya qilish</p>
+                <h4>{{ t('cs_receipt') }}</h4>
+                <p>{{ t('cs_receipt_desc') }}</p>
             </div>
             {% elif page_title == 'Mijozlar' %}
             <div style="background: #ecf0f1; padding: 1rem; border-radius: 6px;">
-                <h4>👤 Mijoz ma'lumotlari</h4>
-                <p>Mijozlarni ro'yxatga olish va boshqarish</p>
+                <h4>{{ t('cs_customer_data') }}</h4>
+                <p>{{ t('cs_customer_data_desc') }}</p>
             </div>
             <div style="background: #ecf0f1; padding: 1rem; border-radius: 6px;">
-                <h4>📊 Mijoz tarixi</h4>
-                <p>Xaridlar tarixi va statistika</p>
+                <h4>{{ t('cs_customer_history') }}</h4>
+                <p>{{ t('cs_customer_history_desc') }}</p>
             </div>
             {% else %}
             <div style="background: #ecf0f1; padding: 1rem; border-radius: 6px;">
-                <h4>⚡ Tezkor boshqaruv</h4>
-                <p>Oson va qulay interfeys</p>
+                <h4>{{ t('cs_quick_manage') }}</h4>
+                <p>{{ t('cs_quick_manage_desc') }}</p>
             </div>
             <div style="background: #ecf0f1; padding: 1rem; border-radius: 6px;">
-                <h4>📈 Statistika</h4>
-                <p>Real vaqt hisobotlari</p>
+                <h4>{{ t('cs_statistics') }}</h4>
+                <p>{{ t('cs_statistics_desc') }}</p>
             </div>
             {% endif %}
         </div>

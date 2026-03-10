@@ -316,30 +316,30 @@
     <div class="modal-content">
         <div class="modal-header">
             <i class="fas fa-exclamation-triangle"></i>
-            <h3>DIQQAT! Omborni o'chirish</h3>
+            <h3>{{ t('wh_delete_title') }}</h3>
         </div>
         <div class="modal-body">
-            <p><strong>Siz quyidagi omborni o'chirmoqchisiz:</strong></p>
+            <p><strong>{{ t('wh_delete_confirm_msg') }}</strong></p>
             <div class="warehouse-name-highlight" id="modalWarehouseName"></div>
-            <p style="color: #e74c3c; font-weight: bold;">⚠️ Bu amal qaytarib bo'lmaydi!</p>
-            <p>Davom etish uchun ombor nomini quyidagi maydonga kiriting:</p>
+            <p style="color: #e74c3c; font-weight: bold;">⚠️ {{ t('action_irreversible') }}</p>
+            <p>{{ t('wh_enter_name_to_continue') }}</p>
             
             <div class="modal-input-group">
-                <label for="confirmInput">Ombor nomi:</label>
+                <label for="confirmInput">{{ t('wh_name_label') }}</label>
                 <input 
                     type="text" 
                     id="confirmInput" 
-                    placeholder="Ombor nomini kiriting..."
+                    placeholder="{{ t('wh_name_placeholder') }}"
                     autocomplete="off"
                 >
             </div>
         </div>
         <div class="modal-actions">
             <button class="modal-btn modal-btn-cancel" onclick="closeDeleteModal()">
-                ❌ Bekor qilish
+                ❌ {{ t('modal_cancel') }}
             </button>
             <button class="modal-btn modal-btn-delete" id="confirmDeleteBtn" disabled>
-                🗑️ O'chirish
+                🗑️ {{ t('modal_delete') }}
             </button>
         </div>
     </div>
@@ -348,11 +348,11 @@
 <!-- Content Header -->
 <div class="content-header" style="display: flex; justify-content: space-between; align-items: center;">
     <div>
-        <h1>🏭 Omborlar boshqaruvi</h1>
-        <div class="breadcrumb">Ombor boshqaruvi / Omborlar</div>
+        <h1>{{ t('heading_warehouses') }}</h1>
+        <div class="breadcrumb">{{ t('breadcrumb_warehouses') }}</div>
     </div>
     <a href="/add_warehouse" class="btn btn-success" style="padding: 0.6rem 1.5rem; font-size: 0.9rem; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: all 0.3s; font-weight: 500;">
-        ➕ Yangi ombor qo'shish
+        {{ t('btn_add_warehouse') }}
     </a>
 </div>
 
@@ -375,35 +375,35 @@
             </div>
             <div class="info-item">
                 <span>📞</span>
-                <span>{{ warehouse.phone or 'Telefon yo\'q' }}</span>
+                <span>{{ warehouse.phone or t('no_phone') }}</span>
             </div>
             <div class="info-item">
                 <span>📅</span>
-                <span>{{ warehouse.created_date.strftime('%d.%m.%Y') if warehouse.created_date else 'Noma\'lum' }}</span>
+                <span>{{ warehouse.created_date.strftime('%d.%m.%Y') if warehouse.created_date else t('unknown_date') }}</span>
             </div>
         </div>
 
         <div class="warehouse-actions">
             <a href="/warehouse/{{ warehouse.id }}" class="btn-small btn-view">
-                👁️ Ko'rish
+                👁️ {{ t('btn_view') }}
             </a>
             <a href="/edit_warehouse/{{ warehouse.id }}" class="btn-small btn-edit">
-                ✏️ Tahrirlash
+                ✏️ {{ t('btn_edit') }}
             </a>
             <button data-warehouse-id="{{ warehouse.id }}" 
                     data-warehouse-name="{{ warehouse.name }}"
                     onclick="deleteWarehouse(this.dataset.warehouseId, this.dataset.warehouseName)" 
                     class="btn-small btn-delete">
-                🗑️ O'chirish
+                🗑️ {{ t('modal_delete') }}
             </button>
         </div>
     </div>
     {% else %}
     <div class="warehouse-card" style="grid-column: 1 / -1; text-align: center;">
-        <h3>Omborlar topilmadi</h3>
-        <p style="color: #7f8c8d; margin: 1rem 0;">Hali omborlar qo'shilmagan. Birinchi omborni qo'shing!</p>
+        <h3>{{ t('empty_warehouses') }}</h3>
+        <p style="color: #7f8c8d; margin: 1rem 0;">{{ t('empty_warehouses_msg') }}</p>
         <a href="/add_warehouse" class="btn btn-success">
-            ➕ Birinchi omborni qo'shish
+            {{ t('btn_add_first_warehouse') }}
         </a>
     </div>
     {% endfor %}
@@ -412,6 +412,14 @@
 
 {% block extra_js %}
 <script>
+    const WHLANG = {
+        modal_delete: '{{ t("modal_delete") }}',
+        deleting: '{{ t("deleting") }}',
+        wh_delete_error: '{{ t("wh_delete_error") }}',
+        connection_error_retry: '{{ t("connection_error_retry") }}',
+        error_prefix: '{{ t("error_prefix") }}'
+    };
+
     // Sidebar active link
     document.addEventListener('DOMContentLoaded', function() {
         console.log('Omborlar sahifasi yuklandi');
@@ -517,7 +525,7 @@
         // Tugmani o'chirish
         const confirmBtn = document.getElementById('confirmDeleteBtn');
         confirmBtn.disabled = true;
-        confirmBtn.textContent = '⏳ O\'chirilmoqda...';
+        confirmBtn.textContent = '⏳ ' + WHLANG.deleting;
         
         fetch(`/api/warehouse/${currentWarehouseId}`, {
             method: 'DELETE',
@@ -533,16 +541,16 @@
                 window.location.reload();
             } else {
                 console.error('API xatosi:', response.status);
-                alert('Xatolik yuz berdi! Omborni o\'chirib bo\'lmadi.');
+                alert(WHLANG.wh_delete_error);
                 confirmBtn.disabled = false;
-                confirmBtn.textContent = '🗑️ O\'chirish';
+                confirmBtn.textContent = '🗑️ ' + WHLANG.modal_delete;
             }
         })
         .catch(error => {
             console.error('Fetch xatosi:', error);
-            alert('Aloqa xatosi! Qaytadan urinib ko\'ring.');
+            alert(WHLANG.connection_error_retry);
             confirmBtn.disabled = false;
-            confirmBtn.textContent = '🗑️ O\'chirish';
+            confirmBtn.textContent = '🗑️ ' + WHLANG.modal_delete;
         });
     }
 </script>

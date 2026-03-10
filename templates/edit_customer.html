@@ -1,6 +1,6 @@
 {% extends "base_with_sidebar.html" %}
 
-{% block title %}Mijozni Tahrirlash{% endblock %}
+{% block title %}{{ t('ec_title') }}{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -191,23 +191,23 @@
     <div class="page-header">
         <h1>
             <span class="emoji">✏️</span>
-            Mijozni Tahrirlash
+            {{ t('ec_title') }}
         </h1>
-        <p>Mijoz ma'lumotlarini yangilang</p>
+        <p>{{ t('ec_subtitle') }}</p>
     </div>
 
     <!-- Yuklanish holati -->
     <div id="loadingState" class="loading-state">
-        <h3>⏳ Yuklanmoqda...</h3>
-        <p>Mijoz ma'lumotlari yuklanmoqda</p>
+        <h3>⏳ {{ t('ec_loading') }}</h3>
+        <p>{{ t('ec_loading_msg') }}</p>
     </div>
 
     <!-- Xato holati -->
     <div id="errorState" class="error-state" style="display: none;">
-        <h3>❌ Xatolik yuz berdi</h3>
-        <p id="errorMessage">Mijoz ma'lumotlarini yuklashda xatolik</p>
+        <h3>❌ {{ t('ec_error') }}</h3>
+        <p id="errorMessage">{{ t('ec_error_msg') }}</p>
         <button onclick="loadCustomer()" class="btn btn-primary" style="margin-top: 1rem;">
-            🔄 Qayta urinish
+            🔄 {{ t('ec_retry') }}
         </button>
     </div>
 
@@ -218,15 +218,15 @@
             
             <div class="form-group">
                 <label for="customerName">
-                    <span class="emoji">👤</span>Mijoz ismi *
+                    <span class="emoji">👤</span>{{ t('ec_name') }} *
                 </label>
                 <input type="text" id="customerName" class="form-control" 
-                       placeholder="Mijoz ismini kiriting" required>
+                       placeholder="{{ t('ec_name_placeholder') }}" required>
             </div>
 
             <div class="form-group">
                 <label for="customerPhone">
-                    <span class="emoji">📞</span>Telefon raqami
+                    <span class="emoji">📞</span>{{ t('ec_phone') }}
                 </label>
                 <input type="tel" id="customerPhone" class="form-control" 
                        placeholder="+998(99) 406-47-49" maxlength="18">
@@ -234,7 +234,7 @@
 
             <div class="form-group">
                 <label for="customerEmail">
-                    <span class="emoji">📧</span>Email manzil
+                    <span class="emoji">📧</span>{{ t('ec_email') }}
                 </label>
                 <input type="email" id="customerEmail" class="form-control" 
                        placeholder="example@email.com">
@@ -242,30 +242,30 @@
 
             <div class="form-group">
                 <label for="customerAddress">
-                    <span class="emoji">📍</span>Manzil
+                    <span class="emoji">📍</span>{{ t('ec_address') }}
                 </label>
                 <textarea id="customerAddress" class="form-control" 
-                          placeholder="Mijozning to'liq manzilini kiriting"></textarea>
+                          placeholder="{{ t('ec_address_placeholder') }}"></textarea>
             </div>
 
             <div class="form-group">
                 <label for="customerStore">
-                    <span class="emoji">🏪</span>Dokon *
+                    <span class="emoji">🏪</span>{{ t('ec_store') }} *
                 </label>
                 <select id="customerStore" class="form-control" required>
-                    <option value="">Dokonni tanlang...</option>
+                    <option value="">{{ t('ec_store_select') }}</option>
                 </select>
             </div>
 
             <div class="form-actions">
                 <button type="submit" class="btn btn-primary" id="updateBtn">
-                    <span>💾</span>Yangilash
+                    <span>💾</span>{{ t('ec_update') }}
                 </button>
                 <a href="/customers" class="btn btn-secondary">
-                    <span>❌</span>Bekor qilish
+                    <span>❌</span>{{ t('ec_cancel') }}
                 </a>
                 <button type="button" onclick="deleteCurrentCustomer()" class="btn btn-danger">
-                    <span>🗑️</span>O'chirish
+                    <span>🗑️</span>{{ t('ec_delete') }}
                 </button>
             </div>
         </form>
@@ -273,6 +273,20 @@
 </div>
 
 <script>
+    const ECLANG = {
+        store_select: "{{ t('ec_store_select') }}",
+        updating: "{{ t('ec_updating') }}",
+        phone_error: "{{ t('ec_phone_error') }}",
+        update_success: "{{ t('ec_update_success') }}",
+        update_error: "{{ t('ec_update_error') }}",
+        id_not_found: "{{ t('ec_id_not_found') }}",
+        not_found: "{{ t('ec_not_found') }}",
+        fetch_error: "{{ t('ec_fetch_error') }}",
+        delete_confirm: "{{ t('ec_delete_confirm') }}",
+        delete_success: "{{ t('ec_delete_success') }}",
+        delete_error: "{{ t('ec_delete_error') }}",
+        delete_error2: "{{ t('ec_delete_error2') }}"
+    };
     let currentCustomer = null;
     const customerId = new URLSearchParams(window.location.search).get('id') || 
                       window.location.pathname.split('/').pop();
@@ -335,7 +349,7 @@
             loadCustomer();
         } else {
             document.getElementById('errorState').style.display = 'block';
-            document.getElementById('errorMessage').textContent = 'Mijoz ID topilmadi';
+            document.getElementById('errorMessage').textContent = ECLANG.id_not_found;
             document.getElementById('loadingState').style.display = 'none';
         }
     });
@@ -346,7 +360,7 @@
             .then(response => response.json())
             .then(stores => {
                 const storeSelect = document.getElementById('customerStore');
-                storeSelect.innerHTML = '<option value="">Dokonni tanlang...</option>';
+                storeSelect.innerHTML = '<option value="">' + ECLANG.store_select + '</option>';
                 
                 stores.forEach(store => {
                     const option = document.createElement('option');
@@ -369,14 +383,14 @@
         fetch(`/api/customers`)
             .then(response => {
                 if (!response.ok) {
-                    throw new Error('Mijoz ma\'lumotlarini olishda xatolik');
+                    throw new Error(ECLANG.fetch_error);
                 }
                 return response.json();
             })
             .then(customers => {
                 currentCustomer = customers.find(c => c.id == customerId);
                 if (!currentCustomer) {
-                    throw new Error('Mijoz topilmadi');
+                    throw new Error(ECLANG.not_found);
                 }
                 
                 // Formani to'ldirish
@@ -414,13 +428,13 @@
         
         const updateBtn = document.getElementById('updateBtn');
         const originalText = updateBtn.innerHTML;
-        updateBtn.innerHTML = '<span>⏳</span>Yangilanmoqda...';
+        updateBtn.innerHTML = '<span>⏳</span>' + ECLANG.updating;
         updateBtn.disabled = true;
 
         // Telefon raqamini validatsiya qilish
         const phone = document.getElementById('customerPhone').value.trim();
         if (phone && phone !== '' && phone.length !== 18) { // +998(99) 406-47-49 = 18 belgi
-            alert('❌ Telefon raqamini to\'liq formatda kiriting: +998(99) 406-47-49');
+            alert('❌ ' + ECLANG.phone_error);
             updateBtn.innerHTML = originalText;
             updateBtn.disabled = false;
             return;
@@ -444,13 +458,13 @@
         .then(response => {
             if (!response.ok) {
                 return response.json().then(data => {
-                    throw new Error(data.error || 'Yangilashda xatolik yuz berdi');
+                    throw new Error(data.error || ECLANG.update_error);
                 });
             }
             return response.json();
         })
         .then(data => {
-            alert('✅ ' + (data.message || 'Mijoz ma\'lumotlari muvaffaqiyatli yangilandi!'));
+            alert('✅ ' + (data.message || ECLANG.update_success));
             window.location.href = '/customers';
         })
         .catch(error => {
@@ -467,7 +481,7 @@
     function deleteCurrentCustomer() {
         if (!currentCustomer) return;
         
-        if (confirm(`Haqiqatan ham "${currentCustomer.name}" mijozini o'chirmoqchimisiz?\n\nDiqqat: Bu amal qaytarib bo'lmaydi!`)) {
+        if (confirm(ECLANG.delete_confirm.replace('{name}', currentCustomer.name))) {
             fetch(`/api/customers/${customerId}`, {
                 method: 'DELETE',
                 headers: {
@@ -477,16 +491,16 @@
             .then(response => {
                 if (response.ok) {
                     return response.json().then(data => {
-                        alert('✅ ' + (data.message || 'Mijoz muvaffaqiyatli o\'chirildi!'));
+                        alert('✅ ' + (data.message || ECLANG.delete_success));
                         window.location.href = '/customers';
                     });
                 } else {
-                    alert('❌ Xatolik yuz berdi! Mijozni o\'chirib bo\'lmadi.');
+                    alert('❌ ' + ECLANG.delete_error);
                 }
             })
             .catch(error => {
                 console.error('Error deleting customer:', error);
-                alert('❌ Xatolik: Mijozni o\'chirishda xatolik yuz berdi.');
+                alert('❌ ' + ECLANG.delete_error2);
             });
         }
     }

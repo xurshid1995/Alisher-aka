@@ -728,18 +728,18 @@
     <!-- Controls Section -->
     <div class="controls-section">
         <div class="search-box">
-            <input type="text" id="productSearch" placeholder="Qidirish...">
+            <input type="text" id="productSearch" placeholder="{{ t('placeholder_search') }}">
         </div>
         <div class="filter-section">
             <select id="statusFilter" class="status-filter">
-                <option value="all">Barcha holatlar</option>
-                <option value="high">✅ Yetarli</option>
-                <option value="medium">⚠️ Kam qolgan</option>
-                <option value="out">❌ Tugagan</option>
+                <option value="all">{{ t('status_all') }}</option>
+                <option value="high">{{ t('status_sufficient') }}</option>
+                <option value="medium">{{ t('status_low') }}</option>
+                <option value="out">{{ t('status_out') }}</option>
             </select>
         </div>
         <div class="location-buttons" id="locationButtons">
-            <button class="location-button active" data-location="all">📍 Barcha joylar</button>
+            <button class="location-button active" data-location="all">{{ t('location_all') }}</button>
             <!-- Ombor va dokon tugmalari dinamik yuklanadi -->
         </div>
     </div>
@@ -755,24 +755,24 @@
         
         <div id="loadingState" class="loading-state">
             <div class="loading-spinner"></div>
-            <p>Mahsulotlar yuklanmoqda...</p>
+            <p>{{ t('loading_products') }}</p>
         </div>
 
         <div id="emptyState" class="empty-state" style="display: none;">
             <div class="empty-icon">📦</div>
-            <h3>Hech qanday mahsulot topilmadi</h3>
-            <p>Hozircha tizimda mahsulotlar mavjud emas.</p>
+            <h3>{{ t('no_products_found') }}</h3>
+            <p>{{ t('no_products_available') }}</p>
         </div>
 
         <table class="products-table" id="productsTable" style="display: none;">
             <thead>
                 <tr>
-                    <th>Barcode</th>
-                    <th>Mahsulot nomi</th>
-                    <th>Narx</th>
-                    <th>Joylashuv</th>
-                    <th><span id="quantityHeader">Umumiy miqdor</span></th>
-                    <th>Holat</th>
+                    <th>{{ t('header_barcode') }}</th>
+                    <th>{{ t('header_product_name') }}</th>
+                    <th>{{ t('header_price') }}</th>
+                    <th>{{ t('header_location') }}</th>
+                    <th><span id="quantityHeader">{{ t('header_total_quantity') }}</span></th>
+                    <th>{{ t('header_status') }}</th>
                 </tr>
             </thead>
             <tbody id="productsTableBody">

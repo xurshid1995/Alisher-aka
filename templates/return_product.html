@@ -1,30 +1,30 @@
 {% extends "base_with_sidebar.html" %}
 
-{% block title %}Mahsulotni Qaytarish - DOKON{% endblock %}
+{% block title %}{{ t('return_product_title') }} - DOKON{% endblock %}
 
 {% block content %}
 <div class="container" style="max-width: 1400px; margin: 0 auto; padding: 20px;">
     <div class="page-header" style="margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;">
         <div>
             <h1 style="color: #333; font-size: 28px; margin: 0;">
-                <span style="font-size: 32px;">↩️</span> Mahsulotni Qaytarish
+                <span style="font-size: 32px;">↩️</span> {{ t('return_product_title') }}
             </h1>
         </div>
         <div style="min-width: 300px;">
-            <label style="display: block; margin-bottom: 5px; color: #666; font-weight: 500; font-size: 14px;">📍 Qaytarish joyi:</label>
+            <label style="display: block; margin-bottom: 5px; color: #666; font-weight: 500; font-size: 14px;">📍 {{ t('return_location_label') }}</label>
             <select id="returnLocationSelect" onchange="handleLocationChange()" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 15px; background: white; cursor: pointer;">
-                <option value="">Joylashuvni tanlang...</option>
+                <option value="">{{ t('select_location_placeholder') }}</option>
             </select>
         </div>
     </div>
 
     <!-- Mahsulot qidirish -->
     <div class="search-section" style="background: white; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-        <h3 style="margin-bottom: 15px; color: #333;">🔍 Mahsulotni qidirish</h3>
+        <h3 style="margin-bottom: 15px; color: #333;">🔍 {{ t('search_product_title') }}</h3>
         <div style="display: flex; gap: 10px; align-items: end;">
             <div style="flex: 1; position: relative;">
-                <label style="display: block; margin-bottom: 5px; color: #666; font-weight: 500;">Mahsulot nomi yoki barkodi:</label>
-                <input type="text" id="productSearchInput" placeholder="Avval joylashuvni tanlang..." 
+                <label style="display: block; margin-bottom: 5px; color: #666; font-weight: 500;">{{ t('product_name_or_barcode_label') }}</label>
+                <input type="text" id="productSearchInput" placeholder="{{ t('select_location_first') }}" 
                        autocomplete="off"
                        disabled
                        oninput="searchProducts()"
@@ -38,29 +38,29 @@
     <div id="selectedProductInfo" style="display: none; background: #e3f2fd; border-radius: 8px; padding: 15px; margin-bottom: 20px; border-left: 4px solid #2196f3;">
         <div style="display: flex; align-items: center; justify-content: space-between;">
             <div>
-                <strong style="font-size: 16px; color: #1976d2;">Tanlangan mahsulot:</strong>
+                <strong style="font-size: 16px; color: #1976d2;">{{ t('selected_product_label') }}</strong>
                 <span id="selectedProductName" style="margin-left: 10px; font-size: 16px; color: #333;"></span>
             </div>
             <button onclick="clearProductSelection()" style="padding: 6px 12px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 13px;">
-                ✕ Bekor qilish
+                ✕ {{ t('btn_cancel_selection') }}
             </button>
         </div>
     </div>
 
     <!-- Mahsulot bor savdolar jadvali -->
     <div id="recentSalesSection" style="display: none; background: white; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-        <h3 style="margin-bottom: 15px; color: #333;">📊 Bu mahsulot bor savdolar</h3>
+        <h3 style="margin-bottom: 15px; color: #333;">📊 {{ t('product_sales') }}</h3>
         <div style="overflow-x: auto;">
             <table style="width: 100%; border-collapse: collapse;">
                 <thead>
                     <tr style="background: #f8f9fa; border-bottom: 2px solid #dee2e6;">
-                        <th style="padding: 12px; text-align: left; font-weight: 600;">Sana va vaqt</th>
-                        <th style="padding: 12px; text-align: center; font-weight: 600;">ID</th>
-                        <th style="padding: 12px; text-align: left; font-weight: 600;">Mijoz</th>
-                        <th style="padding: 12px; text-align: center; font-weight: 600;">Mahsulot soni</th>
-                        <th style="padding: 12px; text-align: center; font-weight: 600;">Joriy mahsulot miqdori</th>
-                        <th style="padding: 12px; text-align: center; font-weight: 600;">Holat</th>
-                        <th style="padding: 12px; text-align: center; font-weight: 600;">Amal</th>
+                        <th style="padding: 12px; text-align: left; font-weight: 600;">{{ t('header_date_time') }}</th>
+                        <th style="padding: 12px; text-align: center; font-weight: 600;">{{ t('header_sale_id') }}</th>
+                        <th style="padding: 12px; text-align: left; font-weight: 600;">{{ t('header_customer') }}</th>
+                        <th style="padding: 12px; text-align: center; font-weight: 600;">{{ t('header_product_quantity') }}</th>
+                        <th style="padding: 12px; text-align: center; font-weight: 600;">{{ t('header_current_quantity') }}</th>
+                        <th style="padding: 12px; text-align: center; font-weight: 600;">{{ t('header_condition') }}</th>
+                        <th style="padding: 12px; text-align: center; font-weight: 600;">{{ t('header_action') }}</th>
                     </tr>
                 </thead>
                 <tbody id="recentSalesTableBody">
@@ -72,23 +72,23 @@
     <!-- Savdo ma'lumotlari -->
     <div id="saleDetails" style="display: none;">
         <div class="sale-info" style="background: white; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-            <h3 style="margin-bottom: 15px; color: #333;">📋 Savdo ma'lumotlari</h3>
+            <h3 style="margin-bottom: 15px; color: #333;">📋 {{ t('sale_details') }}</h3>
             <div id="saleInfoContent"></div>
         </div>
 
         <!-- Mahsulotlar ro'yxati -->
         <div class="products-section" style="background: white; border-radius: 8px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-            <h3 style="margin-bottom: 15px; color: #333;">📦 Mahsulotlar</h3>
+            <h3 style="margin-bottom: 15px; color: #333;">📦 {{ t('products_label') }}</h3>
             <div style="overflow-x: auto;">
                 <table style="width: 100%; border-collapse: collapse;">
                     <thead>
                         <tr style="background: #f8f9fa; border-bottom: 2px solid #dee2e6;">
-                            <th style="padding: 12px; text-align: left; font-weight: 600;">Mahsulot</th>
-                            <th style="padding: 12px; text-align: center; font-weight: 600;">Sotilgan miqdor</th>
-                            <th style="padding: 12px; text-align: right; font-weight: 600;">Narx</th>
-                            <th style="padding: 12px; text-align: right; font-weight: 600;">Jami</th>
-                            <th style="padding: 12px; text-align: center; font-weight: 600;">Qaytarish miqdori</th>
-                            <th style="padding: 12px; text-align: center; font-weight: 600;">Amal</th>
+                            <th style="padding: 12px; text-align: left; font-weight: 600;">{{ t('header_product_col') }}</th>
+                            <th style="padding: 12px; text-align: center; font-weight: 600;">{{ t('header_sold_quantity') }}</th>
+                            <th style="padding: 12px; text-align: right; font-weight: 600;">{{ t('price') }}</th>
+                            <th style="padding: 12px; text-align: right; font-weight: 600;">{{ t('total') }}</th>
+                            <th style="padding: 12px; text-align: center; font-weight: 600;">{{ t('header_return_quantity') }}</th>
+                            <th style="padding: 12px; text-align: center; font-weight: 600;">{{ t('header_action') }}</th>
                         </tr>
                     </thead>
                     <tbody id="productsTableBody">
@@ -98,7 +98,7 @@
             
             <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #dee2e6; text-align: right;">
                 <button onclick="confirmReturnOld()" id="returnBtn" style="padding: 12px 40px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; font-weight: 600;">
-                    ✅ Qaytarishni tasdiqlash
+                    ✅ {{ t('btn_confirm_return') }}
                 </button>
             </div>
         </div>
@@ -107,29 +107,29 @@
     <!-- Qaytarilgan mahsulotlar tarixi -->
     <div class="history-section" style="background: white; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-            <h3 style="margin: 0; color: #333;">📜 Qaytarilgan mahsulotlar tarixi</h3>
+            <h3 style="margin: 0; color: #333;">📜 {{ t('returned_products_history') }}</h3>
             <button onclick="loadReturnHistory()" style="padding: 8px 16px; background: #17a2b8; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">
-                🔄 Yangilash
+                🔄 {{ t('btn_refresh') }}
             </button>
         </div>
         <div style="overflow-x: auto;">
             <table style="width: 100%; border-collapse: collapse;">
                 <thead>
                     <tr style="background: #f8f9fa; border-bottom: 2px solid #dee2e6;">
-                        <th style="padding: 12px; text-align: left; font-weight: 600;">Sana va vaqt</th>
-                        <th style="padding: 12px; text-align: center; font-weight: 600;">Savdo ID</th>
-                        <th style="padding: 12px; text-align: left; font-weight: 600;">Mahsulot</th>
-                        <th style="padding: 12px; text-align: center; font-weight: 600;">Miqdor</th>
-                        <th style="padding: 12px; text-align: left; font-weight: 600;">Qaytarilgan joy</th>
-                        <th style="padding: 12px; text-align: left; font-weight: 600;">Foydalanuvchi</th>
-                        <th style="padding: 12px; text-align: right; font-weight: 600;">Summa</th>
-                        <th style="padding: 12px; text-align: center; font-weight: 600;">Amal</th>
+                        <th style="padding: 12px; text-align: left; font-weight: 600;">{{ t('header_date_time') }}</th>
+                        <th style="padding: 12px; text-align: center; font-weight: 600;">{{ t('header_sale_no') }}</th>
+                        <th style="padding: 12px; text-align: left; font-weight: 600;">{{ t('header_product_col') }}</th>
+                        <th style="padding: 12px; text-align: center; font-weight: 600;">{{ t('quantity') }}</th>
+                        <th style="padding: 12px; text-align: left; font-weight: 600;">{{ t('header_return_location') }}</th>
+                        <th style="padding: 12px; text-align: left; font-weight: 600;">{{ t('header_user') }}</th>
+                        <th style="padding: 12px; text-align: right; font-weight: 600;">{{ t('header_amount') }}</th>
+                        <th style="padding: 12px; text-align: center; font-weight: 600;">{{ t('header_action') }}</th>
                     </tr>
                 </thead>
                 <tbody id="historyTableBody">
                     <tr>
                         <td colspan="8" style="padding: 20px; text-align: center; color: #999;">
-                            <span style="font-size: 16px;">⏳ Yuklanmoqda...</span>
+                            <span style="font-size: 16px;">⏳ {{ t('loading') }}...</span>
                         </td>
                     </tr>
                 </tbody>

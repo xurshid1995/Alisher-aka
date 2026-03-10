@@ -1,6 +1,6 @@
 {% extends "base_with_sidebar.html" %}
 
-{% block title %}Qarz to'lash tarixi - Dokon Boshqaruv Tizimi{% endblock %}
+{% block title %}{{ t('pdh_title') }} - Dokon{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -309,9 +309,9 @@
 {% block content %}
 <div class="history-container">
     <div class="page-header">
-        <h1>📜 Mijozlarni qarz to'lash tarixi</h1>
+        <h1>📜 {{ t('pdh_heading') }}</h1>
         <a href="/debts" class="back-btn">
-            <i class="fas fa-arrow-left"></i> Orqaga
+            <i class="fas fa-arrow-left"></i> {{ t('pdh_back') }}
         </a>
     </div>
 
@@ -319,21 +319,21 @@
     <div id="locationButtons" style="margin: 15px 0; background: white; padding: 15px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
         {% if current_user.role in ['admin', 'kassir'] %}
         <button class="btn btn-sm me-2 mb-2 location-btn active" data-location="" onclick="selectLocation(this, '')">
-            🏢 Barchasi
+            🏢 {{ t('pdh_all') }}
         </button>
         {% endif %}
     </div>
 
     <!-- To'langan qarzlar jadvali -->
     <div class="table-container">
-        <h2>✅ To'langan qarzlar ro'yxati</h2>
+        <h2>✅ {{ t('pdh_paid_list') }}</h2>
         
         <!-- Qidiruv maydoni -->
         <div style="margin-bottom: 15px;">
             <input 
                 type="text" 
                 id="searchInput" 
-                placeholder="🔍 Mijoz nomi, sana yoki qabul qilgan shaxs bo'yicha qidirish..."
+                placeholder="🔍 {{ t('pdh_search') }}"
                 style="width: 100%; max-width: 500px; padding: 10px 15px; border: 2px solid #dee2e6; border-radius: 8px; font-size: 14px; transition: border-color 0.3s;"
                 oninput="searchPayments()"
             >
@@ -342,17 +342,17 @@
         <table class="history-table">
             <thead>
                 <tr>
-                    <th>№</th>
-                    <th>📅 To'lov sanasi</th>
-                    <th>👤 Mijoz</th>
-                    <th>💵 Summa (USD)</th>
-                    <th>💳 To'lov turi</th>
-                    <th>👨‍💼 Qabul qilgan</th>
+                    <th>{{ t('pdh_th_num') }}</th>
+                    <th>📅 {{ t('pdh_th_date') }}</th>
+                    <th>👤 {{ t('pdh_th_customer') }}</th>
+                    <th>💵 {{ t('pdh_th_amount_usd') }}</th>
+                    <th>💳 {{ t('pdh_th_payment_type') }}</th>
+                    <th>👨‍💼 {{ t('pdh_th_received_by') }}</th>
                 </tr>
             </thead>
             <tbody id="historyTableBody">
                 <tr>
-                    <td colspan="6" class="no-data">⏳ Yuklanmoqda...</td>
+                    <td colspan="6" class="no-data">⏳ {{ t('pdh_loading') }}</td>
                 </tr>
             </tbody>
         </table>
@@ -360,6 +360,15 @@
 </div>
 
 <script>
+    const PDHLANG = {
+        load_error: '{{ t("pdh_load_error") }}',
+        no_data: '{{ t("pdh_no_data") }}',
+        cash: '{{ t("pdh_cash") }}',
+        click: '{{ t("pdh_click") }}',
+        terminal: '{{ t("pdh_terminal") }}',
+        not_found: '{{ t("pdh_not_found") }}'
+    };
+
     let paidDebts = [];
     let exchangeRate = 13000;
     let selectedLocation = '';
@@ -385,7 +394,7 @@
             allButton.className = 'btn btn-sm me-2 mb-2 location-btn active';
             allButton.setAttribute('data-location', '');
             allButton.onclick = () => selectLocation(allButton, '');
-            allButton.textContent = '🏢 Barchasi';
+            allButton.textContent = '🏢 {{ t("pdh_all") }}';
             container.appendChild(allButton);
             {% endif %}
             
@@ -447,7 +456,7 @@
         } catch (error) {
             console.error('Xatolik:', error);
             document.getElementById('historyTableBody').innerHTML = 
-                '<tr><td colspan="6" class="no-data">❌ Ma\'lumotlarni yuklashda xatolik</td></tr>';
+                '<tr><td colspan="6" class="no-data">❌ ' + PDHLANG.load_error + '</td></tr>';
         }
     }
 
@@ -456,7 +465,7 @@
         const tbody = document.getElementById('historyTableBody');
         
         if (paidDebts.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6" class="no-data">📭 To\'langan qarzlar yo\'q</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" class="no-data">📭 ' + PDHLANG.no_data + '</td></tr>';
             return;
         }
 
@@ -470,13 +479,13 @@
             // To'lov turlarini ko'rsatish
             const paymentTypes = [];
             if (debt.cash_usd > 0) {
-                paymentTypes.push(`<span class="payment-badge payment-cash">💵 Naqd: ${debt.cash_usd.toFixed(2)}</span>`);
+                paymentTypes.push(`<span class="payment-badge payment-cash">💵 ${PDHLANG.cash}: ${debt.cash_usd.toFixed(2)}</span>`);
             }
             if (debt.click_usd > 0) {
-                paymentTypes.push(`<span class="payment-badge payment-click">📱 Click: ${debt.click_usd.toFixed(2)}</span>`);
+                paymentTypes.push(`<span class="payment-badge payment-click">📱 ${PDHLANG.click}: ${debt.click_usd.toFixed(2)}</span>`);
             }
             if (debt.terminal_usd > 0) {
-                paymentTypes.push(`<span class="payment-badge payment-terminal">💳 Terminal: ${debt.terminal_usd.toFixed(2)}</span>`);
+                paymentTypes.push(`<span class="payment-badge payment-terminal">💳 ${PDHLANG.terminal}: ${debt.terminal_usd.toFixed(2)}</span>`);
             }
             
             const totalAmount = (debt.cash_usd || 0) + (debt.click_usd || 0) + (debt.terminal_usd || 0);
@@ -526,7 +535,7 @@
             if (!existingNoResult) {
                 const noResultRow = document.createElement('tr');
                 noResultRow.className = 'no-result-row';
-                noResultRow.innerHTML = '<td colspan="6" class="no-data">🔍 Hech narsa topilmadi</td>';
+                noResultRow.innerHTML = '<td colspan="6" class="no-data">🔍 ' + PDHLANG.not_found + '</td>';
                 tbody.appendChild(noResultRow);
             }
         } else {

@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Tekshiruv tafsilotlari{% endblock %}
+{% block title %}{{ t('hd_title') }}{% endblock %}
 
 {% block extra_css %}
 <!-- CSS qoidalar o'chirildi, JavaScript inline stillar ishlatiladi -->
@@ -16,7 +16,7 @@
                 <div style="display: flex; justify-content: space-between; align-items: center; gap: 1rem;">
                     <h2 style="margin: 0; color: #333; display: flex; align-items: center; flex-shrink: 0;">
                         <i class="fas fa-chart-line" style="color: #007bff; margin-right: 0.75rem; font-size: 1.5rem;"></i>
-                        Tekshiruv tafsilotlari
+                        {{ t('hd_title') }}
                     </h2>
                     
                     <!-- Umumiy ma'lumotlar - o'rtada -->
@@ -26,7 +26,7 @@
                     
                     <a href="javascript:history.back()" style="display: inline-flex; align-items: center; padding: 0.75rem 1.5rem; background: #6c757d; color: white; text-decoration: none; border-radius: 8px; font-weight: 500; transition: all 0.3s; box-shadow: 0 2px 4px rgba(0,0,0,0.1); flex-shrink: 0;">
                         <i class="fas fa-arrow-left" style="margin-right: 0.5rem;"></i>
-                        Orqaga qaytish
+                        {{ t('hd_back') }}
                     </a>
                 </div>
             </div>
@@ -40,6 +40,43 @@
 </div>
 
 <script>
+const HDLANG = {
+    error: "{{ t('hd_error') }}",
+    session_not_found: "{{ t('hd_session_not_found') }}",
+    data_not_found: "{{ t('hd_data_not_found') }}",
+    data_not_found_msg: "{{ t('hd_data_not_found_msg') }}",
+    session_missing: "{{ t('hd_session_missing') }}",
+    session_missing_msg: "{{ t('hd_session_missing_msg') }}",
+    datetime: "{{ t('hd_datetime') }}",
+    user: "{{ t('hd_user') }}",
+    location: "{{ t('hd_location') }}",
+    admin: "{{ t('hd_admin') }}",
+    total_products: "{{ t('hd_total_products') }}",
+    pcs: "{{ t('hd_pcs') }}",
+    checked: "{{ t('hd_checked') }}",
+    unchecked: "{{ t('hd_unchecked') }}",
+    errors: "{{ t('hd_errors') }}",
+    error_count: "{{ t('hd_error_count') }}",
+    accuracy: "{{ t('hd_accuracy') }}",
+    percent: "{{ t('hd_percent') }}",
+    all_products: "{{ t('hd_all_products') }}",
+    filter_checked: "{{ t('hd_filter_checked') }}",
+    filter_errors: "{{ t('hd_filter_errors') }}",
+    filter_unchecked: "{{ t('hd_filter_unchecked') }}",
+    th_num: "{{ t('hd_th_num') }}",
+    th_product: "{{ t('hd_th_product') }}",
+    th_system: "{{ t('hd_th_system') }}",
+    th_actual: "{{ t('hd_th_actual') }}",
+    th_diff: "{{ t('hd_th_diff') }}",
+    th_status: "{{ t('hd_th_status') }}",
+    not_found: "{{ t('hd_not_found') }}",
+    checked_products: "{{ t('hd_checked_products') }}",
+    unchecked_products: "{{ t('hd_unchecked_products') }}",
+    status_unchecked: "{{ t('hd_status_unchecked') }}",
+    status_correct: "{{ t('hd_status_correct') }}",
+    status_error: "{{ t('hd_status_error') }}"
+};
+
 let allProducts = [];
 let currentFilter = 'all';
 
@@ -62,8 +99,8 @@ function loadHistoryDetails() {
         document.getElementById('detailsContent').innerHTML = `
             <div style="text-align: center; padding: 3rem; color: #dc3545;">
                 <i class="fas fa-exclamation-triangle" style="font-size: 3rem; margin-bottom: 1rem;"></i>
-                <h3>Xatolik yuz berdi</h3>
-                <p>Sessiya ID topilmadi. Iltimos, to'g'ri havoladan foydalaning.</p>
+                <h3>${HDLANG.error}</h3>
+                <p>${HDLANG.session_not_found}</p>
             </div>
         `;
         return;
@@ -75,8 +112,8 @@ function loadHistoryDetails() {
         document.getElementById('detailsContent').innerHTML = `
             <div style="text-align: center; padding: 3rem; color: #dc3545;">
                 <i class="fas fa-database" style="font-size: 3rem; margin-bottom: 1rem;"></i>
-                <h3>Ma'lumot topilmadi</h3>
-                <p>Tekshiruv tarixi ma'lumotlari topilmadi.</p>
+                <h3>${HDLANG.data_not_found}</h3>
+                <p>${HDLANG.data_not_found_msg}</p>
             </div>
         `;
         return;
@@ -89,8 +126,8 @@ function loadHistoryDetails() {
         document.getElementById('detailsContent').innerHTML = `
             <div style="text-align: center; padding: 3rem; color: #dc3545;">
                 <i class="fas fa-search" style="font-size: 3rem; margin-bottom: 1rem;"></i>
-                <h3>Sessiya topilmadi</h3>
-                <p>Bunday ID bilan sessiya mavjud emas.</p>
+                <h3>${HDLANG.session_missing}</h3>
+                <p>${HDLANG.session_missing_msg}</p>
             </div>
         `;
         return;
@@ -98,9 +135,9 @@ function loadHistoryDetails() {
     
     // Header ma'lumotlarini yuklash
     document.getElementById('headerInfo').innerHTML = `
-        <span><strong>Sana va vaqt:</strong> ${item.date} - ${item.time}</span>
-        <span><strong>Foydalanuvchi:</strong> ${item.user || 'Admin'}</span>
-        <span><strong>Joylashuv:</strong> ${item.location}</span>
+        <span><strong>${HDLANG.datetime}</strong> ${item.date} - ${item.time}</span>
+        <span><strong>${HDLANG.user}</strong> ${item.user || HDLANG.admin}</span>
+        <span><strong>${HDLANG.location}</strong> ${item.location}</span>
     `;
     
     // Ma'lumotlarni hisoblash
@@ -118,61 +155,61 @@ function loadHistoryDetails() {
         <div class="stats-row" style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: nowrap;">
             <div class="stat-card" style="flex: 1; padding: 6px; border-radius: 4px; text-align: center; color: white; min-width: 0; background: linear-gradient(135deg, #007bff, #0056b3);">
                 <div class="icon" style="font-size: 18px; margin-bottom: 4px;"><i class="fas fa-boxes"></i></div>
-                <h6 style="margin: 0 0 4px 0; font-size: 15px; opacity: 0.9; font-weight: 600;">Jami mahsulotlar</h6>
+                <h6 style="margin: 0 0 4px 0; font-size: 15px; opacity: 0.9; font-weight: 600;">${HDLANG.total_products}</h6>
                 <div class="value" style="font-size: 24px; font-weight: bold; margin-bottom: 2px;">${totalCount}</div>
-                <small>dona</small>
+                <small>${HDLANG.pcs}</small>
             </div>
             
             <div class="stat-card" style="flex: 1; padding: 6px; border-radius: 4px; text-align: center; color: white; min-width: 0; background: linear-gradient(135deg, #28a745, #218838);">
                 <div class="icon" style="font-size: 18px; margin-bottom: 4px;"><i class="fas fa-check-circle"></i></div>
-                <h6 style="margin: 0 0 4px 0; font-size: 15px; opacity: 0.9; font-weight: 600;">Tekshirildi</h6>
+                <h6 style="margin: 0 0 4px 0; font-size: 15px; opacity: 0.9; font-weight: 600;">${HDLANG.checked}</h6>
                 <div class="value" style="font-size: 24px; font-weight: bold; margin-bottom: 2px;">${checkedCount}</div>
-                <small>dona</small>
+                <small>${HDLANG.pcs}</small>
             </div>
             
             <div class="stat-card" style="flex: 1; padding: 6px; border-radius: 4px; text-align: center; color: white; min-width: 0; background: linear-gradient(135deg, #6c757d, #545b62);">
                 <div class="icon" style="font-size: 18px; margin-bottom: 4px;"><i class="fas fa-question-circle"></i></div>
-                <h6 style="margin: 0 0 4px 0; font-size: 15px; opacity: 0.9; font-weight: 600;">Tekshirilmagan</h6>
+                <h6 style="margin: 0 0 4px 0; font-size: 15px; opacity: 0.9; font-weight: 600;">${HDLANG.unchecked}</h6>
                 <div class="value" style="font-size: 24px; font-weight: bold; margin-bottom: 2px;">${uncheckedCount}</div>
-                <small>dona</small>
+                <small>${HDLANG.pcs}</small>
             </div>
             
             <div class="stat-card" style="flex: 1; padding: 6px; border-radius: 4px; text-align: center; color: white; min-width: 0; background: linear-gradient(135deg, ${errorCount > 0 ? '#dc3545, #c82333' : '#28a745, #218838'});">
                 <div class="icon" style="font-size: 18px; margin-bottom: 4px;"><i class="fas fa-${errorCount > 0 ? 'exclamation-triangle' : 'check'}"></i></div>
-                <h6 style="margin: 0 0 4px 0; font-size: 15px; opacity: 0.9; font-weight: 600;">Xatoliklar</h6>
+                <h6 style="margin: 0 0 4px 0; font-size: 15px; opacity: 0.9; font-weight: 600;">${HDLANG.errors}</h6>
                 <div class="value" style="font-size: 24px; font-weight: bold; margin-bottom: 2px;">${errorCount}</div>
-                <small>ta xatolik</small>
+                <small>${HDLANG.error_count}</small>
             </div>
             
             <div class="stat-card" style="flex: 1; padding: 6px; border-radius: 4px; text-align: center; color: white; min-width: 0; background: linear-gradient(135deg, #ffc107, #e0a800);">
                 <div class="icon" style="font-size: 18px; margin-bottom: 4px;"><i class="fas fa-percentage"></i></div>
-                <h6 style="margin: 0 0 4px 0; font-size: 15px; opacity: 0.9; font-weight: 600;">Aniqlik</h6>
+                <h6 style="margin: 0 0 4px 0; font-size: 15px; opacity: 0.9; font-weight: 600;">${HDLANG.accuracy}</h6>
                 <div class="value" style="font-size: 24px; font-weight: bold; margin-bottom: 2px;">${accuracy}%</div>
-                <small>foiz</small>
+                <small>${HDLANG.percent}</small>
             </div>
         </div>
         
         <!-- Jadval -->
         <div style="background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-top: 2rem;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                <h3 style="margin: 0; color: #333;"><span id="tableTitle">Barcha mahsulotlar</span></h3>
+                <h3 style="margin: 0; color: #333;"><span id="tableTitle">${HDLANG.all_products}</span></h3>
                 
                 <div style="display: flex; gap: 0.5rem;">
                     <button id="filterAll" onclick="filterProducts('all')" 
                             style="padding: 0.5rem 1rem; border: 2px solid #007bff; background: #007bff; color: white; border-radius: 6px; cursor: pointer;">
-                        Barchasi
+                        ${HDLANG.all_products}
                     </button>
                     <button id="filterChecked" onclick="filterProducts('checked')" 
                             style="padding: 0.5rem 1rem; border: 2px solid #28a745; background: white; color: #28a745; border-radius: 6px; cursor: pointer;">
-                        Tekshirilgan
+                        ${HDLANG.filter_checked}
                     </button>
                     <button id="filterUnchecked" onclick="filterProducts('unchecked')" 
                             style="padding: 0.5rem 1rem; border: 2px solid #dc3545; background: white; color: #dc3545; border-radius: 6px; cursor: pointer;">
-                        Xatoliklar
+                        ${HDLANG.filter_errors}
                     </button>
                     <button id="filterNotChecked" onclick="filterProducts('not_checked')" 
                             style="padding: 0.5rem 1rem; border: 2px solid #6c757d; background: white; color: #6c757d; border-radius: 6px; cursor: pointer;">
-                        Tekshirilmagan
+                        ${HDLANG.filter_unchecked}
                     </button>
                 </div>
             </div>
@@ -181,12 +218,12 @@ function loadHistoryDetails() {
                 <table style="width: 100%; border-collapse: collapse;">
                     <thead>
                         <tr style="background: #f8f9fa;">
-                            <th style="padding: 1rem; text-align: left;">№</th>
-                            <th style="padding: 1rem; text-align: left;">Mahsulot nomi</th>
-                            <th style="padding: 1rem; text-align: center;">Tizimda</th>
-                            <th style="padding: 1rem; text-align: center;">Haqiqiy</th>
-                            <th style="padding: 1rem; text-align: center;">Farq</th>
-                            <th style="padding: 1rem; text-align: center;">Holat</th>
+                            <th style="padding: 1rem; text-align: left;">${HDLANG.th_num}</th>
+                            <th style="padding: 1rem; text-align: left;">${HDLANG.th_product}</th>
+                            <th style="padding: 1rem; text-align: center;">${HDLANG.th_system}</th>
+                            <th style="padding: 1rem; text-align: center;">${HDLANG.th_actual}</th>
+                            <th style="padding: 1rem; text-align: center;">${HDLANG.th_diff}</th>
+                            <th style="padding: 1rem; text-align: center;">${HDLANG.th_status}</th>
                         </tr>
                     </thead>
                     <tbody id="detailsTable">
@@ -207,7 +244,7 @@ function loadTableData(item) {
         document.getElementById('detailsTable').innerHTML = `
             <tr>
                 <td colspan="6" style="text-align: center; padding: 2rem; color: #6c757d;">
-                    Ma'lumot topilmadi
+                    ${HDLANG.not_found}
                 </td>
             </tr>
         `;
@@ -263,21 +300,21 @@ function filterProducts(filterType) {
     
     // Filtr qilish
     let filteredProducts = allProducts;
-    let titleText = 'Barcha mahsulotlar';
+    let titleText = HDLANG.all_products;
     
     if (filterType === 'checked') {
         filteredProducts = allProducts.filter(p => 
             p.isChecked !== false && p.system_quantity === p.actual_quantity
         );
-        titleText = 'Tekshirilgan mahsulotlar';
+        titleText = HDLANG.filter_checked;
     } else if (filterType === 'unchecked') {
         filteredProducts = allProducts.filter(p => 
             p.isChecked !== false && p.system_quantity !== p.actual_quantity
         );
-        titleText = 'Xatoliklar';
+        titleText = HDLANG.filter_errors;
     } else if (filterType === 'not_checked') {
         filteredProducts = allProducts.filter(p => p.isChecked === false);
-        titleText = 'Tekshirilmagan mahsulotlar';
+        titleText = HDLANG.unchecked_products;
     }
     
     document.getElementById('tableTitle').textContent = `${titleText} (${filteredProducts.length})`;
@@ -293,13 +330,13 @@ function filterProducts(filterType) {
         let differenceHTML = '';
         
         if (!isChecked) {
-            statusHTML = `<span style="background: #6c757d; color: white; padding: 0.25rem 0.5rem; border-radius: 12px; font-size: 0.8rem;">Tekshirilmagan</span>`;
+            statusHTML = `<span style="background: #6c757d; color: white; padding: 0.25rem 0.5rem; border-radius: 12px; font-size: 0.8rem;">${HDLANG.status_unchecked}</span>`;
             differenceHTML = '-';
         } else if (hasError) {
-            statusHTML = `<span style="background: #dc3545; color: white; padding: 0.25rem 0.5rem; border-radius: 12px; font-size: 0.8rem;">Xatolik</span>`;
+            statusHTML = `<span style="background: #dc3545; color: white; padding: 0.25rem 0.5rem; border-radius: 12px; font-size: 0.8rem;">${HDLANG.status_error}</span>`;
             differenceHTML = difference > 0 ? `+${difference}` : `${difference}`;
         } else {
-            statusHTML = `<span style="background: #28a745; color: white; padding: 0.25rem 0.5rem; border-radius: 12px; font-size: 0.8rem;">To'g'ri</span>`;
+            statusHTML = `<span style="background: #28a745; color: white; padding: 0.25rem 0.5rem; border-radius: 12px; font-size: 0.8rem;">${HDLANG.status_correct}</span>`;
             differenceHTML = '0';
         }
         

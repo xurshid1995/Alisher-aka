@@ -8,6 +8,7 @@ import time
 import urllib.parse
 import secrets
 import uuid
+from translations import TRANSLATIONS
 from datetime import datetime, timezone, timedelta
 from decimal import Decimal, getcontext, InvalidOperation
 from functools import wraps
@@ -13466,75 +13467,8 @@ def inject_settings():
         # Hozirgi tilni olish
         current_language = session.get('language', 'uz_latin')
 
-        # Tarjima lug'ati
-        translations = {
-            'uz_latin': {
-                'dashboard': 'Bosh sahifa',
-                'products': 'Mahsulotlar',
-                'sales': 'Sotuvlar',
-                'warehouse': 'Ombor',
-                'store': 'Do\'kon',
-                'warehouse_transfer': 'Ombor → Do\'kon',
-                'store_transfer': 'Do\'kon → Do\'kon',
-                'check_stock': 'Qoldiqni Tekshirish',
-                'reports': 'Hisobotlar',
-                'customers': 'Mijozlar',
-                'settings': 'Sozlamalar',
-                'logout': 'Chiqish',
-                'search': 'Qidirish',
-                'add': 'Qo\'shish',
-                'edit': 'Tahrirlash',
-                'delete': 'O\'chirish',
-                'save': 'Saqlash',
-                'cancel': 'Bekor qilish',
-                'close': 'Yopish',
-            },
-            'uz_cyrillic': {
-                'dashboard': 'Бош саҳифа',
-                'products': 'Маҳсулотлар',
-                'sales': 'Сотувлар',
-                'warehouse': 'Омбор',
-                'store': 'Дўкон',
-                'warehouse_transfer': 'Омбор → Дўкон',
-                'store_transfer': 'Дўкон → Дўкон',
-                'check_stock': 'Қолдиқни Текшириш',
-                'reports': 'Ҳисоботлар',
-                'customers': 'Мижозлар',
-                'settings': 'Созламалар',
-                'logout': 'Чиқиш',
-                'search': 'Қидириш',
-                'add': 'Қўшиш',
-                'edit': 'Таҳрирлаш',
-                'delete': 'Ўчириш',
-                'save': 'Сақлаш',
-                'cancel': 'Бекор қилиш',
-                'close': 'Ёпиш',
-            },
-            'ru': {
-                'dashboard': 'Главная',
-                'products': 'Товары',
-                'sales': 'Продажи',
-                'warehouse': 'Склад',
-                'store': 'Магазин',
-                'warehouse_transfer': 'Склад → Магазин',
-                'store_transfer': 'Магазин → Магазин',
-                'check_stock': 'Проверка остатков',
-                'reports': 'Отчёты',
-                'customers': 'Клиенты',
-                'settings': 'Настройки',
-                'logout': 'Выход',
-                'search': 'Поиск',
-                'add': 'Добавить',
-                'edit': 'Изменить',
-                'delete': 'Удалить',
-                'save': 'Сохранить',
-                'cancel': 'Отменить',
-                'close': 'Закрыть',
-            }
-        }
-
-        # Joriy til tarjimalarini olish
-        current_translations = translations.get(current_language, translations['uz_latin'])
+        # Tarjima lug'atini translations.py dan olish
+        current_translations = TRANSLATIONS.get(current_language, TRANSLATIONS['uz_latin'])
 
         # Tarjima funksiyasi
         def t(key):

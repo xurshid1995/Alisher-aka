@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Transfer - Dokon Boshqaruv Tizimi{% endblock %}
+{% block title %}{{ t('transfer_page') }} - {{ t('app_title') }}{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -658,9 +658,9 @@
 {% block content %}
 <div class="transfer-container">
     <div class="page-header">
-        <h1>🔄 Transfer Sahifasi</h1>
+        <h1>🔄 {{ t('transfer_page') }}</h1>
         <a href="/transfer" class="btn" style="background: #6c757d; color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
-            ← Orqaga
+            ← {{ t('btn_back') }}
         </a>
     </div>
 
@@ -668,14 +668,14 @@
         <!-- Chap layout - Mahsulot tanlash -->
         <div class="transfer-layout">
             <div style="display: grid; grid-template-columns: auto 1fr auto 1fr; gap: 10px; align-items: center; margin-bottom: 10px; padding: 15px; background: linear-gradient(135deg, #FFC107 0%, #FF8C00 100%); border-radius: 8px; height: 54px;">
-                <label for="fromLocation" style="font-weight: 600; color: white; white-space: nowrap; font-size: 14px;">Qayerdan:</label>
+                <label for="fromLocation" style="font-weight: 600; color: white; white-space: nowrap; font-size: 14px;">{{ t('from_label') }}:</label>
                 <select id="fromLocation" onchange="loadProducts()" style="padding: 6px 10px; border: none; border-radius: 4px; font-size: 13px; height: 32px;">
-                    <option value="">Tanlang...</option>
+                    <option value="">{{ t('select_option') }}</option>
                 </select>
                 
-                <label for="toLocation" style="font-weight: 600; color: white; white-space: nowrap; font-size: 14px;">Qayerga:</label>
+                <label for="toLocation" style="font-weight: 600; color: white; white-space: nowrap; font-size: 14px;">{{ t('to_label') }}:</label>
                 <select id="toLocation" style="padding: 6px 10px; border: none; border-radius: 4px; font-size: 13px; height: 32px;">
-                    <option value="">Tanlang...</option>
+                    <option value="">{{ t('select_option') }}</option>
                 </select>
             </div>
 
@@ -684,7 +684,7 @@
                     <input type="text" 
                            id="productSearch" 
                            class="search-input" 
-                           placeholder="Qidirish..." 
+                           placeholder="{{ t('placeholder_search') }}" 
                            style="padding-right: 40px; border: 2px solid #28a745;"
                            autofocus>
                 </div>
@@ -696,23 +696,23 @@
                 <table class="products-table transfer-product-table">
                     <thead>
                         <tr>
-                            <th style="width: 365px; color: white; background: #5DADE2;">Mahsulot</th>
-                            <th style="width: 100px; text-align: center; color: white; background: #5DADE2;">Narx</th>
-                            <th style="width: 85px; text-align: center; color: white; background: #5DADE2;">Mavjud</th>
-                            <th style="width: 75px; text-align: center; color: white; background: #5DADE2;">Amal</th>
+                            <th style="width: 365px; color: white; background: #5DADE2;">{{ t('header_product_col') }}</th>
+                            <th style="width: 100px; text-align: center; color: white; background: #5DADE2;">{{ t('price') }}</th>
+                            <th style="width: 85px; text-align: center; color: white; background: #5DADE2;">{{ t('available_label') }}</th>
+                            <th style="width: 75px; text-align: center; color: white; background: #5DADE2;">{{ t('header_action') }}</th>
                         </tr>
                     </thead>
                     <tbody id="productsTableBody">
                         <tr>
                             <td colspan="4" class="empty-state">
                                 <div>📦</div>
-                                <div>Joylashuvni tanlang</div>
+                                <div>{{ t('select_location_msg') }}</div>
                             </td>
                         </tr>
                     </tbody>
                 </table>
                 <div class="pagination-container" id="paginationContainer" style="display: none;">
-                    <div class="pagination-info" id="paginationInfo">1-30 dan 0 ta</div>
+                    <div class="pagination-info" id="paginationInfo">1-30 {{ t('from_label') }} 0 {{ t('items_count') }}</div>
                     <div class="pagination-controls">
                         <button class="pagination-btn" onclick="goToFirstPage()" id="btnFirst">⏮️</button>
                         <button class="pagination-btn" onclick="previousPage()" id="btnPrev">◀️</button>
@@ -728,7 +728,7 @@
         <div class="transfer-layout">
             <!-- Sarlavha va info bir qatorda -->
             <div style="display: flex; justify-content: space-between; align-items: center; background: linear-gradient(135deg, #FFC107 0%, #FF8C00 100%); padding: 15px; border-radius: 8px; margin-bottom: 10px; height: 54px;">
-                <div style="color: white; font-weight: 600; font-size: 16px;">🔄 Transfer ro'yxati</div>
+                <div style="color: white; font-weight: 600; font-size: 16px;">🔄 {{ t('transfer_list') }}</div>
                 <div id="transferInfo" style="display: none; font-size: 16px; color: white; line-height: 1.4;">
                     <span id="infoFromLocation" style="font-weight: 600;">-</span>
                     <span style="margin: 0 5px;">→</span>
@@ -739,24 +739,24 @@
             </div>
 
             <div style="margin-bottom: 0;">
-                <input type="text" id="transferListSearch" class="search-input" placeholder="Qidirish..." onkeyup="filterTransferList()">
+                <input type="text" id="transferListSearch" class="search-input" placeholder="{{ t('placeholder_search') }}" onkeyup="filterTransferList()">
             </div>
 
             <div class="products-table-container">
                 <table class="products-table transfer-product-table" id="transferListTable">
                     <thead>
                         <tr>
-                            <th style="width: 365px; color: white; background: #5DADE2;">Mahsulot</th>
-                            <th style="width: 100px; text-align: center; color: white; background: #5DADE2;">Narx</th>
-                            <th style="width: 85px; text-align: center; color: white; background: #5DADE2;">Miqdor</th>
-                            <th style="width: 75px; text-align: center; color: white; background: #5DADE2;">Amal</th>
+                            <th style="width: 365px; color: white; background: #5DADE2;">{{ t('header_product_col') }}</th>
+                            <th style="width: 100px; text-align: center; color: white; background: #5DADE2;">{{ t('price') }}</th>
+                            <th style="width: 85px; text-align: center; color: white; background: #5DADE2;">{{ t('quantity_label') }}</th>
+                            <th style="width: 75px; text-align: center; color: white; background: #5DADE2;">{{ t('header_action') }}</th>
                         </tr>
                     </thead>
                     <tbody id="transferList">
                         <tr>
                             <td colspan="4" class="empty-state">
                                 <div>📋</div>
-                                <div>Transfer qilish uchun mahsulot qo'shing</div>
+                                <div>{{ t('transfer_add_product') }}</div>
                             </td>
                         </tr>
                     </tbody>
@@ -764,8 +764,8 @@
             </div>
 
             <div class="action-buttons">
-                <button class="btn btn-secondary" onclick="clearTransferList()">🗑️ Tozalash</button>
-                <button class="btn btn-success" onclick="completeTransfer()">✅ Transferni yakunlash</button>
+                <button class="btn btn-secondary" onclick="clearTransferList()">🗑️ {{ t('btn_clear') }}</button>
+                <button class="btn btn-success" onclick="completeTransfer()">✅ {{ t('btn_finish_transfer') }}</button>
             </div>
         </div>
     </div>
@@ -775,20 +775,20 @@
 <!-- Modal oyna - Miqdor kiritish -->
 <div id="quantityModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; justify-content: center; align-items: center;">
     <div style="background: white; border-radius: 8px; padding: 30px; width: 400px; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
-        <h3 style="margin: 0 0 20px 0; color: #333;">📦 Transfer miqdorini kiriting</h3>
+        <h3 style="margin: 0 0 20px 0; color: #333;">📦 {{ t('enter_transfer_quantity') }}</h3>
         
         <div style="margin-bottom: 15px;">
-            <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #555;">Mahsulot:</label>
+            <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #555;">{{ t('header_product_col') }}:</label>
             <div id="modalProductName" style="padding: 10px; background: #f8f9fa; border-radius: 4px; font-weight: 600;"></div>
         </div>
         
         <div style="margin-bottom: 15px;">
-            <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #555;">Mavjud:</label>
+            <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #555;">{{ t('available_label') }}:</label>
             <input type="text" id="modalAvailable" readonly style="width: 100%; padding: 10px; border: 1px solid #ced4da; border-radius: 4px; background: #e9ecef;">
         </div>
         
         <div style="margin-bottom: 20px;">
-            <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #555;">Miqdor:</label>
+            <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #555;">{{ t('quantity_label') }}:</label>
             <input type="number" 
                    id="modalQuantity" 
                    min="1" 
@@ -800,8 +800,8 @@
         </div>
         
         <div style="display: flex; gap: 10px;">
-            <button onclick="closeModal()" style="flex: 1; padding: 10px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500;">Bekor qilish</button>
-            <button onclick="addToTransferList()" style="flex: 1; padding: 10px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500;">➕ Qo'shish</button>
+            <button onclick="closeModal()" style="flex: 1; padding: 10px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500;">{{ t('btn_cancel') }}</button>
+            <button onclick="addToTransferList()" style="flex: 1; padding: 10px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500;">➕ {{ t('btn_add') }}</button>
         </div>
     </div>
 </div>
@@ -809,6 +809,47 @@
 
 {% block extra_js %}
 <script>
+    const TLANG = {
+        warehouses_group: '{{ t("warehouses_group") }}',
+        stores_group: '{{ t("stores_group") }}',
+        select_location_msg: '{{ t("select_location_msg") }}',
+        products_not_found: '{{ t("products_not_found") }}',
+        loading_text: '{{ t("loading_text") }}',
+        error_occurred: '{{ t("error_occurred") }}',
+        transfer_add_product: '{{ t("transfer_add_product") }}',
+        product_not_found: '{{ t("product_not_found") }}',
+        already_in_list: '{{ t("already_in_list") }}',
+        edit_quantity_confirm: '{{ t("edit_quantity_confirm") }}',
+        quantity_must_positive: '{{ t("quantity_must_positive") }}',
+        stock_only_available: '{{ t("stock_only_available") }}',
+        available_word: '{{ t("available_word") }}',
+        list_empty: '{{ t("list_empty") }}',
+        delete_all_confirm: '{{ t("delete_all_confirm") }}',
+        delete_item_confirm: '{{ t("delete_item_confirm") }}',
+        select_from_location: '{{ t("select_from_location") }}',
+        select_both_locations: '{{ t("select_both_locations") }}',
+        select_from: '{{ t("select_from") }}',
+        select_to: '{{ t("select_to") }}',
+        same_location_error: '{{ t("same_location_error") }}',
+        add_products_to_list: '{{ t("add_products_to_list") }}',
+        transfer_confirm: '{{ t("transfer_confirm") }}',
+        transfer_success: '{{ t("transfer_success") }}',
+        transferring: '{{ t("transferring") }}',
+        transfer_confirm_btn: '{{ t("transfer_confirm_btn") }}',
+        in_list_text: '{{ t("in_list_text") }}',
+        not_in_stock: '{{ t("not_in_stock") }}',
+        add_to_list: '{{ t("add_to_list") }}',
+        searching: '{{ t("searching") }}',
+        found_text: '{{ t("found_text") }}',
+        not_found_barcode: '{{ t("not_found_barcode") }}',
+        search_error: '{{ t("search_error") }}',
+        edit_label: '{{ t("edit_label") }}',
+        delete_label: '{{ t("delete_label") }}',
+        pagination_from: '{{ t("pagination_from") }}',
+        items_count: '{{ t("items_count") }}',
+        only_step_half: '{{ t("only_step_half") }}'
+    };
+
     let transferList = [];
     let currentProduct = null;
     let allProducts = [];
@@ -860,7 +901,7 @@
         // Omborlar optgroup
         if (warehouses.length > 0) {
             const warehouseGroup = document.createElement('optgroup');
-            warehouseGroup.label = 'Omborlar';
+            warehouseGroup.label = TLANG.warehouses_group;
             warehouses.forEach(wh => {
                 const option = document.createElement('option');
                 option.value = `warehouse_${wh.id}`;
@@ -874,7 +915,7 @@
         // Do'konlar optgroup
         if (stores.length > 0) {
             const storeGroup = document.createElement('optgroup');
-            storeGroup.label = "Do'konlar";
+            storeGroup.label = TLANG.stores_group;
             stores.forEach(store => {
                 const option = document.createElement('option');
                 option.value = `store_${store.id}`;
@@ -948,7 +989,7 @@
             if (fromSelect.value === toValue) {
                 fromSelect.value = '';
                 // Mahsulotlarni tozalash
-                document.getElementById('productsTableBody').innerHTML = '<tr><td colspan="4" class="empty-state"><div>📦</div><div>Joylashuvni tanlang</div></td></tr>';
+                document.getElementById('productsTableBody').innerHTML = '<tr><td colspan="4" class="empty-state"><div>📦</div><div>' + TLANG.select_location_msg + '</div></td></tr>';
             } else {
                 // Agar qayerga tanlangan bo'lsa va qayerdan ham to'g'ri bo'lsa, qidiruv maydoniga fokus
                 const productSearch = document.getElementById('productSearch');
@@ -963,11 +1004,11 @@
         const tbody = document.getElementById('productsTableBody');
         
         if (!fromLocation) {
-            tbody.innerHTML = '<tr><td colspan="4" class="empty-state"><div>📦</div><div>Joylashuvni tanlang</div></td></tr>';
+            tbody.innerHTML = '<tr><td colspan="4" class="empty-state"><div>📦</div><div>' + TLANG.select_location_msg + '</div></td></tr>';
             return;
         }
         
-        tbody.innerHTML = '<tr><td colspan="4" class="empty-state"><div>⏳</div><div>Yuklanmoqda...</div></td></tr>';
+        tbody.innerHTML = '<tr><td colspan="4" class="empty-state"><div>⏳</div><div>' + TLANG.loading_text + '</div></td></tr>';
         
         try {
             // Barcha mahsulotlarni olish uchun per_page=10000 parametri
@@ -986,7 +1027,7 @@
             }
         } catch (error) {
             console.error('Mahsulotlarni yuklashda xatolik:', error);
-            tbody.innerHTML = '<tr><td colspan="4" class="empty-state"><div>⚠️</div><div>Xatolik yuz berdi</div></td></tr>';
+            tbody.innerHTML = '<tr><td colspan="4" class="empty-state"><div>⚠️</div><div>' + TLANG.error_occurred + '</div></td></tr>';
         }
     }
 
@@ -1003,7 +1044,7 @@
         const paginationContainer = document.getElementById('paginationContainer');
         
         if (filteredProducts.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="4" class="empty-state"><div>📦</div><div>Mahsulotlar topilmadi</div></td></tr>';
+            tbody.innerHTML = '<tr><td colspan="4" class="empty-state"><div>📦</div><div>' + TLANG.products_not_found + '</div></td></tr>';
             paginationContainer.style.display = 'none';
             return;
         }
@@ -1086,7 +1127,7 @@
                 <td style="text-align: center;">
                     <button onclick="openModalById(${product.id})" 
                             style="background: none; border: none; cursor: ${buttonDisabled ? 'not-allowed' : 'pointer'}; font-size: 24px; padding: 4px 8px;"
-                            title="${isInTransferList ? 'Ro\'yxatda bor (miqdorni tahrirlash)' : buttonDisabled ? 'Stokda yo\'q' : 'Transfer ro\'yxatiga qo\'shish'}"
+                            title="${isInTransferList ? TLANG.in_list_text : buttonDisabled ? TLANG.not_in_stock : TLANG.add_to_list}"
                             ${buttonDisabled ? 'disabled' : ''}>
                         ${buttonEmoji}
                     </button>
@@ -1120,7 +1161,7 @@
         
         // Info yangilash
         document.getElementById('paginationInfo').textContent = 
-            `${startIndex}-${endIndex} dan ${filteredProducts.length} ta`;
+            `${startIndex}-${endIndex} ${TLANG.pagination_from} ${filteredProducts.length} ${TLANG.items_count}`;
         
         // Tugmalar holatini yangilash
         document.getElementById('btnFirst').disabled = currentPage === 1;
@@ -1381,24 +1422,24 @@
         // Qayerdan joylashuv tanlanganligini tekshirish
         const fromLocation = document.getElementById('fromLocation').value;
         if (!fromLocation) {
-            showSearchStatus('⚠️ Avval "Qayerdan" joylashuvni tanlang!', 'error');
+            showSearchStatus('⚠️ ' + TLANG.select_from_location, 'error');
             return;
         }
         
-        showSearchStatus('⏳ Qidirilmoqda...', 'loading');
+        showSearchStatus('⏳ ' + TLANG.searching, 'loading');
         
         try {
             // AllProducts dan barcode bo'yicha qidirish
             const product = allProducts.find(p => p.barcode && p.barcode.toString() === barcode.toString());
             
             if (!product) {
-                showSearchStatus(`❌ Barcode ${barcode} topilmadi`, 'error');
+                showSearchStatus(`❌ Barcode ${barcode} ${TLANG.not_found_barcode}`, 'error');
                 document.getElementById('productSearch').value = '';
                 return;
             }
             
             console.log('✅ Mahsulot topildi:', product);
-            showSearchStatus(`✓ ${product.name} topildi!`, 'success');
+            showSearchStatus(`✓ ${product.name} ${TLANG.found_text}`, 'success');
             
             // 500ms kutib, avtomatik modal ochish
             setTimeout(() => {
@@ -1409,7 +1450,7 @@
             
         } catch (error) {
             console.error('❌ Barcode qidiruv xatosi:', error);
-            showSearchStatus('❌ Qidiruv xatosi', 'error');
+            showSearchStatus('❌ ' + TLANG.search_error, 'error');
             document.getElementById('productSearch').value = '';
         }
     }
@@ -1475,14 +1516,14 @@
         // Mahsulotni topish
         const product = allProducts.find(p => p.id === productId);
         if (!product) {
-            alert('Mahsulot topilmadi!');
+            alert(TLANG.product_not_found);
             return;
         }
         
         // Agar mahsulot allaqachon ro'yxatda bo'lsa, tasdiqlash so'rash
         const existingItem = transferList.find(item => item.id === productId);
         if (existingItem) {
-            if (!confirm(`"${product.name}" allaqachon transfer ro'yxatida (${existingItem.quantity} dona).\n\nMiqdorni tahrirlash uchun OK tugmasini bosing.`)) {
+            if (!confirm(`"${product.name}" ${TLANG.already_in_list} (${existingItem.quantity} dona).\n\n${TLANG.edit_quantity_confirm}`)) {
                 return; // Bekor qilindi
             }
         }
@@ -1585,7 +1626,7 @@
         
         // Miqdor validatsiyasi
         if (quantity <= 0) {
-            warningDiv.textContent = '⚠️ Miqdor 0 dan katta bo\'lishi kerak!';
+            warningDiv.textContent = '⚠️ ' + TLANG.quantity_must_positive;
             warningDiv.style.display = 'block';
             warningDiv.style.background = '#fff3cd';
             warningDiv.style.border = '1px solid #ffc107';
@@ -1595,7 +1636,7 @@
             return false;
         } else if (quantity > available) {
             const formattedAvailable = unitType === 'litr' ? parseFloat(available).toFixed(2) : (available % 1 === 0 ? Math.floor(available) : parseFloat(available).toFixed(1));
-            warningDiv.textContent = `❌ Stokda faqat ${formattedAvailable} ${unitText} mavjud!`;
+            warningDiv.textContent = `❌ ${TLANG.stock_only_available} ${formattedAvailable} ${unitText} ${TLANG.available_word}`;
             warningDiv.style.display = 'block';
             warningDiv.style.background = '#f8d7da';
             warningDiv.style.border = '1px solid #f5c6cb';
@@ -1605,7 +1646,7 @@
             return false;
         } else if (unitType === 'dona' && (quantity % 0.5 !== 0)) {
             // Dona uchun faqat 0.5 qadam (0.5, 1, 1.5, 2...)
-            warningDiv.textContent = 'Dona uchun faqat 0.5, 1, 1.5, 2... miqdor mumkin!';
+            warningDiv.textContent = TLANG.only_step_half;
             warningDiv.style.display = 'block';
             warningDiv.style.background = '#fff3cd';
             warningDiv.style.border = '1px solid #ffc107';
@@ -1630,13 +1671,13 @@
         const toLocation = document.getElementById('toLocation').value;
         
         if (!fromLocation || !toLocation) {
-            alert('Avval "Qayerdan" va "Qayerga" maydonlarini tanlang!');
+            alert(TLANG.select_both_locations);
             closeModal();
             return;
         }
         
         if (!currentProduct) {
-            alert('Mahsulot tanlanmagan!');
+            alert(TLANG.product_not_found);
             closeModal();
             return;
         }
@@ -1650,14 +1691,14 @@
         const unitType = currentProduct.unitType || 'dona';
         
         if (!quantity || quantity <= 0) {
-            alert('Miqdor 0 dan katta bo\'lishi kerak!');
+            alert(TLANG.quantity_must_positive);
             return;
         }
         
         if (quantity > currentProduct.available) {
             const unitText = unitType === 'litr' ? 'litr' : 'dona';
             const formattedAvailable = unitType === 'litr' ? parseFloat(currentProduct.available).toFixed(2) : Math.floor(currentProduct.available);
-            alert(`Stokda faqat ${formattedAvailable} ${unitText} mavjud!`);
+            alert(`${TLANG.stock_only_available} ${formattedAvailable} ${unitText} ${TLANG.available_word}`);
             return;
         }
         
@@ -1704,7 +1745,7 @@
         const tbody = document.getElementById('transferList');
         
         if (transferList.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="4" class="empty-state"><div>📋</div><div>Transfer qilish uchun mahsulot qo\'shing</div></td></tr>';
+            tbody.innerHTML = '<tr><td colspan="4" class="empty-state"><div>📋</div><div>' + TLANG.transfer_add_product + '</div></td></tr>';
             document.getElementById('transferInfo').style.display = 'none';
             return;
         }
@@ -1733,10 +1774,10 @@
                 <td style="text-align: center;">
                     <button onclick="editTransferItem(${index})" 
                             style="background: none; border: none; cursor: pointer; font-size: 18px; padding: 4px 4px;" 
-                            title="Tahrirlash">✏️</button>
+                            title="${TLANG.edit_label}">✏️</button>
                     <button onclick="removeTransferItem(${index})" 
                             style="background: none; border: none; cursor: pointer; font-size: 18px; padding: 4px 4px; color: #dc3545;" 
-                            title="O'chirish">🗑️</button>
+                            title="${TLANG.delete_label}">🗑️</button>
                 </td>
             `;
             tbody.appendChild(row);
@@ -1769,7 +1810,7 @@
         // Mahsulot ma'lumotlarini olish
         const product = allProducts.find(p => p.id === item.id);
         if (!product) {
-            alert('Mahsulot topilmadi!');
+            alert(TLANG.product_not_found);
             return;
         }
         
@@ -1837,7 +1878,7 @@
 
     // Transfer elementini o'chirish
     function removeTransferItem(index) {
-        if (confirm('Ushbu mahsulotni o\'chirmoqchimisiz?')) {
+        if (confirm(TLANG.delete_item_confirm)) {
             transferList.splice(index, 1);
             updateTransferListDisplay();
             
@@ -1852,11 +1893,11 @@
     // Transfer ro'yxatini tozalash
     function clearTransferList() {
         if (transferList.length === 0) {
-            alert('Ro\'yxat bo\'sh!');
+            alert(TLANG.list_empty);
             return;
         }
         
-        if (confirm('Barcha mahsulotlarni o\'chirmoqchimisiz?')) {
+        if (confirm(TLANG.delete_all_confirm)) {
             transferList = [];
             updateTransferListDisplay();
             
@@ -2035,26 +2076,26 @@
         const toLocation = document.getElementById('toLocation').value;
         
         if (!fromLocation) {
-            alert('Qayerdan joylashuvni tanlang!');
+            alert(TLANG.select_from);
             return;
         }
         
         if (!toLocation) {
-            alert('Qayerga joylashuvni tanlang!');
+            alert(TLANG.select_to);
             return;
         }
         
         if (fromLocation === toLocation) {
-            alert('Bir xil joylashuv orasida transfer qilib bo\'lmaydi!');
+            alert(TLANG.same_location_error);
             return;
         }
         
         if (transferList.length === 0) {
-            alert('Transfer ro\'yxatiga mahsulot qo\'shing!');
+            alert(TLANG.add_products_to_list);
             return;
         }
         
-        if (!confirm(`${transferList.length} ta mahsulotni transfer qilmoqchimisiz?`)) {
+        if (!confirm(`${transferList.length} ${TLANG.transfer_confirm}`)) {
             return;
         }
         
@@ -2066,7 +2107,7 @@
         if (transferBtn) {
             originalText = transferBtn.textContent;
             transferBtn.disabled = true;
-            transferBtn.textContent = '⏳ Transferlanmoqda...';
+            transferBtn.textContent = '⏳ ' + TLANG.transferring;
             transferBtn.style.opacity = '0.6';
             transferBtn.style.cursor = 'not-allowed';
         }
@@ -2106,7 +2147,7 @@
                     console.log('⚠️ Bu transfer allaqachon bajarilgan');
                 }
                 
-                alert('✅ Transfer muvaffaqiyatli yakunlandi!');
+                alert('✅ ' + TLANG.transfer_success);
                 
                 // Reset
                 transferList = [];
@@ -2123,12 +2164,12 @@
             }
         } catch (error) {
             console.error('Transfer xatosi:', error);
-            alert('❌ Server bilan aloqa qilishda xatolik yuz berdi');
+            alert('❌ ' + TLANG.error_occurred);
         } finally {
             // Tugmani qayta faollashtirish
             if (transferBtn) {
                 transferBtn.disabled = false;
-                transferBtn.textContent = originalText || '✅ Transferni tasdiqlash';
+                transferBtn.textContent = originalText || '✅ ' + TLANG.transfer_confirm_btn;
                 transferBtn.style.opacity = '1';
                 transferBtn.style.cursor = 'pointer';
             }

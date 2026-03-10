@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tizimga kirish</title>
+    <title>{{ t('login_title') }}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <style>
     * {
@@ -268,13 +268,13 @@
         <div class="login-card">
             <div class="login-header">
                 <div class="icon">🔐</div>
-                <h1>Tizimga kirish</h1>
-                <p>Login va parolingizni kiriting</p>
+                <h1>{{ t('login_title') }}</h1>
+                <p>{{ t('username') }} & {{ t('password') }}</p>
             </div>
 
             <!-- Session tugash xabari -->
             <div id="sessionExpiredAlert" class="alert" style="display: none; background-color: #fff3cd; border: 1px solid #ffc107; color: #856404;">
-                <span>⏰ Session muddati tugadi. Iltimos, qayta kirish qiling.</span>
+                <span>⏰ {{ t('session_expired') }}</span>
             </div>
             
             <!-- Xatolik xabari -->
@@ -291,24 +291,24 @@
 
             <form id="loginForm">
                 <div class="form-group">
-                    <label for="username">👤 Login</label>
+                    <label for="username">👤 {{ t('username') }}</label>
                     <input type="text" 
                            id="username" 
                            name="username" 
                            class="form-control" 
-                           placeholder="Login nomingizni kiriting"
+                           placeholder="{{ t('username') }}"
                            required>
                     <div class="error-message" id="usernameError"></div>
                 </div>
 
                 <div class="form-group">
-                    <label for="password">🔒 Parol</label>
+                    <label for="password">🔒 {{ t('password') }}</label>
                     <div class="password-wrapper">
                         <input type="password" 
                                id="password" 
                                name="password" 
                                class="form-control" 
-                               placeholder="Parolingizni kiriting"
+                               placeholder="{{ t('password') }}"
                                required>
                         <button type="button" class="password-toggle" onclick="togglePassword()">
                             👁️
@@ -326,7 +326,7 @@
                 </div>
 
                 <button type="submit" class="btn-login" id="loginBtn">
-                    🚀 Kirish
+                    🚀 {{ t('login_button') }}
                 </button>
             </form>
         </div>
@@ -400,18 +400,17 @@
             const data = await response.json();
 
             if (data.success) {
-                // Muvaffaqiyatli kirish
-                loginBtn.innerHTML = '✅ Muvaffaqiyatli!';
+                loginBtn.innerHTML = '✅ {{ t("success") }}';
                 setTimeout(() => {
                     window.location.href = data.redirect || '/dashboard';
                 }, 1000);
             } else {
                 // Xatolik
-                showError(data.message || 'Login yoki parol noto\'g\'ri');
+                showError(data.message || '{{ t("login_error") }}');
             }
         } catch (error) {
-            console.error('Login xatoligi:', error);
-            showError('Server bilan bog\'lanishda xatolik yuz berdi');
+            console.error('Login error:', error);
+            showError('{{ t("server_connection_error") }}');
         } finally {
             setLoading(false);
         }
@@ -421,12 +420,12 @@
         let isValid = true;
 
         if (!data.username) {
-            showFieldError('username', 'Login talab qilinadi');
+            showFieldError('username', '{{ t("required_field") }}');
             isValid = false;
         }
 
         if (!data.password) {
-            showFieldError('password', 'Parol talab qilinadi');
+            showFieldError('password', '{{ t("required_field") }}');
             isValid = false;
         }
 
@@ -482,11 +481,11 @@
         
         if (loading) {
             form.classList.add('loading');
-            loginBtn.innerHTML = '⏳ Kirish...';
+            loginBtn.innerHTML = '⏳ {{ t("loading") }}';
             loginBtn.disabled = true;
         } else {
             form.classList.remove('loading');
-            loginBtn.innerHTML = '🚀 Kirish';
+            loginBtn.innerHTML = '🚀 {{ t("login_button") }}';
             loginBtn.disabled = false;
         }
     }

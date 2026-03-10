@@ -8,34 +8,34 @@
 {% block content %}
 <!-- Content Header -->
 <div class="content-header">
-    <h1>Bosh sahifa</h1>
-    <div class="breadcrumb">Dokon boshqaruvi / Asosiy panel</div>
+    <h1>{{ t('idx_title') }}</h1>
+    <div class="breadcrumb">{{ t('idx_breadcrumb') }}</div>
 </div>
 
 <!-- Decimal ma'lumotlari -->
 <div class="decimal-info">
-    <h2>💰 PostgreSQL DECIMAL - Moliyaviy hisoblash</h2>
-    <p>Decimal turi pul va aniq matematik hisoblashlar uchun eng yaxshi tanlov!</p>
+    <h2>💰 {{ t('idx_decimal_title') }}</h2>
+    <p>{{ t('idx_decimal_desc') }}</p>
     
     <div class="decimal-pros-cons">
         <div class="pros">
-            <h4>✅ Afzalliklari</h4>
+            <h4>✅ {{ t('idx_advantages') }}</h4>
             <ul>
-                <li>Aniq matematik hisoblash</li>
-                <li>Moliyaviy operatsiyalar uchun ideal</li>
-                <li>Yaxlitlash xatolari yo'q</li>
-                <li>Banklarning standart turi</li>
-                <li>0.1 + 0.2 = 0.3 (aniq natija)</li>
+                <li>{{ t('idx_adv1') }}</li>
+                <li>{{ t('idx_adv2') }}</li>
+                <li>{{ t('idx_adv3') }}</li>
+                <li>{{ t('idx_adv4') }}</li>
+                <li>{{ t('idx_adv5') }}</li>
             </ul>
         </div>
         <div class="cons">
-            <h4>⚠️ Kamchiliklari</h4>
+            <h4>⚠️ {{ t('idx_disadvantages') }}</h4>
             <ul>
-                <li>Float ga nisbatan sekinroq</li>
-                <li>Ko'proq xotira egallaydi</li>
-                <li>Oddiy matematik amallar uchun ortiqcha</li>
-                <li>Katta hajmdagi hisoblashlarda sekin</li>
-                <li>Murakkab matematik funktsiyalar cheklangan</li>
+                <li>{{ t('idx_dis1') }}</li>
+                <li>{{ t('idx_dis2') }}</li>
+                <li>{{ t('idx_dis3') }}</li>
+                <li>{{ t('idx_dis4') }}</li>
+                <li>{{ t('idx_dis5') }}</li>
             </ul>
         </div>
     </div>
@@ -43,21 +43,21 @@
 
 <!-- Mahsulotlar Grid -->
 <div class="card">
-    <h2>📦 Mahsulotlar ro'yxati</h2>
-    <p>Barcha mahsulotlar DECIMAL turi bilan aniq hisoblashlar</p>
+    <h2>📦 {{ t('idx_products_title') }}</h2>
+    <p>{{ t('idx_products_desc') }}</p>
     
     <div class="product-grid">
         {% for product in products %}
         <div class="product-card">
             <h3>{{ product.name }}</h3>
             <div class="product-price">${{ "%.2f"|format(product.price) }}</div>
-            <p class="product-description">{{ product.description or 'Tavsif mavjud emas' }}</p>
-            <span class="product-stock">📦 {{ product.stock_quantity }} ta</span>
+            <p class="product-description">{{ product.description or t('idx_no_description') }}</p>
+            <span class="product-stock">📦 {{ product.stock_quantity }} {{ t('idx_stock_count') }}</span>
         </div>
         {% else %}
         <div class="product-card">
-            <h3>Mahsulotlar topilmadi</h3>
-            <p>Hali mahsulotlar qo'shilmagan. <a href="/add_product">Birinchi mahsulotni qo'shing</a></p>
+            <h3>{{ t('idx_no_products') }}</h3>
+            <p>{{ t('idx_add_first') }} <a href="/add_product">{{ t('idx_add_first_link') }}</a></p>
         </div>
         {% endfor %}
     </div>
@@ -65,7 +65,7 @@
     <!-- Jami qiymat hisoblash -->
     <div style="text-align: center; margin-top: 2rem;">
         <button class="btn" onclick="calculateTotal()">
-            💰 Jami qiymatni hisoblash
+            💰 {{ t('idx_calc_total') }}
         </button>
         <div id="total-result" style="margin-top: 1rem; font-size: 1.2rem; font-weight: bold;"></div>
     </div>
@@ -73,35 +73,40 @@
 
 <!-- API ma'lumotlari -->
 <div class="card">
-    <h2>🔗 API Endpoints</h2>
-    <p>Quyidagi API endpointlar mavjud:</p>
+    <h2>🔗 {{ t('idx_api_title') }}</h2>
+    <p>{{ t('idx_api_desc') }}</p>
     <ul style="margin-top: 1rem;">
-        <li><strong>GET /api/products</strong> - Barcha mahsulotlar ro'yxati</li>
-        <li><strong>POST /api/products</strong> - Yangi mahsulot qo'shish</li>
-        <li><strong>GET /api/calculate</strong> - Jami qiymatni hisoblash</li>
+        <li><strong>GET /api/products</strong> - {{ t('idx_api1') }}</li>
+        <li><strong>POST /api/products</strong> - {{ t('idx_api2') }}</li>
+        <li><strong>GET /api/calculate</strong> - {{ t('idx_api3') }}</li>
     </ul>
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-    // Jami qiymat hisoblash
+    const IDXLANG = {
+        total_value: "{{ t('idx_total_value') }}",
+        exact_value: "{{ t('idx_exact_value') }}",
+        calc_error: "{{ t('idx_calc_error') }}"
+    };
+
     function calculateTotal() {
         fetch('/api/calculate')
             .then(response => response.json())
             .then(data => {
                 document.getElementById('total-result').innerHTML = `
                     <div style="background: #27ae60; color: white; padding: 1rem; border-radius: 6px;">
-                        💰 Jami qiymat: <strong>${data.total_value} ${data.currency}</strong><br>
-                        🎯 Aniq qiymat: <strong>${data.precision}</strong>
+                        💰 ${IDXLANG.total_value}: <strong>${data.total_value} ${data.currency}</strong><br>
+                        🎯 ${IDXLANG.exact_value}: <strong>${data.precision}</strong>
                     </div>
                 `;
             })
             .catch(error => {
-                console.error('Xatolik:', error);
+                console.error('Error:', error);
                 document.getElementById('total-result').innerHTML = `
                     <div style="background: #e74c3c; color: white; padding: 1rem; border-radius: 6px;">
-                        ❌ Xatolik yuz berdi: ${error.message}
+                        ❌ ${IDXLANG.calc_error}: ${error.message}
                     </div>
                 `;
             });

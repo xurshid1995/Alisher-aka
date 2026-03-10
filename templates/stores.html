@@ -316,30 +316,30 @@
     <div class="modal-content">
         <div class="modal-header">
             <i class="fas fa-exclamation-triangle"></i>
-            <h3>DIQQAT! Do'konni o'chirish</h3>
+            <h3>{{ t('store_delete_title') }}</h3>
         </div>
         <div class="modal-body">
-            <p><strong>Siz quyidagi do'konni o'chirmoqchisiz:</strong></p>
+            <p><strong>{{ t('store_delete_confirm_msg') }}</strong></p>
             <div class="store-name-highlight" id="modalStoreName"></div>
-            <p style="color: #e74c3c; font-weight: bold;">⚠️ Bu amal qaytarib bo'lmaydi!</p>
-            <p>Davom etish uchun do'kon nomini quyidagi maydonga kiriting:</p>
+            <p style="color: #e74c3c; font-weight: bold;">⚠️ {{ t('action_irreversible') }}</p>
+            <p>{{ t('enter_name_to_continue') }}</p>
             
             <div class="modal-input-group">
-                <label for="confirmInput">Do'kon nomi:</label>
+                <label for="confirmInput">{{ t('store_name_label') }}</label>
                 <input 
                     type="text" 
                     id="confirmInput" 
-                    placeholder="Do'kon nomini kiriting..."
+                    placeholder="{{ t('store_name_placeholder') }}"
                     autocomplete="off"
                 >
             </div>
         </div>
         <div class="modal-actions">
             <button class="modal-btn modal-btn-cancel" onclick="closeDeleteModal()">
-                ❌ Bekor qilish
+                ❌ {{ t('modal_cancel') }}
             </button>
             <button class="modal-btn modal-btn-delete" id="confirmDeleteBtn" disabled>
-                🗑️ O'chirish
+                🗑️ {{ t('modal_delete') }}
             </button>
         </div>
     </div>
@@ -348,11 +348,11 @@
 <!-- Content Header -->
 <div class="content-header" style="display: flex; justify-content: space-between; align-items: center;">
     <div>
-        <h1>🏬 Do'konlar boshqaruvi</h1>
-        <div class="breadcrumb">Dokon boshqaruvi / Do'konlar</div>
+        <h1>{{ t('heading_stores') }}</h1>
+        <div class="breadcrumb">{{ t('breadcrumb_stores') }}</div>
     </div>
     <a href="/add_store" class="btn btn-success" style="padding: 0.6rem 1.5rem; font-size: 0.9rem; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: all 0.3s; font-weight: 500;">
-        ➕ Yangi do'kon qo'shish
+        {{ t('btn_add_store') }}
     </a>
 </div>
 
@@ -375,35 +375,35 @@
             </div>
             <div class="info-item">
                 <span>📞</span>
-                <span>{{ store.phone or 'Telefon yo\'q' }}</span>
+                <span>{{ store.phone or t('no_phone') }}</span>
             </div>
             <div class="info-item">
                 <span>📅</span>
-                <span>{{ store.created_date.strftime('%d.%m.%Y') if store.created_date else 'Noma\'lum' }}</span>
+                <span>{{ store.created_date.strftime('%d.%m.%Y') if store.created_date else t('unknown_date') }}</span>
             </div>
         </div>
 
         <div class="store-actions">
             <a href="/store/{{ store.id }}" class="btn-small btn-view">
-                👁️ Ko'rish
+                👁️ {{ t('btn_view') }}
             </a>
             <a href="/edit_store/{{ store.id }}" class="btn-small btn-edit">
-                ✏️ Tahrirlash
+                ✏️ {{ t('btn_edit') }}
             </a>
             <button data-store-id="{{ store.id }}" 
                     data-store-name="{{ store.name }}"
                     onclick="deleteStore('{{ store.id }}', '{{ store.name }}')" 
                     class="btn-small btn-delete">
-                🗑️ O'chirish
+                🗑️ {{ t('modal_delete') }}
             </button>
         </div>
     </div>
     {% else %}
     <div class="store-card" style="grid-column: 1 / -1; text-align: center;">
-        <h3>Do'konlar topilmadi</h3>
-        <p style="color: #7f8c8d; margin: 1rem 0;">Hali do'konlar qo'shilmagan. Birinchi do'konni qo'shing!</p>
+        <h3>{{ t('empty_stores') }}</h3>
+        <p style="color: #7f8c8d; margin: 1rem 0;">{{ t('empty_stores_msg') }}</p>
         <a href="/add_store" class="btn btn-success">
-            ➕ Birinchi do'konni qo'shish
+            {{ t('btn_add_first_store') }}
         </a>
     </div>
     {% endfor %}
@@ -412,6 +412,14 @@
 
 {% block extra_js %}
 <script>
+    const STLANG = {
+        modal_delete: '{{ t("modal_delete") }}',
+        deleting: '{{ t("deleting") }}',
+        delete_error: '{{ t("delete_error") }}',
+        connection_error_retry: '{{ t("connection_error_retry") }}',
+        error_prefix: '{{ t("error_prefix") }}'
+    };
+
     // Sidebar active link
     document.addEventListener('DOMContentLoaded', function() {
         console.log('Do\'konlar sahifasi yuklandi');
@@ -513,7 +521,7 @@
         // Tugmani o'chirish
         const confirmBtn = document.getElementById('confirmDeleteBtn');
         confirmBtn.disabled = true;
-        confirmBtn.textContent = '⏳ O\'chirilmoqda...';
+        confirmBtn.textContent = '⏳ ' + STLANG.deleting;
         
         fetch(`/api/store/${currentStoreId}`, {
             method: 'DELETE',
@@ -530,17 +538,17 @@
                     window.location.reload();
                 } else {
                     console.error('API xatosi:', response.status, data);
-                    alert('Xatolik: ' + (data.error || data.message || 'Do\'konni o\'chirib bo\'lmadi'));
+                    alert(STLANG.error_prefix + (data.error || data.message || STLANG.delete_error));
                     confirmBtn.disabled = false;
-                    confirmBtn.textContent = '🗑️ O\'chirish';
+                    confirmBtn.textContent = '🗑️ ' + STLANG.modal_delete;
                 }
             });
         })
         .catch(error => {
             console.error('Fetch xatosi:', error);
-            alert('Aloqa xatosi! Qaytadan urinib ko\'ring.');
+            alert(STLANG.connection_error_retry);
             confirmBtn.disabled = false;
-            confirmBtn.textContent = '🗑️ O\'chirish';
+            confirmBtn.textContent = '🗑️ ' + STLANG.modal_delete;
         });
     }
 
@@ -561,7 +569,7 @@
             if (data.success) {
                 window.location.reload();
             } else {
-                alert('Xatolik: ' + data.error);
+                alert(STLANG.error_prefix + data.error);
             }
         })
         .catch(error => {

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Yangi do'kon qo'shish - DOKON</title>
+    <title>{{ t('heading_add_store') }} - {{ t('app_title') }}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
@@ -86,7 +86,7 @@
     <div class="main-content">
         <!-- Content Header -->
         <div class="content-header">
-            <h1>➕ Yangi do'kon qo'shish</h1>
+            <h1>➕ {{ t('heading_add_store') }}</h1>
             <div class="breadcrumb">Dokon boshqaruvi / Do'konlar / Yangi do'kon</div>
         </div>
 
@@ -94,35 +94,35 @@
         <div class="card" style="max-width: 600px; margin: 2rem auto;">
             <form method="POST" id="storeForm" style="padding: 2rem;">
                 <div class="form-group">
-                    <label for="name">🏬 Do'kon nomi:</label>
+                    <label for="name">{{ t('label_store_name') }}</label>
                     <input type="text" id="name" name="name" required 
-                           placeholder="Masalan: Markaziy do'kon">
+                           placeholder="{{ t('placeholder_store_name') }}">
                 </div>
 
                 <div class="form-group">
-                    <label for="address">📍 Manzil:</label>
+                    <label for="address">📍 {{ t('address_label') }}:</label>
                     <textarea id="address" name="address" required rows="3" 
-                              placeholder="To'liq manzil kiriting..."></textarea>
+                              placeholder="{{ t('placeholder_address') }}"></textarea>
                 </div>
 
                 <div class="form-group">
-                    <label for="manager_name">👤 Mudiri:</label>
+                    <label for="manager_name">{{ t('label_manager') }}</label>
                     <input type="text" id="manager_name" name="manager_name" required 
-                           placeholder="Ism va familiya">
+                           placeholder="{{ t('placeholder_manager_name') }}">
                 </div>
 
                 <div class="form-group">
-                    <label for="phone">📞 Telefon raqami:</label>
+                    <label for="phone">📞 {{ t('phone_number_label') }}:</label>
                     <input type="tel" id="phone" name="phone" 
-                           placeholder="+998 XX XXX XX XX">
+                           placeholder="{{ t('placeholder_phone_format') }}">
                 </div>
 
                 <div style="text-align: center; margin-top: 2rem;">
                     <button type="submit" class="btn btn-success" style="margin-right: 1rem;">
-                        ✅ Do'konni saqlash
+                        {{ t('btn_save_store') }}
                     </button>
                     <a href="/stores" class="btn" style="background: #95a5a6;">
-                        ❌ Bekor qilish
+                        ❌ {{ t('btn_cancel') }}
                     </a>
                 </div>
             </form>
@@ -138,13 +138,13 @@
 
             if (!name || !address || !manager) {
                 e.preventDefault();
-                alert('Iltimos, barcha majburiy maydonlarni to\'ldiring!');
+                alert('{{ t("fill_required_fields") }}');
                 return;
             }
 
             // Success message
             const btn = document.querySelector('button[type="submit"]');
-            btn.innerHTML = '⏳ Saqlanmoqda...';
+            btn.innerHTML = '⏳ {{ t("saving") }}';
             btn.disabled = true;
         });
 

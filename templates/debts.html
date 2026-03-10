@@ -1,6 +1,6 @@
 {% extends "base_with_sidebar.html" %}
 
-{% block title %}Qarzlar - Dokon Boshqaruv Tizimi{% endblock %}
+{% block title %}{{ t('debts') }} - DOKON{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -1055,21 +1055,21 @@
 {% block content %}
 <div class="debts-container">
     <div class="page-header">
-        <h1>💰 Qarzlar</h1>
+        <h1>💰 {{ t('debts') }}</h1>
         <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
             <!-- Joylashuv tugmalari -->
             <div id="locationButtons" style="margin: 15px 0;">
                 {% if current_user.role in ['admin', 'kassir'] %}
                 <button class="btn btn-sm me-2 mb-2 location-btn active" data-location="" onclick="selectLocation(this, '')">
-                    🏢 Barchasi
+                    🏢 {{ t('filter_all') }}
                 </button>
                 {% endif %}
             </div>
             <button onclick="sendBulkDebtTelegram()" class="btn-sms" style="padding: 10px 20px; border-radius: 8px; font-weight: 500;">
-                <img src="https://img.icons8.com/fluency/150/telegram-app.png" alt="Telegram" style="width:20px; height:20px; vertical-align:middle;"> Barchaga Telegram yuborish
+                <img src="https://img.icons8.com/fluency/150/telegram-app.png" alt="Telegram" style="width:20px; height:20px; vertical-align:middle;"> {{ t('send_telegram_all') }}
             </button>
             <a href="/paid-debts-history" class="btn btn-primary" style="padding: 10px 20px; border-radius: 8px; font-weight: 500; text-decoration: none; color: white;">
-                <i class="fas fa-history"></i> Mijozlarni qarz to'lash tarixi
+                <i class="fas fa-history"></i> {{ t('debt_payment_history_link') }}
             </a>
         </div>
     </div>
@@ -1077,11 +1077,11 @@
     <!-- Statistika kartochkalari -->
     <div class="stats-cards">
         <div class="stat-card customers">
-            <h3>👥 Qarzli mijozlar</h3>
+            <h3>👥 {{ t('debt_customer') }}</h3>
             <div class="value" id="debtCustomers">0</div>
         </div>
         <div class="stat-card total">
-            <h3>💰 Umumiy qarz</h3>
+            <h3>💰 {{ t('total_debt_label') }}</h3>
             <div class="value" id="totalDebt">$0.00</div>
         </div>
     </div>
@@ -1089,28 +1089,28 @@
     <!-- Qarzlar jadvali -->
     <div class="debts-table-container">
         <h2 style="margin-bottom: 15px; color: #dc3545; display: flex; align-items: center; gap: 10px;">
-            <span>💳 Qarzli mijozlar</span>
+            <span>💳 {{ t('debt_customer') }}</span>
         </h2>
         <div class="search-container">
-            <input type="text" id="debtSearchInput" class="search-input" placeholder="🔍 Mijoz nomi yoki telefon raqamini kiriting..." oninput="searchDebts()">
+            <input type="text" id="debtSearchInput" class="search-input" placeholder="🔍 {{ t('search_debt_placeholder') }}" oninput="searchDebts()">
         </div>
         <table class="debts-table">
             <thead>
                 <tr>
                     <th>№</th>
-                    <th>👤 Mijoz</th>
-                    <th>📞 Telefon</th>
-                    <th> Qolgan qarz</th>
-                    <th>💵 Oxirgi to'lov</th>
-                    <th>📅 Oxirgi to'lov sanasi</th>
-                    <th>🏷️ Status</th>
-                    <th>📅 Qarz muddati</th>
-                    <th>⚙️ Amallar</th>
+                    <th>👤 {{ t('header_customer') }}</th>
+                    <th>📞 {{ t('header_phone') }}</th>
+                    <th> {{ t('header_remaining_debt') }}</th>
+                    <th>💵 {{ t('header_last_payment') }}</th>
+                    <th>📅 {{ t('header_last_payment_date') }}</th>
+                    <th>🏷️ {{ t('header_status') }}</th>
+                    <th>📅 {{ t('header_debt_deadline') }}</th>
+                    <th>⚙️ {{ t('actions') }}</th>
                 </tr>
             </thead>
             <tbody id="debtsTableBody">
                 <tr>
-                    <td colspan="9" class="no-data">Ma'lumotlar yuklanmoqda...</td>
+                    <td colspan="9" class="no-data">{{ t('data_loading') }}</td>
                 </tr>
             </tbody>
         </table>
@@ -1119,25 +1119,26 @@
     <!-- To'langan qarzlar jadvali -->
     <div class="debts-table-container" id="paidDebtsSection" style="margin-top: 30px;">
         <h2 style="margin-bottom: 15px; color: #28a745; display: flex; align-items: center; gap: 10px;">
-            <span>✅ To'langan qarzlar tarixi</span>
+            <span>✅ {{ t('paid_debts_history') }}</span>
         </h2>
         <div class="search-container">
-            <input type="text" id="paidDebtSearchInput" class="search-input" placeholder="🔍 Mijoz nomi yoki savdo raqami orqali qidirish..." oninput="searchPaidDebts()">
+            <input type="text" id="paidDebtSearchInput" class="search-input" placeholder="🔍 {{ t('search_paid_debts_placeholder') }}" oninput="searchPaidDebts()">
+        </div>
         </div>
         <table class="debts-table">
             <thead>
                 <tr>
                     <th>№</th>
-                    <th>📅 Sana</th>
-                    <th>👤 Mijoz</th>
-                    <th>🛒 Savdo №</th>
-                    <th>💵 Summa</th>
-                    <th>💳 To'lov turlari</th>
+                    <th>📅 {{ t('header_date') }}</th>
+                    <th>👤 {{ t('header_customer') }}</th>
+                    <th>🛒 {{ t('header_sale_no') }}</th>
+                    <th>💵 {{ t('header_amount') }}</th>
+                    <th>💳 {{ t('header_payment_types') }}</th>
                 </tr>
             </thead>
             <tbody id="paidDebtsTableBody">
                 <tr>
-                    <td colspan="6" class="no-data">Ma'lumotlar yuklanmoqda...</td>
+                    <td colspan="6" class="no-data">{{ t('data_loading') }}</td>
                 </tr>
             </tbody>
         </table>
@@ -1148,7 +1149,7 @@
 <div id="debtModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
-            <h2>📋 Qarz ma'lumotlari</h2>
+            <h2>📋 {{ t('debt_info') }}</h2>
             <button class="modal-close" onclick="closeModal()">&times;</button>
         </div>
         <div class="modal-body">
@@ -1167,18 +1168,18 @@
                 <!-- To'lov qilish bo'limi - kengaytirilgan -->
                 <div class="payment-section" style="flex: 1; min-width: 500px; margin-bottom: 0; display: flex; flex-direction: column;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                        <h3 style="margin: 0;">💳 Qarzga to'lov qilish</h3>
+                        <h3 style="margin: 0;">💳 {{ t('debt_payment_make') }}</h3>
                         <div style="background: #f8f9fa; padding: 8px 12px; border-radius: 6px; border-left: 4px solid #007bff;">
-                            <span style="font-weight: 500; color: #495057; font-size: 14px;">Qarz miqdori: </span>
+                            <span style="font-weight: 500; color: #495057; font-size: 14px;">{{ t('debt_amount_label') }} </span>
                             <span style="font-weight: 700; color: #dc3545; font-size: 18px;" id="paymentAmount">$0.00</span>
                         </div>
                     </div>
                     
                     <div style="margin: 20px 0;">
-                        <h4 style="margin-bottom: 12px; color: #333; font-size: 16px;">To'lov turlari</h4>
+                        <h4 style="margin-bottom: 12px; color: #333; font-size: 16px;">{{ t('payment_types_title') }}</h4>
                         <div style="display: grid; grid-template-columns: 1fr; gap: 10px;">
                             <div style="display: flex; align-items: center; gap: 8px;">
-                                <label style="font-weight: 500; white-space: nowrap; min-width: 90px;">💵 Naqd:</label>
+                                <label style="font-weight: 500; white-space: nowrap; min-width: 90px;">💵 {{ t('label_cash') }}</label>
                                 <div style="flex: 1; display: flex; align-items: center; gap: 4px;">
                                     <span style="font-weight: 700; color: #28a745; font-size: 16px;">$</span>
                                     <input type="number" id="modalPaymentCashUSD" step="0.01" placeholder="0.00" style="flex: 1; padding: 8px; border: 1px solid #ced4da; border-radius: 6px; font-size: 14px;">
@@ -1187,10 +1188,10 @@
                                     <span style="font-weight: 700; color: #6c757d; font-size: 16px;">UZS</span>
                                     <input type="number" id="modalPaymentCashUZS" step="1" placeholder="0" style="flex: 1; padding: 8px; border: 1px solid #ced4da; border-radius: 6px; font-size: 14px;">
                                 </div>
-                                <button onclick="addModalRemainingToField('modalPaymentCashUSD')" style="padding: 8px 12px; background: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 11px; white-space: nowrap;">+ Qolgan</button>
+                                <button onclick="addModalRemainingToField('modalPaymentCashUSD')" style="padding: 8px 12px; background: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 11px; white-space: nowrap;">{{ t('btn_remaining') }}</button>
                             </div>
                             <div style="display: flex; align-items: center; gap: 8px;">
-                                <label style="font-weight: 500; white-space: nowrap; min-width: 90px;">📱 Click:</label>
+                                <label style="font-weight: 500; white-space: nowrap; min-width: 90px;">📱 {{ t('label_click') }}</label>
                                 <div style="flex: 1; display: flex; align-items: center; gap: 4px;">
                                     <span style="font-weight: 700; color: #28a745; font-size: 16px;">$</span>
                                     <input type="number" id="modalPaymentClickUSD" step="0.01" placeholder="0.00" style="flex: 1; padding: 8px; border: 1px solid #ced4da; border-radius: 6px; font-size: 14px;">
@@ -1199,10 +1200,10 @@
                                     <span style="font-weight: 700; color: #6c757d; font-size: 16px;">UZS</span>
                                     <input type="number" id="modalPaymentClickUZS" step="1" placeholder="0" style="flex: 1; padding: 8px; border: 1px solid #ced4da; border-radius: 6px; font-size: 14px;">
                                 </div>
-                                <button onclick="addModalRemainingToField('modalPaymentClickUSD')" style="padding: 8px 12px; background: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 11px; white-space: nowrap;">+ Qolgan</button>
+                                <button onclick="addModalRemainingToField('modalPaymentClickUSD')" style="padding: 8px 12px; background: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 11px; white-space: nowrap;">{{ t('btn_remaining') }}</button>
                             </div>
                             <div style="display: flex; align-items: center; gap: 8px;">
-                                <label style="font-weight: 500; white-space: nowrap; min-width: 90px;">🏧 Terminal:</label>
+                                <label style="font-weight: 500; white-space: nowrap; min-width: 90px;">🏧 {{ t('label_terminal') }}</label>
                                 <div style="flex: 1; display: flex; align-items: center; gap: 4px;">
                                     <span style="font-weight: 700; color: #28a745; font-size: 16px;">$</span>
                                     <input type="number" id="modalPaymentTerminalUSD" step="0.01" placeholder="0.00" style="flex: 1; padding: 8px; border: 1px solid #ced4da; border-radius: 6px; font-size: 14px;">
@@ -1211,34 +1212,34 @@
                                     <span style="font-weight: 700; color: #6c757d; font-size: 16px;">UZS</span>
                                     <input type="number" id="modalPaymentTerminalUZS" step="1" placeholder="0" style="flex: 1; padding: 8px; border: 1px solid #ced4da; border-radius: 6px; font-size: 14px;">
                                 </div>
-                                <button onclick="addModalRemainingToField('modalPaymentTerminalUSD')" style="padding: 8px 12px; background: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 11px; white-space: nowrap;">+ Qolgan</button>
+                                <button onclick="addModalRemainingToField('modalPaymentTerminalUSD')" style="padding: 8px 12px; background: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 11px; white-space: nowrap;">{{ t('btn_remaining') }}</button>
                             </div>
                         </div>
                     </div>
                     
                     <div class="payment-actions">
-                        <button class="btn-cancel" onclick="closeModal()">❌ Bekor qilish</button>
-                        <button class="btn-confirm" onclick="confirmPayment()">✅ To'lovni tasdiqlash</button>
+                        <button class="btn-cancel" onclick="closeModal()">❌ {{ t('btn_cancel_payment') }}</button>
+                        <button class="btn-confirm" onclick="confirmPayment()">✅ {{ t('btn_confirm_payment') }}</button>
                     </div>
                 </div>
             </div>
 
             <!-- Qarzlar tarixi -->
-            <h3>📜 Qarzlar tarixi</h3>
+            <h3>📜 {{ t('debt_history_title') }}</h3>
             <table class="debt-history-table">
                 <thead>
                     <tr>
-                        <th>📅 Sana</th>
-                        <th>🛒 Savdo №</th>
-                        <th>💵 Summa</th>
-                        <th>✅ To'langan</th>
-                        <th>📊 Qolgan</th>
-                        <th>🏷️ Status</th>
+                        <th>📅 {{ t('header_date') }}</th>
+                        <th>🛒 {{ t('header_sale_no') }}</th>
+                        <th>💵 {{ t('header_amount') }}</th>
+                        <th>✅ {{ t('header_paid') }}</th>
+                        <th>📊 {{ t('header_remaining') }}</th>
+                        <th>🏷️ {{ t('header_status') }}</th>
                     </tr>
                 </thead>
                 <tbody id="debtHistoryBody">
                     <tr>
-                        <td colspan="6" class="no-data">Ma'lumot yo'q</td>
+                        <td colspan="6" class="no-data">{{ t('no_data_short') }}</td>
                     </tr>
                 </tbody>
             </table>
@@ -1250,7 +1251,7 @@
 <div id="dueDateEditModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:10000; justify-content:center; align-items:center;">
     <div style="background:#fff; border-radius:12px; padding:24px; max-width:500px; width:95%; box-shadow:0 8px 32px rgba(0,0,0,0.3); max-height:80vh; overflow-y:auto;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-            <h3 style="margin:0; font-size:18px;">📅 Qarz muddatlarini tahrirlash</h3>
+            <h3 style="margin:0; font-size:18px;">📅 {{ t('edit_due_dates') }}</h3>
             <button onclick="closeDueDateEditModal()" style="background:none; border:none; font-size:24px; cursor:pointer; color:#999;">&times;</button>
         </div>
         
@@ -1259,19 +1260,19 @@
         
         <!-- Barchaga bir xil muddat berish -->
         <div style="border-top:2px solid #dee2e6; padding-top:12px; margin-top:12px;">
-            <label style="display:block; font-weight:600; margin-bottom:8px; color:#495057; font-size:13px;">⚡ Barchaga bir xil muddat:</label>
+            <label style="display:block; font-weight:600; margin-bottom:8px; color:#495057; font-size:13px;">⚡ {{ t('set_all_same_date') }}</label>
             <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px;">
-                <button onclick="setAllDueDates(3)" style="padding:6px 12px; border:1px solid #17a2b8; background:#e8f8fb; color:#17a2b8; border-radius:6px; cursor:pointer; font-size:12px; font-weight:600;">3 kun</button>
-                <button onclick="setAllDueDates(7)" style="padding:6px 12px; border:1px solid #17a2b8; background:#e8f8fb; color:#17a2b8; border-radius:6px; cursor:pointer; font-size:12px; font-weight:600;">1 hafta</button>
-                <button onclick="setAllDueDates(14)" style="padding:6px 12px; border:1px solid #17a2b8; background:#e8f8fb; color:#17a2b8; border-radius:6px; cursor:pointer; font-size:12px; font-weight:600;">2 hafta</button>
-                <button onclick="setAllDueDates(30)" style="padding:6px 12px; border:1px solid #17a2b8; background:#e8f8fb; color:#17a2b8; border-radius:6px; cursor:pointer; font-size:12px; font-weight:600;">1 oy</button>
-                <button onclick="clearAllDueDates()" style="padding:6px 12px; border:1px solid #dc3545; background:#fff0f0; color:#dc3545; border-radius:6px; cursor:pointer; font-size:12px; font-weight:600;">❌ Barchasini o'chirish</button>
+                <button onclick="setAllDueDates(3)" style="padding:6px 12px; border:1px solid #17a2b8; background:#e8f8fb; color:#17a2b8; border-radius:6px; cursor:pointer; font-size:12px; font-weight:600;">{{ t('btn_3_days') }}</button>
+                <button onclick="setAllDueDates(7)" style="padding:6px 12px; border:1px solid #17a2b8; background:#e8f8fb; color:#17a2b8; border-radius:6px; cursor:pointer; font-size:12px; font-weight:600;">{{ t('btn_1_week') }}</button>
+                <button onclick="setAllDueDates(14)" style="padding:6px 12px; border:1px solid #17a2b8; background:#e8f8fb; color:#17a2b8; border-radius:6px; cursor:pointer; font-size:12px; font-weight:600;">{{ t('btn_2_weeks') }}</button>
+                <button onclick="setAllDueDates(30)" style="padding:6px 12px; border:1px solid #17a2b8; background:#e8f8fb; color:#17a2b8; border-radius:6px; cursor:pointer; font-size:12px; font-weight:600;">{{ t('btn_1_month') }}</button>
+                <button onclick="clearAllDueDates()" style="padding:6px 12px; border:1px solid #dc3545; background:#fff0f0; color:#dc3545; border-radius:6px; cursor:pointer; font-size:12px; font-weight:600;">❌ {{ t('btn_clear_all') }}</button>
             </div>
         </div>
         
         <div style="display:flex; gap:10px;">
-            <button onclick="closeDueDateEditModal()" style="flex:1; padding:10px; background:#6c757d; color:#fff; border:none; border-radius:8px; cursor:pointer; font-size:14px;">Bekor qilish</button>
-            <button onclick="saveDueDateEdit()" style="flex:1; padding:10px; background:#17a2b8; color:#fff; border:none; border-radius:8px; cursor:pointer; font-size:14px; font-weight:600;">✅ Saqlash</button>
+            <button onclick="closeDueDateEditModal()" style="flex:1; padding:10px; background:#6c757d; color:#fff; border:none; border-radius:8px; cursor:pointer; font-size:14px;">{{ t('btn_cancel_payment') }}</button>
+            <button onclick="saveDueDateEdit()" style="flex:1; padding:10px; background:#17a2b8; color:#fff; border:none; border-radius:8px; cursor:pointer; font-size:14px; font-weight:600;">✅ {{ t('btn_save') }}</button>
         </div>
     </div>
 </div>
@@ -1280,7 +1281,7 @@
 <div class="reminder-modal-overlay" id="reminderModal">
     <div class="reminder-modal">
         <div class="reminder-modal-header">
-            <h3>⏰ Eslatma belgilash</h3>
+            <h3>⏰ {{ t('set_reminder') }}</h3>
             <button class="reminder-modal-close" onclick="closeReminderModal()">&times;</button>
         </div>
         <div class="reminder-modal-body">
@@ -1294,19 +1295,19 @@
             </div>
 
             <div class="reminder-form-group">
-                <label>📅 Eslatma sanasi</label>
+                <label>📅 {{ t('reminder_date') }}</label>
                 <input type="date" id="reminderDate">
                 <div class="reminder-quick-btns">
-                    <button class="reminder-quick-btn" onclick="setQuickDate(1)">Ertaga</button>
-                    <button class="reminder-quick-btn" onclick="setQuickDate(3)">3 kun</button>
-                    <button class="reminder-quick-btn" onclick="setQuickDate(7)">1 hafta</button>
-                    <button class="reminder-quick-btn" onclick="setQuickDate(14)">2 hafta</button>
-                    <button class="reminder-quick-btn" onclick="setQuickDate(30)">1 oy</button>
+                    <button class="reminder-quick-btn" onclick="setQuickDate(1)">{{ t('btn_tomorrow') }}</button>
+                    <button class="reminder-quick-btn" onclick="setQuickDate(3)">{{ t('btn_3_days') }}</button>
+                    <button class="reminder-quick-btn" onclick="setQuickDate(7)">{{ t('btn_1_week') }}</button>
+                    <button class="reminder-quick-btn" onclick="setQuickDate(14)">{{ t('btn_2_weeks') }}</button>
+                    <button class="reminder-quick-btn" onclick="setQuickDate(30)">{{ t('btn_1_month') }}</button>
                 </div>
             </div>
 
             <div class="reminder-form-group">
-                <label>🕐 Eslatma vaqti</label>
+                <label>🕐 {{ t('reminder_time') }}</label>
                 <input type="time" id="reminderTime" value="10:00">
                 <div class="reminder-quick-btns">
                     <button class="reminder-quick-btn" onclick="setQuickTime('09:00')">09:00</button>
@@ -1318,27 +1319,36 @@
             </div>
 
             <div class="reminder-form-group">
-                <label>💬 Qo'shimcha xabar (ixtiyoriy)</label>
-                <textarea id="reminderMessage" placeholder="Masalan: Iltimos, to'lovni amalga oshiring..."></textarea>
+                <label>💬 {{ t('additional_message') }}</label>
+                <textarea id="reminderMessage" placeholder="{{ t('additional_message_placeholder') }}"></textarea>
             </div>
 
             <!-- Mavjud eslatmalar -->
             <div id="existingReminders" style="display: none;">
-                <label style="font-weight: 600; color: #495057; font-size: 14px; margin-bottom: 8px; display: block;">📋 Belgilangan eslatmalar</label>
+                <label style="font-weight: 600; color: #495057; font-size: 14px; margin-bottom: 8px; display: block;">📋 {{ t('set_reminders') }}</label>
                 <div class="reminder-list" id="reminderList"></div>
             </div>
         </div>
         <div class="reminder-modal-footer">
-            <button class="btn-reminder-cancel" onclick="closeReminderModal()">Bekor qilish</button>
-            <button class="btn-reminder-save" onclick="saveReminder()">✅ Eslatma saqlash</button>
+            <button class="btn-reminder-cancel" onclick="closeReminderModal()">{{ t('btn_cancel_payment') }}</button>
+            <button class="btn-reminder-save" onclick="saveReminder()">✅ {{ t('btn_save_reminder') }}</button>
         </div>
     </div>
 </div>
 
 <script>
+    // Translation strings for JS
+    const DLANG = {
+        status_debtor: '💳 {{ t("status_debtor") }}',
+        status_paid: '✅ {{ t("status_paid") }}',
+        sum_currency: '{{ t("sum_currency") }}',
+        data_loading: '{{ t("data_loading") }}',
+        data_error: '❌ {{ t("data_loading") }}'
+    };
+
     let debts = [];
-    let allDebts = []; // Barcha qarzlar (filter uchun)
-    let allPaidDebts = []; // Barcha to'langan qarzlar (filter uchun)
+    let allDebts = [];
+    let allPaidDebts = [];
     let currentCustomerId = null;
     let exchangeRate = 13000;
     let selectedLocation = '';
@@ -1645,7 +1655,7 @@
         const html = debts.map((debt, index) => {
             const remainingDebt = debt.remaining_debt || 0;
             const status = remainingDebt > 0 ? 'debt' : 'paid';
-            const statusText = remainingDebt > 0 ? '💳 Qarzli' : '✅ To\'langan';
+            const statusText = remainingDebt > 0 ? DLANG.status_debtor : DLANG.status_paid;
             const lastPayment = debt.last_payment_date || '-';
             const lastPaymentAmount = debt.last_payment_amount || 0;
             const lastPaymentRate = debt.last_payment_rate || exchangeRate;
@@ -1658,11 +1668,11 @@
                     <td>${debt.customer_phone || '-'}</td>
                     <td>
                         <strong style="color: ${remainingDebt > 0 ? '#dc3545' : '#28a745'}">$${remainingDebt.toFixed(2)}</strong>
-                        <br><small style="color: #666;">${(remainingDebt * exchangeRate).toLocaleString('uz-UZ')} so'm</small>
+                        <br><small style="color: #666;">${(remainingDebt * exchangeRate).toLocaleString('uz-UZ')} ${DLANG.sum_currency}</small>
                     </td>
                     <td>
                         <strong style="color: #28a745">$${lastPaymentAmount.toFixed(2)}</strong>
-                        <br><small style="color: #666;">${(lastPaymentAmount * lastPaymentRate).toLocaleString('uz-UZ')} so'm</small>
+                        <br><small style="color: #666;">${(lastPaymentAmount * lastPaymentRate).toLocaleString('uz-UZ')} ${DLANG.sum_currency}</small>
                     </td>
                     <td>${lastPayment}</td>
                     <td><span class="status-badge ${status}">${statusText}</span></td>
@@ -1711,7 +1721,7 @@
         const html = filtered.map((debt, index) => {
             const remainingDebt = debt.remaining_debt || 0;
             const status = remainingDebt > 0 ? 'debt' : 'paid';
-            const statusText = remainingDebt > 0 ? '💳 Qarzli' : '✅ To\'langan';
+            const statusText = remainingDebt > 0 ? DLANG.status_debtor : DLANG.status_paid;
             const lastPayment = debt.last_payment_date || '-';
             const lastPaymentAmount = debt.last_payment_amount || 0;
             const lastPaymentRate = debt.last_payment_rate || exchangeRate;
@@ -1724,11 +1734,11 @@
                     <td>${debt.customer_phone || '-'}</td>
                     <td>
                         <strong style="color: ${remainingDebt > 0 ? '#dc3545' : '#28a745'}">$${remainingDebt.toFixed(2)}</strong>
-                        <br><small style="color: #666;">${(remainingDebt * exchangeRate).toLocaleString('uz-UZ')} so'm</small>
+                        <br><small style="color: #666;">${(remainingDebt * exchangeRate).toLocaleString('uz-UZ')} ${DLANG.sum_currency}</small>
                     </td>
                     <td>
                         <strong style="color: #28a745">$${lastPaymentAmount.toFixed(2)}</strong>
-                        <br><small style="color: #666;">${(lastPaymentAmount * lastPaymentRate).toLocaleString('uz-UZ')} so'm</small>
+                        <br><small style="color: #666;">${(lastPaymentAmount * lastPaymentRate).toLocaleString('uz-UZ')} ${DLANG.sum_currency}</small>
                     </td>
                     <td>${lastPayment}</td>
                     <td><span class="status-badge ${status}">${statusText}</span></td>
@@ -1770,7 +1780,7 @@
                 const historyHtml = data.history.map(h => {
                     const remaining = h.debt_amount - h.paid_amount;
                     const status = remaining > 0 ? 'debt' : 'paid';
-                    const statusText = remaining > 0 ? '💳 Qarzli' : '✅ To\'langan';
+                    const statusText = remaining > 0 ? DLANG.status_debtor : DLANG.status_paid;
                     
                     return `
                         <tr>

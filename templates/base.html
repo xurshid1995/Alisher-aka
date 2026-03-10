@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="uz">
+<html lang="{{ 'uz' if current_language != 'ru' else 'ru' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, maximum-scale=5.0">
@@ -9,7 +9,7 @@
     <meta name="robots" content="noindex, nofollow">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="theme-color" content="#667eea">
-    <title>{% block title %}DOKON - Boshqaruv Tizimi{% endblock %}</title>
+    <title>{% block title %}DOKON{% endblock %}</title>
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=20260304-2200">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer">
@@ -35,31 +35,31 @@
             <li>
                 <a href="/" {% if request.endpoint == 'index' %}class="active"{% endif %}>
                     <span class="icon">🏠</span>
-                    <span>Bosh sahifa</span>
+                    <span>{{ t('dashboard') }}</span>
                 </a>
             </li>
             <li>
                 <a href="/sales" {% if request.endpoint == 'sales' %}class="active"{% endif %}>
                     <span class="icon">🛒</span>
-                    <span>Savdo</span>
+                    <span>{{ t('sales') }}</span>
                 </a>
             </li>
             <li>
                 <a href="/sales-history" {% if request.endpoint == 'sales_history' %}class="active"{% endif %}>
                     <span class="icon">📊</span>
-                    <span>Savdo tarixi</span>
+                    <span>{{ t('sales_history') }}</span>
                 </a>
             </li>
             <li>
                 <a href="/pending-sales" {% if request.endpoint == 'pending_sales' %}class="active"{% endif %}>
                     <span class="icon">⏳</span>
-                    <span>Tasdiqlanmagan savdolar</span>
+                    <span>{{ t('pending_sales') }}</span>
                 </a>
             </li>
             <li>
                 <a href="/debt-sales" {% if request.endpoint == 'debt_sales' %}class="active"{% endif %}>
                     <span class="icon">💳</span>
-                    <span>Qarz savdolar</span>
+                    <span>{{ t('debt_sales') }}</span>
                 </a>
             </li>
             <li>
@@ -71,19 +71,19 @@
             <li>
                 <a href="/transfer" {% if request.endpoint == 'transfer' %}class="active"{% endif %}>
                     <span class="icon">🔄</span>
-                    <span>Transfer</span>
+                    <span>{{ t('transfer') }}</span>
                 </a>
             </li>
             <li>
                 <a href="/return-product" {% if request.endpoint == 'return_product' %}class="active"{% endif %}>
                     <span class="icon">↩️</span>
-                    <span>Mahsulotni qaytarish</span>
+                    <span>{{ t('return_product') }}</span>
                 </a>
             </li>
             <li>
                 <a href="/operations-history" {% if request.endpoint == 'operations_history' %}class="active"{% endif %}>
                     <span class="icon">📜</span>
-                    <span>Amaliyotlar tarixi</span>
+                    <span>{{ t('operations_history') }}</span>
                 </a>
             </li>
             {% if session.role != 'sotuvchi' or (session.role == 'sotuvchi' and stock_check_visible) %}
@@ -98,26 +98,26 @@
             <li>
                 <a href="/add_product" {% if request.endpoint == 'add_product' %}class="active"{% endif %}>
                     <span class="icon">➕</span>
-                    <span>Mahsulot qo'shish</span>
+                    <span>{{ t('add_product') }}</span>
                 </a>
             </li>
             <li>
                 <a href="/stores" {% if request.endpoint == 'stores' %}class="active"{% endif %}>
                     <span class="icon">🏬</span>
-                    <span>Do'konlar</span>
+                    <span>{{ t('stores') }}</span>
                 </a>
             </li>
             <li>
                 <a href="/warehouses" {% if request.endpoint == 'warehouses' %}class="active"{% endif %}>
                     <span class="icon">🏭</span>
-                    <span>Omborlar</span>
+                    <span>{{ t('warehouses') }}</span>
                 </a>
             </li>
             {% endif %}
             <li>
                 <a href="/debts" {% if request.endpoint == 'debts' %}class="active"{% endif %}>
                     <span class="icon">💳</span>
-                    <span>Qarzlar</span>
+                    <span>{{ t('debts') }}</span>
                 </a>
             </li>
             <li>
@@ -130,13 +130,13 @@
             <li>
                 <a href="/users" {% if request.endpoint == 'users' %}class="active"{% endif %}>
                     <span class="icon"><img src="https://img.icons8.com/fluency/96/administrator-male.png" alt="Users" style="width: 20px; height: 20px;"></span>
-                    <span>Foydalanuvchilar</span>
+                    <span>{{ t('users') }}</span>
                 </a>
             </li>
             <li>
                 <a href="/currency-rate" {% if request.endpoint == 'currency_rate' %}class="active"{% endif %}>
                     <span class="icon">💱</span>
-                    <span>Valyuta Kursi</span>
+                    <span>{{ t('currency_rate') }}</span>
                 </a>
             </li>
             {% endif %}
@@ -179,18 +179,26 @@
             </h1>
         </div>
         <div class="header-right">
-            <div class="currency-display" title="Valyuta kursi - yangilash uchun bosing">
+            <div class="currency-display" title="{{ t('exchange_rate') }}">
                 <span class="currency-rate">💵 1 USD = ... UZS</span>
-                <button class="edit-rate-btn" onclick="editCurrency()" title="Kursni o'zgartirish">
+                <button class="edit-rate-btn" onclick="editCurrency()" title="{{ t('rate_change') }}">
                     <span>📝</span>
                 </button>
             </div>
+            <!-- Til tanlash -->
+            <div class="language-selector" style="display: flex; align-items: center;">
+                <select id="langSelect" onchange="changeLanguage(this.value)" style="padding: 5px 8px; border: 1px solid #ddd; border-radius: 6px; background: rgba(255,255,255,0.9); font-size: 13px; cursor: pointer; outline: none;">
+                    <option value="uz_latin" {{ 'selected' if current_language == 'uz_latin' }}>🇺🇿 O'zbekcha</option>
+                    <option value="uz_cyrillic" {{ 'selected' if current_language == 'uz_cyrillic' }}>🇺🇿 Ўзбекча</option>
+                    <option value="ru" {{ 'selected' if current_language == 'ru' }}>🇷🇺 Русский</option>
+                </select>
+            </div>
             <div class="user-info">
                 <span class="user-icon"><img src="https://img.icons8.com/fluency/96/administrator-male.png" alt="User" style="width: 24px; height: 24px; vertical-align: middle;"></span>
-                <span class="user-name">{{ session.user_name or 'Foydalanuvchi' }}</span>
-                <span class="user-role">({{ session.role or 'rol' }})</span>
+                <span class="user-name">{{ session.user_name or t('user') }}</span>
+                <span class="user-role">({{ session.role or t('role') }})</span>
             </div>
-            <button class="logout-btn" onclick="logout()" title="Tizimdan chiqish">
+            <button class="logout-btn" onclick="logout()" title="{{ t('exit_system') }}">
                 <span class="logout-icon">➡️</span>
                 <span class="logout-text">{{ t('logout') }}</span>
             </button>
@@ -204,6 +212,34 @@
     </div>
 
     <script>
+        // Tarjimalar - JS uchun
+        const LANG = {
+            rate_change: '{{ t("rate_change") }}',
+            current_rate: '{{ t("current_rate") }}',
+            enter_rate: '{{ t("enter_rate") }}',
+            invalid_rate: '{{ t("invalid_rate") }}',
+            rate_update_success: '{{ t("rate_update_success") }}',
+            rate_not_loaded: '{{ t("rate_not_loaded") }}',
+            rate_update_error: '{{ t("rate_update_error") }}',
+            server_error: '{{ t("server_error") }}',
+            exit_confirm: '{{ t("exit_confirm") }}',
+            session_expiring: '{{ t("session_expiring") }}',
+            session_expiring_desc: '{{ t("session_expiring_desc") }}',
+            understood: '{{ t("understood") }}',
+            session_expired: '{{ t("session_expired") }}',
+        };
+
+        // Til o'zgartirish
+        function changeLanguage(lang) {
+            fetch('/api/settings/language', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({language: lang})
+            }).then(res => res.json()).then(data => {
+                if (data.success) location.reload();
+            });
+        }
+
         // Global o'zgaruvchi - barcha sahifalarda ishlaydi
         window.currentExchangeRate = null; // Null boshlanadi, API dan olinadi
         
@@ -267,15 +303,15 @@
         // Valyuta kursini o'zgartirish
         async function editCurrency() {
             if (window.currentExchangeRate === null || window.currentExchangeRate === undefined) {
-                alert('⏳ Valyuta kursi hali yuklanmagan. Iltimos kuting...');
+                alert(LANG.rate_not_loaded);
                 return;
             }
             
             const currentRateFormatted = parseFloat(window.currentExchangeRate).toLocaleString('uz-UZ');
             const newRate = prompt(
-                `💱 Valyuta kursini o'zgartirish:\n\n` +
-                `Joriy kurs: 1 USD = ${currentRateFormatted} UZS\n\n` +
-                `Yangi kursni kiriting:`, 
+                `💱 ${LANG.rate_change}:\n\n` +
+                `${LANG.current_rate}: 1 USD = ${currentRateFormatted} UZS\n\n` +
+                `${LANG.enter_rate}:`, 
                 window.currentExchangeRate.toString()
             );
             
@@ -283,7 +319,7 @@
             
             const numericRate = parseFloat(newRate);
             if (isNaN(numericRate) || numericRate <= 0) {
-                alert('❌ Noto\'g\'ri qiymat kiritildi!\nIltimos, musbat son kiriting.');
+                alert(LANG.invalid_rate);
                 return;
             }
             
@@ -305,24 +341,24 @@
                 if (data.success) {
                     window.currentExchangeRate = numericRate;
                     updateCurrencyDisplay(numericRate);
-                    alert('✅ Valyuta kursi muvaffaqiyatli yangilandi!');
+                    alert(LANG.rate_update_success);
                     
                     // Boshqa sahifalardagi valyuta kurslarini yangilash uchun event yuborish
                     window.dispatchEvent(new CustomEvent('currencyRateUpdated', {
                         detail: { newRate: numericRate }
                     }));
                 } else {
-                    alert('❌ Kursni yangilashda xatolik: ' + (data.error || 'Noma\'lum xatolik'));
+                    alert(LANG.rate_update_error + ': ' + (data.error || ''));
                 }
             } catch (error) {
                 console.error('Error updating currency rate:', error);
-                alert('❌ Server bilan aloqa qilishda xatolik yuz berdi');
+                alert(LANG.server_error);
             }
         }
         
         // Chiqish funksiyasi
         function logout() {
-            if (confirm('🚪 Tizimdan chiqishni xohlaysizmi?')) {
+            if (confirm(LANG.exit_confirm)) {
                 window.location.href = '/logout';
             }
         }
@@ -565,8 +601,8 @@
                 <div style="display: flex; align-items: center; gap: 15px;">
                     <span style="font-size: 2rem;">⏰</span>
                     <div style="flex: 1;">
-                        <div style="font-weight: bold; font-size: 1.1rem; margin-bottom: 5px;">Session tugash arafasida!</div>
-                        <div style="font-size: 0.95rem; opacity: 0.95;">Session 2 daqiqadan keyin tugaydi. Iltimos, ma'lumotlaringizni saqlang!</div>
+                        <div style="font-weight: bold; font-size: 1.1rem; margin-bottom: 5px;">${LANG.session_expiring}</div>
+                        <div style="font-size: 0.95rem; opacity: 0.95;">${LANG.session_expiring_desc}</div>
                         <div style="margin-top: 10px;">
                             <button onclick="dismissWarning()" style="
                                 background: rgba(255, 255, 255, 0.3);
@@ -577,7 +613,7 @@
                                 cursor: pointer;
                                 font-weight: 500;
                                 transition: all 0.3s;
-                            ">Tushundim</button>
+                            ">${LANG.understood}</button>
                         </div>
                     </div>
                     <button onclick="dismissWarning()" style="
@@ -646,13 +682,13 @@
             <div style="margin-bottom:16px;">
                 <img src="https://img.icons8.com/fluency/120/telegram-app.png" alt="Telegram" style="width:48px; height:48px;">
                 <h3 style="margin:8px 0 4px; color:#333; font-size:18px;">DiamondCarAccesories</h3>
-                <p style="color:#888; font-size:13px; margin:0;">Telegram kanalga o'tish uchun skanerlang</p>
+                <p style="color:#888; font-size:13px; margin:0;">{{ t('qr_scan_channel') }}</p>
             </div>
             <div style="background:#f8f9fa; border-radius:12px; padding:20px; display:inline-block;">
                 <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://t.me/DiamondCarAccesories&color=000000&bgcolor=f8f9fa" alt="QR Code" style="width:200px; height:200px; display:block;">
             </div>
             <div style="margin-top:16px;">
-                <a href="https://t.me/DiamondCarAccesories" target="_blank" style="display:inline-block; background:#0088cc; color:white; padding:10px 24px; border-radius:8px; text-decoration:none; font-size:14px; font-weight:500; transition:background 0.2s;" onmouseover="this.style.background='#006da3'" onmouseout="this.style.background='#0088cc'">Telegram'da ochish</a>
+                <a href="https://t.me/DiamondCarAccesories" target="_blank" style="display:inline-block; background:#0088cc; color:white; padding:10px 24px; border-radius:8px; text-decoration:none; font-size:14px; font-weight:500; transition:background 0.2s;" onmouseover="this.style.background='#006da3'" onmouseout="this.style.background='#0088cc'">{{ t('open_telegram') }}</a>
             </div>
         </div>
     </div>
@@ -664,13 +700,13 @@
             <div style="margin-bottom:16px;">
                 <img src="https://img.icons8.com/fluency/120/telegram-app.png" alt="Telegram" style="width:48px; height:48px;">
                 <h3 style="margin:8px 0 4px; color:#333; font-size:18px;">@Sergeli143_bot</h3>
-                <p style="color:#888; font-size:13px; margin:0;">Telegram botga o'tish uchun skanerlang</p>
+                <p style="color:#888; font-size:13px; margin:0;">{{ t('qr_scan_bot') }}</p>
             </div>
             <div style="background:#f8f9fa; border-radius:12px; padding:20px; display:inline-block;">
                 <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://t.me/Sergeli143_bot&color=000000&bgcolor=f8f9fa" alt="QR Code" style="width:200px; height:200px; display:block;">
             </div>
             <div style="margin-top:16px;">
-                <a href="https://t.me/Sergeli143_bot" target="_blank" style="display:inline-block; background:#0088cc; color:white; padding:10px 24px; border-radius:8px; text-decoration:none; font-size:14px; font-weight:500; transition:background 0.2s;" onmouseover="this.style.background='#006da3'" onmouseout="this.style.background='#0088cc'">Telegram'da ochish</a>
+                <a href="https://t.me/Sergeli143_bot" target="_blank" style="display:inline-block; background:#0088cc; color:white; padding:10px 24px; border-radius:8px; text-decoration:none; font-size:14px; font-weight:500; transition:background 0.2s;" onmouseover="this.style.background='#006da3'" onmouseout="this.style.background='#0088cc'">{{ t('open_telegram') }}</a>
             </div>
         </div>
     </div>

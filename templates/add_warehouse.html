@@ -1,65 +1,65 @@
 {% extends "base.html" %}
 
-{% block title %}Yangi ombor qo'shish{% endblock %}
+{% block title %}{{ t('heading_add_warehouse') }}{% endblock %}
 
 {% block content %}
 <!-- Content Header -->
 <div class="content-header">
-    <h1>🏭 Yangi ombor qo'shish</h1>
+    <h1>{{ t('heading_add_warehouse') }}</h1>
     <div class="breadcrumb">Boshqaruv / Omborlar / Yangi ombor</div>
 </div>
 
 <!-- Form Container -->
 <div class="form-container">
     <h2 style="text-align: center; margin-bottom: 2rem; color: #2c3e50;">
-        🏭 Ombor ma'lumotlari
+        {{ t('label_warehouse_info') }}
     </h2>
 
     <form method="POST" action="/add_warehouse">
         <div class="form-group">
             <label for="name">
                 <i class="icon">🏭</i>
-                Ombor nomi *
+                {{ t('label_warehouse_name_required') }}
             </label>
             <input type="text" id="name" name="name" required 
-                   placeholder="Markaziy ombor">
+                   placeholder="{{ t('placeholder_warehouse_name') }}">
         </div>
 
         <div class="form-group">
             <label for="address">
                 <i class="icon">📍</i>
-                Manzil *
+                {{ t('label_address_required') }}
             </label>
             <textarea id="address" name="address" rows="3" required 
-                     placeholder="To'liq manzilni kiriting"></textarea>
+                     placeholder="{{ t('placeholder_address') }}"></textarea>
         </div>
 
         <div class="form-group">
             <label for="manager_name">
                 <i class="icon">👤</i>
-                Menejer ismi *
+                {{ t('label_manager_name_required') }}
             </label>
             <input type="text" id="manager_name" name="manager_name" required 
-                   placeholder="Menejer ismi va familiyasi">
+                   placeholder="{{ t('placeholder_manager_full_name') }}">
         </div>
 
         <div class="form-group">
             <label for="phone">
                 <i class="icon">📞</i>
-                Telefon raqam
+                {{ t('phone_number_label') }}
             </label>
             <input type="text" id="phone" name="phone" 
-                   placeholder="+998 XX XXX XX XX">
+                   placeholder="{{ t('placeholder_phone_format') }}">
         </div>
 
         <div class="form-actions">
             <button type="submit">
                 <i class="icon">💾</i>
-                Ombor qo'shish
+                {{ t('btn_add_warehouse') }}
             </button>
             <a href="/warehouses" class="btn-secondary">
                 <i class="icon">🔙</i>
-                Bekor qilish
+                {{ t('btn_cancel') }}
             </a>
         </div>
     </form>
@@ -190,13 +190,13 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (!name || !address || !manager_name) {
             e.preventDefault();
-            alert('Iltimos, barcha majburiy maydonlarni to\'ldiring!');
+            alert('{{ t("fill_required_fields") }}');
             return;
         }
 
         // Success message
         const btn = document.querySelector('button[type="submit"]');
-        btn.innerHTML = '⏳ Saqlanmoqda...';
+        btn.innerHTML = '⏳ {{ t("saving") }}';
         btn.disabled = true;
     });
 });

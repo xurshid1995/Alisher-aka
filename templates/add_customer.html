@@ -1,6 +1,6 @@
 {% extends "base_with_sidebar.html" %}
 
-{% block title %}Yangi mijoz qo'shish - Omborxona Boshqaruv Tizimi{% endblock %}
+{% block title %}{{ t('heading_add_customer') }} - {{ t('app_title') }}{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -156,7 +156,7 @@
 <div class="add-customer-container">
     <div class="form-container">
         <div class="form-header">
-            <h1>👤 Yangi mijoz qo'shish</h1>
+            <h1>{{ t('heading_add_customer') }}</h1>
         </div>
 
         <div class="form-body">
@@ -165,43 +165,43 @@
 
             <form id="addCustomerForm" onsubmit="submitForm(event)">
                 <div class="form-group">
-                    <label for="name">Mijoz nomi <span class="required">*</span></label>
+                    <label for="name">{{ t('customer_name_label') }} <span class="required">*</span></label>
                     <input type="text" id="name" name="name" required>
-                    <div class="form-hint">To'liq ism va familiyani kiriting</div>
+                    <div class="form-hint">{{ t('hint_full_name') }}</div>
                 </div>
 
                 <div class="form-group">
-                    <label for="phone">Telefon raqami</label>
+                    <label for="phone">{{ t('phone_number_label') }}</label>
                     <input type="tel" id="phone" name="phone" placeholder="+998(99) 406-47-49" maxlength="18">
-                    <div class="form-hint">Format: +998(99) 406-47-49</div>
+                    <div class="form-hint">{{ t('hint_phone_format') }}</div>
                 </div>
 
                 <div class="form-group">
-                    <label for="email">Email manzili</label>
-                    <input type="email" id="email" name="email" placeholder="mijoz@example.com">
-                    <div class="form-hint">Elektron pochta manzilini kiriting</div>
+                    <label for="email">{{ t('email_label') }}</label>
+                    <input type="email" id="email" name="email" placeholder="{{ t('placeholder_email') }}">
+                    <div class="form-hint">{{ t('hint_email') }}</div>
                 </div>
 
                 <div class="form-group">
-                    <label for="address">Manzil</label>
-                    <textarea id="address" name="address" placeholder="To'liq manzilni kiriting..."></textarea>
-                    <div class="form-hint">Mijozning to'liq yashash yoki ish manzili</div>
+                    <label for="address">{{ t('address_label') }}</label>
+                    <textarea id="address" name="address" placeholder="{{ t('placeholder_address') }}"></textarea>
+                    <div class="form-hint">{{ t('hint_address') }}</div>
                 </div>
 
                 <div class="form-group">
-                    <label for="store_id">Dokon <span class="required">*</span></label>
+                    <label for="store_id">{{ t('label_store_required') }} <span class="required">*</span></label>
                     <select id="store_id" name="store_id" required>
-                        <option value="">Dokonni tanlang...</option>
+                        <option value="">{{ t('placeholder_select_store') }}</option>
                     </select>
-                    <div class="form-hint">Mijoz qaysi dokonga tegishli</div>
+                    <div class="form-hint">{{ t('hint_store') }}</div>
                 </div>
 
                 <div class="form-buttons">
                     <button type="submit" class="btn-submit">
-                        ✅ Mijozni qo'shish
+                        {{ t('btn_add_customer') }}
                     </button>
                     <a href="/customers" class="btn-cancel">
-                        ❌ Bekor qilish
+                        ❌ {{ t('btn_cancel') }}
                     </a>
                 </div>
             </form>
@@ -213,6 +213,14 @@
 
 {% block extra_js %}
 <script>
+    const ACLANG = {
+        phone_format_error: '{{ t("phone_format_error") }}',
+        customer_added_success: '{{ t("customer_added_success") }}',
+        adding: '{{ t("adding") }}',
+        error_prefix: '{{ t("error_prefix") }}',
+        placeholder_select_store: '{{ t("placeholder_select_store") }}',
+        stores_load_error: '{{ t("stores_load_error") }}'
+    };
     // Telefon raqamini formatlash +998(99) 406-47-49
     function formatPhoneNumber(input) {
         // Faqat raqamlarni qoldirish
@@ -278,7 +286,7 @@
         // Telefon raqamini validatsiya qilish
         const phone = formData.get('phone');
         if (phone && phone.trim() !== '' && phone.length !== 18) { // +998(99) 406-47-49 = 18 belgi
-            alert('❌ Telefon raqamini to\'liq formatda kiriting: +998(99) 406-47-49');
+            alert(ACLANG.phone_format_error);
             return;
         }
         
@@ -294,7 +302,7 @@
         const submitBtn = event.target.querySelector('.btn-submit');
         const originalText = submitBtn.textContent;
         submitBtn.disabled = true;
-        submitBtn.textContent = '⏳ Qo\'shilmoqda...';
+        submitBtn.textContent = '⏳ ' + ACLANG.adding;
 
         fetch('/api/customers', {
             method: 'POST',
@@ -306,7 +314,7 @@
         .then(response => {
             if (response.ok) {
                 return response.json().then(data => {
-                    showSuccess('Mijoz muvaffaqiyatli qo\'shildi!');
+                    showSuccess(ACLANG.customer_added_success);
                     event.target.reset();
                     
                     // 2 sekund kutib, mijozlar sahifasiga o'tish
@@ -322,7 +330,7 @@
         })
         .catch(error => {
             console.error('Xatolik:', error);
-            showError('Xatolik: ' + error.message);
+            showError(ACLANG.error_prefix + ': ' + error.message);
         })
         .finally(() => {
             // Form tugmasini qayta faollashtirish
@@ -365,7 +373,7 @@
             .then(response => response.json())
             .then(stores => {
                 const storeSelect = document.getElementById('store_id');
-                storeSelect.innerHTML = '<option value="">Dokonni tanlang...</option>';
+                storeSelect.innerHTML = '<option value="">' + ACLANG.placeholder_select_store + '</option>';
                 
                 stores.forEach(store => {
                     const option = document.createElement('option');
@@ -375,7 +383,7 @@
                 });
             })
             .catch(error => {
-                console.error('Dokonlarni yuklashda xatolik:', error);
+                console.error(ACLANG.stores_load_error, error);
             });
     }
 </script>

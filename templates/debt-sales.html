@@ -1,6 +1,6 @@
 {% extends "base_with_sidebar.html" %}
 
-{% block title %}Qarz Savdolar{% endblock %}
+{% block title %}{{ t('debt_sales_title') }}{% endblock %}
 
 {% block extra_css %}
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
@@ -12,12 +12,12 @@
 {% block content %}
 <div class="sales-history-page">
     <div class="page-header">
-        <h1><i class="fas fa-credit-card"></i> Qarz Savdolar</h1>
+        <h1><i class="fas fa-credit-card"></i> {{ t('debt_sales') }}</h1>
         <div class="header-controls">
             <label class="toggle-switch">
                 <input type="checkbox" id="compactViewToggle">
                 <span class="toggle-slider"></span>
-                <span class="toggle-label">Ixcham ko'rinish</span>
+                <span class="toggle-label">{{ t('compact_view') }}</span>
             </label>
         </div>
     </div>
@@ -27,14 +27,14 @@
             <i class="fas fa-shopping-cart"></i>
             <div>
                 <span class="stat-number" id="totalSales">0</span>
-                <span class="stat-label">Jami savdolar</span>
+                <span class="stat-label">{{ t('stat_total_sales') }}</span>
             </div>
         </div>
         <div class="stat-card">
             <i class="fas fa-dollar-sign"></i>
             <div>
                 <span class="stat-number" id="totalRevenue">$0</span>
-                <span class="stat-label">Jami yig'indi</span>
+                <span class="stat-label">{{ t('total_revenue') }}</span>
             </div>
         </div>
         {% if session.role != 'sotuvchi' %}
@@ -42,7 +42,7 @@
             <i class="fas fa-chart-pie"></i>
             <div>
                 <span class="stat-number" id="totalProfit">$0</span>
-                <span class="stat-label">Jami foyda</span>
+                <span class="stat-label">{{ t('stat_total_profit') }}</span>
             </div>
         </div>
         {% endif %}
@@ -53,7 +53,7 @@
         <div class="search-filter-row">
             <div class="search-input-container">
                 <i class="fas fa-search search-icon"></i>
-                <input type="text" id="searchInput" placeholder="Qidirish..." class="search-input">
+                <input type="text" id="searchInput" placeholder="{{ t('placeholder_search') }}" class="search-input">
                 <button id="clearSearch" class="clear-search-btn" style="display: none;">
                     <i class="fas fa-times"></i>
                 </button>
@@ -61,37 +61,37 @@
             
             <div class="date-range-row">
                 <div class="filter-group">
-                    <label for="dateFromFilter">Sana (dan):</label>
+                    <label for="dateFromFilter">{{ t('label_date_from') }}</label>
                     <input type="date" id="dateFromFilter" class="filter-input" value="">
                 </div>
                 
                 <div class="filter-group">
-                    <label for="dateToFilter">Sana (gacha):</label>
+                    <label for="dateToFilter">{{ t('label_date_to') }}</label>
                     <input type="date" id="dateToFilter" class="filter-input" value="">
                 </div>
             </div>
             
             <div class="filter-group">
-                <label for="customerFilter">Mijoz:</label>
+                <label for="customerFilter">{{ t('label_customer') }}</label>
                 <div class="customer-search-container">
                     <input type="text" id="customerFilter" class="filter-input customer-search-input" 
-                           placeholder="Mijoz qidirish..." autocomplete="off">
+                           placeholder="{{ t('search_customer') }}" autocomplete="off">
                     <div id="customerDropdown" class="customer-dropdown" style="display: none;">
-                        <div class="customer-option" data-value="">Barcha mijozlar</div>
+                        <div class="customer-option" data-value="">{{ t('all_customers') }}</div>
                     </div>
                 </div>
             </div>
             
             <div class="filter-group filter-group-location">
-                <label for="locationFilter">Joylashuv:</label>
+                <label for="locationFilter">{{ t('label_location') }}</label>
                 <select id="locationFilter" class="filter-input">
-                    <option value="">Barcha joylashuvlar</option>
+                    <option value="">{{ t('all_locations') }}</option>
                 </select>
             </div>
             
             <div class="filter-group">
-                <label for="saleIdFilter">Savdo ID:</label>
-                <input type="number" id="saleIdFilter" class="filter-input" placeholder="ID raqami..." min="1" style="width: 100px;">
+                <label for="saleIdFilter">{{ t('sale_id') }}</label>
+                <input type="number" id="saleIdFilter" class="filter-input" placeholder="{{ t('id_number') }}" min="1" style="width: 100px;">
             </div>
         </div>
     </div>
