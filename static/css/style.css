@@ -1372,13 +1372,13 @@ footer {
         align-items: center;
         width: 100%;
         justify-content: flex-end;
-        flex-wrap: nowrap;
+        flex-wrap: wrap;
     }
     
     .top-header .currency-display {
         display: flex !important;
         padding: 0.15rem 0.25rem;
-        font-size: 0.6rem;
+        font-size: 0.65rem;
         background: rgba(255,255,255,0.15);
         border-radius: 4px;
         align-items: center;
@@ -1386,7 +1386,7 @@ footer {
     }
     
     .top-header .currency-rate {
-        font-size: 0.55rem;
+        font-size: 0.6rem;
         white-space: nowrap;
     }
     
@@ -1416,15 +1416,15 @@ footer {
     }
     
     .top-header .user-name {
-        max-width: 50px;
+        max-width: 90px;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
-        font-size: 0.5rem;
+        font-size: 0.6rem;
     }
     
     .top-header .user-role {
-        font-size: 0.5rem;
+        font-size: 0.55rem;
         white-space: nowrap;
     }
     
@@ -2124,7 +2124,7 @@ table:not(.cart-table) {
     
     /* Scroll hint - foydalanuvchiga scroll qilish mumkinligini ko'rsatish */
     .table-responsive::after {
-        content: "← → Scroll qiling";
+        content: attr(data-scroll-hint);
         display: block;
         text-align: center;
         font-size: 12px;

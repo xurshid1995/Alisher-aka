@@ -294,6 +294,12 @@
                 // Har 30 soniyada kursni yangilash
                 setInterval(loadCurrencyRate, 30000);
             }
+            
+            // Table scroll hint - tarjima qilingan matn
+            const scrollHint = {{ t('table_scroll_hint')|tojson }};
+            document.querySelectorAll('.table-responsive').forEach(function(el) {
+                el.setAttribute('data-scroll-hint', scrollHint);
+            });
         });
         
         // Valyuta kursini API dan olish
