@@ -491,6 +491,11 @@
             padding: 2px 5px !important;
             font-size: 9px !important;
         }
+        
+        .location-customer-grid {
+            grid-template-columns: 1fr 1fr !important;
+            gap: 8px !important;
+        }
     }
     
     /* ============================================ */
@@ -701,7 +706,7 @@
         <!-- Birinchi layout -->
         <div class="sales-layout-box" style="background: white; border-radius: 8px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); box-sizing: border-box;">
             <!-- Joylashuv va Mijoz tanlash -->
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+            <div class="location-customer-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
                 <div>
                     <label style="display: block; margin-bottom: 5px; font-size: 14px; font-weight: 500; color: #495057;">{{ t('label_select_location') }}</label>
                     <select id="locationSelect" onchange="loadProducts()" style="width: 100%; padding: 10px; border: 1px solid #ced4da; border-radius: 6px; font-size: 14px; background: white; cursor: pointer;">
