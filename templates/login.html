@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="google" content="notranslate">
     <title>{{ t('login_title') }}</title>
+    {% if current_language == 'ru' %}
+    <link type="image/png" sizes="96x96" rel="icon" href="{{ url_for('static', filename='images/icons8-russia-emoji-96.png') }}">
+    {% else %}
+    <link type="image/png" sizes="96x96" rel="icon" href="{{ url_for('static', filename='images/icons8-uzbekistan-emoji-96.png') }}">
+    {% endif %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <style>
     * {
@@ -298,9 +303,9 @@
 <body>
     <div class="lang-switcher">
         <select id="langSelect" onchange="changeLanguage(this.value)">
-            <option value="uz_latin" {% if current_language == 'uz_latin' %}selected{% endif %}>O'zbekcha</option>
-            <option value="uz_cyrillic" {% if current_language == 'uz_cyrillic' %}selected{% endif %}>Ўзбекча</option>
-            <option value="ru" {% if current_language == 'ru' %}selected{% endif %}>Русский</option>
+            <option value="uz_latin" {% if current_language == 'uz_latin' %}selected{% endif %}>&#127482;&#127487; O'zbekcha</option>
+            <option value="uz_cyrillic" {% if current_language == 'uz_cyrillic' %}selected{% endif %}>&#127482;&#127487; Ўзбекча</option>
+            <option value="ru" {% if current_language == 'ru' %}selected{% endif %}>&#127479;&#127482; Русский</option>
         </select>
     </div>
 
