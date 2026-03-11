@@ -20,6 +20,76 @@
         return;
     }
 
+    // Tilni aniqlash: data-lang atributi > html lang atributi > default uz_latin
+    var lang = currentScript.getAttribute('data-lang')
+        || document.documentElement.getAttribute('data-current-lang')
+        || (document.documentElement.lang === 'ru' ? 'ru' : 'uz_latin');
+
+    // Tarjimalar lug'ati
+    var HW_TRANSLATIONS = {
+        uz_latin: {
+            loading: 'Yuklanmoqda...',
+            token_error: 'Token noto\'g\'ri',
+            load_error: 'Xatolik yuz berdi',
+            server_active: '🟢 Faol',
+            server_off: '🔴 O\'chiq',
+            server_suspended: '⏸️ Bloklangan',
+            days_until: 'gacha',
+            days_word: 'kun',
+            balance_expired: '❌ Balans tugagan! To\'lov qiling.',
+            currency: 'so\'m',
+            balance: 'Balans',
+            monthly_payment: 'Oylik to\'lov',
+            server: 'Server',
+            scan_telegram_bot: 'Telegram botga o\'tish uchun skanerlang',
+            open_telegram: 'Telegram\'da ochish',
+            scan_contact: 'Biz bilan bog\'lanish uchun skanerlang',
+            contact_us: 'Biz bilan bog\'laning',
+            qr_view: 'QR Code ko\'rish'
+        },
+        uz_cyrillic: {
+            loading: 'Юкланмоқда...',
+            token_error: 'Токен нотўғри',
+            load_error: 'Хатолик юз берди',
+            server_active: '🟢 Фаол',
+            server_off: '🔴 Ўчиқ',
+            server_suspended: '⏸️ Блокланган',
+            days_until: 'гача',
+            days_word: 'кун',
+            balance_expired: '❌ Баланс тугаган! Тўлов қилинг.',
+            currency: 'сўм',
+            balance: 'Баланс',
+            monthly_payment: 'Ойлик тўлов',
+            server: 'Сервер',
+            scan_telegram_bot: 'Telegram ботга ўтиш учун сканерланг',
+            open_telegram: 'Telegram\'да очиш',
+            scan_contact: 'Биз билан боғланиш учун сканерланг',
+            contact_us: 'Биз билан боғланинг',
+            qr_view: 'QR Code кўриш'
+        },
+        ru: {
+            loading: 'Загрузка...',
+            token_error: 'Неверный токен',
+            load_error: 'Произошла ошибка',
+            server_active: '🟢 Активен',
+            server_off: '🔴 Выключен',
+            server_suspended: '⏸️ Заблокирован',
+            days_until: 'до',
+            days_word: 'дн.',
+            balance_expired: '❌ Баланс исчерпан! Оплатите.',
+            currency: 'сум',
+            balance: 'Баланс',
+            monthly_payment: 'Ежемесячный платёж',
+            server: 'Сервер',
+            scan_telegram_bot: 'Сканируйте для перехода в Telegram бот',
+            open_telegram: 'Открыть в Telegram',
+            scan_contact: 'Сканируйте для связи с нами',
+            contact_us: 'Свяжитесь с нами',
+            qr_view: 'Показать QR Code'
+        }
+    };
+    var T = HW_TRANSLATIONS[lang] || HW_TRANSLATIONS['uz_latin'];
+
     // CSS stillar
     var style = document.createElement('style');
     style.textContent = `
@@ -216,7 +286,7 @@
                 <button class="hw-close" onclick="document.getElementById('hw-panel').classList.remove('show')">&times;</button>
             </div>
             <div id="hw-content">
-                <p style="text-align:center;color:#999;">Yuklanmoqda...</p>
+                <p style="text-align:center;color:#999;">${T.loading}</p>
             </div>
         </div>
         <div style="position:relative;display:inline-block;">
@@ -228,13 +298,13 @@
                 <div style="margin-bottom:16px;">
                     <img src="https://img.icons8.com/fluency/120/telegram-app.png" alt="Telegram" style="width:48px;height:48px;">
                     <h3 style="margin:8px 0 4px;color:#333;font-size:18px;">@DgitaloceanHostingTolov_bot</h3>
-                    <p style="color:#888;font-size:13px;margin:0;">Telegram botga o'tish uchun skanerlang</p>
+                    <p style="color:#888;font-size:13px;margin:0;">${T.scan_telegram_bot}</p>
                 </div>
                 <div style="background:#f8f9fa;border-radius:12px;padding:20px;display:inline-block;">
                     <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://t.me/DgitaloceanHostingTolov_bot&color=000000&bgcolor=f8f9fa" alt="QR Code" style="width:200px;height:200px;display:block;">
                 </div>
                 <div style="margin-top:16px;">
-                    <a href="https://t.me/DgitaloceanHostingTolov_bot" target="_blank" style="display:inline-block;background:#0088cc;color:white;padding:10px 24px;border-radius:8px;text-decoration:none;font-size:14px;font-weight:500;">Telegram'da ochish</a>
+                    <a href="https://t.me/DgitaloceanHostingTolov_bot" target="_blank" style="display:inline-block;background:#0088cc;color:white;padding:10px 24px;border-radius:8px;text-decoration:none;font-size:14px;font-weight:500;">${T.open_telegram}</a>
                 </div>
             </div>
         </div>
@@ -244,13 +314,13 @@
                 <div style="margin-bottom:16px;">
                     <img src="https://img.icons8.com/fluency/120/telegram-app.png" alt="Telegram" style="width:48px;height:48px;">
                     <h3 style="margin:8px 0 4px;color:#333;font-size:18px;">DIAMONDaccesories</h3>
-                    <p style="color:#888;font-size:13px;margin:0;">Biz bilan bog'lanish uchun skanerlang</p>
+                    <p style="color:#888;font-size:13px;margin:0;">${T.scan_contact}</p>
                 </div>
                 <div style="background:#f8f9fa;border-radius:12px;padding:20px;display:inline-block;">
                     <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://t.me/DIAMONDaccesories&color=000000&bgcolor=f8f9fa" alt="QR Code" style="width:200px;height:200px;display:block;">
                 </div>
                 <div style="margin-top:16px;">
-                    <a href="https://t.me/DIAMONDaccesories" target="_blank" style="display:inline-block;background:#28a745;color:white;padding:10px 24px;border-radius:8px;text-decoration:none;font-size:14px;font-weight:500;">Telegram'da ochish</a>
+                    <a href="https://t.me/DIAMONDaccesories" target="_blank" style="display:inline-block;background:#28a745;color:white;padding:10px 24px;border-radius:8px;text-decoration:none;font-size:14px;font-weight:500;">${T.open_telegram}</a>
                 </div>
             </div>
         </div>
@@ -274,7 +344,7 @@
             .then(function(res) { return res.json(); })
             .then(function(data) {
                 if (!data.success) {
-                    document.getElementById('hw-content').innerHTML = '<p style="text-align:center;color:#e74c3c;">Token noto\'g\'ri</p>';
+                    document.getElementById('hw-content').innerHTML = '<p style="text-align:center;color:#e74c3c;">' + T.token_error + '</p>';
                     return;
                 }
 
@@ -285,31 +355,31 @@
                 toggle.className = 'hw-toggle ' + status;
 
                 // Server holati
-                var serverText = data.server_status === 'active' ? '🟢 Faol' :
-                                 data.server_status === 'off' ? '🔴 O\'chiq' :
-                                 data.server_status === 'suspended' ? '⏸️ Bloklangan' : data.server_status;
+                var serverText = data.server_status === 'active' ? T.server_active :
+                                 data.server_status === 'off' ? T.server_off :
+                                 data.server_status === 'suspended' ? T.server_suspended : data.server_status;
                 var serverClass = data.server_status || 'active';
 
                 // Qolgan kunlar matni
                 var daysText = '';
                 if (data.days_left > 0 && data.end_date) {
-                    daysText = '📅 ' + data.end_date + 'gacha (' + data.days_left + ' kun)';
+                    daysText = '📅 ' + data.end_date + ' ' + T.days_until + ' (' + data.days_left + ' ' + T.days_word + ')';
                 } else {
-                    daysText = '❌ Balans tugagan! To\'lov qiling.';
+                    daysText = T.balance_expired;
                 }
 
                 document.getElementById('hw-content').innerHTML = `
                     <div class="hw-balance ${status}">
-                        <div class="hw-balance-amount">${data.balance_formatted} so'm</div>
-                        <div class="hw-balance-label">Balans</div>
+                        <div class="hw-balance-amount">${data.balance_formatted} ${T.currency}</div>
+                        <div class="hw-balance-label">${T.balance}</div>
                     </div>
                     <div class="hw-days ${status}">${daysText}</div>
                     <div class="hw-row">
-                        <span class="hw-label">Oylik to'lov</span>
-                        <span class="hw-value">${data.monthly_formatted} so'm</span>
+                        <span class="hw-label">${T.monthly_payment}</span>
+                        <span class="hw-value">${data.monthly_formatted} ${T.currency}</span>
                     </div>
                     <div class="hw-row">
-                        <span class="hw-label">Server</span>
+                        <span class="hw-label">${T.server}</span>
                         <span class="hw-server ${serverClass}">${serverText}</span>
                     </div>
                     <div style="margin-top:12px;padding:10px;background:linear-gradient(135deg,#0088cc,#0077b5);border-radius:12px;display:flex;align-items:center;justify-content:space-between;gap:10px;">
@@ -317,24 +387,24 @@
                         <img src="https://img.icons8.com/color/120/telegram-app.png" alt="Telegram" style="width:24px;height:24px;">
                         @DgitaloceanHostingTolov_bot
                       </a>
-                      <a href="javascript:void(0)" onclick="document.getElementById('hw-qr-modal').classList.add('show')" style="display:inline-flex;background:white;padding:3px;border-radius:6px;cursor:pointer;" title="QR Code ko'rish">
+                      <a href="javascript:void(0)" onclick="document.getElementById('hw-qr-modal').classList.add('show')" style="display:inline-flex;background:white;padding:3px;border-radius:6px;cursor:pointer;" title="${T.qr_view}">
                         <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=https://t.me/DgitaloceanHostingTolov_bot&color=000000&bgcolor=ffffff" alt="QR" style="width:32px;height:32px;border-radius:4px;display:block;">
                       </a>
                     </div>
                     <div style="margin-top:8px;padding:10px;background:linear-gradient(135deg,#28a745,#20c997);border-radius:12px;display:flex;align-items:center;justify-content:space-between;gap:10px;">
                       <a href="https://t.me/DIAMONDaccesories" target="_blank" style="text-decoration:none;color:white;display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:600;">
                         <img src="https://img.icons8.com/color/120/telegram-app.png" alt="Telegram" style="width:24px;height:24px;">
-                        Biz bilan bog'laning
+                        ${T.contact_us}
                       </a>
                       <a href="tel:+998946350606" style="text-decoration:none;color:white;font-size:13px;font-weight:600;">📞 +998(94) 635-06-06</a>
-                      <a href="javascript:void(0)" onclick="document.getElementById('hw-qr-modal-contact').classList.add('show')" style="display:inline-flex;background:white;padding:3px;border-radius:6px;cursor:pointer;" title="QR Code ko'rish">
+                      <a href="javascript:void(0)" onclick="document.getElementById('hw-qr-modal-contact').classList.add('show')" style="display:inline-flex;background:white;padding:3px;border-radius:6px;cursor:pointer;" title="${T.qr_view}">
                         <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=https://t.me/DIAMONDaccesories&color=000000&bgcolor=ffffff" alt="QR" style="width:32px;height:32px;border-radius:4px;display:block;">
                       </a>
                     </div>
                 `;
             })
             .catch(function(err) {
-                document.getElementById('hw-content').innerHTML = '<p style="text-align:center;color:#e74c3c;">Xatolik yuz berdi</p>';
+                document.getElementById('hw-content').innerHTML = '<p style="text-align:center;color:#e74c3c;">' + T.load_error + '</p>';
                 console.error('Hosting Widget xatosi:', err);
             });
     }
