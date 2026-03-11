@@ -128,9 +128,9 @@
             
             <div style="margin-top: 15px;">
                 <select id="languageSelect" style="padding: 8px 12px; font-size: 16px; border: 1px solid #ddd; border-radius: 4px; width: 100%; max-width: 300px;">
-                    <option value="uz_latin">{{ t('language_uzbek_latin') }}</option>
-                    <option value="uz_cyrillic">{{ t('language_uzbek_cyrillic') }}</option>
-                    <option value="ru">{{ t('language_russian') }}</option>
+                    <option value="uz_latin" {% if current_language == 'uz_latin' %}selected{% endif %}>{{ t('language_uzbek_latin') }}</option>
+                    <option value="uz_cyrillic" {% if current_language == 'uz_cyrillic' %}selected{% endif %}>{{ t('language_uzbek_cyrillic') }}</option>
+                    <option value="ru" {% if current_language == 'ru' %}selected{% endif %}>{{ t('language_russian') }}</option>
                 </select>
             </div>
         </div>
@@ -237,8 +237,7 @@
         let settings = {
             stock_check_visible: false,
             auto_currency_update: false,
-            auto_backup: false,
-            language: 'uz_latin'  // Standart til
+            auto_backup: false
         };
 
         // Sozlamalarni serverdan olish
@@ -251,7 +250,15 @@
                 if (response.ok) {
                     const data = await response.json();
                     console.log('📊 Olingan sozlamalar:', data);
-                    settings = { ...settings, ...data };
+                    // Faqat kerakli sozlamalarni olish (language va user_language kalitlarini olib tashlash)
+                    const { language, ...filteredData } = data;
+                    const cleanData = {};
+                    for (const [key, value] of Object.entries(filteredData)) {
+                        if (!key.startsWith('user_language_')) {
+                            cleanData[key] = value;
+                        }
+                    }
+                    settings = { ...settings, ...cleanData };
                     updateUI();
                     console.log('✅ Sozlamalar muvaffaqiyatli yuklandi');
                 } else {
@@ -267,12 +274,6 @@
 
         // UI ni yangilash
         function updateUI() {
-            // Til select
-            const languageSelect = document.getElementById('languageSelect');
-            if (languageSelect && settings.language) {
-                languageSelect.value = settings.language;
-            }
-
             // Stock toggle
             const stockToggle = document.getElementById('stockToggle');
             const stockLabel = document.getElementById('stockLabel');
@@ -318,38 +319,48 @@
             try {
                 // Tanlangan tilni olish
                 const languageSelect = document.getElementById('languageSelect');
-                const selectedLanguage = languageSelect ? languageSelect.value : settings.language;
-                settings.language = selectedLanguage;
+                const selectedLanguage = languageSelect ? languageSelect.value : '{{ current_language }}';
                 
                 console.log('💾 Saqlanayotgan sozlamalar:', settings);
+                console.log('🌐 Tanlangan til:', selectedLanguage);
                 
-                // Asosiy sozlamalarni saqlash
+                // Avval tilni saqlash (alohida endpoint orqali)
+                const langResponse = await fetch('/api/settings/language', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ language: selectedLanguage })
+                });
+                
+                if (!langResponse.ok) {
+                    alert(SLANG.alert_lang_error);
+                    return;
+                }
+                
+                // Keyin boshqa sozlamalarni saqlash (language kalitisiz!)
+                const settingsToSave = { ...settings };
+                delete settingsToSave.language;
+                // user_language_ kalitlarini ham olib tashlash
+                for (const key of Object.keys(settingsToSave)) {
+                    if (key.startsWith('user_language_')) {
+                        delete settingsToSave[key];
+                    }
+                }
+                
                 const response = await fetch('/api/settings', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify(settings)
+                    body: JSON.stringify(settingsToSave)
                 });
 
                 if (response.ok) {
-                    // Tilni alohida saqlash
-                    const langResponse = await fetch('/api/settings/language', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({ language: selectedLanguage })
-                    });
-                    
-                    if (langResponse.ok) {
-                        alert(SLANG.alert_settings_saved);
-                        setTimeout(() => {
-                            window.location.reload();
-                        }, 1000);
-                    } else {
-                        alert(SLANG.alert_lang_error);
-                    }
+                    alert(SLANG.alert_settings_saved);
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
                 } else {
                     alert(SLANG.alert_settings_error);
                 }

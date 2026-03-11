@@ -283,21 +283,18 @@
         // Global o'zgaruvchi - barcha sahifalarda ishlaydi
         window.currentExchangeRate = null; // Null boshlanadi, API dan olinadi
         
-        // Sahifa yuklanganda valyuta kursini olish
+        // Sahifa yuklanganda valyuta kursini olish (faqat 1 marta)
+        let currencyRateLoaded = false;
         document.addEventListener('DOMContentLoaded', function() {
-            // Darhol kursni yuklash
-            loadCurrencyRate();
-            
-            // Har 30 soniyada kursni yangilash
-            setInterval(loadCurrencyRate, 30000);
+            if (!currencyRateLoaded) {
+                currencyRateLoaded = true;
+                // Darhol kursni yuklash
+                loadCurrencyRate();
+                
+                // Har 30 soniyada kursni yangilash
+                setInterval(loadCurrencyRate, 30000);
+            }
         });
-
-        // Sahifa yuklanganda ham darhol ishga tushirish
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', loadCurrencyRate);
-        } else {
-            loadCurrencyRate();
-        }
         
         // Valyuta kursini API dan olish
         async function loadCurrencyRate() {

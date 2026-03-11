@@ -13178,8 +13178,7 @@ def get_settings():
         default_settings = {
             'stock_check_visible': True,  # Sotuvchi uchun qoldiq tekshirish sahifasi ko'rinadimi
             'auto_currency_update': False,
-            'auto_backup': False,
-            'language': 'uz_latin'  # Standart til - O'zbek lotin
+            'auto_backup': False
         }
 
         # Bazadan sozlamalarni olish
@@ -13187,14 +13186,13 @@ def get_settings():
         settings_list = Settings.query.all()
 
         for setting in settings_list:
+            # user_language_ kalitlarini chiqarib tashlash (per-user til sozlamalari)
+            if setting.key.startswith('user_language_'):
+                continue
             if setting.value.lower() in ['true', 'false']:
                 settings_data[setting.key] = setting.value.lower() == 'true'
             else:
                 settings_data[setting.key] = setting.value
-
-        # Session'dan til ma'lumotini olish
-        if 'language' in session:
-            settings_data['language'] = session['language']
 
         # Standart sozlamalar bilan birlashtirish
         result = {**default_settings, **settings_data}
@@ -13266,6 +13264,11 @@ def save_settings():
 
         # Har bir sozlamani saqlash
         for key, value in data.items():
+            # language va user_language_ kalitlarini o'tkazib yuborish
+            # (til faqat /api/settings/language orqali saqlanadi)
+            if key == 'language' or key.startswith('user_language_'):
+                continue
+
             setting = Settings.query.filter_by(key=key).first()
 
             if setting:
