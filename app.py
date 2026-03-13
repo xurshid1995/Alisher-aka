@@ -1978,8 +1978,14 @@ def api_products():
             if word:  # Bo'sh so'zlarni o'tkazib yuborish
                 query = query.filter(Product.name.ilike(f'%{word}%'))
 
+    # Saralash uchun location ma'lumotlarini saqlash
+    final_loc_type = None
+    final_loc_id = None
+
     # Location filter - yangi format (location_type va location_id)
     if location_type and location_id:
+        final_loc_type = location_type
+        final_loc_id = location_id
         if location_type == 'warehouse':
             # Filter products that have stock in specific warehouse
             query = query.filter(
@@ -1999,6 +2005,8 @@ def api_products():
         try:
             loc_type, loc_id = location_filter.split('_')
             loc_id = int(loc_id)
+            final_loc_type = loc_type
+            final_loc_id = loc_id
 
             if loc_type == 'warehouse':
                 # Filter products that have stock in specific warehouse
@@ -2019,9 +2027,22 @@ def api_products():
             pass
     # Location filter yo'q bo'lsa - barcha mahsulotlarni ko'rsatish (stock bo'lsin yoki bo'lmasin)
 
-    # Saralash: Yangi qo'shilgan mahsulotlar birinchi bo'lishi uchun ID bo'yicha kamayish tartibida
-    from sqlalchemy import desc
-    query = query.order_by(desc(Product.id))
+    # Saralash: Eng ko'p sotilgan mahsulotlar birinchi bo'lishi uchun
+    from sqlalchemy import desc, func
+    from sqlalchemy import select as sa_select
+
+    # Correlated subquery: har bir mahsulot uchun joylashuvdagi umumiy sotilgan miqdor
+    sold_sq = sa_select(func.coalesce(func.sum(SaleItem.quantity), 0)).where(
+        SaleItem.product_id == Product.id
+    )
+    if final_loc_type and final_loc_id:
+        sold_sq = sold_sq.where(
+            SaleItem.source_type == final_loc_type,
+            SaleItem.source_id == final_loc_id
+        )
+    sold_sq = sold_sq.correlate(Product).scalar_subquery()
+
+    query = query.order_by(desc(sold_sq))
 
     # Get paginated results
     paginated = query.paginate(
