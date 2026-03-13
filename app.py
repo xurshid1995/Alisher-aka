@@ -12707,24 +12707,17 @@ def api_login():
         # Session'ni har doim permanent qilish (8 soat)
         session.permanent = True
 
-        # Foydalanuvchi tilini yuklash
-        # Login sahifasida tanlangan til prioritet (agar mavjud bo'lsa)
-        login_page_language = session.get('language')
+        # Foydalanuvchi tilini yuklash (faqat DB dan — yagona manba)
         try:
             user_lang_setting = Settings.query.filter_by(key=f'user_language_{user.id}').first()
-            if login_page_language:
-                # Login sahifasida tanlangan til saqlanadi
-                session['language'] = login_page_language
-                logger.info(f"🌐 Login sahifasida tanlangan til: {login_page_language}")
-            elif user_lang_setting:
+            if user_lang_setting:
                 session['language'] = user_lang_setting.value
                 logger.info(f"🌐 Foydalanuvchi tili DB dan yuklandi: {user_lang_setting.value}")
             else:
                 session['language'] = 'uz_latin'  # Standart til
         except Exception as e:
             logger.error(f"Til yuklashda xato: {e}")
-            if not login_page_language:
-                session['language'] = 'uz_latin'
+            session['language'] = 'uz_latin'
 
         # Muvaffaqiyatli javob
         redirect_url = '/dashboard'  # Barcha foydalanuvchilar bosh sahifaga

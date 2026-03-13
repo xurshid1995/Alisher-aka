@@ -268,94 +268,9 @@
         }
     }
 
-    /* Language Switcher */
-    .custom-lang-dropdown {
-        position: absolute;
-        top: 20px;
-        right: 20px;
-        z-index: 10;
-    }
-    .selected-lang {
-        display: flex;
-        align-items: center;
-        background: rgba(255,255,255,0.15);
-        border: 1px solid rgba(255,255,255,0.3);
-        border-radius: 8px;
-        padding: 6px 12px;
-        color: #fff;
-        cursor: pointer;
-        font-size: 0.95rem;
-        gap: 8px;
-        transition: background 0.3s;
-    }
-    .selected-lang:hover {
-        background: rgba(255,255,255,0.25);
-    }
-    .dropdown-arrow {
-        margin-left: 8px;
-        font-size: 0.8em;
-    }
-    .flag-icon {
-        width: 22px;
-        height: 22px;
-        border-radius: 50%;
-        margin-right: 6px;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.12);
-        object-fit: cover;
-    }
-    .lang-options {
-        display: none;
-        position: absolute;
-        top: 110%;
-        right: 0;
-        background: rgba(30,30,40,0.98);
-        border: 1px solid rgba(255,255,255,0.2);
-        border-radius: 10px;
-        box-shadow: 0 4px 16px rgba(0,0,0,0.18);
-        min-width: 140px;
-        z-index: 100;
-        padding: 4px 0;
-    }
-    .lang-option {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 8px 16px;
-        color: #fff;
-        cursor: pointer;
-        font-size: 0.95rem;
-        transition: background 0.2s;
-    }
-    .lang-option:hover {
-        background: rgba(255,255,255,0.12);
-    }
     </style>
 </head>
 <body>
-    <div class="custom-lang-dropdown" id="customLangDropdown">
-        <div class="selected-lang" onclick="toggleLangDropdown()">
-            {% if current_language == 'ru' %}
-            <img src="{{ url_for('static', filename='images/icons8-russia-emoji-96.png') }}" alt="RU" class="flag-icon"> Русский
-            {% elif current_language == 'uz_cyrillic' %}
-            <img src="{{ url_for('static', filename='images/icons8-uzbekistan-emoji-96.png') }}" alt="UZ" class="flag-icon"> Ўзбекча
-            {% else %}
-            <img src="{{ url_for('static', filename='images/icons8-uzbekistan-emoji-96.png') }}" alt="UZ" class="flag-icon"> O'zbekcha
-            {% endif %}
-            <span class="dropdown-arrow">▼</span>
-        </div>
-        <div class="lang-options" id="langOptions">
-            <div class="lang-option" onclick="changeLanguage('uz_latin')">
-                <img src="{{ url_for('static', filename='images/icons8-uzbekistan-emoji-96.png') }}" alt="UZ" class="flag-icon"> O'zbekcha
-            </div>
-            <div class="lang-option" onclick="changeLanguage('uz_cyrillic')">
-                <img src="{{ url_for('static', filename='images/icons8-uzbekistan-emoji-96.png') }}" alt="UZ" class="flag-icon"> Ўзбекча
-            </div>
-            <div class="lang-option" onclick="changeLanguage('ru')">
-                <img src="{{ url_for('static', filename='images/icons8-russia-emoji-96.png') }}" alt="RU" class="flag-icon"> Русский
-            </div>
-        </div>
-    </div>
-
     <div class="login-container">
         <div class="login-card">
             <div class="login-header">
@@ -581,35 +496,6 @@
         }
     }
 
-    async function changeLanguage(lang) {
-        try {
-            const response = await fetch('/api/settings/language', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ language: lang })
-            });
-            if (response.ok) {
-                window.location.reload();
-            }
-        } catch (e) {
-            console.error('Language change error:', e);
-        }
-    }
-
-    // Custom language dropdown logic
-    function toggleLangDropdown() {
-        const options = document.getElementById('langOptions');
-        options.style.display = (options.style.display === 'block') ? 'none' : 'block';
-        document.addEventListener('mousedown', closeLangDropdownOnClickOutside);
-    }
-
-    function closeLangDropdownOnClickOutside(e) {
-        const dropdown = document.getElementById('customLangDropdown');
-        if (dropdown && !dropdown.contains(e.target)) {
-            document.getElementById('langOptions').style.display = 'none';
-            document.removeEventListener('mousedown', closeLangDropdownOnClickOutside);
-        }
-    }
     </script>
 </body>
 </html>
