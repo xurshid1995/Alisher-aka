@@ -12767,7 +12767,10 @@ def logout():
     except Exception as e:
         app.logger.error(f"Logout session deactivation xatosi: {e}")
 
+    # Tilni saqlab qolamiz — login sahifasida ham xuddi shunday til ko'rinsin
+    lang = session.get('language', 'uz_latin')
     session.clear()
+    session['language'] = lang
     return redirect('/login')
 
 # Dashboard API endpoints
