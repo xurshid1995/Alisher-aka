@@ -106,17 +106,17 @@
             <table class="sales-table">
                 <thead>
                     <tr>
-                        <th>Sana va vaqt</th>
-                        <th>Mijoz</th>
-                        <th>Sotuvchi</th>
-                        <th>Joylashuv</th>
-                        <th>Mahsulot</th>
-                        <th class="compact-hide">Miqdor</th>
-                        <th class="compact-hide">Narx</th>
-                        <th class="compact-hide">Yig'indi</th>
-                        <th>Jami yig'indi</th>
-                        {% if session.role != 'sotuvchi' %}<th>Jami foyda</th>{% endif %}
-                        <th>Amal</th>
+                        <th class="col-datetime">Sana va vaqt</th>
+                        <th class="col-customer">Mijoz</th>
+                        <th class="col-seller">Sotuvchi</th>
+                        <th class="col-location">Joylashuv</th>
+                        <th class="col-product">Mahsulot</th>
+                        <th class="col-quantity compact-hide">Miqdor</th>
+                        <th class="col-price compact-hide">Narx</th>
+                        <th class="col-subtotal compact-hide">Yig'indi</th>
+                        <th class="col-total">Jami yig'indi</th>
+                        {% if session.role != 'sotuvchi' %}<th class="col-profit">Jami foyda</th>{% endif %}
+                        <th class="col-actions">Amal</th>
                     </tr>
                 </thead>
                 <tbody id="salesTableBody">
@@ -174,48 +174,42 @@
     table-layout: auto !important;
 }
 
-/* JADVAL USTUN KENGLIKLARI - moslashuvchan */
-.sales-history-page .sales-table th:nth-child(1), .sales-history-page .sales-table td:nth-child(1) { width: 8%; text-align: center; font-size: 13px !important; white-space: normal !important; word-wrap: break-word !important; line-height: 1.3 !important; }  /* Sana/Vaqt */
-.sales-history-page .sales-table th:nth-child(2), .sales-history-page .sales-table td:nth-child(2) { width: 10%; text-align: left; font-size: 13px !important; font-weight: 500; white-space: normal !important; word-wrap: break-word !important; line-height: 1.3 !important; }      /* Mijoz */
-.sales-history-page .sales-table th:nth-child(3), .sales-history-page .sales-table td:nth-child(3) { width: 9%; text-align: center; font-size: 13px !important; font-weight: 500; white-space: normal !important; word-wrap: break-word !important; line-height: 1.3 !important; }   /* Sotuvchi */
-.sales-history-page .sales-table th:nth-child(4), .sales-history-page .sales-table td:nth-child(4) { width: 9%; text-align: left; font-size: 13px !important; white-space: normal !important; word-wrap: break-word !important; line-height: 1.3 !important; }  /* Joylashuv */
-.sales-history-page .sales-table th:nth-child(5), .sales-history-page .sales-table td:nth-child(5) { width: 30%; text-align: left; font-size: 13px !important; font-weight: 500; white-space: normal !important; word-wrap: break-word !important; line-height: 1.3 !important; }    /* Mahsulot */
-.sales-history-page .sales-table th:nth-child(6), .sales-history-page .sales-table td:nth-child(6) { width: 5%; text-align: center; font-weight: 600; font-size: 13px !important; white-space: nowrap !important; }   /* Miqdor */
-.sales-history-page .sales-table th:nth-child(7), .sales-history-page .sales-table td:nth-child(7) { width: 6%; text-align: right; font-weight: 600; font-size: 13px !important; white-space: nowrap !important; }   /* Narx */
-.sales-history-page .sales-table th:nth-child(8), .sales-history-page .sales-table td:nth-child(8) { width: 7%; text-align: right; font-weight: 600; font-size: 13px !important; white-space: nowrap !important; }   /* Yig'indi */
-.sales-history-page .sales-table th:nth-child(9), .sales-history-page .sales-table td:nth-child(9) { width: 7%; text-align: right; font-weight: 600; font-size: 13px !important; white-space: nowrap !important; }  /* Jami Yig'indi */
-.sales-history-page .sales-table th:nth-child(10), .sales-history-page .sales-table td:nth-child(10) { width: 7%; text-align: right; font-weight: 600; color: #27ae60; font-size: 13px !important; white-space: nowrap !important; }  /* Jami Foyda */
-.sales-history-page .sales-table th:nth-child(11), .sales-history-page .sales-table td:nth-child(11) { width: 5%; text-align: center; border-right: none; font-size: 13px !important; white-space: nowrap !important; }  /* Amallar */
+/* JADVAL USTUN KENGLIKLARI - class asosida moslashuvchan */
+.sales-history-page .sales-table .col-datetime { width: 8%; text-align: center; font-size: 13px !important; white-space: normal !important; word-wrap: break-word !important; line-height: 1.3 !important; }
+.sales-history-page .sales-table .col-customer { width: 10%; text-align: left; font-size: 13px !important; font-weight: 500; white-space: normal !important; word-wrap: break-word !important; line-height: 1.3 !important; }
+.sales-history-page .sales-table .col-seller { width: 9%; text-align: center; font-size: 13px !important; font-weight: 500; white-space: normal !important; word-wrap: break-word !important; line-height: 1.3 !important; }
+.sales-history-page .sales-table .col-location { width: 9%; text-align: left; font-size: 13px !important; white-space: normal !important; word-wrap: break-word !important; line-height: 1.3 !important; }
+.sales-history-page .sales-table .col-product { width: 30%; text-align: left; font-size: 13px !important; font-weight: 500; white-space: normal !important; word-wrap: break-word !important; line-height: 1.3 !important; }
+.sales-history-page .sales-table .col-quantity { width: 5%; text-align: center; font-weight: 600; font-size: 13px !important; white-space: nowrap !important; }
+.sales-history-page .sales-table .col-price { width: 6%; text-align: right; font-weight: 600; font-size: 13px !important; white-space: nowrap !important; }
+.sales-history-page .sales-table .col-subtotal { width: 7%; text-align: right; font-weight: 600; font-size: 13px !important; white-space: nowrap !important; }
+.sales-history-page .sales-table .col-total { width: 7%; text-align: right; font-weight: 600; font-size: 13px !important; white-space: nowrap !important; }
+.sales-history-page .sales-table .col-profit { width: 7%; text-align: right; font-weight: 600; color: #27ae60; font-size: 13px !important; white-space: nowrap !important; }
+.sales-history-page .sales-table .col-actions { width: 5%; text-align: center; border-right: none; font-size: 13px !important; white-space: nowrap !important; }
 
-/* O'rta ekranlar (≤1200px): Sotuvchi, Joylashuv, Narx, Yig'indi, Miqdor, Foyda yashirish */
+/* O'rta ekranlar (≤1200px): col-seller, col-location, col-quantity, col-price, col-subtotal, col-profit yashirish */
 @media (max-width: 1200px) {
-    .sales-history-page .sales-table th:nth-child(3),
-    .sales-history-page .sales-table td:nth-child(3),
-    .sales-history-page .sales-table th:nth-child(4),
-    .sales-history-page .sales-table td:nth-child(4),
-    .sales-history-page .sales-table th:nth-child(6),
-    .sales-history-page .sales-table td:nth-child(6),
-    .sales-history-page .sales-table th:nth-child(7),
-    .sales-history-page .sales-table td:nth-child(7),
-    .sales-history-page .sales-table th:nth-child(8),
-    .sales-history-page .sales-table td:nth-child(8),
-    .sales-history-page .sales-table th:nth-child(10),
-    .sales-history-page .sales-table td:nth-child(10) {
+    .sales-history-page .sales-table .col-seller,
+    .sales-history-page .sales-table .col-location,
+    .sales-history-page .sales-table .col-quantity,
+    .sales-history-page .sales-table .col-price,
+    .sales-history-page .sales-table .col-subtotal,
+    .sales-history-page .sales-table .col-profit {
         display: none !important;
     }
-    .sales-history-page .sales-table th:nth-child(1), .sales-history-page .sales-table td:nth-child(1) { width: 13%; }
-    .sales-history-page .sales-table th:nth-child(2), .sales-history-page .sales-table td:nth-child(2) { width: 17%; }
-    .sales-history-page .sales-table th:nth-child(5), .sales-history-page .sales-table td:nth-child(5) { width: 50%; }
-    .sales-history-page .sales-table th:nth-child(9), .sales-history-page .sales-table td:nth-child(9) { width: 13%; white-space: normal !important; }
-    .sales-history-page .sales-table th:nth-child(11), .sales-history-page .sales-table td:nth-child(11) { width: 7%; }
+    .sales-history-page .sales-table .col-datetime { width: 13%; }
+    .sales-history-page .sales-table .col-customer { width: 17%; }
+    .sales-history-page .sales-table .col-product { width: 50%; }
+    .sales-history-page .sales-table .col-total { width: 13%; white-space: normal !important; }
+    .sales-history-page .sales-table .col-actions { width: 7%; }
 }
 
-/* Kichik ekranlar (≤768px): Foyda ham yashirish */
+/* Kichik ekranlar (≤768px) */
 @media (max-width: 768px) {
-    .sales-history-page .sales-table th:nth-child(2), .sales-history-page .sales-table td:nth-child(2) { width: 18%; }
-    .sales-history-page .sales-table th:nth-child(5), .sales-history-page .sales-table td:nth-child(5) { width: 52%; }
-    .sales-history-page .sales-table th:nth-child(9), .sales-history-page .sales-table td:nth-child(9) { width: 13%; }
-    .sales-history-page .sales-table th:nth-child(11), .sales-history-page .sales-table td:nth-child(11) { width: 7%; }
+    .sales-history-page .sales-table .col-customer { width: 18%; }
+    .sales-history-page .sales-table .col-product { width: 52%; }
+    .sales-history-page .sales-table .col-total { width: 13%; }
+    .sales-history-page .sales-table .col-actions { width: 7%; }
 }
 
 .sales-history-page .sales-table td {
@@ -705,8 +699,7 @@
 }
 
 /* Mahsulot ustuni chap tomonga joylashtiriladi */
-.sales-history-page .sales-table th:nth-child(4),
-.sales-history-page .sales-table td:nth-child(4) {
+.sales-history-page .sales-table .col-location {
     text-align: left;
 }
 
@@ -832,11 +825,11 @@ tbody tr.sale-group-start:first-child {
     font-size: 14px !important;
 }
 
-/* Group sale'ning birinchi qatori uchun ustun-ustun text-align */
-.group-cell:nth-child(5) { text-align: left !important; }    /* Mahsulot */
-.group-cell:nth-child(6) { text-align: center !important; }  /* Miqdor */
-.group-cell:nth-child(7) { text-align: right !important; }   /* Narx */
-.group-cell:nth-child(8) { text-align: right !important; }   /* Yig'indi */
+/* Group sale'ning ustun text-align (class asosida) */
+.group-cell.col-product { text-align: left !important; }
+.group-cell.col-quantity { text-align: center !important; }
+.group-cell.col-price { text-align: right !important; }
+.group-cell.col-subtotal { text-align: right !important; }
 
 /* Joylashuv ustuni uchun chap tomonga tekislash */
 .group-location {
@@ -2069,35 +2062,35 @@ function displaySalesData(data) {
         
         html += `
             <tr class="${firstRowClasses.join(' ')}">
-                <td rowspan="${items.length}" class="group-cell group-datetime">
+                <td rowspan="${items.length}" class="group-cell group-datetime col-datetime">
                     <div class="datetime-info">
                         <div class="sale-id" style="font-size: 11px; color: #6c757d; font-weight: 600; margin-bottom: 2px;">ID: ${sale.id}</div>
                         <div class="sale-date">${formattedDate}</div>
                         <div class="sale-time">${formattedTime}</div>
                     </div>
                 </td>
-                <td rowspan="${items.length}" class="group-cell group-customer">
+                <td rowspan="${items.length}" class="group-cell group-customer col-customer">
                     <div class="customer-info">
                         <div class="customer-name">${sale.customer_name || '� Noma\'lum'}</div>
                         <div class="customer-phone">${sale.customer_phone || '+998 XX XXX XX XX'}</div>
                     </div>
                 </td>
-                <td rowspan="${items.length}" class="group-cell group-seller">
+                <td rowspan="${items.length}" class="group-cell group-seller col-seller">
                     <div style="line-height: 1.4;">
                         <div style="font-size: 14px; font-weight: 600; color: #495057;">${sale.seller_name || 'Admin'}</div>
                         ${sale.seller_phone ? `<div style="font-size: 12px; color: #6c757d; font-style: italic;">${formatPhoneNumber(sale.seller_phone)}</div>` : ''}
                     </div>
                 </td>
-                <td class="group-cell group-location">
+                <td class="group-cell group-location col-location">
                     ${getLocationName(firstItem)}
                 </td>
-                <td class="product-cell">${firstItem.product_name || 'Noma\'lum'}</td>
-                <td>${firstItem.quantity}</td>
-                <td>${formatPrice(firstItem.unit_price || 0, sale.currency_rate)}</td>
-                <td>${formatPrice(firstItem.total_price || 0, sale.currency_rate)}</td>
-                <td rowspan="${items.length}" class="group-cell group-total">${formatPrice(totalAmount, sale.currency_rate)}</td>
-                ${userRole === 'sotuvchi' ? '' : `<td rowspan="${items.length}" class="group-cell group-profit ${profitClass}">${formatPrice(totalProfit, sale.currency_rate)}</td>`}
-                <td rowspan="${items.length}" class="group-cell group-actions">
+                <td class="product-cell col-product">${firstItem.product_name || 'Noma\'lum'}</td>
+                <td class="col-quantity">${firstItem.quantity}</td>
+                <td class="col-price">${formatPrice(firstItem.unit_price || 0, sale.currency_rate)}</td>
+                <td class="col-subtotal">${formatPrice(firstItem.total_price || 0, sale.currency_rate)}</td>
+                <td rowspan="${items.length}" class="group-cell group-total col-total">${formatPrice(totalAmount, sale.currency_rate)}</td>
+                ${userRole === 'sotuvchi' ? '' : `<td rowspan="${items.length}" class="group-cell group-profit col-profit ${profitClass}">${formatPrice(totalProfit, sale.currency_rate)}</td>`}
+                <td rowspan="${items.length}" class="group-cell group-actions col-actions">
                     <button class="btn-action btn-view" onclick="viewSaleDetails(${sale.id})" title="Ko'rish">
                         <img src="/static/images/icons8-eye-fluent-96.png" style="width:16px;height:16px;vertical-align:middle;">
                     </button>
@@ -2121,13 +2114,13 @@ function displaySalesData(data) {
             
             html += `
                 <tr class="${rowClasses.join(' ')}">
-                    <td class="group-cell group-location">
+                    <td class="group-cell group-location col-location">
                         ${getLocationName(item)}
                     </td>
-                    <td class="product-cell">${item.product_name || 'Noma\'lum'}</td>
-                    <td>${item.quantity}</td>
-                    <td>${formatPrice(item.unit_price || 0, sale.currency_rate)}</td>
-                    <td>${formatPrice(item.total_price || 0, sale.currency_rate)}</td>
+                    <td class="product-cell col-product">${item.product_name || 'Noma\'lum'}</td>
+                    <td class="col-quantity">${item.quantity}</td>
+                    <td class="col-price">${formatPrice(item.unit_price || 0, sale.currency_rate)}</td>
+                    <td class="col-subtotal">${formatPrice(item.total_price || 0, sale.currency_rate)}</td>
                 </tr>
             `;
         }
