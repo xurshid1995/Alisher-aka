@@ -185,7 +185,7 @@
         </div>
         <div class="header-right">
             <div class="currency-display" title="{{ t('exchange_rate') }}">
-                <span class="currency-rate">💵 1 USD = ... UZS</span>
+                <span class="currency-rate"><span class="currency-label">💵 1 USD = </span><span class="currency-value">... UZS</span></span>
                 <button class="edit-rate-btn" onclick="editCurrency()" title="{{ t('rate_change') }}">
                     <span>📝</span>
                 </button>
@@ -336,7 +336,12 @@
             const currencyElement = document.querySelector('.currency-rate');
             if (currencyElement && rate != null) {
                 const formattedRate = parseFloat(rate).toLocaleString('uz-UZ');
-                currencyElement.textContent = `💵 1 USD = ${formattedRate} UZS`;
+                const valueEl = currencyElement.querySelector('.currency-value');
+                if (valueEl) {
+                    valueEl.textContent = `${formattedRate} UZS`;
+                } else {
+                    currencyElement.innerHTML = `<span class="currency-label">💵 1 USD = </span><span class="currency-value">${formattedRate} UZS</span>`;
+                }
                 currencyElement.title = `Oxirgi yangilanish: ${new Date().toLocaleString('uz-UZ', { timeZone: 'Asia/Tashkent' })}`;
                 console.log('🔄 Header valyuta kursi yangilandi:', formattedRate);
             } else {
