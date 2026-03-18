@@ -1358,6 +1358,7 @@ footer {
         right: 0;
         z-index: 1150;
         align-items: center;
+        overflow: hidden;
     }
     
     /* Top header elementi stillari mobil uchun */
@@ -1386,8 +1387,10 @@ footer {
         border-radius: 6px;
         align-items: center;
         gap: 0.2rem;
-        flex-shrink: 1;
-        min-width: 0;
+        flex-shrink: 0;
+        white-space: nowrap;
+        height: 30px;
+        box-sizing: border-box;
     }
     .top-header .currency-label {
         display: none; /* "1 USD =" yashirish */
