@@ -187,7 +187,7 @@
 .sales-history-page .sales-table th:nth-child(10), .sales-history-page .sales-table td:nth-child(10) { width: 7%; text-align: right; font-weight: 600; color: #27ae60; font-size: 13px !important; white-space: nowrap !important; }  /* Jami Foyda */
 .sales-history-page .sales-table th:nth-child(11), .sales-history-page .sales-table td:nth-child(11) { width: 5%; text-align: center; border-right: none; font-size: 13px !important; white-space: nowrap !important; }  /* Amallar */
 
-/* O'rta ekranlar (≤1200px): Sotuvchi, Joylashuv, Narx, Yig'indi, Miqdor yashirish */
+/* O'rta ekranlar (≤1200px): Sotuvchi, Joylashuv, Narx, Yig'indi, Miqdor, Foyda yashirish */
 @media (max-width: 1200px) {
     .sales-history-page .sales-table th:nth-child(3),
     .sales-history-page .sales-table td:nth-child(3),
@@ -198,23 +198,20 @@
     .sales-history-page .sales-table th:nth-child(7),
     .sales-history-page .sales-table td:nth-child(7),
     .sales-history-page .sales-table th:nth-child(8),
-    .sales-history-page .sales-table td:nth-child(8) {
-        display: none !important;
-    }
-    .sales-history-page .sales-table th:nth-child(1), .sales-history-page .sales-table td:nth-child(1) { width: 12%; }
-    .sales-history-page .sales-table th:nth-child(2), .sales-history-page .sales-table td:nth-child(2) { width: 15%; }
-    .sales-history-page .sales-table th:nth-child(5), .sales-history-page .sales-table td:nth-child(5) { width: 45%; }
-    .sales-history-page .sales-table th:nth-child(9), .sales-history-page .sales-table td:nth-child(9) { width: 12%; }
-    .sales-history-page .sales-table th:nth-child(10), .sales-history-page .sales-table td:nth-child(10) { width: 10%; }
-    .sales-history-page .sales-table th:nth-child(11), .sales-history-page .sales-table td:nth-child(11) { width: 6%; }
-}
-
-/* Kichik ekranlar (≤768px): Foyda ham yashirish */
-@media (max-width: 768px) {
+    .sales-history-page .sales-table td:nth-child(8),
     .sales-history-page .sales-table th:nth-child(10),
     .sales-history-page .sales-table td:nth-child(10) {
         display: none !important;
     }
+    .sales-history-page .sales-table th:nth-child(1), .sales-history-page .sales-table td:nth-child(1) { width: 13%; }
+    .sales-history-page .sales-table th:nth-child(2), .sales-history-page .sales-table td:nth-child(2) { width: 17%; }
+    .sales-history-page .sales-table th:nth-child(5), .sales-history-page .sales-table td:nth-child(5) { width: 50%; }
+    .sales-history-page .sales-table th:nth-child(9), .sales-history-page .sales-table td:nth-child(9) { width: 13%; white-space: normal !important; }
+    .sales-history-page .sales-table th:nth-child(11), .sales-history-page .sales-table td:nth-child(11) { width: 7%; }
+}
+
+/* Kichik ekranlar (≤768px): Foyda ham yashirish */
+@media (max-width: 768px) {
     .sales-history-page .sales-table th:nth-child(2), .sales-history-page .sales-table td:nth-child(2) { width: 18%; }
     .sales-history-page .sales-table th:nth-child(5), .sales-history-page .sales-table td:nth-child(5) { width: 52%; }
     .sales-history-page .sales-table th:nth-child(9), .sales-history-page .sales-table td:nth-child(9) { width: 13%; }
