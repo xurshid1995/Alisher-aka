@@ -707,6 +707,10 @@
 {% endblock %}
 
 {% block content %}
+<!-- Offline banner -->
+<div id="offlineBanner" style="display:none; position:sticky; top:0; z-index:10000; background:#dc3545; color:white; text-align:center; padding:10px 20px; font-size:14px; font-weight:600; box-shadow:0 2px 8px rgba(0,0,0,0.3);">
+    ⚠️ Internet aloqasi yo'q — savdo vaqtincha to'xtatildi. Iltimos, internetga ulaning.
+</div>
 <div class="sales-container">
     <!-- Page Header (yuqorida) -->
     <div class="page-header" style="margin-bottom: 15px;">
@@ -3555,6 +3559,12 @@
                     return;
                 }
                 
+                // Internet tekshiruvi (1-qatlam)
+                if (!navigator.onLine) {
+                    alert('⚠️ Internet aloqasi yo\'q.\nMiqdorni o\'zgartirish uchun internetga ulaning.');
+                    return;
+                }
+                
                 // Qo'shimcha miqdorni stokdan olish
                 try {
                     const response = await fetch('/api/reserve-stock', {
@@ -3575,8 +3585,8 @@
                     }
                     console.log('➕ Qo\'shimcha stokdan olindi:', quantityDifference, 'dona');
                 } catch (error) {
-                    console.error('Stok ayirish xatosi:', error);
-                    alert(SLANG.stock_update_error);
+                    console.error('Stok ayirish xatosi (network):', error);
+                    alert('⚠️ Server bilan bog\'lanib bo\'lmadi.\nInternet aloqasini tekshirib qaytadan urining.');
                     return;
                 }
             }
@@ -3663,6 +3673,12 @@
             return;
         }
         
+        // Internet tekshiruvi (1-qatlam)
+        if (!navigator.onLine) {
+            alert('⚠️ Internet aloqasi yo\'q.\nSavdo qo\'shish uchun internetga ulaning.');
+            return;
+        }
+        
         // Stokdan darhol ayirish
         try {
             const response = await fetch('/api/reserve-stock', {
@@ -3684,8 +3700,8 @@
             
             console.log('✅ Stokdan ayirildi:', quantity, 'dona');
         } catch (error) {
-            console.error('Stok ayirish xatosi:', error);
-            alert(SLANG.stock_update_error);
+            console.error('Stok ayirish xatosi (network):', error);
+            alert('⚠️ Server bilan bog\'lanib bo\'lmadi.\nInternet aloqasini tekshirib qaytadan urining.');
             return;
         }
         
@@ -3900,6 +3916,12 @@
             return;
         }
         
+        // Internet tekshiruvi (1-qatlam)
+        if (!navigator.onLine) {
+            alert('⚠️ Internet aloqasi yo\'q.\nMahsulotni o\'chirish uchun internetga ulaning.');
+            return;
+        }
+        
         // Debug: funksiya chaqirilgan vaqtni log qilish
         const timestamp = new Date().toISOString();
         console.log(`\n${'='.repeat(80)}`);
@@ -3946,8 +3968,8 @@
                     console.log('🔒 _stockReturned flag = true');
                 }
             } catch (error) {
-                console.error('❌ Stok qaytarish xatosi:', error);
-                alert(SLANG.stock_return_error_msg + ': ' + error.message);
+                console.error('❌ Stok qaytarish xatosi (network):', error);
+                alert('⚠️ Server bilan bog\'lanib bo\'lmadi.\nInternet aloqasini tekshirib qaytadan urining.');
                 console.log(`${'='.repeat(80)}\n`);
                 return; // Xatolik bo'lsa savatdan o'chirmaymiz
             }
@@ -4014,6 +4036,13 @@
             return; // O'zgarish yo'q
         }
         
+        // Internet tekshiruvi (1-qatlam)
+        if (!navigator.onLine) {
+            alert('⚠️ Internet aloqasi yo\'q.\nMiqdorni o\'zgartirish uchun internetga ulaning.');
+            updateCart(); // Eski qiymatni qaytarish
+            return;
+        }
+        
         // Agar miqdor oshsa, stokdan qo'shimcha ayirish
         if (quantityDiff > 0) {
             try {
@@ -4040,12 +4069,12 @@
                 }
                 console.log('✅ Stokdan qo\'shimcha ayirildi:', quantityDiff, 'dona');
             } catch (error) {
-                console.error('Stok ayirish xatosi:', error);
+                console.error('Stok ayirish xatosi (network):', error);
                 if (input) {
                     input.style.borderColor = '#dc3545';
                     input.style.backgroundColor = '#ffe6e6';
                 }
-                alert(SLANG.stock_update_error);
+                alert('⚠️ Server bilan bog\'lanib bo\'lmadi.\nInternet aloqasini tekshirib qaytadan urining.');
                 updateCart();
                 return;
             }
@@ -6371,6 +6400,22 @@
     document.addEventListener('DOMContentLoaded', function() {
         console.log('🎯 DOM yuklandi, tab sistemani ishga tushirish...');
         initializeTabs();
+        // Sahifa yuklanganda internet yo'q bo'lsa bannerni ko'rsat
+        if (!navigator.onLine) {
+            document.getElementById('offlineBanner').style.display = 'block';
+        }
+    });
+    
+    // Internet uzilganda banner ko'rsat
+    window.addEventListener('offline', function() {
+        document.getElementById('offlineBanner').style.display = 'block';
+        console.warn('📡 Internet uzildi!');
+    });
+    
+    // Internet qaytganda bannerni yashir
+    window.addEventListener('online', function() {
+        document.getElementById('offlineBanner').style.display = 'none';
+        console.log('✅ Internet qaytdi!');
     });
     
     // Sahifa yopilganda yoki refresh qilinganda ma'lumotlarni saqlash
