@@ -50,6 +50,22 @@
     <!-- Mahsulot bor savdolar jadvali -->
     <div id="recentSalesSection" style="display: none; background: white; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
         <h3 style="margin-bottom: 15px; color: #333;">📊 {{ t('product_sales') }}</h3>
+        
+        <!-- Filtr paneli -->
+        <div style="display: flex; gap: 12px; margin-bottom: 15px; flex-wrap: wrap; align-items: end;">
+            <div style="display: flex; flex-direction: column; gap: 4px;">
+                <label style="font-size: 12px; font-weight: 500; color: #666;">Mijoz bo'yicha qidiruv:</label>
+                <input type="text" id="saleCustomerFilter" oninput="filterProductSales()" placeholder="Mijoz ismi..." 
+                       style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 20px; font-size: 13px; width: 200px; outline: none;">
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 4px;">
+                <label style="font-size: 12px; font-weight: 500; color: #666;">Savdo ID:</label>
+                <input type="number" id="saleIdFilterReturn" oninput="filterProductSales()" placeholder="ID raqam" 
+                       style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 20px; font-size: 13px; width: 120px; outline: none;" min="1">
+            </div>
+            <button onclick="clearProductSaleFilters()" style="padding: 8px 16px; background: #6c757d; color: white; border: none; border-radius: 20px; cursor: pointer; font-size: 13px;">✕ Tozalash</button>
+        </div>
+        
         <div style="overflow-x: auto;">
             <table style="width: 100%; border-collapse: collapse;">
                 <thead>
@@ -230,6 +246,7 @@
     let searchTimeout = null;
     let returnLocationId = null;
     let returnLocationType = null;
+    let allProductSalesData = []; // Filtr uchun barcha savdolar saqlanadi
 
     // Sahifa yuklanganda joylashuvlarni yuklash
     document.addEventListener('DOMContentLoaded', function() {
@@ -443,58 +460,88 @@
                 return;
             }
 
-            const salesTableBody = document.getElementById('recentSalesTableBody');
-            let html = '';
+            // Barcha savdolarni saqlab qo'yish (filtr uchun)
+            allProductSalesData = data.sales;
 
-            if (data.sales.length === 0) {
-                html = '<tr><td colspan="7" style="text-align: center; padding: 20px; color: #666;">Bu mahsulot hech bir savdoda ishtirok etmagan</td></tr>';
-            } else {
-                data.sales.forEach(sale => {
-                    // Sana va vaqtni format qilish: 19/01/26 19:24
-                    const date = new Date(sale.created_at);
-                    const day = String(date.getDate()).padStart(2, '0');
-                    const month = String(date.getMonth() + 1).padStart(2, '0');
-                    const year = String(date.getFullYear()).slice(-2);
-                    const hours = String(date.getHours()).padStart(2, '0');
-                    const minutes = String(date.getMinutes()).padStart(2, '0');
-                    const saleDate = `${day}/${month}/${year}<br>${hours}:${minutes}`;
-                    
-                    // Holat badge'ini yaratish (qarz holatini tekshirib)
-                    const statusBadge = getPaymentStatusBadge(sale);
-                    
-                    // Savdodagi jami mahsulot turlarini hisoblash
-                    const totalProductTypes = sale.total_items || 0;
+            // Filtr inputlarni tozalash
+            const custF = document.getElementById('saleCustomerFilter');
+            const idF = document.getElementById('saleIdFilterReturn');
+            if (custF) custF.value = '';
+            if (idF) idF.value = '';
 
-                    html += `
-                        <tr style="border-bottom: 1px solid #f0f0f0;">
-                            <td style="padding: 12px;">${saleDate}</td>
-                            <td style="padding: 12px; text-align: center; font-weight: 600;">#${sale.id}</td>
-                            <td style="padding: 12px;">${sale.customer_name}</td>
-                            <td style="padding: 12px; text-align: center; font-weight: 600;">${totalProductTypes}</td>
-                            <td style="padding: 12px; text-align: center; font-weight: 600; color: #007bff;">${sale.product_quantity}</td>
-                            <td style="padding: 12px; text-align: center;">${statusBadge}</td>
-                            <td style="padding: 12px; text-align: center;">
-                                <button onclick="viewSaleDetails(${sale.id})" 
-                                        style="padding: 6px 12px; background: #17a2b8; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 13px; margin-right: 5px;">
-                                    👁️ Ko'rish
-                                </button>
-                                <button onclick="selectSaleForReturn(${sale.id}, ${productId})" 
-                                        style="padding: 6px 12px; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 13px;">
-                                    ↩️ Qaytarish
-                                </button>
-                            </td>
-                        </tr>
-                    `;
-                });
-            }
-
-            salesTableBody.innerHTML = html;
+            // Jadvalga chiqarish
+            renderProductSalesTable(allProductSalesData);
             document.getElementById('recentSalesSection').style.display = 'block';
 
         } catch (error) {
             console.error('Xatolik:', error);
             showMessage('❌ Server bilan bog\'lanishda xatolik!', 'error');
         }
+    }
+
+    function renderProductSalesTable(sales) {
+        const salesTableBody = document.getElementById('recentSalesTableBody');
+        const productId = selectedProduct ? selectedProduct.id : null;
+        let html = '';
+
+        if (sales.length === 0) {
+            html = '<tr><td colspan="7" style="text-align: center; padding: 20px; color: #666;">Natija topilmadi</td></tr>';
+        } else {
+            sales.forEach(sale => {
+                const date = new Date(sale.created_at);
+                const day = String(date.getDate()).padStart(2, '0');
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const year = String(date.getFullYear()).slice(-2);
+                const hours = String(date.getHours()).padStart(2, '0');
+                const minutes = String(date.getMinutes()).padStart(2, '0');
+                const saleDate = `${day}/${month}/${year}<br>${hours}:${minutes}`;
+                const statusBadge = getPaymentStatusBadge(sale);
+                const totalProductTypes = sale.total_items || 0;
+                html += `
+                    <tr style="border-bottom: 1px solid #f0f0f0;">
+                        <td style="padding: 12px;">${saleDate}</td>
+                        <td style="padding: 12px; text-align: center; font-weight: 600;">#${sale.id}</td>
+                        <td style="padding: 12px;">${sale.customer_name}</td>
+                        <td style="padding: 12px; text-align: center; font-weight: 600;">${totalProductTypes}</td>
+                        <td style="padding: 12px; text-align: center; font-weight: 600; color: #007bff;">${sale.product_quantity}</td>
+                        <td style="padding: 12px; text-align: center;">${statusBadge}</td>
+                        <td style="padding: 12px; text-align: center;">
+                            <button onclick="viewSaleDetails(${sale.id})" 
+                                    style="padding: 6px 12px; background: #17a2b8; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 13px; margin-right: 5px;">
+                                👁️ Ko'rish
+                            </button>
+                            <button onclick="selectSaleForReturn(${sale.id}, ${productId})" 
+                                    style="padding: 6px 12px; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 13px;">
+                                ↩️ Qaytarish
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+        salesTableBody.innerHTML = html;
+    }
+
+    function filterProductSales() {
+        const customerFilter = document.getElementById('saleCustomerFilter').value.trim().toLowerCase();
+        const idFilter = document.getElementById('saleIdFilterReturn').value.trim();
+
+        let filtered = allProductSalesData;
+
+        if (customerFilter) {
+            filtered = filtered.filter(s => (s.customer_name || '').toLowerCase().includes(customerFilter));
+        }
+        if (idFilter) {
+            filtered = filtered.filter(s => String(s.id) === idFilter);
+        }
+
+        renderProductSalesTable(filtered);
+    }
+
+    function clearProductSaleFilters() {
+        document.getElementById('saleCustomerFilter').value = '';
+        document.getElementById('saleIdFilterReturn').value = '';
+        renderProductSalesTable(allProductSalesData);
     }
 
     async function selectSaleForReturn(saleId, productId) {
