@@ -769,7 +769,7 @@ async function loadSalesChart(locationId = null, period = null, locationType = n
                                 if (!label) return '';
                                 
                                 // Bugun filtiri faolmi?
-                                const activePeriod = document.querySelector('.time-btn.active')?.getAttribute('data-period');
+                                const activePeriod = document.querySelector('.db-tf-btn.active')?.getAttribute('data-period');
                                 
                                 if (activePeriod === 'today') {
                                     // Soat formatini ko'rsatish: "14:00"
