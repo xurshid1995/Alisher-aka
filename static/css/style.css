@@ -243,14 +243,14 @@ body {
     left: 0;
     right: 0;
     height: 70px;
-    background: #ffffff;
+    background: linear-gradient(135deg, #0d9488 0%, #0891b2 100%);
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 0 2rem;
     z-index: 999;
-    box-shadow: 0 1px 12px rgba(0, 0, 0, 0.07);
-    border-bottom: 1px solid #e8ecf0;
+    box-shadow: 0 2px 16px rgba(13, 148, 136, 0.25);
+    border-bottom: none;
 }
 
 .header-left {
@@ -260,7 +260,7 @@ body {
 }
 
 .header-left h1 {
-    color: #0f172a;
+    color: #ffffff;
     font-size: 1.5rem;
     font-weight: 700;
     margin: 0;
@@ -279,32 +279,32 @@ body {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    background: #f0fdf9;
+    background: rgba(255, 255, 255, 0.15);
     padding: 0.5rem 1rem;
     border-radius: 10px;
     cursor: pointer;
     transition: all 0.2s ease;
-    border: 1px solid #ccfbf1;
+    border: 1px solid rgba(255, 255, 255, 0.25);
     box-shadow: none;
 }
 
 .currency-display:hover {
-    background: #ccfbf1;
+    background: rgba(255, 255, 255, 0.25);
     transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .currency-rate {
-    color: #0d9488;
+    color: #ffffff;
     font-weight: 600;
     font-size: 0.9rem;
     transition: color 0.2s ease;
 }
 
 .edit-rate-btn {
-    background: rgba(20, 184, 166,0.1);
+    background: rgba(255, 255, 255, 0.15);
     border: none;
-    color: #0d9488;
+    color: #ffffff;
     padding: 0.3rem 0.6rem;
     border-radius: 50%;
     cursor: pointer;
@@ -318,16 +318,16 @@ body {
 }
 
 .edit-rate-btn:hover {
-    background: rgba(20, 184, 166,0.2);
+    background: rgba(255, 255, 255, 0.3);
     transform: scale(1.1);
-    box-shadow: 0 2px 8px rgba(20, 184, 166,0.2);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 .user-info {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    color: #374151;
+    color: rgba(255, 255, 255, 0.9);
     cursor: pointer;
     padding: 0.5rem 1rem;
     border-radius: 25px;
@@ -335,17 +335,17 @@ body {
 }
 
 .user-info:hover {
-    background: rgba(0, 0, 0, 0.04);
+    background: rgba(255, 255, 255, 0.15);
 }
 
 .user-name {
     font-weight: 600;
-    color: #0f172a;
+    color: #ffffff;
 }
 
 .user-role {
     font-size: 0.8rem;
-    color: #0d9488;
+    color: rgba(255, 255, 255, 0.75);
     margin-left: 0.5rem;
 }
 
@@ -354,22 +354,22 @@ body {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);
+    background: rgba(255, 255, 255, 0.18);
     color: white;
-    border: none;
+    border: 1px solid rgba(255, 255, 255, 0.3);
     padding: 0.6rem 1rem;
-    border-radius: 25px;
+    border-radius: 10px;
     cursor: pointer;
     font-weight: 600;
     font-size: 0.9rem;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 10px rgba(20, 184, 166, 0.22);
+    transition: all 0.2s ease;
+    box-shadow: none;
 }
 
 .logout-btn:hover {
-    background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 16px rgba(20, 184, 166, 0.3);
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .logout-btn:active {
@@ -1382,9 +1382,9 @@ footer {
         display: flex !important;
         height: 60px;
         padding: 0 0.3rem;
-        background: #ffffff;
-        box-shadow: 0 2px 16px rgba(20, 184, 166,0.1);
-        border-bottom: 1px solid rgba(20, 184, 166,0.08);
+        background: linear-gradient(135deg, #0d9488 0%, #0891b2 100%);
+        box-shadow: 0 2px 12px rgba(13, 148, 136, 0.3);
+        border-bottom: none;
         position: fixed;
         top: 0;
         left: 0;
@@ -1415,8 +1415,8 @@ footer {
         display: flex !important;
         padding: 0.2rem 0.4rem;
         font-size: 0.7rem;
-        background: rgba(20, 184, 166,0.08);
-        border: 1px solid rgba(20, 184, 166,0.15);
+        background: rgba(255, 255, 255, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.25);
         border-radius: 6px;
         align-items: center;
         gap: 0.2rem;
@@ -1432,13 +1432,13 @@ footer {
         font-size: 0.7rem;
         font-weight: 600;
         white-space: nowrap;
-        color: #0f766e;
+        color: #ffffff;
     }
     .top-header .edit-rate-btn {
         display: inline-flex !important;
         padding: 0.15rem 0.2rem;
         font-size: 0.65rem;
-        background: rgba(20, 184, 166,0.1);
+        background: rgba(255, 255, 255, 0.15);
         border: none;
         border-radius: 4px;
         cursor: pointer;
@@ -1447,6 +1447,7 @@ footer {
         height: 22px;
         align-items: center;
         justify-content: center;
+        color: #ffffff;
     }
     
     /* Til tanlash tugmasi */
@@ -1465,8 +1466,8 @@ footer {
         display: flex !important;
         padding: 0.2rem 0.35rem;
         font-size: 0.65rem;
-        background: rgba(20, 184, 166,0.08);
-        border: 1px solid rgba(20, 184, 166,0.15);
+        background: rgba(255, 255, 255, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.25);
         border-radius: 6px;
         gap: 0.15rem;
         align-items: center;
@@ -1483,7 +1484,7 @@ footer {
         white-space: nowrap;
         font-size: 0.65rem;
         font-weight: 600;
-        color: #1a1a2e;
+        color: #ffffff;
     }
     .top-header .user-role {
         display: none; /* (admin) ni yashirish */
@@ -1493,10 +1494,10 @@ footer {
     .top-header .logout-btn {
         padding: 0.2rem 0.35rem;
         font-size: 0.7rem;
-        background: linear-gradient(135deg, #14b8a6, #0d9488);
-        border: none;
+        background: rgba(255, 255, 255, 0.18);
+        border: 1px solid rgba(255, 255, 255, 0.3);
         border-radius: 6px;
-        box-shadow: 0 2px 8px rgba(20, 184, 166,0.3);
+        box-shadow: none;
         flex-shrink: 0;
         display: flex;
         align-items: center;
