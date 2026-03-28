@@ -9,401 +9,384 @@
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid">
-    <!-- Joylashuv filtri - Alohida -->
-    <div class="row mb-3">
-        <div class="col-md-10 col-lg-8 mx-auto">
-            <div class="location-filter-wrapper">
-                <div id="locationButtons">
-                    <button class="btn btn-sm me-2 mb-2 location-btn active" data-location="" onclick="selectLocation(this, '')">
-                        🏢 {{ t('all') }}
-                    </button>
-                </div>
-            </div>
+<div class="db-page">
+
+    <!-- Page Title Row -->
+    <div class="db-page-header">
+        <div>
+            <p class="db-greeting">{{ t('dashboard') }}</p>
+            <h1 class="db-page-title-text">📊 {{ t('sales_dynamics') }}</h1>
         </div>
     </div>
-    
-    <!-- Charts Section -->
-    <div class="row">
-        <div class="col-md-10 col-lg-8 mx-auto">
-            <div class="card">
-                <div class="card-header text-center">
-                    <h2>📊 {{ t('sales_dynamics') }}</h2>
-                    
-                    <!-- Vaqt filtri va Statistika bir qatorda -->
-                    <div class="mt-2" id="timeFiltersAndStats">
-                        <div class="row align-items-center">
-                            <!-- Vaqt filtri tugmalari -->
-                            <div class="col-lg-6 text-center text-lg-start mb-2">
-                                <div id="timeFilters">
-                                    <button class="btn btn-sm me-2 mb-2 time-btn active" data-period="today" onclick="selectTimePeriod(this, 'today')">
-                                        📅 {{ t('today') }}
-                                    </button>
-                                    <button class="btn btn-sm me-2 mb-2 time-btn" data-period="week" onclick="selectTimePeriod(this, 'week')">
-                                        📊 {{ t('this_week') }}
-                                    </button>
-                                    <button class="btn btn-sm me-2 mb-2 time-btn" data-period="month" onclick="selectTimePeriod(this, 'month')">
-                                        📈 {{ t('this_month') }}
-                                    </button>
-                                </div>
-                            </div>
-                            
-                            <!-- Statistika -->
-                            <div class="col-lg-6">
-                                <div class="stats-horizontal" id="statsRow">
-                                    <div class="stat-item">
-                                        <span class="stat-label-inline">📊 {{ t('total_sales') }}</span>
-                                        <span class="stat-number-inline" id="totalSales">0</span>
-                                    </div>
-                                    <div class="stat-separator">|</div>
-                                    <div class="stat-item">
-                                        <span class="stat-label-inline">💰 {{ t('total_amount') }}</span>
-                                        <div style="display: flex; flex-direction: column; align-items: flex-start;">
-                                            <span class="stat-number-inline" id="totalAmount">0$</span>
-                                            <span style="font-size: 11px; color: #666; margin-top: 2px;" id="totalAmountUZS">0 UZS</span>
-                                        </div>
-                                    </div>
-                                    <div class="stat-separator">|</div>
-                                    <div class="stat-item" id="paymentMethodsContainer" style="display: flex; gap: 5px; align-items: center;">
-                                        <span class="stat-label-inline" style="margin-right: 5px;">{{ t('payments') }}:</span>
-                                        <span id="paymentMethods" style="font-size: 12px; color: #666;">-</span>
-                                    </div>
-                                    {% if session.role != 'sotuvchi' %}
-                                    <div class="stat-separator">|</div>
-                                    <div class="stat-item">
-                                        <span class="stat-label-inline">💵 {{ t('profit') }}</span>
-                                        <div style="display: flex; flex-direction: column; align-items: flex-start;">
-                                            <span class="stat-number-inline" id="totalProfit">0$</span>
-                                            <span style="font-size: 11px; color: #666; margin-top: 2px;" id="totalProfitUZS">0 UZS</span>
-                                        </div>
-                                    </div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
+
+    <div class="row g-4 align-items-start">
+
+        <!-- ===== LEFT: Chart Card ===== -->
+        <div class="col-12 col-lg-7">
+            <div class="db-card">
+                <div class="db-card-head">
+                    <span class="db-card-label">{{ t('sales_dynamics') }}</span>
+                    <div id="timeFilters" class="db-time-filters">
+                        <button class="db-tf-btn active" data-period="today" onclick="selectTimePeriod(this, 'today')">📅 {{ t('today') }}</button>
+                        <button class="db-tf-btn" data-period="week" onclick="selectTimePeriod(this, 'week')">📊 {{ t('this_week') }}</button>
+                        <button class="db-tf-btn" data-period="month" onclick="selectTimePeriod(this, 'month')">📈 {{ t('this_month') }}</button>
                     </div>
                 </div>
-                <div class="card-body" style="height: 400px;">
+                <div class="db-location-row">
+                    <div id="locationButtons" class="db-loc-btns">
+                        <button class="db-loc-btn active" data-location="" onclick="selectLocation(this, '')">🏢 {{ t('all') }}</button>
+                    </div>
+                </div>
+                <div class="db-chart-container">
                     <canvas id="salesChart"></canvas>
                 </div>
             </div>
+        </div>
+
+        <!-- ===== RIGHT: Stats Column ===== -->
+        <div class="col-12 col-lg-5">
+
+            <!-- Stats Overview Card -->
+            <div class="db-card db-stats-overview-card mb-4">
+                <div class="db-card-head">
+                    <span class="db-card-label">{{ t('cs_statistics') }}</span>
+                </div>
+                <div class="db-stats-bar-row">
+                    <div class="db-stats-bar">
+                        <div class="db-bar-green"></div>
+                        <div class="db-bar-blue"></div>
+                        <div class="db-bar-red"></div>
+                    </div>
+                </div>
+                <div class="db-stats-cols-row">
+                    <div class="db-stats-col-item">
+                        <div class="db-stats-col-label">{{ t('total_sales') }}</div>
+                        <div class="db-stats-col-val" id="totalSales">0</div>
+                    </div>
+                    <div class="db-stats-divider"></div>
+                    <div class="db-stats-col-item">
+                        <div class="db-stats-col-label">{{ t('total_amount') }}</div>
+                        <div class="db-stats-col-val green" id="totalAmount">$0</div>
+                        <div class="db-stats-col-sub" id="totalAmountUZS">0 UZS</div>
+                    </div>
+                    {% if session.role != 'sotuvchi' %}
+                    <div class="db-stats-divider"></div>
+                    <div class="db-stats-col-item">
+                        <div class="db-stats-col-label">{{ t('profit') }}</div>
+                        <div class="db-stats-col-val blue" id="totalProfit">$0</div>
+                        <div class="db-stats-col-sub" id="totalProfitUZS">0 UZS</div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- 2x2 Mini Stat Cards -->
+            <div class="row g-3 mb-4">
+                <div class="col-6">
+                    <div class="db-mini-card" style="--mc:#14b8a6">
+                        <div class="db-mini-icon" style="--mc:#14b8a6">🛒</div>
+                        <div class="db-mini-label">{{ t('total_sales') }}</div>
+                        <div class="db-mini-val" id="totalSalesMini">0</div>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="db-mini-card" style="--mc:#4a7af7">
+                        <div class="db-mini-icon" style="--mc:#4a7af7">💰</div>
+                        <div class="db-mini-label">{{ t('total_amount') }}</div>
+                        <div class="db-mini-val" id="totalAmountMini">$0</div>
+                    </div>
+                </div>
+                {% if session.role != 'sotuvchi' %}
+                <div class="col-6">
+                    <div class="db-mini-card" style="--mc:#f59e0b">
+                        <div class="db-mini-icon" style="--mc:#f59e0b">💵</div>
+                        <div class="db-mini-label">{{ t('profit') }}</div>
+                        <div class="db-mini-val" id="totalProfitMini">$0</div>
+                    </div>
+                </div>
+                {% endif %}
+                <div class="col-6">
+                    <div class="db-mini-card" style="--mc:#f43f5e">
+                        <div class="db-mini-icon" style="--mc:#f43f5e">📝</div>
+                        <div class="db-mini-label">{{ t('debt') }}</div>
+                        <div class="db-mini-val" id="totalDebtMini">$0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Methods Gradient Card -->
+            <div class="db-promo-card">
+                <div class="db-promo-title">💳 {{ t('payments') }}</div>
+                <div class="db-promo-body" id="paymentMethodsContainer">
+                    <span id="paymentMethods">-</span>
+                </div>
+            </div>
+
         </div>
     </div>
 </div>
 
 <style>
-.page-header {
-    text-align: center;
-    margin-bottom: 1rem;
-    padding: 1rem 0;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border-radius: 6px;
+/* ==================== DASHBOARD PAGE ==================== */
+.db-page {
+    padding: 0;
 }
 
-.page-header h2 {
-    font-weight: 600;
-    margin-bottom: 0.5rem;
+/* Page header */
+.db-page-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 24px;
 }
-
-.page-header p {
+.db-greeting {
+    font-size: 13px;
+    color: #64748b;
+    margin: 0 0 4px 0;
+    font-weight: 500;
+}
+.db-page-title-text {
+    font-size: 28px;
+    font-weight: 700;
+    color: #1e293b;
     margin: 0;
-    opacity: 0.9;
+    line-height: 1.2;
 }
 
-/* Location filter wrapper */
-.location-filter-wrapper {
-    background: white;
-    padding: 10px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+/* Cards */
+.db-card {
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+    overflow: hidden;
+}
+.db-card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px 12px;
+    border-bottom: 1px solid #f1f5f9;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+.db-card-label {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1e293b;
 }
 
-#locationButtons {
+/* Time filter buttons */
+.db-time-filters {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+.db-tf-btn {
+    background: transparent;
+    border: 1.5px solid #e2e8f0;
+    color: #475569;
+    border-radius: 20px;
+    padding: 5px 14px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.db-tf-btn:hover:not(.active) {
+    border-color: #14b8a6;
+    color: #14b8a6;
+}
+.db-tf-btn.active {
+    background: #14b8a6;
+    border-color: #14b8a6;
+    color: #ffffff;
+    font-weight: 600;
+}
+
+/* Location buttons */
+.db-location-row {
+    padding: 12px 20px;
+    border-bottom: 1px solid #f1f5f9;
+    background: #fafcff;
+}
+.db-loc-btns {
     display: flex;
     flex-wrap: wrap;
-    gap: 5px;
-    justify-content: center;
-    overflow-x: visible;
+    gap: 6px;
+}
+.db-loc-btn {
+    background: transparent;
+    border: 1.5px solid #cbd5e1;
+    color: #475569;
+    border-radius: 20px;
+    padding: 4px 14px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.db-loc-btn:hover:not(.active) {
+    border-color: #4a7af7;
+    color: #4a7af7;
+}
+.db-loc-btn.active {
+    background: #4a7af7;
+    border-color: #4a7af7;
+    color: #ffffff;
+    font-weight: 600;
 }
 
-#locationButtons::-webkit-scrollbar {
-    width: 6px;
+/* Chart */
+.db-chart-container {
+    padding: 16px 16px 12px;
+    height: 380px;
 }
 
-#locationButtons::-webkit-scrollbar-track {
-    background: #e9ecef;
-    border-radius: 3px;
+/* Stats overview card */
+.db-stats-bar-row {
+    padding: 14px 20px 8px;
 }
-
-#locationButtons::-webkit-scrollbar-thumb {
-    background: #6c757d;
-    border-radius: 3px;
+.db-stats-bar {
+    display: flex;
+    border-radius: 6px;
+    overflow: hidden;
+    height: 8px;
+    gap: 3px;
 }
+.db-bar-green { flex: 6; background: #14b8a6; border-radius: 6px; }
+.db-bar-blue  { flex: 2; background: #4a7af7; border-radius: 6px; }
+.db-bar-red   { flex: 1; background: #f43f5e; border-radius: 6px; }
 
-#locationButtons::-webkit-scrollbar-thumb:hover {
-    background: #495057;
+.db-stats-cols-row {
+    display: flex;
+    align-items: flex-start;
+    padding: 12px 20px 18px;
+    gap: 0;
 }
-
-/* Tugmalar - Bosilmagan holat - OZGINA KATTAROQ */
-.location-btn {
-    background: none !important;
-    background-color: transparent !important;
-    border: 1px solid #007bff !important;
-    color: black !important;
-    box-shadow: none !important;
-    transition: all 0.3s ease;
-    font-weight: 450;
-    font-size: 14px !important;
-    padding: 6px 12px !important;
-    border-radius: 5px;
+.db-stats-divider {
+    width: 1px;
+    background: #e2e8f0;
+    margin: 0 16px;
+    align-self: stretch;
 }
-
-/* Desktop - 2 ta bir qatorda */
-@media (min-width: 769px) {
-    .location-btn {
-        flex: 1 1 auto;
-        max-width: 48%;
-        min-width: 0;
-    }
+.db-stats-col-item {
+    flex: 1;
+    min-width: 0;
 }
-
-/* Tugma bosilganda - KO'K rang, soya yo'q - KICHIKROQ */
-.location-btn.active {
-    background-color: #007bff !important;
-    border: 1px solid #007bff !important;
-    color: white !important;
-    box-shadow: none !important;
-    transform: scale(1.02) !important;
-}
-
-/* Hover effect - soya yo'q */
-.location-btn:hover:not(.active) {
-    background-color: rgba(0, 123, 255, 0.1) !important;
-    transform: translateY(-2px) !important;
-    box-shadow: none !important;
-}
-
-/* Vaqt filtri tugmalari */
-.time-btn {
-    background: none !important;
-    background-color: transparent !important;
-    border: 1px solid #28a745 !important;
-    color: #28a745 !important;
-    box-shadow: none !important;
-    transition: all 0.3s ease;
-    font-weight: 450;
-    font-size: 14px !important;
-    padding: 6px 12px !important;
-    border-radius: 5px;
-}
-
-/* Vaqt filtri - bosilgan holat */
-.time-btn.active {
-    background-color: #28a745 !important;
-    border: 1px solid #28a745 !important;
-    color: white !important;
-    box-shadow: none !important;
-    transform: scale(1.02) !important;
-}
-
-/* Vaqt filtri hover */
-.time-btn:hover:not(.active) {
-    background-color: rgba(40, 167, 69, 0.1) !important;
-    transform: translateY(-2px) !important;
-    box-shadow: none !important;
-}
-
-/* Statistika kartalari */
-.stat-card {
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-    border-radius: 8px;
-    padding: 15px 10px;
-    margin: 0 5px;
-    border: 1px solid #dee2e6;
-    transition: all 0.3s ease;
-}
-
-.stat-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-}
-
-.stat-number {
-    font-size: 1.8rem;
-    font-weight: bold;
-    color: #28a745;
+.db-stats-col-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #94a3b8;
     margin-bottom: 5px;
 }
-
-.stat-label {
-    font-size: 0.9rem;
-    color: #6c757d;
-    font-weight: 500;
+.db-stats-col-val {
+    font-size: 22px;
+    font-weight: 800;
+    color: #1e293b;
+    line-height: 1.1;
+}
+.db-stats-col-val.green { color: #14b8a6; }
+.db-stats-col-val.blue  { color: #4a7af7; }
+.db-stats-col-sub {
+    font-size: 11px;
+    color: #94a3b8;
+    margin-top: 2px;
 }
 
-/* Inline statistika kartalari (bir qatorda) */
-.stat-card-inline {
-    background: rgba(255, 255, 255, 0.8);
-    border-radius: 6px;
-    padding: 8px 5px;
-    margin: 0 2px;
-    border: 1px solid #e9ecef;
-    transition: all 0.2s ease;
-    text-align: center;
+/* Mini stat cards */
+.db-mini-card {
+    background: #ffffff;
+    border-radius: 14px;
+    padding: 18px 14px 14px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    border-left: 4px solid var(--mc, #14b8a6);
+    transition: transform 0.2s, box-shadow 0.2s;
 }
-
-.stat-card-inline:hover {
-    background: rgba(255, 255, 255, 0.95);
-    border-color: #28a745;
+.db-mini-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 28px rgba(0,0,0,0.10);
 }
-
-.stat-number-small {
-    font-size: 1.1rem;
-    font-weight: bold;
-    color: #28a745;
-    margin-bottom: 2px;
-    line-height: 1.2;
-}
-
-.stat-label-small {
-    font-size: 0.75rem;
-    color: #6c757d;
-    font-weight: 500;
-    line-height: 1.2;
-}
-
-/* Gorizontal statistika (bir qatorda) */
-.stats-horizontal {
-    display: flex;
+.db-mini-icon {
+    display: inline-flex;
+    align-items: center;
     justify-content: center;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 15px;
-    padding: 8px 0;
+    width: 36px;
+    height: 36px;
+    background: color-mix(in srgb, var(--mc, #14b8a6) 14%, white);
+    border-radius: 10px;
+    font-size: 18px;
+    margin-bottom: 10px;
+}
+.db-mini-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 4px;
+}
+.db-mini-val {
+    font-size: 20px;
+    font-weight: 800;
+    color: #1e293b;
+    line-height: 1.1;
 }
 
-.stat-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+/* Promo / Payment card */
+.db-promo-card {
+    background: linear-gradient(135deg, #0f766e 0%, #0284c7 100%);
+    border-radius: 16px;
+    padding: 20px;
+    color: #ffffff;
+    box-shadow: 0 6px 24px rgba(14,116,110,0.30);
+}
+.db-promo-title {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    opacity: 0.9;
+    letter-spacing: 0.03em;
+}
+.db-promo-body {
+    font-size: 13px;
+}
+.db-promo-body span {
+    color: rgba(255,255,255,0.85);
 }
 
-.stat-number-inline {
-    font-size: 1.2rem;
-    font-weight: bold;
-    color: #28a745;
+/* Payment items inside promo card - override inline styles */
+#paymentMethods span[style] {
+    background: rgba(255,255,255,0.18) !important;
+    border-left-color: rgba(255,255,255,0.7) !important;
+    color: #ffffff !important;
+    margin-bottom: 4px !important;
+}
+#paymentMethods span[style] strong {
+    color: #ffffff;
+}
+#paymentMethods span[style] span {
+    color: rgba(255,255,255,0.75) !important;
+    font-size: 10px !important;
 }
 
-.stat-label-inline {
-    font-size: 0.9rem;
-    color: #6c757d;
-    font-weight: 500;
+/* Responsive */
+@media (max-width: 991px) {
+    .db-chart-container { height: 280px; }
+    .db-stats-col-val { font-size: 17px; }
 }
-
-.stat-separator {
-    color: #dee2e6;
-    font-weight: 300;
-    font-size: 1.2rem;
-}
-
 @media (max-width: 576px) {
-    .stats-horizontal {
-        flex-wrap: wrap;
-        gap: 3px;
-        justify-content: center;
-        font-size: 0.7rem;
-    }
-    
-    .stat-separator {
-        display: none;
-    }
-    
-    .stat-item {
-        justify-content: center;
-        flex: 0 1 auto;
-        font-size: 0.7rem;
-        padding: 2px 4px;
-    }
-    
-    .stat-label-inline {
-        font-size: 0.7rem !important;
-    }
-    
-    .stat-number-inline {
-        font-size: 0.8rem !important;
-        font-weight: 600;
-    }
-    
-    #paymentMethodsContainer {
-        flex: 0 1 auto !important;
-        font-size: 0.65rem !important;
-    }
-    
-    #paymentMethods {
-        font-size: 0.65rem !important;
-    }
-}
-
-@media (max-width: 768px) {
-    .stat-card {
-        margin-bottom: 10px;
-    }
-    
-    .stat-number {
-        font-size: 1.5rem;
-    }
-    
-    /* Mobil filtrlarni bir qatorda qilish */
-    #timeFilters {
-        display: flex;
-        flex-wrap: nowrap !important;
-        gap: 2px;
-        justify-content: space-between;
-        overflow-x: visible;
-        width: 100%;
-        padding: 2px;
-    }
-    
-    #timeFilters .time-btn {
-        flex: 1 1 auto;
-        font-size: 0.75rem !important;
-        padding: 0.25rem 0.2rem !important;
-        white-space: nowrap;
-        min-width: 0;
-        max-width: 33%;
-        line-height: 1.2;
-        height: auto;
-        border-width: 1px !important;
-    }
-    
-    #locationButtons {
-        display: flex;
-        flex-wrap: wrap !important;
-        gap: 2px;
-        justify-content: space-between;
-        overflow-x: visible;
-        width: 100%;
-        padding: 2px;
-    }
-    
-    #locationButtons .location-btn {
-        flex: 1 1 auto !important;
-        font-size: 0.7rem !important;
-        padding: 0.3rem 0.2rem !important;
-        white-space: normal !important;
-        min-width: 0 !important;
-        max-width: 48% !important;
-        line-height: 1.2 !important;
-        height: auto !important;
-        border-width: 1px !important;
-        text-overflow: ellipsis !important;
-        overflow: hidden !important;
-        width: auto !important;
-        display: inline-flex !important;
-    }
+    .db-page-title-text { font-size: 20px; }
+    .db-card-head { gap: 8px; }
+    .db-tf-btn { padding: 4px 10px; font-size: 11px; }
+    .db-loc-btn { padding: 3px 10px; font-size: 11px; }
+    .db-mini-val { font-size: 16px; }
+    .db-stats-col-val { font-size: 15px; }
+    .db-chart-container { height: 240px; }
 }
 </style>
+
 
 <script src="{{ url_for('static', filename='js/chart.min.js') }}"></script>
 <!-- Cache buster: v2.0 -->
@@ -474,7 +457,7 @@ async function loadLocations() {
             console.log(`✅ Joylashuv #${index + 1}:`, location.name, location.type, location.id);
             
             const button = document.createElement('button');
-            button.className = 'btn btn-sm me-2 mb-2 location-btn';
+            button.className = 'db-loc-btn';
             button.setAttribute('data-location', location.id);
             button.setAttribute('data-location-type', location.type);
             button.onclick = () => selectLocation(button, location.id, location.type);
@@ -506,7 +489,7 @@ function selectLocation(clickedButton, locationId, locationType = null) {
         buttonText: clickedButton.textContent.trim()
     });
     
-    document.querySelectorAll('.location-btn').forEach(btn => {
+    document.querySelectorAll('.db-loc-btn').forEach(btn => {
         btn.classList.remove('active');
     });
     
@@ -514,7 +497,7 @@ function selectLocation(clickedButton, locationId, locationType = null) {
     console.log('✅ Tugma aktiv qilindi');
     
     // Aktiv vaqt filtrini ham yuboramiz
-    const activePeriod = document.querySelector('.time-btn.active')?.getAttribute('data-period') || 'today';
+    const activePeriod = document.querySelector('.db-tf-btn.active')?.getAttribute('data-period') || 'today';
     console.log('📅 Aktiv vaqt:', activePeriod);
     
     console.log('📊 loadSalesChart chaqirilmoqda...');
@@ -522,7 +505,7 @@ function selectLocation(clickedButton, locationId, locationType = null) {
 }
 
 function selectTimePeriod(clickedButton, period) {
-    document.querySelectorAll('.time-btn').forEach(btn => {
+    document.querySelectorAll('.db-tf-btn').forEach(btn => {
         btn.classList.remove('active');
     });
     
@@ -531,7 +514,7 @@ function selectTimePeriod(clickedButton, period) {
     console.log('Tanlangan vaqt:', period);
     
     // Aktiv joylashuvni va turini topamiz
-    const activeLocationBtn = document.querySelector('.location-btn.active');
+    const activeLocationBtn = document.querySelector('.db-loc-btn.active');
     const activeLocation = activeLocationBtn?.getAttribute('data-location') || '';
     const activeLocationType = activeLocationBtn?.getAttribute('data-location-type') || null;
     loadSalesChart(activeLocation, period, activeLocationType);
@@ -545,7 +528,7 @@ async function loadSalesChart(locationId = null, period = null, locationType = n
             
             // Agar type berilmasa, active tugmadan olamiz
             if (!locationType) {
-                const activeBtn = document.querySelector('.location-btn.active');
+                const activeBtn = document.querySelector('.db-loc-btn.active');
                 locationType = activeBtn ? activeBtn.getAttribute('data-location-type') : null;
             }
             if (locationType) {
@@ -555,7 +538,7 @@ async function loadSalesChart(locationId = null, period = null, locationType = n
         
         // Agar period berilmasa, aktiv period tugmasidan olamiz
         if (!period) {
-            const activePeriodBtn = document.querySelector('.time-btn.active');
+            const activePeriodBtn = document.querySelector('.db-tf-btn.active');
             period = activePeriodBtn ? activePeriodBtn.getAttribute('data-period') : 'today';
         }
         params.append('period', period);
@@ -582,7 +565,7 @@ async function loadSalesChart(locationId = null, period = null, locationType = n
         }
         
         const selectedLocationName = locationId ? 
-            document.querySelector(`.location-btn[data-location="${locationId}"]`)?.textContent.trim() || DLANG.selected_location :
+            document.querySelector(`.db-loc-btn[data-location="${locationId}"]`)?.textContent.trim() || DLANG.selected_location :
             DLANG.all_locations;
         
         salesChart = new Chart(ctx, {
@@ -855,6 +838,9 @@ function updateStatistics(data) {
     
     // Jami foyda
     const totalProfit = data.profits.reduce((sum, profit) => sum + profit, 0);
+
+    // Jami qarz
+    const totalDebt = data.debts ? data.debts.reduce((sum, d) => sum + d, 0) : 0;
     
     // Valyuta kursi (backenddan keladi)
     const exchangeRate = window.currentExchangeRate;
@@ -862,6 +848,12 @@ function updateStatistics(data) {
     // Formatlash va ko'rsatish (bo'sh joy bilan)
     document.getElementById('totalSales').textContent = totalSales.toLocaleString();
     document.getElementById('totalAmount').textContent = '$' + totalAmount.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    
+    // Mini card qiymatlarini yangilash
+    if (document.getElementById('totalSalesMini')) document.getElementById('totalSalesMini').textContent = totalSales.toLocaleString();
+    if (document.getElementById('totalAmountMini')) document.getElementById('totalAmountMini').textContent = '$' + Math.floor(totalAmount).toLocaleString();
+    if (document.getElementById('totalProfitMini')) document.getElementById('totalProfitMini').textContent = '$' + Math.floor(totalProfit).toLocaleString();
+    if (document.getElementById('totalDebtMini')) document.getElementById('totalDebtMini').textContent = '$' + Math.floor(totalDebt).toLocaleString();
     
     // UZS qiymatni faqat kurs mavjud bo'lsagina ko'rsatish
     if (exchangeRate) {
