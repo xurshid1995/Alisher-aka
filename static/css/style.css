@@ -20,10 +20,10 @@ html {
 }
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     line-height: 1.6;
-    color: #334155;
-    background: #f1f5f9;
+    color: #374151;
+    background: #f3f4f8;
     display: flex;
     margin: 0;
     padding: 0;
@@ -52,10 +52,10 @@ body {
 .sidebar {
     width: 70px; /* Oddiy holatda tor */
     background: #ffffff;
-    border-right: 1px solid #e8ecf0;
+    border-right: 1px solid #ebebf0;
     height: calc(100vh - 70px);
     padding: 0;
-    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.04);
+    box-shadow: 2px 0 12px rgba(15, 23, 42, 0.05);
     position: fixed;
     left: 0;
     top: 70px;
@@ -87,13 +87,13 @@ body {
 }
 
 .sidebar::-webkit-scrollbar-thumb {
-    background: rgba(20, 184, 166, 0.25);
+    background: rgba(99, 102, 241, 0.2);
     border-radius: 10px;
     transition: background 0.3s ease;
 }
 
 .sidebar::-webkit-scrollbar-thumb:hover {
-    background: rgba(20, 184, 166, 0.5);
+    background: rgba(99, 102, 241, 0.45);
 }
 
 .sidebar-menu {
@@ -157,10 +157,10 @@ body {
     top: 0;
     left: 0;
     width: 100%;
-    height: 3px;
-    background: linear-gradient(90deg, #14b8a6, #5eead4);
+    height: 2px;
+    background: linear-gradient(90deg, #6366f1, #818cf8);
     transform: translateX(-100%);
-    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Pastdan chiziq animatsiyasi */
@@ -170,17 +170,17 @@ body {
     bottom: 0;
     right: 0;
     width: 100%;
-    height: 3px;
-    background: linear-gradient(90deg, #5eead4, #14b8a6);
+    height: 2px;
+    background: linear-gradient(90deg, #818cf8, #6366f1);
     transform: translateX(100%);
-    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .sidebar-menu a:hover {
-    background: rgba(20, 184, 166, 0.07);
-    color: #0d9488;
-    border-left-color: #14b8a6;
-    transform: translateX(3px);
+    background: rgba(99, 102, 241, 0.07);
+    color: #4f46e5;
+    border-left-color: #6366f1;
+    transform: translateX(2px);
 }
 
 .sidebar-menu a:hover::before {
@@ -192,39 +192,30 @@ body {
 }
 
 .sidebar-menu a.active {
-    background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);
+    background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
     color: #ffffff;
     border-left-color: transparent;
     font-weight: 600;
     border-radius: 10px;
-    box-shadow: 0 3px 10px rgba(20, 184, 166, 0.28);
+    box-shadow: 0 3px 12px rgba(99, 102, 241, 0.25);
     margin: 2px 4px;
 }
 
 .sidebar-menu a.active::before {
     transform: translateX(0);
-    background: linear-gradient(90deg, #ffffff, rgba(255, 255, 255, 0.5));
+    background: linear-gradient(90deg, rgba(255,255,255,0.35), transparent);
 }
 
 .sidebar-menu a.active::after {
     transform: translateX(0);
-    background: linear-gradient(90deg, rgba(255, 255, 255, 0.5), #ffffff);
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.35));
 }
 
 /* Aktiv icon animatsiya */
 .sidebar-menu a.active .icon {
-    transform: scale(1.15);
-    filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.8));
-    animation: iconPulse 2s ease-in-out infinite;
-}
-
-@keyframes iconPulse {
-    0%, 100% {
-        transform: scale(1.15);
-    }
-    50% {
-        transform: scale(1.25);
-    }
+    transform: scale(1.1);
+    filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.6));
+    animation: none;
 }
 
 .sidebar-menu .icon {
@@ -243,13 +234,13 @@ body {
     left: 0;
     right: 0;
     height: 70px;
-    background: linear-gradient(135deg, #0d9488 0%, #0891b2 100%);
+    background: #1e293b;
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 0 2rem;
     z-index: 999;
-    box-shadow: 0 2px 16px rgba(13, 148, 136, 0.25);
+    box-shadow: 0 1px 0 rgba(255,255,255,0.04), 0 4px 20px rgba(15, 23, 42, 0.18);
     border-bottom: none;
 }
 
@@ -279,19 +270,19 @@ body {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    background: rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.08);
     padding: 0.5rem 1rem;
     border-radius: 10px;
     cursor: pointer;
     transition: all 0.2s ease;
-    border: 1px solid rgba(255, 255, 255, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.12);
     box-shadow: none;
 }
 
 .currency-display:hover {
-    background: rgba(255, 255, 255, 0.25);
+    background: rgba(255, 255, 255, 0.15);
     transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .currency-rate {
@@ -354,9 +345,9 @@ body {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    background: rgba(255, 255, 255, 0.18);
-    color: white;
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: rgba(239, 68, 68, 0.15);
+    color: #fca5a5;
+    border: 1px solid rgba(239, 68, 68, 0.25);
     padding: 0.6rem 1rem;
     border-radius: 10px;
     cursor: pointer;
@@ -367,9 +358,10 @@ body {
 }
 
 .logout-btn:hover {
-    background: rgba(255, 255, 255, 0.3);
+    background: rgba(239, 68, 68, 0.28);
+    color: #ffffff;
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
 }
 
 .logout-btn:active {
@@ -529,24 +521,24 @@ body {
 
 /* Tugmalar */
 .btn {
-    background: linear-gradient(135deg, #3498db, #2980b9);
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
     color: white;
     padding: 0.8rem 2rem;
     border: none;
-    border-radius: 6px;
+    border-radius: 8px;
     cursor: pointer;
     font-size: 1rem;
     font-weight: 500;
-    transition: all 0.3s ease;
+    transition: all 0.25s ease;
     text-decoration: none;
     display: inline-block;
     text-align: center;
 }
 
 .btn:hover {
-    background: linear-gradient(135deg, #2980b9, #3498db);
+    background: linear-gradient(135deg, #4f46e5, #4338ca);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+    box-shadow: 0 4px 14px rgba(99, 102, 241, 0.3);
 }
 
 .btn-success {
@@ -889,12 +881,14 @@ input[name="price"] {
 }
 
 .btn-primary {
-    background-color: #3498db;
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
     color: white;
+    border-radius: 8px;
 }
 
 .btn-primary:hover {
-    background-color: #2980b9;
+    background: linear-gradient(135deg, #4f46e5, #4338ca);
+    box-shadow: 0 4px 12px rgba(99,102,241,0.28);
 }
 
 .btn-success {
@@ -1152,14 +1146,16 @@ footer {
 }
 
 .submit-btn {
-    background: #27ae60;
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
     color: white;
-    flex: 2; /* ikki barobar kengroq */
+    flex: 2;
+    border-radius: 8px;
 }
 
 .submit-btn:hover {
-    background: #229954;
+    background: linear-gradient(135deg, #4f46e5, #4338ca);
     transform: translateY(-2px);
+    box-shadow: 0 4px 14px rgba(99,102,241,0.28);
 }
 
 .btn-cancel {
@@ -1266,14 +1262,14 @@ footer {
     top: 20px;
     left: 20px;
     z-index: 1200;
-    background: #2c3e50;
+    background: #1e293b;
     color: white;
     border: none;
     padding: 15px;
     border-radius: 8px;
     font-size: 24px;
     cursor: pointer;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    box-shadow: 0 4px 15px rgba(15,23,42,0.25);
     width: 60px;
     height: 60px;
     align-items: center;
@@ -1281,7 +1277,7 @@ footer {
 }
 
 .mobile-nav-toggle:hover {
-    background: #34495e;
+    background: #334155;
     transform: scale(1.05);
 }
 
@@ -1332,21 +1328,21 @@ footer {
         top: 10px;
         left: 10px;
         z-index: 1300; /* Sidebar'dan ham yuqori */
-        background: #2c3e50;
+        background: #1e293b;
         color: white;
         border: none;
         width: 50px;
         height: 50px;
         border-radius: 8px;
         font-size: 20px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        box-shadow: 0 4px 12px rgba(15,23,42,0.3);
         transition: all 0.3s ease;
         align-items: center;
         justify-content: center;
     }
     
     .mobile-nav-toggle:hover {
-        background: #34495e;
+        background: #334155;
         transform: scale(1.05);
     }
     
@@ -1382,8 +1378,8 @@ footer {
         display: flex !important;
         height: 60px;
         padding: 0 0.3rem;
-        background: linear-gradient(135deg, #0d9488 0%, #0891b2 100%);
-        box-shadow: 0 2px 12px rgba(13, 148, 136, 0.3);
+        background: #1e293b;
+        box-shadow: 0 2px 12px rgba(15, 23, 42, 0.25);
         border-bottom: none;
         position: fixed;
         top: 0;
