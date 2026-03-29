@@ -221,14 +221,16 @@
 
 /* Amallar tugmalari */
 .sales-history-page .sales-table .col-actions .btn-action {
-    display: block;
-    margin: 1px auto;
-    width: 20px;
-    height: 18px;
-    padding: 2px;
-    font-size: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 2px auto;
+    width: 30px;
+    height: 28px;
+    padding: 0;
+    font-size: 13px;
 }
-.sales-history-page .sales-table .col-actions .btn-action i { font-size: 8px; line-height: 1; }
+.sales-history-page .sales-table .col-actions .btn-action i { font-size: 13px; line-height: 1; }
 
 @media (max-width: 480px) {
     .sales-history-page { padding: 10px; border-radius: 8px; }
@@ -553,26 +555,28 @@
 
 .btn-action {
     background: none;
-    border: 1.5px solid #e5e7eb;
-    padding: 3px 5px;
-    border-radius: 6px;
+    border: none;
+    padding: 0;
+    border-radius: 8px;
     cursor: pointer;
-    margin: 1px;
-    font-size: 10px;
-    transition: all 0.2s;
-    display: block;
-    width: 24px;
-    height: 20px;
+    margin: 2px auto;
+    font-size: 13px;
+    transition: all 0.18s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 28px;
     text-align: center;
-    line-height: 12px;
+    line-height: 1;
 }
 
-.btn-edit { color: #4338ca; border-color: #4338ca; }
-.btn-edit:hover { background: #4338ca; color: white; }
-.btn-delete { color: #ff6b6b; border-color: #ff6b6b; }
-.btn-delete:hover { background: #ff6b6b; color: white; }
-.btn-view { color: #00b894; border-color: #00b894; }
-.btn-view:hover { background: #00b894; color: white; }
+.btn-edit { color: #4338ca; background: rgba(67,56,202,0.08); }
+.btn-edit:hover { background: #4338ca; color: white; transform: scale(1.1); }
+.btn-delete { color: #ef4444; background: rgba(239,68,68,0.08); }
+.btn-delete:hover { background: #ef4444; color: white; transform: scale(1.1); }
+.btn-view { color: #059669; background: rgba(5,150,105,0.08); }
+.btn-view:hover { background: #059669; color: white; transform: scale(1.1); }
 
 .customer-info { display: flex; flex-direction: column; gap: 2px; word-wrap: break-word; max-width: 150px; }
 .customer-name { font-weight: 600; color: #1a1f36; font-size: 14px !important; }
