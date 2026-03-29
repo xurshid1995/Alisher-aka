@@ -607,6 +607,16 @@ tbody tr.sale-group-start:first-child { border-top: none; }
 
 .datetime-info { text-align: center; }
 .sale-date { font-weight: 600; font-size: 13px; color: #1a1f36; margin-bottom: 2px; }
+.sale-id-badge {
+    font-weight: 700;
+    font-size: 11px;
+    color: #92400e;
+    background: #fef08a;
+    padding: 2px 8px;
+    border-radius: 6px;
+    display: inline-block;
+    margin-bottom: 4px;
+}
 .sale-time {
     font-weight: 600;
     font-size: 12px;
@@ -1648,7 +1658,7 @@ function displaySalesData(data) {
             <tr class="${firstRowClasses.join(' ')}">
                 <td rowspan="${items.length}" class="group-cell group-datetime col-datetime">
                     <div class="datetime-info">
-                        <div class="sale-id" style="font-size: 11px; color: #6c757d; font-weight: 600; margin-bottom: 2px;">ID: ${sale.id}</div>
+                        <div class="sale-id-badge">ID: ${sale.id}</div>
                         <div class="sale-date">${formattedDate}</div>
                         <div class="sale-time">${formattedTime}</div>
                     </div>
