@@ -660,7 +660,38 @@
         font-size: 12px;
     }
 
-    /* Savdo tafsilotlari modal - markazda ochish */
+    /* Toggle Switch */
+    .toggle-switch { display: flex; align-items: center; cursor: pointer; user-select: none; }
+    .toggle-switch input[type="checkbox"] { display: none; }
+    .toggle-slider {
+        position: relative; width: 46px; height: 24px;
+        background-color: #d1d5db; border-radius: 24px;
+        transition: background-color 0.3s; margin-right: 10px;
+    }
+    .toggle-slider:before {
+        content: ""; position: absolute; top: 2px; left: 2px;
+        width: 20px; height: 20px; background-color: white;
+        border-radius: 50%; transition: transform 0.3s;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+    }
+    .toggle-switch input[type="checkbox"]:checked + .toggle-slider { background-color: #4338ca; }
+    .toggle-switch input[type="checkbox"]:checked + .toggle-slider:before { transform: translateX(22px); }
+    .toggle-label { font-size: 0.875rem; color: #6b7280; font-weight: 500; }
+
+    /* Compact mode */
+    .compact-mode .compact-hide { display: none !important; }
+    .compact-mode .sales-table { min-width: auto !important; table-layout: auto !important; }
+    .compact-mode .sales-table th,
+    .compact-mode .sales-table td { white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; padding: 6px 8px !important; }
+    .compact-mode .sales-table td.group-datetime { white-space: normal !important; overflow: visible !important; text-overflow: unset !important; }
+
+    /* sale-id-badge */
+    .sale-id-badge {
+        font-weight: 700; font-size: 11px; color: #92400e;
+        background: #fef08a; padding: 2px 8px; border-radius: 6px;
+        display: inline-block; margin-bottom: 4px;
+    }
+
     .sale-details-modal {
         position: fixed;
         top: 0;
@@ -852,6 +883,14 @@
 
     <!-- Savdo tarixi -->
     <div class="sales-section">
+        <!-- Ixcham ko'rinish toggle -->
+        <div style="display: flex; justify-content: flex-end; align-items: center; padding: 8px 16px; background: #f8f9fa; border-bottom: 1px solid #eef0f7;">
+            <label class="toggle-switch">
+                <input type="checkbox" id="compactViewToggle">
+                <span class="toggle-slider"></span>
+                <span class="toggle-label">{{ t('compact_view') }}</span>
+            </label>
+        </div>
 
         <div id="loadingSales" class="loading-message">
             ⏳ {{ t('cd_loading') }}
@@ -1030,6 +1069,7 @@ function displayOrders(orders) {
         html += '<tr class="' + firstRowClasses.join(' ') + '">';
         html += '<td rowspan="' + items.length + '" class="group-cell group-datetime">';
         html += '<div class="datetime-info">';
+        html += '<div class="sale-id-badge">ID: ' + sale.id + '</div>';
         html += '<div class="sale-date">' + formattedDate + '</div>';
         html += '<div class="sale-time">' + formattedTime + '</div>';
         html += '</div></td>';
@@ -1978,6 +2018,24 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (dateToFilter) {
         dateToFilter.addEventListener('change', filterCustomerOrders);
+    }
+
+    // Ixcham ko'rinish toggle
+    const compactToggle = document.getElementById('compactViewToggle');
+    const tableContainer = document.querySelector('.table-container');
+    if (compactToggle && tableContainer) {
+        const saved = localStorage.getItem('customerCompactView') === 'true';
+        compactToggle.checked = saved;
+        if (saved) tableContainer.classList.add('compact-mode');
+
+        compactToggle.addEventListener('change', function() {
+            localStorage.setItem('customerCompactView', this.checked.toString());
+            if (this.checked) {
+                tableContainer.classList.add('compact-mode');
+            } else {
+                tableContainer.classList.remove('compact-mode');
+            }
+        });
     }
 });
 </script>
