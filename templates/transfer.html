@@ -81,7 +81,7 @@
     .form-group select:focus,
     .form-group input:focus {
         outline: none;
-        border-color: #4338ca;
+        border-color: #3d6e8f;
         box-shadow: 0 0 0 3px rgba(67, 56, 202, 0.1);
     }
 
@@ -104,13 +104,13 @@
         position: sticky;
         top: 0;
         z-index: 10;
-        background: #6366f1 !important;
+        background: #4a7fa5 !important;
     }
 
     .products-table th {
         padding: 10px;
         text-align: left;
-        border-bottom: 2px solid #3730a3;
+        border-bottom: 2px solid #2d5a7a;
         font-weight: 600;
         font-size: 13px;
         color: white !important;
@@ -200,12 +200,12 @@
     }
 
     .btn-primary {
-        background: #4338ca;
+        background: #3d6e8f;
         color: white;
     }
 
     .btn-primary:hover {
-        background: #3730a3;
+        background: #2d5a7a;
         transform: translateY(-2px);
         box-shadow: 0 4px 12px rgba(67, 56, 202, 0.4);
     }
@@ -247,14 +247,14 @@
     .transfer-product-table thead,
     .transfer-list-table thead,
     .transfer-history-table thead {
-        background: #6366f1 !important;
+        background: #4a7fa5 !important;
     }
 
     .transfer-product-table thead th,
     .transfer-list-table thead th,
     .transfer-history-table thead th {
         color: white !important;
-        border-bottom: 2px solid #3730a3 !important;
+        border-bottom: 2px solid #2d5a7a !important;
     }
 
     /* Search input */
@@ -270,7 +270,7 @@
 
     .search-input:focus {
         outline: none;
-        border-color: #4338ca;
+        border-color: #3d6e8f;
         box-shadow: 0 0 0 3px rgba(67, 56, 202, 0.1);
         background: white;
     }
@@ -310,9 +310,9 @@
     }
 
     .pagination-btn:hover:not(:disabled) {
-        background: #4338ca;
+        background: #3d6e8f;
         color: white;
-        border-color: #4338ca;
+        border-color: #3d6e8f;
     }
 
     .pagination-btn:disabled {
@@ -322,9 +322,9 @@
     }
 
     .pagination-btn.active {
-        background: #4338ca;
+        background: #3d6e8f;
         color: white;
-        border-color: #4338ca;
+        border-color: #3d6e8f;
     }
 
     /* Responsive */
@@ -504,14 +504,14 @@
         .transfer-product-table thead,
         .transfer-list-table thead,
         .transfer-history-table thead {
-            background: #6366f1 !important;
+            background: #4a7fa5 !important;
         }
 
         .transfer-product-table thead th,
         .transfer-list-table thead th,
         .transfer-history-table thead th {
             color: white !important;
-            border-bottom: 2px solid #3730a3 !important;
+            border-bottom: 2px solid #2d5a7a !important;
         }
 
         /* Pagination mobil uchun */
@@ -631,14 +631,14 @@
         .transfer-product-table thead,
         .transfer-list-table thead,
         .transfer-history-table thead {
-            background: #6366f1 !important;
+            background: #4a7fa5 !important;
         }
 
         .transfer-product-table thead th,
         .transfer-list-table thead th,
         .transfer-history-table thead th {
             color: white !important;
-            border-bottom: 2px solid #3730a3 !important;
+            border-bottom: 2px solid #2d5a7a !important;
         }
 
         /* Mahsulotlar jadvalidagi amal ustunini yashirish (mobil kichik) */
@@ -675,7 +675,7 @@
     <div class="transfer-layouts">
         <!-- Chap layout - Mahsulot tanlash -->
         <div class="transfer-layout">
-            <div style="display: grid; grid-template-columns: auto 1fr auto 1fr; gap: 10px; align-items: center; margin-bottom: 10px; padding: 15px; background: linear-gradient(135deg, #4338ca 0%, #6366f1 100%); border-radius: 10px; height: 54px;">
+            <div style="display: grid; grid-template-columns: auto 1fr auto 1fr; gap: 10px; align-items: center; margin-bottom: 10px; padding: 15px; background: linear-gradient(135deg, #3d6e8f 0%, #4a7fa5 100%); border-radius: 10px; height: 54px;">
                 <label for="fromLocation" style="font-weight: 600; color: white; white-space: nowrap; font-size: 14px;">{{ t('from_label') }}:</label>
                 <select id="fromLocation" onchange="loadProducts()" style="padding: 6px 10px; border: none; border-radius: 4px; font-size: 13px; height: 32px;">
                     <option value="">{{ t('select_option') }}</option>
@@ -735,7 +735,7 @@
         <!-- O'ng layout - Transfer ro'yxati -->
         <div class="transfer-layout">
             <!-- Sarlavha va info bir qatorda -->
-            <div style="display: flex; justify-content: space-between; align-items: center; background: linear-gradient(135deg, #4338ca 0%, #6366f1 100%); padding: 15px; border-radius: 10px; margin-bottom: 10px; height: 54px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; background: linear-gradient(135deg, #3d6e8f 0%, #4a7fa5 100%); padding: 15px; border-radius: 10px; margin-bottom: 10px; height: 54px;">
                 <div style="color: white; font-weight: 600; font-size: 16px;">🔄 {{ t('transfer_list') }}</div>
                 <div id="transferInfo" style="display: none; font-size: 16px; color: white; line-height: 1.4;">
                     <span id="infoFromLocation" style="font-weight: 600;">-</span>
@@ -1105,7 +1105,7 @@
             
             const row = document.createElement('tr');
             const sellingPrice = product.sell_price || product.price || 0;
-            const badgeColor = quantity <= 0 ? '#dc3545' : '#6366f1';
+            const badgeColor = quantity <= 0 ? '#dc3545' : '#4a7fa5';
             
             // Agar allaqachon ro'yxatda bo'lsa, belgini o'zgartirish
             let buttonEmoji, buttonDisabled, rowBackground;
@@ -1777,7 +1777,7 @@
                     $${parseFloat(item.price || 0).toFixed(2)}
                 </td>
                 <td style="text-align: center;">
-                    <span style="background: #6366f1; color: white; padding: 4px 8px; border-radius: 4px; font-weight: 500;">${quantityDisplay}</span>
+                    <span style="background: #4a7fa5; color: white; padding: 4px 8px; border-radius: 4px; font-weight: 500;">${quantityDisplay}</span>
                 </td>
                 <td style="text-align: center;">
                     <button onclick="editTransferItem(${index})" 
