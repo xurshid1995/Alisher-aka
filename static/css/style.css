@@ -51,8 +51,8 @@ body {
 /* Sidebar Navigation */
 .sidebar {
     width: 70px; /* Oddiy holatda tor */
-    background: #ffffff;
-    border-right: 1px solid #ebebf0;
+    background: #1e293b;
+    border-right: 1px solid rgba(255,255,255,0.06);
     height: calc(100vh - 70px);
     padding: 0;
     box-shadow: 2px 0 12px rgba(15, 23, 42, 0.05);
@@ -87,13 +87,13 @@ body {
 }
 
 .sidebar::-webkit-scrollbar-thumb {
-    background: rgba(99, 102, 241, 0.2);
+    background: rgba(255,255,255,0.15);
     border-radius: 10px;
     transition: background 0.3s ease;
 }
 
 .sidebar::-webkit-scrollbar-thumb:hover {
-    background: rgba(99, 102, 241, 0.45);
+    background: rgba(255,255,255,0.28);
 }
 
 .sidebar-menu {
@@ -114,7 +114,7 @@ body {
     align-items: center;
     padding: 10px 10px;
     justify-content: flex-start;
-    color: #6b7280;
+    color: rgba(255,255,255,0.6);
     text-decoration: none;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     border-left: 3px solid transparent;
@@ -177,8 +177,8 @@ body {
 }
 
 .sidebar-menu a:hover {
-    background: rgba(99, 102, 241, 0.07);
-    color: #4f46e5;
+    background: rgba(255,255,255,0.08);
+    color: #ffffff;
     border-left-color: #6366f1;
     transform: translateX(2px);
 }
@@ -1545,7 +1545,7 @@ footer {
         width: 280px !important;
         transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease !important;
         z-index: 1250 !important;
-        background: #ffffff !important;
+        background: #1e293b !important;
         box-shadow: none !important;
         border-radius: 0;
         overflow-y: scroll !important;
