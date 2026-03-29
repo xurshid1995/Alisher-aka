@@ -3508,73 +3508,14 @@ function initializeCustomerSearch() {
     });
 
     // Tashqi joyga bosganda yashirish
-        
-        console.log('✅ API javoblari olindi:', {
-            storesStatus: storesResponse.status,
-            storesOk: storesResponse.ok,
-            warehousesStatus: warehousesResponse.status,
-            warehousesOk: warehousesResponse.ok
-        });
-        
-        // Response'larni tekshirish
-        if (!storesResponse.ok) {
-            console.error('❌ Stores API xatosi:', storesResponse.status, storesResponse.statusText);
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.customer-search-container')) {
+            customerDropdown.style.display = 'none';
+            focusedIndex = -1;
         }
-        if (!warehousesResponse.ok) {
-            console.error('❌ Warehouses API xatosi:', warehousesResponse.status, warehousesResponse.statusText);
-        }
-        
-        const stores = await storesResponse.json();
-        const warehouses = await warehousesResponse.json();
-        
-        console.log('🏪 Do\'konlar (raw data):', stores);
-        console.log('🏪 Do\'konlar soni:', stores?.length || 0);
-        console.log('🏭 Omborlar (raw data):', warehouses);
-        console.log('🏭 Omborlar soni:', warehouses?.length || 0);
-        
-        // Do'konlar va omborlar ma'lumotlarini global o'zgaruvchilarda saqlash
-        window.storesData = stores;
-        window.warehousesData = warehouses;
-        
-        // Select elementini yangilash
-        console.log('🔍 locationFilter elementini qidirish...');
-        const locationSelect = document.getElementById('locationFilter');
-        
-        if (!locationSelect) {
-            console.error('❌ locationFilter elementi topilmadi!');
-            console.log('🔍 Mavjud elementlar:', document.querySelectorAll('select'));
-            return;
-        }
-        
-        console.log('✅ locationFilter elementi topildi:', locationSelect);
-        console.log('🔍 Hozirgi select tarkibi:', locationSelect.innerHTML);
-        
-        // Avvalgi optionlarni tozalash
-        locationSelect.innerHTML = '<option value="">' + DSLANG.all_locations + '</option>';
-        
-        // Do'konlarni qo'shish
-        console.log('🏪 Do\'konlarni qo\'shish jarayoni...');
-        if (stores && stores.length > 0) {
-            console.log(`✅ ${stores.length} ta do'kon topildi`);
-            const storeGroup = document.createElement('optgroup');
-            storeGroup.label = '🏪 Do\'konlar';
-            
-            stores.forEach((store, index) => {
-                console.log(`🏪 Do'kon ${index + 1}:`, {
-                    id: store.id,
-                    name: store.name,
-                    address: store.address,
-                    manager_name: store.manager_name
-                });
-                
-                const option = document.createElement('option');
-                option.value = `store_${store.id}`;
-                option.textContent = `${store.name} (${DSLANG.store})`;
-                storeGroup.appendChild(option);
-                
-                console.log(`   ➕ Option yaratildi: "${option.textContent}" = "${option.value}"`);
-            });
-            
+    });
+}
+
 // Mijoz dropdown ni yangilash
 function updateCustomerDropdown() {
     const customerInput = document.getElementById('customerFilter');
