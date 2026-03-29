@@ -5,8 +5,7 @@
 {% block extra_css %}
 <style>
     .products-container {
-        padding: 1rem;
-        background: #f8f9fa;
+        padding: 20px;
         min-height: auto;
     }
     
@@ -17,11 +16,11 @@
         }
 
         .products-table thead {
-            background: #667eea !important;
+            background: #6366f1 !important;
         }
 
         .products-table thead th {
-            background: #667eea !important;
+            background: #6366f1 !important;
             color: white !important;
             position: relative;
             z-index: 1;
@@ -38,7 +37,7 @@
 
         /* Sticky ustun uchun background */
         .products-table thead th:nth-child(2) {
-            background: #667eea !important;
+            background: #6366f1 !important;
             z-index: 3;
         }
 
@@ -48,22 +47,34 @@
     }
 
     .page-header {
-        margin-bottom: 0.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 16px;
+        border-bottom: 1.5px solid #ebebf5;
     }
 
     .page-header h1 {
         margin: 0;
-        font-size: 2rem;
-        color: #333;
-        font-weight: 600;
+        font-size: 24px;
+        color: #0f172a;
+        font-weight: 700;
+        letter-spacing: -0.3px;
+    }
+
+    .page-header h1 i, .page-header h1 span {
+        color: #4338ca;
+        margin-right: 8px;
     }
 
     .controls-section {
         background: white;
-        padding: 1.5rem;
+        padding: 20px 24px;
         border-radius: 12px;
-        margin-bottom: 2rem;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+        border: 1px solid #eef0f7;
         display: flex;
         justify-content: flex-start;
         align-items: center;
@@ -80,17 +91,20 @@
 
     .search-box input {
         width: 100%;
-        padding: 0.75rem 1rem 0.75rem 2.5rem;
-        border: 2px solid #e9ecef;
-        border-radius: 25px;
-        font-size: 1rem;
-        transition: all 0.3s ease;
+        padding: 10px 14px 10px 38px;
+        border: 1.5px solid #e5e7eb;
+        border-radius: 10px;
+        font-size: 14px;
+        transition: all 0.2s ease;
+        background: #f9fafb;
+        color: #1a1f36;
     }
 
     .search-box input:focus {
-        border-color: #667eea;
-        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        border-color: #4338ca;
+        box-shadow: 0 0 0 3px rgba(67, 56, 202, 0.1);
         outline: none;
+        background: white;
     }
 
     .search-box::before {
@@ -108,24 +122,26 @@
     }
 
     .status-filter {
-        padding: 0.6rem 0.8rem;
-        border: 2px solid #e9ecef;
-        border-radius: 20px;
-        font-size: 0.9rem;
-        background: white;
+        padding: 9px 14px;
+        border: 1.5px solid #e5e7eb;
+        border-radius: 10px;
+        font-size: 13px;
+        background: #f9fafb;
+        color: #1a1f36;
         cursor: pointer;
-        transition: all 0.3s ease;
+        transition: all 0.2s ease;
         min-width: 140px;
     }
 
     .status-filter:focus {
-        border-color: #667eea;
-        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        border-color: #4338ca;
+        box-shadow: 0 0 0 3px rgba(67, 56, 202, 0.1);
         outline: none;
+        background: white;
     }
 
     .status-filter:hover {
-        border-color: #667eea;
+        border-color: #4338ca;
     }
 
     .location-buttons {
@@ -137,43 +153,43 @@
     }
 
     .location-button {
-        padding: 0.6rem 1.2rem;
-        border: 2px solid #e9ecef;
+        padding: 7px 16px;
+        border: 1.5px solid #e5e7eb;
         background: white;
-        color: #495057;
-        border-radius: 20px;
-        font-size: 0.9rem;
+        color: #374151;
+        border-radius: 8px;
+        font-size: 13px;
         font-weight: 500;
         cursor: pointer;
-        transition: all 0.3s ease;
+        transition: all 0.2s ease;
         white-space: nowrap;
         min-width: 80px;
         text-align: center;
-        margin-bottom: 0.25rem;
     }
 
     .location-button:hover {
-        border-color: #667eea;
-        background: #f8f9ff;
-        color: #667eea;
+        border-color: #4338ca;
+        background: #eef0fd;
+        color: #4338ca;
     }
 
     .location-button.active {
-        background: #667eea;
-        border-color: #667eea;
+        background: #4338ca;
+        border-color: #4338ca;
         color: white;
-        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        box-shadow: 0 2px 8px rgba(67, 56, 202, 0.3);
     }
 
     .location-button.active:hover {
-        background: #5a6fd8;
-        border-color: #5a6fd8;
+        background: #3730a3;
+        border-color: #3730a3;
     }
 
     .products-table-container {
         background: white;
         border-radius: 12px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+        border: 1px solid #eef0f7;
         overflow-x: auto;
         overflow-y: hidden;
         -webkit-overflow-scrolling: touch;
@@ -188,22 +204,25 @@
     }
 
     .products-table thead {
-        background: #667eea;
+        background: #6366f1;
         color: white;
     }
 
     .products-table th {
-        padding: 0.5rem 1rem 0.5rem 2.8rem;
+        padding: 12px 10px 12px 2.8rem;
         text-align: left;
         font-weight: 600;
-        font-size: 1rem;
-        border-right: none !important; /* Vertical chiziq o'chirildi */
-        border-left: none !important;
+        font-size: 13px;
+        border: none;
+        border-bottom: 2px solid #3730a3;
         white-space: normal;
         word-wrap: break-word;
         overflow-wrap: break-word;
         position: relative;
     }
+
+    .products-table th:first-child { border-radius: 8px 0 0 0; }
+    .products-table th:last-child { border-radius: 0 8px 0 0; }
 
     .products-table th .emoji {
         position: absolute;
@@ -215,20 +234,21 @@
     }
 
     .products-table tbody tr {
-        border-bottom: 1px solid #e9ecef;
-        transition: background-color 0.3s ease;
+        border-bottom: 1px solid #f0f2f5;
+        transition: background-color 0.2s ease;
     }
 
     .products-table tbody tr:hover {
-        background-color: #f8f9fa;
+        background-color: #f8f9ff;
     }
 
     .products-table td {
-        padding: 0.5rem 1rem 0.5rem 2.8rem;
-        border-right: none !important; /* Vertical chiziq o'chirildi */
-        border-left: none !important;
+        padding: 10px 10px 10px 2.8rem;
+        border: none;
+        border-bottom: 1px solid #f0f2f5;
         vertical-align: middle;
         text-align: left;
+        font-size: 14px;
     }
 
     .location-cell {
@@ -414,7 +434,7 @@
         width: 2rem;
         height: 2rem;
         border: 3px solid #f3f3f3;
-        border-top: 3px solid #667eea;
+        border-top: 3px solid #4338ca;
         border-radius: 50%;
         animation: spin 1s linear infinite;
         margin-bottom: 1rem;
@@ -426,15 +446,14 @@
     }
 
     .table-info {
-        padding: 1rem;
-        background: #f8f9fa;
-        border-top: 1px solid #e9ecef;
+        padding: 10px 16px;
+        background: white;
+        border-bottom: 1px solid #f0f2f5;
         display: flex;
-        justify-content: between;
         align-items: center;
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: #495057;
+        font-size: 13px;
+        font-weight: 500;
+        color: #6b7280;
     }
 
     /* Pagination styles */
@@ -475,15 +494,15 @@
     }
 
     .pagination-btn.active {
-        background: #667eea;
+        background: #4338ca;
         color: white;
-        border-color: #667eea;
+        border-color: #4338ca;
         font-weight: 600;
     }
 
     .pagination-dots {
         padding: 0.5rem 0.25rem;
-        color: #6c757d;
+        color: #9ca3af;
         font-weight: bold;
     }
 
@@ -520,11 +539,11 @@
         }
 
         .products-table thead {
-            background: #667eea !important;
+            background: #6366f1 !important;
         }
 
         .products-table thead th {
-            background: #667eea !important;
+            background: #6366f1 !important;
             color: white !important;
             position: relative;
             z-index: 1;
@@ -546,7 +565,7 @@
 
         /* Sticky ustun uchun background */
         .products-table thead th:nth-child(2) {
-            background: #667eea !important;
+            background: #6366f1 !important;
             z-index: 3;
         }
 
@@ -667,7 +686,7 @@
         font-size: 0.88rem;
     }
     #prodOpsPopup .pop-header {
-        background: linear-gradient(135deg,#667eea,#764ba2);
+        background: linear-gradient(135deg,#4338ca,#6366f1);
         color: white;
         padding: 0.75rem 1rem;
         border-radius: 10px 10px 0 0;
@@ -707,7 +726,7 @@
     #prodOpsPopup .op-badge {
         font-size: 0.78rem;
         font-weight: 600;
-        background: #667eea;
+        background: #4338ca;
         color: white;
         padding: 1px 8px;
         border-radius: 12px;
@@ -726,7 +745,7 @@
      data-user-store-id="{% if session.store_id %}{{ session.store_id }}{% else %}null{% endif %}"
      data-user-role="{{ session.role }}">
     <div class="page-header">
-        <h1>📦 {{ t('pr_page_title') }}</h1>
+        <h1><span>📦</span> {{ t('pr_page_title') }}</h1>
     </div>
     
     <!-- Controls Section -->
@@ -1525,7 +1544,7 @@
         // Popup ochish
         backdrop.style.display = 'block';
         popup.style.display = 'block';
-        popup.innerHTML = `<div class="pop-header"><h4>🕐 ${PLANG.loading}</h4><button class="pop-close" onclick="closeProductOps()">✕</button></div><div style="padding:1.2rem;text-align:center;color:#667eea;">⏳ ${PLANG.loading}</div>`;
+        popup.innerHTML = `<div class="pop-header"><h4>🕐 ${PLANG.loading}</h4><button class="pop-close" onclick="closeProductOps()">✕</button></div><div style="padding:1.2rem;text-align:center;color:#4338ca;">⏳ ${PLANG.loading}</div>`;
 
         fetch(`/api/product/${productId}/operations`)
             .then(r => r.json())
