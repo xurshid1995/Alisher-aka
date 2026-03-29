@@ -345,27 +345,39 @@ body {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    background: transparent;
-    color: #fca5a5;
-    border: 1px solid transparent;
+    background: rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.18);
     padding: 0.6rem 1rem;
     border-radius: 10px;
     cursor: pointer;
     font-weight: 600;
     font-size: 0.9rem;
     transition: all 0.2s ease;
-    box-shadow: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255,255,255,0.12);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    outline: none;
 }
 
 .logout-btn:hover {
-    background: rgba(239, 68, 68, 0.15);
+    background: rgba(255, 255, 255, 0.16);
     color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.3);
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255,255,255,0.2);
+}
+
+.logout-btn:focus {
+    outline: none;
+    background: rgba(255, 255, 255, 0.16);
+    border-color: rgba(255, 255, 255, 0.3);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255,255,255,0.2);
 }
 
 .logout-btn:active {
     transform: translateY(0);
+    background: rgba(255, 255, 255, 0.1);
 }
 
 .logout-icon {
@@ -374,6 +386,7 @@ body {
 
 .logout-text {
     font-size: 0.9rem;
+    color: #ffffff;
 }
 
 /* Main Content - Desktop */
