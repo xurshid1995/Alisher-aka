@@ -42,7 +42,7 @@
     
     .sales-container {
         padding: 20px;
-        background: transparent;
+        background: #f0f3f7;
         min-height: 100vh;
         width: 100%;
         max-width: 100%;
@@ -55,8 +55,11 @@
         justify-content: space-between;
         align-items: center;
         margin-bottom: 20px;
-        padding-bottom: 15px;
-        border-bottom: 1.5px solid #ebebf5;
+        padding: 16px 22px;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+        border-left: 4px solid #546e7a;
     }
 
     @keyframes spin { to { transform: rotate(360deg); } }
@@ -109,15 +112,15 @@
     }
     
     .sales-product-table thead tr {
-        background: #eef0fd;
-        border-bottom: 2px solid #c7caee;
+        background: #546e7a;
+        border-bottom: 2px solid #455a64;
     }
     
     .sales-product-table th {
         padding: 10px 8px;
-        font-size: 15px;
-        font-weight: 600;
-        color: #4338ca;
+        font-size: 12px !important;
+        font-weight: 700 !important;
+        color: #ffffff;
         box-sizing: border-box;
     }
     
@@ -143,15 +146,15 @@
     }
     
     .cart-table thead tr {
-        background: #eef0fd;
-        border-bottom: 2px solid #c7caee;
+        background: #546e7a;
+        border-bottom: 2px solid #455a64;
     }
     
     .cart-table th {
         padding: 8px 5px;
-        font-size: 15px;
-        font-weight: 600;
-        color: #4338ca;
+        font-size: 12px !important;
+        font-weight: 700 !important;
+        color: #ffffff;
         box-sizing: border-box;
     }
     
@@ -755,7 +758,7 @@
         <!-- Ikkita 665px kenglikda layout -->
     <div class="sales-grid">
         <!-- Birinchi layout -->
-        <div class="sales-layout-box" style="background: white; border-radius: 20px; padding: 22px; box-shadow: 0 4px 24px rgba(20, 184, 166,0.08); box-sizing: border-box;">
+        <div class="sales-layout-box" style="background: white; border-radius: 12px; padding: 22px; box-shadow: 0 4px 16px rgba(0,0,0,0.07); border: 1px solid #dde2ea; box-sizing: border-box;">
             <!-- Joylashuv va Mijoz tanlash -->
             <div class="location-customer-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
                 <div>
@@ -827,7 +830,7 @@
         </div>
 
         <!-- Ikkinchi layout -->
-        <div class="sales-layout-box" style="background: white; border-radius: 16px; padding: 22px; box-shadow: 0 2px 16px rgba(15, 23, 42, 0.07); border: 1px solid #ebebf5; box-sizing: border-box;">
+        <div class="sales-layout-box" style="background: white; border-radius: 12px; padding: 22px; box-shadow: 0 4px 16px rgba(0,0,0,0.07); border: 1px solid #dde2ea; box-sizing: border-box;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                 <div id="cartCustomerInfo">
                     <h3 style="margin: 0; color: #333;">🛒 {{ t('label_shopping_cart') }}</h3>
