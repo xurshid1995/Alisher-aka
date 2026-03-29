@@ -12,330 +12,310 @@
     {% endif %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
 
     html, body {
-        height: 100%; width: 100%;
-        overflow: hidden;
-        font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
-        background: #fff;
+        height: 100%;
+        width: 100%;
+        overflow-x: hidden;
     }
 
-    /* ===== WRAPPER ===== */
-    .login-wrapper {
-        display: flex;
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    }
+
+    .login-container {
+        min-height: 100vh;
         height: 100vh;
         width: 100vw;
-        overflow: hidden;
-        background: #fff;
-    }
-
-    /* ===== LEFT PANEL ===== */
-    .login-left {
-        flex: 0 0 44%;
-        background: linear-gradient(170deg, #2196f3 0%, #1565c0 45%, #0d47a1 100%);
-        position: relative;
         display: flex;
-        flex-direction: column;
         align-items: center;
         justify-content: center;
-        padding: 40px 88px 40px 44px;
-        z-index: 2;
-        /* NO overflow:hidden — cloud bumps must extend into white area */
+        background-image: url("{{ url_for('static', filename='images/login-bg.jpg') }}");
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        padding: 20px;
+        position: fixed;
+        top: 0;
+        left: 0;
     }
-
-    /* Dot-grid texture */
-    .login-left::before {
+    
+    .login-container::before {
         content: '';
-        position: absolute; inset: 0;
-        background-image: radial-gradient(circle, rgba(255,255,255,0.07) 1.5px, transparent 1.5px);
-        background-size: 28px 28px;
-        pointer-events: none;
-    }
-
-    /* ===== CLOUD BUMPS — white circles at right edge ===== */
-    .cloud-bumps {
         position: absolute;
-        right: -76px;
-        top: 50%;
-        transform: translateY(-50%);
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
-        pointer-events: none;
-        z-index: 3;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(3px);
     }
-    /* Back-layer circles (semi-transparent, slightly further left) */
-    .cloud-back {
-        width: 152px; height: 152px;
-        background: rgba(255,255,255,0.22);
-        border-radius: 50%;
-        margin-bottom: -36px;
-        flex-shrink: 0;
-        position: relative;
-        left: -20px;
-    }
-    .cloud-back:last-child { margin-bottom: 0; }
-    /* Front-layer circles (solid white, at the actual boundary) */
-    .cloud-front {
-        width: 152px; height: 152px;
-        background: #ffffff;
-        border-radius: 50%;
-        margin-bottom: -36px;
-        flex-shrink: 0;
-    }
-    .cloud-front:last-child { margin-bottom: 0; }
 
-    /* ===== BRAND CONTENT ===== */
-    .brand-content {
-        position: relative;
-        z-index: 2;
+    .login-card {
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(20px) saturate(180%);
+        -webkit-backdrop-filter: blur(20px) saturate(180%);
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        padding: 3rem;
+        width: 100%;
+        max-width: 400px;
         text-align: center;
-        color: #fff;
-        max-width: 280px;
-    }
-
-    .brand-welcome {
-        font-size: 1.25rem;
-        font-weight: 400;
-        opacity: 0.85;
-        margin-bottom: 22px;
-        letter-spacing: 0.3px;
-    }
-
-    .brand-logo-circle {
-        width: 88px; height: 88px;
-        background: rgba(255,255,255,0.15);
-        border: 2.5px solid rgba(255,255,255,0.55);
-        border-radius: 50%;
-        display: flex; align-items: center; justify-content: center;
-        margin: 0 auto 18px;
-    }
-
-    .brand-name {
-        font-size: 1.7rem;
-        font-weight: 700;
-        letter-spacing: 0.5px;
-        line-height: 1.25;
-        margin-bottom: 16px;
-    }
-
-    .brand-desc {
-        font-size: 0.85rem;
-        line-height: 1.65;
-        opacity: 0.7;
-    }
-
-    /* ===== RIGHT PANEL ===== */
-    .login-right {
-        flex: 1;
-        background: #ffffff;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 40px 52px;
         position: relative;
         z-index: 1;
-        overflow-y: auto;
     }
 
-    .login-form-box {
-        width: 100%;
-        max-width: 340px;
+    .login-header {
+        margin-bottom: 2rem;
     }
 
-    .form-title {
-        font-size: 1.55rem;
-        font-weight: 700;
-        color: #1a2233;
-        margin-bottom: 34px;
-        letter-spacing: -0.2px;
-    }
-
-    /* ===== UNDERLINE INPUTS ===== */
-    .uf-group {
-        margin-bottom: 26px;
-        position: relative;
-    }
-
-    .uf-label {
-        display: block;
-        font-size: 0.8rem;
+    .login-header h1 {
+        color: #ffffff;
+        font-size: 2rem;
+        margin: 0 0 0.5rem 0;
         font-weight: 600;
-        color: #666;
-        margin-bottom: 6px;
-        text-transform: uppercase;
-        letter-spacing: 0.4px;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     }
 
-    .uf-row {
+    .login-header p {
+        color: rgba(255, 255, 255, 0.9);
+        margin: 0;
+        font-size: 1rem;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+        text-align: left;
         position: relative;
-        display: flex;
-        align-items: center;
     }
 
-    .uf-input {
-        flex: 1;
-        border: none;
-        border-bottom: 1.5px solid #d1d5db;
-        outline: none;
-        padding: 9px 28px 9px 0;
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: rgba(255, 255, 255, 0.95);
+        font-weight: 500;
         font-size: 0.95rem;
-        color: #1a2233;
-        background: transparent;
-        transition: border-color 0.25s;
-        width: 100%;
-    }
-    .uf-input::placeholder { color: #c4cdd6; font-size: 0.9rem; }
-    .uf-input:focus { border-bottom-color: #1565c0; }
-    .uf-input.uf-error { border-bottom-color: #ef4444; }
-
-    /* Checkmark icon (✓) shown when field valid */
-    .uf-tick {
-        position: absolute;
-        right: 4px;
-        color: #1565c0;
-        font-size: 13px;
-        font-weight: 700;
-        display: none;
-        pointer-events: none;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
     }
 
-    /* Eye toggle for password */
-    .uf-eye {
+    .password-wrapper {
+        position: relative;
+    }
+
+    .password-toggle {
         position: absolute;
-        right: 2px;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
         background: none;
         border: none;
         cursor: pointer;
-        font-size: 15px;
-        color: #aab0bc;
-        padding: 2px;
-        line-height: 1;
-        transition: color 0.2s;
+        font-size: 1.2rem;
+        color: rgba(255, 255, 255, 0.7);
+        padding: 0;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: color 0.3s ease;
     }
-    .uf-eye:hover { color: #1565c0; }
 
-    .uf-field-error {
-        color: #ef4444;
-        font-size: 0.78rem;
-        margin-top: 5px;
+    .password-toggle:hover {
+        color: rgba(255, 255, 255, 1);
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 0.875rem 1rem;
+        background: rgba(255, 255, 255, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 10px;
+        font-size: 1rem;
+        color: #ffffff;
+        transition: all 0.3s ease;
+        box-sizing: border-box;
+        backdrop-filter: blur(10px);
+    }
+
+    .form-control::placeholder {
+        color: rgba(255, 255, 255, 0.6);
+    }
+
+    .form-control:focus {
+        outline: none;
+        background: rgba(255, 255, 255, 0.25);
+        border-color: rgba(255, 255, 255, 0.5);
+        box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
+    }
+
+    .form-control.error {
+        border-color: #dc3545;
+        box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
+    }
+
+    .error-message {
+        color: #dc3545;
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
         display: none;
     }
 
-    /* ===== ALERTS ===== */
-    .alert {
-        padding: 10px 14px;
-        border-radius: 8px;
-        margin-bottom: 20px;
-        font-size: 0.88rem;
-        display: flex;
-        align-items: center;
-        gap: 8px;
+    .btn-login {
+        width: 100%;
+        padding: 0.875rem;
+        background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+        backdrop-filter: blur(10px);
+        color: #000000;
+        border: 1px solid rgba(255, 215, 0, 0.5);
+        border-radius: 10px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 1rem;
+        text-shadow: 0 1px 2px rgba(255, 255, 255, 0.3);
+        box-shadow: 0 4px 15px rgba(255, 165, 0, 0.3);
     }
-    .alert-error   { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; }
-    .alert-warning { background: #fffbeb; border: 1px solid #fde68a; color: #92400e; }
 
-    /* ===== REMEMBER / FORGOT ===== */
-    .rf-row {
+    .btn-login:hover {
+        background: linear-gradient(135deg, #FFA500 0%, #FFD700 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(255, 165, 0, 0.5);
+    }
+
+    .btn-login:active {
+        transform: translateY(0);
+    }
+
+    .btn-login:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+    }
+
+    .remember-forgot {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin: 4px 0 30px;
+        margin: 1rem 0;
+        font-size: 0.9rem;
     }
 
     .remember-me {
-        display: flex; align-items: center; gap: 7px;
-        cursor: pointer; font-size: 0.87rem; color: #555;
+        display: flex;
+        align-items: center;
+        color: rgba(255, 255, 255, 0.9);
     }
-    .remember-me input { accent-color: #1565c0; width: 14px; height: 14px; cursor: pointer; }
 
-    .forgot-link {
-        color: #1565c0; font-size: 0.87rem; font-weight: 600;
-        text-decoration: none; transition: opacity 0.2s;
-    }
-    .forgot-link:hover { opacity: 0.7; text-decoration: underline; }
-
-    /* ===== SUBMIT BUTTON ===== */
-    .btn-login {
-        width: 100%;
-        padding: 13px 24px;
-        background: #1565c0;
-        color: #fff;
-        border: none;
-        border-radius: 30px;
-        font-size: 0.97rem;
-        font-weight: 700;
+    .remember-me input {
+        margin-right: 0.5rem;
         cursor: pointer;
-        letter-spacing: 0.3px;
-        box-shadow: 0 6px 20px rgba(21,101,192,0.38);
-        transition: all 0.25s;
-    }
-    .btn-login:hover {
-        background: #1251a3;
-        transform: translateY(-2px);
-        box-shadow: 0 10px 28px rgba(21,101,192,0.45);
-    }
-    .btn-login:active { transform: translateY(0); }
-    .btn-login:disabled {
-        opacity: 0.6; cursor: not-allowed; transform: none;
-        box-shadow: 0 4px 12px rgba(21,101,192,0.25);
     }
 
-    /* Footer copyright */
-    .form-footer {
-        margin-top: 32px;
-        text-align: center;
-        color: #b0bac7;
-        font-size: 0.76rem;
+    .forgot-password {
+        color: rgba(255, 255, 255, 0.9);
+        text-decoration: none;
+        transition: color 0.3s;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
     }
 
-    /* ===== LANG SELECTOR ===== */
+    .forgot-password:hover {
+        color: #ffffff;
+        text-decoration: underline;
+    }
+
+    .loading {
+        opacity: 0.7;
+        pointer-events: none;
+    }
+
+    .alert {
+        padding: 0.875rem 1rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+        font-size: 0.95rem;
+    }
+
+    .alert-error {
+        background-color: #f8d7da;
+        border: 1px solid #f5c6cb;
+        color: #721c24;
+    }
+
+    .icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 480px) {
+        .login-card {
+            padding: 2rem 1.5rem;
+            margin: 10px;
+        }
+        
+        .login-header h1 {
+            font-size: 1.5rem;
+        }
+    }
+
+    /* Language Selector */
     .login-lang-selector {
         position: fixed;
-        top: 14px;
-        right: 18px;
-        z-index: 9999;
+        top: 16px;
+        right: 20px;
+        z-index: 100;
     }
     .login-lang-btn {
-        display: flex; align-items: center; gap: 6px;
-        padding: 6px 11px;
-        border: 1.5px solid #e2e8f0; border-radius: 8px;
-        background: #fff; color: #374151; font-size: 12px;
-        cursor: pointer; outline: none;
-        box-shadow: 0 1px 4px rgba(0,0,0,0.07);
-        transition: border-color 0.2s;
-    }
-    .login-lang-btn:hover { border-color: #1565c0; }
-    .login-lang-menu {
-        display: none; position: absolute; top: 110%; right: 0;
-        background: white; border: 1.5px solid #e2e8f0; border-radius: 10px;
-        box-shadow: 0 8px 24px rgba(0,0,0,0.12); min-width: 155px;
-        overflow: hidden; z-index: 9999;
-    }
-    .login-lang-option {
-        display: flex; align-items: center; gap: 8px;
-        padding: 9px 14px; cursor: pointer; font-size: 13px; color: #374151;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        border: 1px solid rgba(255,255,255,0.4);
+        border-radius: 8px;
+        background: rgba(255,255,255,0.15);
+        color: #fff;
+        font-size: 13px;
+        cursor: pointer;
+        outline: none;
+        backdrop-filter: blur(4px);
         transition: background 0.2s;
     }
-    .login-lang-option:hover { background: #eff6ff; }
-    .login-lang-option.active { background: #dbeafe; font-weight: 700; color: #1565c0; }
-
-    /* ===== RESPONSIVE ===== */
-    @media (max-width: 860px) {
-        .login-left { display: none; }
-        .login-right {
-            background: linear-gradient(160deg, #1e88e5, #0d47a1);
-        }
-        .login-form-box {
-            background: white; border-radius: 20px; padding: 36px 28px;
-            max-width: 400px; box-shadow: 0 20px 60px rgba(0,0,0,0.25);
-        }
+    .login-lang-btn:hover { background: rgba(255,255,255,0.25); }
+    .login-lang-menu {
+        display: none;
+        position: absolute;
+        top: 110%;
+        right: 0;
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        min-width: 160px;
+        overflow: hidden;
+        z-index: 9999;
     }
-    @media (max-width: 480px) {
-        .login-right { padding: 20px 16px; }
-        .login-form-box { padding: 28px 20px; }
+    .login-lang-option {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 14px;
+        cursor: pointer;
+        font-size: 13px;
+        color: #333;
+        transition: background 0.2s;
     }
+    .login-lang-option:hover { background: #f0f4ff; }
+    .login-lang-option.active { background: #e8edff; font-weight: 600; }
     </style>
 </head>
 <body>
@@ -364,118 +344,72 @@
         </div>
     </div>
 
-    <!-- Split-panel wrapper -->
-    <div class="login-wrapper">
-
-        <!-- LEFT — Branding panel -->
-        <div class="login-left">
-
-            <!-- Back layer cloud circles (semi-transparent, recessed) -->
-            <div class="cloud-bumps" style="right:-96px;">
-                <div class="cloud-back"></div>
-                <div class="cloud-back"></div>
-                <div class="cloud-back"></div>
-                <div class="cloud-back"></div>
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <div class="icon">🔐</div>
+                <h1>{{ t('login_title') }}</h1>
             </div>
 
-            <!-- Front layer cloud circles (solid white — invisible over white panel) -->
-            <div class="cloud-bumps">
-                <div class="cloud-front"></div>
-                <div class="cloud-front"></div>
-                <div class="cloud-front"></div>
-                <div class="cloud-front"></div>
+            <!-- Session tugash xabari -->
+            <div id="sessionExpiredAlert" class="alert" style="display: none; background-color: #fff3cd; border: 1px solid #ffc107; color: #856404;">
+                <span>⏰ {{ t('session_expired') }}</span>
             </div>
+            
+            <!-- Xatolik xabari -->
+            <div id="errorAlert" class="alert alert-error" style="display: none;">
+                <span id="errorMessage"></span>
+            </div>
+            
+            <!-- Server-side xatolik xabari -->
+            {% if error_message %}
+            <div class="alert alert-error" style="display: block; margin-bottom: 1rem;">
+                <span>{{ error_message }}</span>
+            </div>
+            {% endif %}
 
-            <div class="brand-content">
-                <p class="brand-welcome">Welcome to</p>
-                <div class="brand-logo-circle">
-                    <!-- Bar chart SVG icon -->
-                    <svg width="42" height="42" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
-                        <rect x="3" y="12" width="4" height="9" rx="1" opacity="0.9"/>
-                        <rect x="10" y="7" width="4" height="14" rx="1"/>
-                        <rect x="17" y="3" width="4" height="18" rx="1" opacity="0.9"/>
-                    </svg>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="username">👤 {{ t('username') }}</label>
+                    <input type="text" 
+                           id="username" 
+                           name="username" 
+                           class="form-control" 
+                           placeholder="{{ t('username') }}"
+                           required>
+                    <div class="error-message" id="usernameError"></div>
                 </div>
-                <h1 class="brand-name">Xurshid<br>Hisobot</h1>
-                <p class="brand-desc">Savdo, ombor va mijozlarni boshqarishning eng qulay tizimi</p>
-            </div>
+
+                <div class="form-group">
+                    <label for="password">🔒 {{ t('password') }}</label>
+                    <div class="password-wrapper">
+                        <input type="password" 
+                               id="password" 
+                               name="password" 
+                               class="form-control" 
+                               placeholder="{{ t('password') }}"
+                               required>
+                        <button type="button" class="password-toggle" onclick="togglePassword()">
+                            👁️
+                        </button>
+                    </div>
+                    <div class="error-message" id="passwordError"></div>
+                </div>
+
+                <div class="remember-forgot">
+                    <label class="remember-me">
+                        <input type="checkbox" id="rememberMe" name="remember">
+                        <span>{{ t('remember_me') }}</span>
+                    </label>
+                    <a href="#" class="forgot-password">{{ t('forgot_password') }}</a>
+                </div>
+
+                <button type="submit" class="btn-login" id="loginBtn">
+                    🚀 {{ t('login_button') }}
+                </button>
+            </form>
         </div>
-
-        <!-- RIGHT — Login form -->
-        <div class="login-right">
-            <div class="login-form-box">
-                <h2 class="form-title">{{ t('login_title') }}</h2>
-
-                <!-- Session tugash xabari -->
-                <div id="sessionExpiredAlert" class="alert alert-warning" style="display:none;">
-                    <span>⏰</span> <span>{{ t('session_expired') }}</span>
-                </div>
-
-                <!-- Xatolik xabari -->
-                <div id="errorAlert" class="alert alert-error" style="display:none;">
-                    <span>⚠️</span> <span id="errorMessage"></span>
-                </div>
-
-                <!-- Server-side xatolik -->
-                {% if error_message %}
-                <div class="alert alert-error">
-                    <span>⚠️</span> <span>{{ error_message }}</span>
-                </div>
-                {% endif %}
-
-                <form id="loginForm">
-                    <!-- Username -->
-                    <div class="uf-group">
-                        <label class="uf-label" for="username">{{ t('username') }}</label>
-                        <div class="uf-row">
-                            <input type="text"
-                                   id="username"
-                                   name="username"
-                                   class="uf-input"
-                                   placeholder="{{ t('username') }}"
-                                   autocomplete="username"
-                                   required>
-                            <span class="uf-tick" id="usernameTick">✓</span>
-                        </div>
-                        <div class="uf-field-error" id="usernameError"></div>
-                    </div>
-
-                    <!-- Password -->
-                    <div class="uf-group">
-                        <label class="uf-label" for="password">{{ t('password') }}</label>
-                        <div class="uf-row">
-                            <input type="password"
-                                   id="password"
-                                   name="password"
-                                   class="uf-input"
-                                   placeholder="{{ t('password') }}"
-                                   autocomplete="current-password"
-                                   required>
-                            <button type="button" class="uf-eye" id="passwordToggle" onclick="togglePassword()">👁️</button>
-                        </div>
-                        <div class="uf-field-error" id="passwordError"></div>
-                    </div>
-
-                    <!-- Remember / Forgot -->
-                    <div class="rf-row">
-                        <label class="remember-me">
-                            <input type="checkbox" id="rememberMe" name="remember">
-                            <span>{{ t('remember_me') }}</span>
-                        </label>
-                        <a href="#" class="forgot-link">{{ t('forgot_password') }}</a>
-                    </div>
-
-                    <!-- Submit -->
-                    <button type="submit" class="btn-login" id="loginBtn">
-                        {{ t('login_button') }}
-                    </button>
-                </form>
-
-                <div class="form-footer">© 2025 Xurshid Hisobot</div>
-            </div>
-        </div>
-
-    </div><!-- /login-wrapper -->
+    </div>
 
     <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -546,10 +480,9 @@
 
             if (data.success) {
                 loginBtn.innerHTML = '✅ {{ t("success") }}';
-                loginBtn.style.background = 'linear-gradient(135deg,#10b981,#059669)';
                 setTimeout(() => {
                     window.location.href = data.redirect || '/dashboard';
-                }, 800);
+                }, 1000);
             } else {
                 // Xatolik
                 showError(data.message || {{ t("login_error")|tojson }});
@@ -579,17 +512,15 @@
     }
 
     function showError(message) {
-        const errorAlert = document.getElementById('errorAlert');
-        const errorMessage = document.getElementById('errorMessage');
         errorMessage.textContent = message;
-        errorAlert.style.display = 'flex';
+        errorAlert.style.display = 'block';
     }
 
     function showFieldError(field, message) {
         const input = document.getElementById(field);
         const errorDiv = document.getElementById(field + 'Error');
-
-        input.classList.add('uf-error');
+        
+        input.classList.add('error');
         errorDiv.textContent = message;
         errorDiv.style.display = 'block';
     }
@@ -597,42 +528,43 @@
     // Parolni ko'rsatish/yashirish
     function togglePassword() {
         const passwordInput = document.getElementById('password');
-        const toggleButton = document.getElementById('passwordToggle');
-
+        const toggleButton = document.querySelector('.password-toggle');
+        
         if (passwordInput.type === 'password') {
             passwordInput.type = 'text';
-            toggleButton.textContent = '🙈';
+            toggleButton.textContent = '🙈';  // Parol ko'rinayotganda
         } else {
             passwordInput.type = 'password';
-            toggleButton.textContent = '👁️';
+            toggleButton.textContent = '👁️';  // Parol yashiringanda
         }
     }
 
-    // Show/hide checkmark tick icons
-    document.addEventListener('DOMContentLoaded', function() {
-        document.getElementById('username').addEventListener('input', function() {
-            document.getElementById('usernameTick').style.display = this.value.trim() ? 'inline' : 'none';
-        });
-    });
-
     function clearErrors() {
-        document.getElementById('errorAlert').style.display = 'none';
-
-        document.querySelectorAll('.uf-input').forEach(i => i.classList.remove('uf-error'));
-        document.querySelectorAll('.uf-field-error').forEach(e => {
-            e.style.display = 'none';
-            e.textContent = '';
+        // Alert xatolikni yashirish
+        errorAlert.style.display = 'none';
+        
+        // Field xatoliklarini tozalash
+        const inputs = document.querySelectorAll('.form-control');
+        const errors = document.querySelectorAll('.error-message');
+        
+        inputs.forEach(input => input.classList.remove('error'));
+        errors.forEach(error => {
+            error.style.display = 'none';
+            error.textContent = '';
         });
     }
 
     function setLoading(loading) {
+        const form = document.getElementById('loginForm');
         const loginBtn = document.getElementById('loginBtn');
-
+        
         if (loading) {
+            form.classList.add('loading');
             loginBtn.innerHTML = '⏳ {{ t("loading") }}';
             loginBtn.disabled = true;
         } else {
-            loginBtn.innerHTML = '{{ t("login_button") }}';
+            form.classList.remove('loading');
+            loginBtn.innerHTML = '🚀 {{ t("login_button") }}';
             loginBtn.disabled = false;
         }
     }
