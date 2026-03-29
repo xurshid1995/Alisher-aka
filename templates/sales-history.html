@@ -3090,6 +3090,8 @@ function initializeCustomerSearch() {
             updateCustomerDropdown();
             customerDropdown.style.display = 'block';
         } else {
+            // Maydon tozalanganida filterni ham tozalash
+            selectedCustomerId = '';
             customerDropdown.style.display = 'none';
         }
         updateClearButtonVisibility();
