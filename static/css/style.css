@@ -1896,6 +1896,32 @@ footer {
         left: 12px;
     }
     
+    /* 480px: header tartib - hamburgerdan keyin valyuta, keyin foydalanuvchi */
+    .top-header {
+        padding-left: 60px !important; /* hamburger tugmasi uchun joy */
+        padding-right: 0.3rem !important;
+    }
+    
+    .top-header .header-right {
+        justify-content: flex-start !important;
+        gap: 0.25rem !important;
+    }
+    
+    /* Til selectorni yashirish - joy tejash */
+    .top-header .language-selector {
+        display: none !important;
+    }
+    
+    /* Foydalanuvchi ismini kengroq ko'rsatish */
+    .top-header .user-name {
+        max-width: 100px !important;
+    }
+    
+    /* Valyuta kursi kompakt */
+    .top-header .currency-display {
+        flex-shrink: 0;
+    }
+    
     .main-content {
         padding: 15px 10px;
         overflow-x: hidden;
