@@ -65,13 +65,11 @@ body {
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    transition: width 0.3s ease;
     scrollbar-gutter: stable;
 }
 
-/* Hover qilganda kengayadi */
+/* Hover effekti o'chirilgan - sidebar doim 70px */
 .sidebar:hover {
-    width: 250px;
     z-index: 950;
 }
 
@@ -126,10 +124,7 @@ body {
     white-space: nowrap;
 }
 
-/* Hover qilganda padding kengayadi */
-.sidebar:hover .sidebar-menu a {
-    padding: 8px 20px;
-}
+/* Hover padding o'chirilgan */
 
 /* Oddiy holatda matn yashirin (desktop) */
 .sidebar-menu a span:not(.icon) {
@@ -137,10 +132,7 @@ body {
     transition: opacity 0.3s ease;
 }
 
-/* Hover qilganda matn ko'rinadi (desktop) */
-.sidebar:hover .sidebar-menu a span:not(.icon) {
-    opacity: 1;
-}
+/* Matn desktop da yashirin qoladi */
 
 /* Mobil va planşetda barcha matnlar ko'rinadi */
 @media (max-width: 1024px) {
