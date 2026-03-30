@@ -65,11 +65,13 @@ body {
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
+    transition: width 0.25s ease;
     scrollbar-gutter: stable;
 }
 
-/* Hover effekti o'chirilgan - sidebar doim 70px */
+/* Hover: sidebar content ustiga chiqib kengayadi, content qisqarmaydi */
 .sidebar:hover {
+    width: 250px;
     z-index: 950;
 }
 
@@ -124,7 +126,10 @@ body {
     white-space: nowrap;
 }
 
-/* Hover padding o'chirilgan */
+/* Hover: padding kengayadi */
+.sidebar:hover .sidebar-menu a {
+    padding: 8px 20px;
+}
 
 /* Oddiy holatda matn yashirin (desktop) */
 .sidebar-menu a span:not(.icon) {
@@ -132,7 +137,10 @@ body {
     transition: opacity 0.3s ease;
 }
 
-/* Matn desktop da yashirin qoladi */
+/* Hover qilganda matn ko'rinadi (desktop) */
+.sidebar:hover .sidebar-menu a span:not(.icon) {
+    opacity: 1;
+}
 
 /* Mobil va planşetda barcha matnlar ko'rinadi */
 @media (max-width: 1024px) {
@@ -383,7 +391,7 @@ body {
 
 /* Main Content - Desktop */
 .main-content {
-    margin-left: 70px; /* Oddiy holatda tor sidebar uchun */
+    margin-left: 70px; /* Sidebar doim 70px, content shu margin da qoladi */
     margin-top: 70px;
     flex: 1;
     padding: 20px;
@@ -394,6 +402,7 @@ body {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     background: transparent;
+    transition: none; /* Sidebar kengayganda content qisqarmasin */
 }
 
 /* Planşet (769-1024px): sidebar yopiq — main-content to'liq kenglikda */
