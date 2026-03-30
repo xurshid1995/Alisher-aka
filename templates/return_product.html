@@ -6,12 +6,6 @@
 <div class="return-page">
     <div class="rp-page-header">
         <h1><i class="fas fa-undo-alt"></i> {{ t('return_product_title') }}</h1>
-        <div class="rp-location-wrap">
-            <label>📍 {{ t('return_location_label') }}</label>
-            <select id="returnLocationSelect" onchange="handleLocationChange()" class="rp-location-select">
-                <option value="">{{ t('select_location_placeholder') }}</option>
-            </select>
-        </div>
     </div>
 
     <!-- Mahsulot qidirish -->
@@ -21,13 +15,23 @@
             <h3>{{ t('search_product_title') }}</h3>
         </div>
         <div class="rp-section-body">
-            <label style="display:block; font-size:11px; font-weight:600; color:#6b7280; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px;">{{ t('product_name_or_barcode_label') }}</label>
-            <div class="rp-search-wrap" style="max-width:480px; position:relative;">
-                <i class="fas fa-search rp-search-icon"></i>
-                <input type="text" id="productSearchInput" placeholder="{{ t('select_location_first') }}"
-                       autocomplete="off" disabled oninput="searchProducts()"
-                       class="rp-search-input">
-                <div id="productSuggestions" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; max-height: 300px; overflow-y: auto; z-index: 1000;"></div>
+            <div style="display:flex; align-items:flex-end; gap:16px; flex-wrap:wrap;">
+                <div style="flex:1; min-width:260px;">
+                    <label style="display:block; font-size:11px; font-weight:600; color:#94a3b8; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px;">{{ t('product_name_or_barcode_label') }}</label>
+                    <div class="rp-search-wrap" style="position:relative;">
+                        <i class="fas fa-search rp-search-icon"></i>
+                        <input type="text" id="productSearchInput" placeholder="{{ t('select_location_first') }}"
+                               autocomplete="off" disabled oninput="searchProducts()"
+                               class="rp-search-input">
+                        <div id="productSuggestions" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; max-height: 300px; overflow-y: auto; z-index: 1000;"></div>
+                    </div>
+                </div>
+                <div class="rp-location-wrap" style="min-width:220px; flex-shrink:0;">
+                    <label>📍 {{ t('return_location_label') }}</label>
+                    <select id="returnLocationSelect" onchange="handleLocationChange()" class="rp-location-select">
+                        <option value="">{{ t('select_location_placeholder') }}</option>
+                    </select>
+                </div>
             </div>
         </div>
     </div>
