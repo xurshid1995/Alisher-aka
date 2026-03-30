@@ -316,24 +316,27 @@
 }
 .ps-table thead tr { background: #dde6f4; }
 .ps-table th {
-    padding: 12px 10px;
+    padding: 12px 10px !important;
     text-align: center;
     font-size: 11px !important;
     font-weight: 700 !important;
     color: #64748b !important;
+    background: #dde6f4 !important;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    border-bottom: 1px solid #dde3ec;
+    border: none !important;
+    border-bottom: 1px solid #dde3ec !important;
     white-space: nowrap;
 }
 .ps-table td {
-    padding: 11px 10px;
+    padding: 11px 10px !important;
     font-size: 13px !important;
     color: #374151;
-    border-bottom: 1px solid #f1f5f9;
+    border: none !important;
+    border-bottom: 1px solid #f1f5f9 !important;
     vertical-align: middle;
     text-align: center;
-    white-space: normal; word-wrap: break-word; line-height: 1.4;
+    white-space: normal !important; word-wrap: break-word; line-height: 1.4;
 }
 .ps-table tbody tr:hover { background: #f8faff; }
 .ps-table tbody tr:last-child td { border-bottom: none; }
@@ -394,7 +397,7 @@
 .sale-group-start { border-top: 1px solid #e2e8f0; }
 tbody tr.sale-group-start:first-child { border-top: none; }
 .sale-group-start, .sale-group-item { position: relative; }
-.sale-group-start td, .sale-group-item td { border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+.sale-group-start td, .sale-group-item td { border: none !important; border-bottom: 1px solid #f1f5f9 !important; vertical-align: middle; }
 .sale-group-end { border-bottom: 2px solid #cbd5e1 !important; }
 .group-cell { vertical-align: middle !important; text-align: center !important; background: white !important; font-weight: 600; }
 .group-cell.col-product  { text-align: left !important; }
@@ -441,6 +444,15 @@ tbody tr.sale-group-start:first-child { border-top: none; }
     .ps-stat-number { font-size: 1.5rem; }
     .ps-table { min-width: 860px; }
     .ps-filter-row { gap: 10px; }
+    .ps-table th {
+        background: #dde6f4 !important;
+        color: #64748b !important;
+        padding: 12px 10px !important;
+    }
+    .ps-table td {
+        padding: 11px 10px !important;
+        font-size: 13px !important;
+    }
 }
 
 /* ── Mobil (768px) ── */
