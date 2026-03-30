@@ -1907,9 +1907,20 @@ footer {
         gap: 0.25rem !important;
     }
     
-    /* Til selectorni yashirish - joy tejash */
+    /* Til selector - faqat bayroq ko'rinadi */
     .top-header .language-selector {
-        display: none !important;
+        display: flex !important;
+    }
+    .top-header .language-selector button#langDropdownBtn > span:not([style]) {
+        display: none !important; /* Til nomini yashirish */
+    }
+    .top-header .language-selector button#langDropdownBtn > span[style*="font-size:10px"] {
+        display: none !important; /* ▼ yashirish */
+    }
+    .top-header .language-selector button#langDropdownBtn {
+        padding: 4px 5px !important;
+        gap: 0 !important;
+        min-width: 0 !important;
     }
     
     /* Foydalanuvchi ismini kengroq ko'rsatish */
