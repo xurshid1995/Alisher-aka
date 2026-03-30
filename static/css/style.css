@@ -81,19 +81,19 @@ body {
 }
 
 .sidebar::-webkit-scrollbar-track {
-    background: rgba(0,0,0,0.03);
+    background: rgba(255,255,255,0.1);
     border-radius: 10px;
     margin: 5px 0;
 }
 
 .sidebar::-webkit-scrollbar-thumb {
-    background: rgba(0,0,0,0.12);
+    background: rgba(255,255,255,0.25);
     border-radius: 10px;
     transition: background 0.3s ease;
 }
 
 .sidebar::-webkit-scrollbar-thumb:hover {
-    background: rgba(0,0,0,0.22);
+    background: rgba(255,255,255,0.4);
 }
 
 .sidebar-menu {
@@ -114,7 +114,7 @@ body {
     align-items: center;
     padding: 10px 10px;
     justify-content: flex-start;
-    color: #64748b;
+    color: rgba(255,255,255,0.75);
     text-decoration: none;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     border-left: 3px solid transparent;
@@ -177,9 +177,9 @@ body {
 }
 
 .sidebar-menu a:hover {
-    background: rgba(26,110,255,0.07);
-    color: #1a6eff;
-    border-left-color: #1a6eff;
+    background: rgba(255,255,255,0.15);
+    color: #ffffff;
+    border-left-color: rgba(255,255,255,0.6);
     transform: translateX(2px);
 }
 
@@ -192,12 +192,12 @@ body {
 }
 
 .sidebar-menu a.active {
-    background: linear-gradient(135deg, #1a6eff 0%, #1558d6 100%);
+    background: rgba(255,255,255,0.22);
     color: #ffffff;
     border-left-color: transparent;
     font-weight: 600;
     border-radius: 10px;
-    box-shadow: 0 3px 12px rgba(26,110,255,0.25);
+    box-shadow: 0 3px 12px rgba(0,0,0,0.15);
     margin: 2px 4px;
 }
 
