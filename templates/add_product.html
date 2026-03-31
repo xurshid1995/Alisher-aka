@@ -4,813 +4,421 @@
 
 {% block extra_css %}
 <style>
-        .dual-panel-container {
-            display: grid;
-            grid-template-columns: minmax(500px, 1fr) minmax(500px, 1fr);
-            gap: 2rem;
-            margin-top: 1rem;
-        }
-
-        .panel {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            padding: 1.5rem;
-            overflow: auto;
-        }
-        }
-
-        .panel-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-            padding-bottom: 1rem;
-            border-bottom: 2px solid #e9ecef;
-        }
-
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .panel-header h2 {
-            margin: 0;
-            color: #495057;
-            font-size: 1.4rem;
-        }
-
-        .excel-import-btn {
-            background: linear-gradient(135deg, #28a745, #20c997);
-            border: none;
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
-        }
-
-        .excel-import-btn:hover {
-            background: linear-gradient(135deg, #218838, #1ea080);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
-        }
-
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-            margin-bottom: 0.2rem;
-        }
-
-        .form-row-three {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 1rem;
-            margin-bottom: 0.2rem;
-        }
-
-        .form-group {
-            margin-bottom: 0.2rem;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 0.2rem;
-            font-weight: 600;
-            color: #495057;
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 0.75rem;
-            border: 2px solid #e9ecef;
-            border-radius: 8px;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-            box-sizing: border-box;
-        }
-
-        .form-control:focus {
-            outline: none;
-            border-color: #007bff;
-            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
-        }
-
-        /* Optgroup styling */
-        optgroup {
-            font-weight: bold;
-            color: #495057;
-            background-color: #f8f9fa;
-            font-size: 0.9rem;
-        }
-
-        optgroup option {
-            font-weight: normal;
-            padding-left: 1rem;
-            color: #212529;
-        }
-
-        /* Product dropdown styling */
-        .product-dropdown-item {
-            padding: 12px 15px;
-            cursor: pointer;
-            border-bottom: 1px solid #e9ecef;
-            background: white;
-            font-size: 1rem;
-        }
-        
-        .product-dropdown-item:hover {
-            background-color: #f8f9fa !important;
-        }
-
-        .product-dropdown-item:active {
-            background-color: #e9ecef !important;
-        }
-        
-        .product-dropdown-content {
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        
-        .quantity-badge {
-            color: white;
-            font-weight: 600;
-            padding: 2px 6px;
-            border-radius: 3px;
-        }
-
-        .btn {
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-align: center;
-            display: inline-block;
-            text-decoration: none;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #007bff, #0056b3);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
-        }
-
-        .btn-success {
-            background: linear-gradient(135deg, #28a745, #1e7e34);
-            color: white;
-        }
-
-        .btn-danger {
-            background: linear-gradient(135deg, #dc3545, #c82333);
-            color: white;
-        }
-
-        .btn-large {
-            padding: 1rem 2rem;
-            font-size: 1.1rem;
-            width: 100%;
-        }
-
-        .search-result {
-            margin-top: 0;
-            padding: 0;
-            border-radius: 0 0 8px 8px;
-            display: none;
-            position: relative;
-            z-index: 1000;
-            border: 2px solid #007bff;
-            border-top: none;
-            background: white;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-
-        .product-name-container {
-            position: relative;
-        }
-
-        .search-result {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            background: white;
-            border: 1px solid #ddd;
-            border-radius: 0 0 8px 8px;
-            z-index: 1000;
-            box-shadow: 0 6px 12px rgba(0,0,0,0.2);
-            max-height: 400px;
-            overflow-y: auto;
-            min-height: 50px;
-        }
-
-        .product-dropdown-item:hover {
-            background-color: #f8f9fa !important;
-        }
-
-        .dropdown-header {
-            background: #f8f9fa;
-            border-bottom: 2px solid #dee2e6;
-            padding: 8px 15px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: #6c757d;
-        }
-
-        .search-result::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .search-result::-webkit-scrollbar-track {
-            background: #f1f1f1;
-        }
-
-        .search-result::-webkit-scrollbar-thumb {
-            background: #c1c1c1;
-            border-radius: 3px;
-        }
-
-        /* Klaviatura navigatsiyasi uchun selected class */
-        .suggestion-item {
-            transition: background-color 0.15s ease, color 0.15s ease;
-            cursor: pointer;
-        }
-        
-        .suggestion-item.selected {
-            background-color: #007bff !important;
-            color: white !important;
-            box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
-        }
-        
-        .suggestion-item.selected strong,
-        .suggestion-item.selected span {
-            color: white !important;
-        }
-        
-        .suggestion-item:hover:not(.selected) {
-            background-color: #f8f9fa !important;
-        }
-
-        /* Vaqtinchalik ro'yxat jadvali */
-        .temp-products-container {
-            width: 100%;
-            overflow-x: auto;
-            margin-top: 1rem;
-        }
-
-        .temp-products-table {
-            width: 100%;
-            min-width: auto !important; /* Global CSS override */
-            max-width: 100%; /* Panel kengligidan oshmasin */
-            border-collapse: collapse;
-            background: white;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            table-layout: fixed; /* Fixed layout - ustunlar aniq kengliklarda */
-        }
-
-        .temp-products-table thead tr {
-            background: #007bff;
-            color: white;
-        }
-
-        .temp-products-table th {
-            padding: 12px;
-            text-align: center;
-            border-bottom: 2px solid #0056b3;
-            white-space: nowrap;
-        }
-
-        .temp-products-table td {
-            padding: 12px;
-            border-bottom: 1px solid #dee2e6;
-        }
-
-        .temp-products-table tbody tr:nth-child(even) {
-            background: #f8f9fa;
-        }
-
-        .temp-products-table tbody tr:hover {
-            background: #e9ecef;
-        }
-
-        /* Ustun kengliklari */
-        .temp-products-table th:nth-child(1),
-        .temp-products-table td:nth-child(1) {
-            width: 120px;
-            min-width: 120px;
-        }
-
-        .temp-products-table th:nth-child(2),
-        .temp-products-table td:nth-child(2) {
-            width: auto;
-            min-width: 150px;
-        }
-
-        .temp-products-table th:nth-child(3),
-        .temp-products-table td:nth-child(3) {
-            width: 80px;
-            min-width: 80px;
-        }
-
-        .temp-products-table th:nth-child(4),
-        .temp-products-table td:nth-child(4) {
-            width: 90px;
-            min-width: 90px;
-        }
-
-        .temp-products-table th:nth-child(5),
-        .temp-products-table td:nth-child(5) {
-            width: 90px;
-            min-width: 90px;
-        }
-
-        .temp-products-table th:nth-child(6),
-        .temp-products-table td:nth-child(6) {
-            width: 90px;
-            min-width: 90px;
-        }
-
-        .suggestion-item.selected .suggestion-name {
-            color: white !important;
-        }
-
-        .suggestion-item.selected .suggestion-details {
-            color: #e6f2ff !important;
-        }
-
-        .price-comparison {
-            margin-top: 1rem;
-            background: #fff3cd;
-            border: 1px solid #ffc107;
-            border-radius: 8px;
-            display: none;
-        }
-
-        .profit-display {
-            background: #d4edda;
-            border: 1px solid #c3e6cb;
-            border-radius: 8px;
-            padding: 1rem;
-            margin-top: 1rem;
-            text-align: center;
-        }
-
-        .temp-product-item {
-            background: #f8f9fa;
-            border: 1px solid #dee2e6;
-            border-radius: 8px;
-            padding: 1rem;
-            margin-bottom: 1rem;
-            position: relative;
-        }
-
-        .temp-product-item .remove-btn {
-            position: absolute;
-            top: 0.5rem;
-            right: 0.5rem;
-            background: #dc3545;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            cursor: pointer;
-            font-size: 0.9rem;
-        }
-
-        .list-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: #e9ecef;
-            padding: 1rem;
-            border-radius: 8px;
-            margin-bottom: 1rem;
-            font-weight: 600;
-        }
-
-        .empty-state {
-            text-align: center;
-            color: #6c757d;
-            padding: 2rem;
-        }
-
-        .final-actions {
-            margin-top: 2rem;
-            padding-top: 1rem;
-            border-top: 2px solid #e9ecef;
-        }
-
-        /* Tarix bo'limi stillari */
-        .history-section {
-            background: #f8f9fa;
-            padding: 1.5rem;
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-        }
-
-        .btn-refresh-history {
-            background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
-            color: white;
-            border: none;
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 8px rgba(23, 162, 184, 0.3);
-        }
-
-        .btn-refresh-history:hover {
-            background: linear-gradient(135deg, #138496 0%, #117a8b 100%);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(23, 162, 184, 0.4);
-        }
-
-        .btn-clear-history {
-            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
-            color: white;
-            border: none;
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
-        }
-
-        .btn-clear-history:hover {
-            background: linear-gradient(135deg, #c82333 0%, #bd2130 100%);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
-        }
-
-        .btn-clear-history:active {
-            transform: translateY(0);
-            box-shadow: 0 2px 6px rgba(220, 53, 69, 0.3);
-        }
-
-        .btn-refresh-history {
-            background: linear-gradient(135deg, #007bff, #0056b3);
-            color: white;
-            border: none;
-            padding: 0.6rem 1.2rem;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 8px rgba(0,123,255,0.3);
-        }
-
-        .btn-refresh-history:hover {
-            background: linear-gradient(135deg, #0056b3, #004085);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(0,123,255,0.4);
-        }
-
-        .btn-refresh-history:active {
-            transform: translateY(0);
-            box-shadow: 0 2px 6px rgba(0,123,255,0.3);
-        }
-
-        .btn-refresh-history:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-
-        /* Mahsulot Tarixi Jadvali Stillari - Transfer tarixi kabi */
-        .history-section {
-            margin-top: 2rem;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            overflow: hidden;
-        }
-
-        .history-table-container {
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .history-table {
-            width: 100%;
-            min-width: 1000px;
-            border-collapse: collapse;
-            font-size: 0.9rem;
-        }
-
-        .history-table th {
-            background: #f8f9fa;
-            color: #495057;
-            font-weight: 600;
-            padding: 1rem 0.75rem;
-            text-align: left;
-            border-bottom: 2px solid #dee2e6;
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
-
-        .history-table td {
-            padding: 0.75rem;
-            border-bottom: 1px solid #f1f3f4;
-            color: #6c757d;
-        }
-
-        .history-table tbody tr:hover {
-            background-color: #f8f9fa;
-        }
-
-        .history-info {
-            padding: 0 1.5rem;
-        }
-
-        .page-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #e9ecef;
-        }
-
-        .page-header h1 {
-            color: #0f172a;
-            font-size: 24px;
-            margin: 0;
-            font-weight: 700;
-            letter-spacing: -0.3px;
-        }
-
-        .page-header h1 i, .page-header h1 span.ph-icon {
-            color: #4338ca;
-            margin-right: 8px;
-        }
-
-        @media (max-width: 768px) {
-            .dual-panel-container {
-                grid-template-columns: 1fr;
-                gap: 1rem;
-                height: auto;
-            }
-            
-            .form-row {
-                grid-template-columns: 1fr;
-            }
-            
-            .form-row-three {
-                grid-template-columns: 1fr;
-            }
-        }
+/* ── Add Product Page ── */
+.ap-page {
+    padding: 24px 24px 40px;
+    background: #f5f6fa;
+    min-height: 100vh;
+    font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+}
+.ap-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+.ap-title { font-size: 18px; font-weight: 700; color: #1e293b; margin: 0; }
+.ap-title i { color: #2563eb; margin-right: 8px; }
+
+.ap-grid { display: grid; grid-template-columns: 1fr 1.1fr; gap: 16px; margin-bottom: 16px; }
+
+.ap-card { background: white; border-radius: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); overflow: hidden; }
+.ap-card-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 20px; border-bottom: 1px solid #f1f5f9; background: #fafbfc;
+}
+.ap-card-title { font-size: 14px; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 8px; }
+.ap-card-title i { color: #2563eb; }
+.ap-card-body { padding: 16px 20px; }
+
+.ap-form-group { margin-bottom: 11px; }
+.ap-label {
+    display: block; margin-bottom: 4px;
+    font-size: 11px; font-weight: 600; color: #94a3b8;
+    text-transform: uppercase; letter-spacing: 0.5px;
+}
+.ap-input {
+    width: 100%; padding: 8px 13px;
+    border: 1.5px solid #e2e8f0; border-radius: 10px;
+    font-size: 13px; background: #f8fafc; color: #1e293b;
+    transition: all 0.2s; outline: none; box-sizing: border-box;
+}
+.ap-input:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,0.1); background: white; }
+.ap-input[readonly] { background: #f1f5f9; color: #64748b; cursor: default; }
+.ap-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+.search-result {
+    position: absolute; top: 100%; left: 0; right: 0;
+    background: white; border: 1.5px solid #e2e8f0; border-top: none;
+    border-radius: 0 0 10px 10px; max-height: 300px; overflow-y: auto;
+    z-index: 1000; box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+}
+.product-dropdown-item {
+    padding: 10px 14px; cursor: pointer; font-size: 13px;
+    border-bottom: 1px solid #f1f5f9; transition: background 0.15s; background: white;
+}
+.product-dropdown-item:hover { background: #eff6ff; }
+.suggestion-item.selected { background: #2563eb !important; color: white !important; }
+.suggestion-item.selected strong,
+.suggestion-item.selected span { color: white !important; }
+.product-name-container { position: relative; }
+
+optgroup { font-weight: bold; color: #334155; background: #f8fafc; font-size: 0.9rem; }
+optgroup option { font-weight: normal; color: #1e293b; }
+
+.barcode-error-msg {
+    color: #ef4444; font-size: 12px; font-weight: 600;
+    padding: 6px 10px; background: #fee2e2; border: 1.5px solid #ef4444;
+    border-radius: 6px; display: inline-block;
+}
+
+.quantity-badge { color: white; font-weight: 600; padding: 2px 7px; border-radius: 5px; font-size: 11px; }
+
+/* Buttons */
+.ap-btn-primary {
+    width: 100%; padding: 10px;
+    background: #2563eb; color: white; border: none;
+    border-radius: 10px; font-size: 14px; font-weight: 600;
+    cursor: pointer; transition: background 0.2s;
+}
+.ap-btn-primary:hover { background: #1d4ed8; }
+.ap-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+.ap-btn-success {
+    width: 100%; padding: 10px;
+    background: #059669; color: white; border: none;
+    border-radius: 10px; font-size: 14px; font-weight: 600;
+    cursor: pointer; transition: background 0.2s;
+}
+.ap-btn-success:hover { background: #047857; }
+.ap-btn-danger {
+    width: 100%; padding: 8px; margin-top: 8px;
+    background: #ef4444; color: white; border: none;
+    border-radius: 10px; font-size: 13px; font-weight: 600;
+    cursor: pointer; transition: background 0.2s;
+}
+.ap-btn-danger:hover { background: #dc2626; }
+.ap-btn-excel-import {
+    flex: 1; padding: 7px 8px;
+    background: white; border: 1.5px solid #059669; color: #059669;
+    border-radius: 8px; font-size: 11px; font-weight: 600;
+    cursor: pointer; transition: all 0.2s;
+}
+.ap-btn-excel-import:hover { background: #059669; color: white; }
+.ap-btn-excel-template {
+    flex: 1; padding: 7px 8px;
+    background: white; border: 1.5px solid #2563eb; color: #2563eb;
+    border-radius: 8px; font-size: 11px; font-weight: 600;
+    cursor: pointer; transition: all 0.2s;
+}
+.ap-btn-excel-template:hover { background: #2563eb; color: white; }
+.ap-btn-barcode-auto {
+    padding: 7px 9px; background: #059669; color: white;
+    border: none; border-radius: 8px; cursor: pointer;
+    font-size: 12px; font-weight: 600; white-space: nowrap;
+    transition: background 0.2s;
+}
+.ap-btn-barcode-auto:hover { background: #047857; }
+.ap-btn-barcode-print {
+    padding: 7px 9px; background: #2563eb; color: white;
+    border: none; border-radius: 8px; cursor: pointer;
+    font-size: 13px; transition: background 0.2s;
+}
+.ap-btn-barcode-print:hover { background: #1d4ed8; }
+
+/* Summary bar */
+.ap-summary {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 9px 13px; background: #eff6ff; border-radius: 8px;
+    margin-bottom: 12px; font-size: 13px; font-weight: 500; color: #1e293b;
+}
+.ap-summary strong { color: #2563eb; }
+
+/* Temp products table */
+.temp-products-container { overflow-x: auto; }
+.temp-products-table {
+    width: 100%; border-collapse: collapse; font-size: 13px;
+    min-width: auto !important; table-layout: auto;
+}
+.temp-products-table thead tr { background: #1a6eff; }
+.temp-products-table th {
+    padding: 10px 8px; color: white;
+    font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.5px;
+    text-align: center; white-space: nowrap;
+}
+.temp-products-table td {
+    padding: 9px 8px; border-bottom: 1px solid #f1f5f9;
+    color: #374151; font-size: 13px; vertical-align: middle;
+}
+.temp-products-table tbody tr:hover td { background: #f8faff; }
+.temp-products-table tbody tr:last-child td { border-bottom: none; }
+
+/* Empty state */
+.ap-empty { text-align: center; padding: 28px 20px; color: #94a3b8; }
+.ap-empty .ap-empty-icon { font-size: 32px; margin-bottom: 8px; }
+.ap-empty p { margin: 4px 0; font-size: 13px; }
+
+/* Final actions */
+.ap-final-actions { padding-top: 12px; border-top: 1px solid #f1f5f9; margin-top: 12px; }
+
+/* Price comparison */
+.price-comparison {
+    margin-top: 8px; border-radius: 8px;
+    border: 1.5px solid #fbbf24; background: #fffbeb; display: none;
+}
+.profit-display { display: none; }
+
+/* History */
+.ap-history {
+    background: white; border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06); overflow: hidden;
+}
+.ap-history-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 20px; border-bottom: 1px solid #f1f5f9; background: #fafbfc;
+}
+.ap-history-title { font-size: 14px; font-weight: 700; color: #1e293b; }
+.ap-history-title i { color: #2563eb; margin-right: 8px; }
+.ap-btn-refresh {
+    padding: 7px 13px; background: #2563eb; color: white;
+    border: none; border-radius: 8px; font-size: 12px; font-weight: 600;
+    cursor: pointer; transition: background 0.2s;
+}
+.ap-btn-refresh:hover { background: #1d4ed8; }
+.ap-btn-refresh:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.history-table-container { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.history-table {
+    width: 100%; min-width: 900px; border-collapse: collapse; font-size: 13px;
+}
+.history-table thead tr { background: #1a6eff; }
+.history-table th {
+    padding: 11px 10px; color: white;
+    font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.5px;
+    text-align: left; white-space: nowrap;
+}
+.history-table td {
+    padding: 9px 10px; border-bottom: 1px solid #f1f5f9;
+    color: #374151; font-size: 13px; vertical-align: middle;
+}
+.history-table tbody tr:hover td { background: #f8faff; }
+.history-table tbody tr:last-child td { border-bottom: none; }
+
+@media (max-width: 1100px) { .ap-grid { grid-template-columns: 1fr; } }
+@media (max-width: 768px) {
+    .ap-page { padding: 12px; }
+    .ap-row { grid-template-columns: 1fr; }
+    .ap-card-body { padding: 12px 14px; }
+}
 </style>
 {% endblock %}
 
 {% block content %}
-        <div class="page-header">
-            <h1><span class="ph-icon">📦</span> {{ t('heading_add_product') }}</h1>
-        </div>
+<div class="ap-page">
 
-        <div class="dual-panel-container">
-            <!-- Chap Panel - Mahsulot Ma'lumotlari -->
-            <div class="panel">
-                <div class="panel-header">
-                    <div class="header-left">
-                        <span style="font-size: 1.5rem;">📦</span>
-                        <h2>{{ t('label_product_info') }}</h2>
-                    </div>
-                </div>
-                
-                <!-- Excel fayl tanlash input (yashirin) -->
-                <input type="file" id="excelFileInput" accept=".xlsx,.xls" style="display: none;" onchange="handleExcelFile(event)">
-                
+    <!-- Header -->
+    <div class="ap-header">
+        <h1 class="ap-title"><i class="fas fa-box-open"></i> {{ t('heading_add_product') }}</h1>
+    </div>
+
+    <!-- Two panels -->
+    <div class="ap-grid">
+        <!-- Chap: Forma -->
+        <div class="ap-card">
+            <div class="ap-card-header">
+                <span class="ap-card-title"><i class="fas fa-edit"></i> {{ t('label_product_info') }}</span>
+            </div>
+            <div class="ap-card-body">
+                <!-- Excel fayl input (yashirin) -->
+                <input type="file" id="excelFileInput" accept=".xlsx,.xls" style="display:none;" onchange="handleExcelFile(event)">
+
                 <form id="productForm">
-                    <!-- 1-qator: Joylashuv va Excel Import -->
-                    <div class="form-row">
-                        <div class="form-group" style="flex: 1;">
-                            <label for="location">{{ t('ap_location_label') }}</label>
-                            <select id="location" name="location" class="form-control" onchange="onLocationChange()">
+                    <!-- Joylashuv va Excel Import -->
+                    <div class="ap-row" style="margin-bottom:11px;">
+                        <div class="ap-form-group" style="margin-bottom:0;">
+                            <label class="ap-label" for="location">{{ t('ap_location_label') }}</label>
+                            <select id="location" name="location" class="ap-input" onchange="onLocationChange()">
                                 <option value="">{{ t('ap_select_location') }}</option>
                             </select>
                         </div>
-                        <div class="form-group" style="flex: 1;">
-                            <label style="display: block; margin-bottom: 0.3rem; font-weight: 600; color: #495057;">{{ t('ap_excel_import_label') }}</label>
-                            <div style="display: flex; gap: 0.5rem;">
-                                <button type="button" class="btn btn-outline-success" onclick="openExcelImport()" 
-                                        style="flex: 1; padding: 0.5rem 0.75rem; background: white; border: 2px solid #28a745; color: #28a745; border-radius: 8px; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(40, 167, 69, 0.15);">
-                                    <img src="https://img.icons8.com/color/48/ms-excel.png" alt="Excel" style="width: 20px; height: 20px; vertical-align: middle; margin-right: 4px;"> {{ t('ap_excel_import_btn') }}
+                        <div class="ap-form-group" style="margin-bottom:0;">
+                            <label class="ap-label">{{ t('ap_excel_import_label') }}</label>
+                            <div style="display:flex; gap:6px;">
+                                <button type="button" class="ap-btn-excel-import" onclick="openExcelImport()">
+                                    📥 {{ t('ap_excel_import_btn') }}
                                 </button>
-                                <button type="button" class="btn btn-outline-primary" onclick="downloadExcelTemplate()" 
-                                        style="flex: 1; padding: 0.5rem 0.75rem; background: white; border: 2px solid #007bff; color: #007bff; border-radius: 8px; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(0, 123, 255, 0.15);">
-                                    <img src="https://img.icons8.com/color/48/ms-excel.png" alt="Excel" style="width: 20px; height: 20px; vertical-align: middle; margin-right: 4px;"> {{ t('ap_excel_template_btn') }}
+                                <button type="button" class="ap-btn-excel-template" onclick="downloadExcelTemplate()">
+                                    📋 {{ t('ap_excel_template_btn') }}
                                 </button>
                             </div>
                         </div>
                     </div>
 
-                    <!-- 2-qator: Mahsulot nomi (to'liq kenglik) -->
-                    <div class="form-row" style="grid-template-columns: 1fr;">
-                        <div class="form-group">
-                            <label for="product_name">{{ t('ap_product_name_label') }}</label>
-                            <div class="product-name-container">
-                                <input type="text" id="product_name" name="product_name" class="form-control" 
-                                       placeholder="{{ t('ap_product_name_placeholder') }}" 
-                                       oninput="searchProduct(); calculateProfit();"
-                                       onfocus="showSearchResults()"
-                                       onkeydown="handleProductNameKeyDown(event)"
-                                       autocomplete="off">
-                                <!-- Qidiruv natijasi - maydon ostida -->
-                                <div id="searchResult" class="search-result"></div>
-                            </div>
+                    <!-- Mahsulot nomi -->
+                    <div class="ap-form-group">
+                        <label class="ap-label" for="product_name">{{ t('ap_product_name_label') }}</label>
+                        <div class="product-name-container">
+                            <input type="text" id="product_name" name="product_name" class="ap-input"
+                                   placeholder="{{ t('ap_product_name_placeholder') }}"
+                                   oninput="searchProduct(); calculateProfit();"
+                                   onfocus="showSearchResults()"
+                                   onkeydown="handleProductNameKeyDown(event)"
+                                   autocomplete="off">
+                            <div id="searchResult" class="search-result" style="display:none;"></div>
                         </div>
                     </div>
 
-                    <!-- 3-qator: Miqdor va O'lchov birligi -->
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="quantity">{{ t('ap_quantity_label') }}</label>
-                            <input type="number" id="quantity" name="quantity" class="form-control" 
+                    <!-- Miqdor va O'lchov birligi -->
+                    <div class="ap-row">
+                        <div class="ap-form-group">
+                            <label class="ap-label" for="quantity">{{ t('ap_quantity_label') }}</label>
+                            <input type="number" id="quantity" name="quantity" class="ap-input"
                                    placeholder="0" min="0" step="any"
                                    oninput="validateQuantityInput(); calculateProfit();">
                         </div>
-                        <div class="form-group">
-                            <label for="unit_type">{{ t('ap_unit_type_label') }}</label>
-                            <select id="unit_type" name="unit_type" class="form-control" 
-                                    onchange="updateQuantityStep(); validateQuantityInput();"
-                                    style="padding: 0.75rem; border: 2px solid #ced4da; border-radius: 8px; font-size: 1rem; height: 48px;">
+                        <div class="ap-form-group">
+                            <label class="ap-label" for="unit_type">{{ t('ap_unit_type_label') }}</label>
+                            <select id="unit_type" name="unit_type" class="ap-input"
+                                    onchange="updateQuantityStep(); validateQuantityInput();">
                                 <option value="dona" selected>{{ t('ap_unit_dona') }}</option>
                                 <option value="litr">{{ t('ap_unit_litr') }}</option>
                             </select>
                         </div>
                     </div>
 
-                    <!-- 4-qator: Minimal qoldiq va Barcode -->
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="min_stock">{{ t('ap_min_stock_label') }}</label>
-                            <input type="number" id="min_stock" name="min_stock" class="form-control" 
+                    <!-- Min qoldiq va Barcode -->
+                    <div class="ap-row">
+                        <div class="ap-form-group">
+                            <label class="ap-label" for="min_stock">{{ t('ap_min_stock_label') }}</label>
+                            <input type="number" id="min_stock" name="min_stock" class="ap-input"
                                    placeholder="0" min="0">
                         </div>
-                        <div class="form-group">
-                            <label for="barcode">{{ t('ap_barcode_label') }}</label>
-                            <!-- Barcode xatolik xabari - label dan keyingi qator -->
-                            <div id="barcodeErrorContainer" style="margin-top: 4px; margin-bottom: 4px;"></div>
-                            <div style="display: flex; gap: 5px;">
-                                <input type="text" id="barcode" name="barcode" class="form-control" 
-                                       placeholder="{{ t('ap_barcode_placeholder') }}" 
-                                       autocomplete="off"
-                                       maxlength="8"
-                                       pattern="[0-9]{8}"
+                        <div class="ap-form-group">
+                            <label class="ap-label" for="barcode">{{ t('ap_barcode_label') }}</label>
+                            <div id="barcodeErrorContainer" style="margin-bottom:4px;"></div>
+                            <div style="display:flex; gap:5px;">
+                                <input type="text" id="barcode" name="barcode" class="ap-input"
+                                       placeholder="{{ t('ap_barcode_placeholder') }}"
+                                       autocomplete="off" maxlength="8" pattern="[0-9]{8}"
                                        oninput="validateBarcodeInput(this)"
-                                       style="border: 2px solid #28a745; flex: 1;">
-                                <button type="button" 
-                                        id="autoGenerateBtn"
-                                        onclick="generateBarcode()" 
-                                        style="padding: 8px 12px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 13px; white-space: nowrap;"
-                                        title="{{ t('ap_auto_barcode_title') }}">
-                                    🔄 Auto
-                                </button>
-                                <button type="button" 
-                                        onclick="printBarcodeFromForm()" 
-                                        id="printBarcodeBtn"
-                                        style="padding: 8px 12px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 13px; white-space: nowrap;"
-                                        title="{{ t('ap_print_barcode_title') }}">
-                                    🖨️
-                                </button>
+                                       style="border-color:#059669; flex:1;">
+                                <button type="button" id="autoGenerateBtn" onclick="generateBarcode()"
+                                        class="ap-btn-barcode-auto"
+                                        title="{{ t('ap_auto_barcode_title') }}">🔄 Auto</button>
+                                <button type="button" onclick="printBarcodeFromForm()" id="printBarcodeBtn"
+                                        class="ap-btn-barcode-print"
+                                        title="{{ t('ap_print_barcode_title') }}">🖨️</button>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Narx taqqoslash bloki -->
+                    <!-- Narx taqqoslash -->
                     <div id="priceComparison" class="price-comparison">
                         <div id="priceComparisonContent"></div>
                     </div>
 
-                    <!-- 5-qator: Tan narxi va Sotish narxi -->
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="cost_price">{{ t('ap_cost_price_label') }}</label>
-                            <input type="number" id="cost_price" name="cost_price" class="form-control" 
-                                   placeholder="0.00" step="0.01" min="0" 
+                    <!-- Tan narx va Sotish narxi -->
+                    <div class="ap-row">
+                        <div class="ap-form-group">
+                            <label class="ap-label" for="cost_price">{{ t('ap_cost_price_label') }}</label>
+                            <input type="number" id="cost_price" name="cost_price" class="ap-input"
+                                   placeholder="0.00" step="0.01" min="0"
                                    oninput="calculateProfit();"
                                    onfocus="saveCostPriceOnFocus(); cancelAutoUpdate();"
                                    onblur="updateOriginalCostPreview(); enableAutoUpdate(); comparePrices();">
                         </div>
-                        <div class="form-group">
-                            <label for="sell_price">{{ t('ap_sell_price_label') }}</label>
-                            <input type="number" id="sell_price" name="sell_price" class="form-control" 
-                                   placeholder="0.00" step="0.01" min="0" 
+                        <div class="ap-form-group">
+                            <label class="ap-label" for="sell_price">{{ t('ap_sell_price_label') }}</label>
+                            <input type="number" id="sell_price" name="sell_price" class="ap-input"
+                                   placeholder="0.00" step="0.01" min="0"
                                    oninput="calculateProfit();">
                         </div>
                     </div>
 
-                    <!-- 6-qator: Asl tan narx va Foyda -->
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="original_cost">{{ t('ap_original_cost_label') }}</label>
-                            <input type="text" id="original_cost" name="original_cost" class="form-control" 
-                                   placeholder="-" readonly style="background-color: #f8f9fa;">
+                    <!-- Asl tan narx va Foyda -->
+                    <div class="ap-row">
+                        <div class="ap-form-group">
+                            <label class="ap-label" for="original_cost">{{ t('ap_original_cost_label') }}</label>
+                            <input type="text" id="original_cost" name="original_cost" class="ap-input"
+                                   placeholder="-" readonly>
                         </div>
-                        <div class="form-group">
-                            <label for="profit_display">{{ t('ap_profit_label') }}</label>
-                            <input type="text" id="profit_display" name="profit_display" class="form-control" 
-                                   placeholder="$0.00 (0%)" readonly style="background-color: #f8f9fa;">
+                        <div class="ap-form-group">
+                            <label class="ap-label" for="profit_display">{{ t('ap_profit_label') }}</label>
+                            <input type="text" id="profit_display" name="profit_display" class="ap-input"
+                                   placeholder="$0.00 (0%)" readonly>
                         </div>
                     </div>
 
-                    <!-- Foyda ko'rsatkichi (eski) - yashiramiz -->
-                    <div id="profitDisplay" class="profit-display" style="display: none;">
+                    <!-- Eski foyda (yashirin) -->
+                    <div id="profitDisplay" class="profit-display" style="display:none;">
                         <div id="profitContent"></div>
                     </div>
 
-                    <!-- Tugmalar -->
-                    <div style="margin-top: 2rem;">
-                        <button type="button" id="addToListBtn" onclick="addToTempList()" class="btn btn-primary btn-large">
-                            {{ t('ap_add_to_list') }}
+                    <!-- Qo'shish tugmasi -->
+                    <div style="margin-top:14px;">
+                        <button type="button" id="addToListBtn" onclick="addToTempList()" class="ap-btn-primary">
+                            ➕ {{ t('ap_add_to_list') }}
                         </button>
                     </div>
                 </form>
             </div>
+        </div>
 
-            <!-- O'ng Panel - Vaqtinchalik Ro'yxat -->
-            <div class="panel">
-                <div class="panel-header">
-                    <span style="font-size: 1.5rem;">📋</span>
-                    <h2>{{ t('ap_temp_list_title') }}</h2>
+        <!-- O'ng: Vaqtinchalik ro'yxat -->
+        <div class="ap-card">
+            <div class="ap-card-header">
+                <span class="ap-card-title"><i class="fas fa-list-ul"></i> {{ t('ap_temp_list_title') }}</span>
+            </div>
+            <div class="ap-card-body">
+                <div class="ap-summary">
+                    <span>{{ t('ap_total_products') }} <strong id="totalProducts">0</strong> {{ t('ap_total_products_suffix') }}</span>
+                    <span>{{ t('ap_total_value') }} <strong id="totalValue">$0.00</strong></span>
                 </div>
-
-                <div class="panel-content">
-                    <div class="list-header">
-                        <span>{{ t('ap_total_products') }} <strong id="totalProducts">0</strong> {{ t('ap_total_products_suffix') }}</span>
-                        <span>{{ t('ap_total_value') }} <strong id="totalValue">$0.00</strong></span>
+                <div id="tempProductsList">
+                    <div class="ap-empty">
+                        <div class="ap-empty-icon">📋</div>
+                        <p>{{ t('ap_empty_state') }}</p>
+                        <p>{{ t('ap_empty_state_hint') }}</p>
                     </div>
-
-                    <div id="tempProductsList">
-                        <div class="empty-state">
-                            <p>{{ t('ap_empty_state') }}</p>
-                            <p>{{ t('ap_empty_state_hint') }}</p>
-                        </div>
-                    </div>
-
-                    <div class="final-actions" id="finalActions" style="display: none;">
-                        <button onclick="submitAllProducts()" class="btn btn-success btn-large">
-                            {{ t('ap_save_all') }}
-                        </button>
-                        <button onclick="clearTempList()" class="btn btn-danger" style="margin-top: 1rem; width: 100%;">
-                            {{ t('ap_delete_all') }}
-                        </button>
-                    </div>
+                </div>
+                <div class="ap-final-actions" id="finalActions" style="display:none;">
+                    <button onclick="submitAllProducts()" class="ap-btn-success">
+                        💾 {{ t('ap_save_all') }}
+                    </button>
+                    <button onclick="clearTempList()" class="ap-btn-danger">
+                        🗑️ {{ t('ap_delete_all') }}
+                    </button>
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- Mahsulotlar Tarixi Bo'limi -->
-        <div class="history-section">
-            <div style="display: flex; justify-content: space-between; align-items: center; padding: 1.5rem; background: linear-gradient(135deg, #f8f9fa, #e9ecef); border-bottom: 2px solid #dee2e6;">
-                <h2 style="color: #495057; margin: 0; font-size: 1.4rem;">{{ t('ap_history_title') }}</h2>
-                <button type="button" onclick="refreshHistory()" class="btn-refresh-history" id="refreshHistoryBtn">
-                    {{ t('ap_refresh') }}
-                </button>
-            </div>
-            
-            <div id="historyLoading" style="text-align: center; padding: 2rem;">
-                <p style="color: #6c757d;">{{ t('ap_history_loading') }}</p>
-            </div>
-            
-            <div class="history-table-container" id="historyTableContainer" style="display: none;">
-                <table class="history-table" id="productHistoryTable">
-                    <thead>
-                        <tr>
-                            <th>{{ t('ap_th_date') }}</th>
-                            <th>{{ t('ap_th_location') }}</th>
-                            <th>{{ t('ap_th_product') }}</th>
-                            <th>{{ t('ap_th_quantity') }}</th>
-                            <th>{{ t('ap_th_cost_price') }}</th>
-                            <th>{{ t('ap_th_sell_price') }}</th>
-                            <th>{{ t('ap_th_total_value') }}</th>
-                            <th>{{ t('ap_th_added_by') }}</th>
-                        </tr>
-                    </thead>
-                    <tbody id="productHistoryBody">
-                        <!-- History data will be loaded here -->
-                    </tbody>
-                </table>
-            </div>
+    <!-- Mahsulotlar Tarixi -->
+    <div class="ap-history">
+        <div class="ap-history-header">
+            <span class="ap-history-title"><i class="fas fa-history"></i> {{ t('ap_history_title') }}</span>
+            <button type="button" onclick="refreshHistory()" class="ap-btn-refresh" id="refreshHistoryBtn">
+                🔄 {{ t('ap_refresh') }}
+            </button>
         </div>
-
+        <div id="historyLoading" style="text-align:center; padding:24px; color:#94a3b8;">
+            <p>{{ t('ap_history_loading') }}</p>
+        </div>
+        <div class="history-table-container" id="historyTableContainer" style="display:none;">
+            <table class="history-table" id="productHistoryTable">
+                <thead>
+                    <tr>
+                        <th>{{ t('ap_th_date') }}</th>
+                        <th>{{ t('ap_th_location') }}</th>
+                        <th>{{ t('ap_th_product') }}</th>
+                        <th style="text-align:center;">{{ t('ap_th_quantity') }}</th>
+                        <th style="text-align:right;">{{ t('ap_th_cost_price') }}</th>
+                        <th style="text-align:right;">{{ t('ap_th_sell_price') }}</th>
+                        <th style="text-align:right;">{{ t('ap_th_total_value') }}</th>
+                        <th style="text-align:center;">{{ t('ap_th_added_by') }}</th>
+                    </tr>
+                </thead>
+                <tbody id="productHistoryBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
     <!-- SheetJS kutubxonasi Excel fayllarni o'qish uchun -->
     <script src="https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js" 
             onerror="console.error('XLSX kutubxonasi yuklanmadi, backup yuklash...'); loadXLSXBackup();"></script>
