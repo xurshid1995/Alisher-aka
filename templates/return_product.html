@@ -477,10 +477,13 @@
     .rp-section-header { padding: 12px 14px; }
     .rp-section-header h3 { font-size: 14px; }
 
-    /* Filter row */
-    .rp-filter-row { flex-direction: column; align-items: stretch; gap: 8px; }
-    .rp-filter-input { width: 100% !important; }
-    .rp-btn-clear { width: 100%; justify-content: center; }
+    /* Filter row - mijoz va savdo ID bir qatorda */
+    .rp-filter-row { flex-direction: row; align-items: center; flex-wrap: wrap; gap: 6px; }
+    .rp-filter-row > div { flex: 1; min-width: 0; }
+    .rp-filter-row > div .rp-filter-input { width: 100% !important; }
+    #saleIdFilterReturn { width: 90px !important; flex: 0 0 90px; }
+    .rp-filter-input { height: 30px; padding: 4px 8px; font-size: 12px; }
+    .rp-btn-clear { height: 30px; padding: 4px 10px; font-size: 12px; flex-shrink: 0; }
 
     /* Selected banner */
     .rp-selected-banner { flex-direction: column; align-items: flex-start; gap: 8px; padding: 12px 14px; }
