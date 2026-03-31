@@ -47,7 +47,7 @@
         <div class="rp-section-header rp-header-with-filters">
             <div style="display:flex; align-items:center; gap:10px; flex-shrink:0;">
                 <i class="fas fa-chart-bar" style="color:#1a6eff; font-size:15px;"></i>
-                <h3>{{ t('product_sales') }}</h3>
+                <h3>{{ t('product_sales') }} <span id="salesCountBadge" style="display:none; background:#1a6eff; color:#fff; font-size:12px; font-weight:700; padding:2px 8px; border-radius:20px; margin-left:4px;">0</span></h3>
             </div>
             <div class="rp-filter-row">
                 <div style="position:relative;">
@@ -777,6 +777,11 @@
 
     function renderProductSalesTable(sales) {
         const salesTableBody = document.getElementById('recentSalesTableBody');
+        const countBadge = document.getElementById('salesCountBadge');
+        if (countBadge) {
+            countBadge.textContent = sales.length;
+            countBadge.style.display = 'inline-block';
+        }
         const productId = selectedProduct ? selectedProduct.id : null;
         let html = '';
 
