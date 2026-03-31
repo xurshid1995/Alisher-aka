@@ -15,7 +15,7 @@
         margin-bottom: 16px; flex-wrap: wrap; gap: 8px;
     }
     .cs-title { font-size: 16px; font-weight: 700; color: #1e293b; margin: 0; }
-    .cs-title i { color: #4338ca; margin-right: 6px; }
+    .cs-title i { color: #2563eb; margin-right: 6px; }
     .cs-header-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 
     .cs-grid {
@@ -40,7 +40,7 @@
         display: flex; justify-content: space-between; align-items: center;
     }
     .cs-count-badge {
-        background: #eef0f7; color: #4338ca;
+        background: #e0eaff; color: #2563eb;
         font-size: 12px; font-weight: 700;
         padding: 2px 10px; border-radius: 20px;
     }
@@ -75,7 +75,7 @@
         font-size: 13px; background: #f8fafc; outline: none;
         box-sizing: border-box; transition: all 0.2s;
     }
-    .cs-search:focus { border-color: #4338ca; background: white; }
+    .cs-search:focus { border-color: #2563eb; background: white; }
 
     .cs-filter-btn {
         border: none; padding: 6px 12px; border-radius: 20px;
@@ -97,11 +97,11 @@
     }
     .cs-btn-back:hover { background: #475569; color: white; }
     .cs-btn-action {
-        padding: 5px 10px; background: #4338ca; color: white;
+        padding: 5px 10px; background: #2563eb; color: white;
         border: none; border-radius: 7px; font-size: 12px; font-weight: 600;
         cursor: pointer; transition: background 0.2s;
     }
-    .cs-btn-action:hover { background: #3730a3; }
+    .cs-btn-action:hover { background: #1d4ed8; }
     .cs-btn-del {
         padding: 5px 8px; background: #ef4444; color: white;
         border: none; border-radius: 7px; font-size: 12px;
@@ -118,7 +118,7 @@
         color: #475569; border-radius: 8px; font-size: 12px; font-weight: 500;
         cursor: pointer; transition: all 0.2s;
     }
-    .cs-page-btn:hover:not(:disabled) { background: #4338ca; color: white; border-color: #4338ca; }
+    .cs-page-btn:hover:not(:disabled) { background: #2563eb; color: white; border-color: #2563eb; }
     .cs-page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
     @media (max-width: 900px) {
@@ -205,7 +205,7 @@
                        class="cs-search" style="flex:1; min-width:120px;">
                 <div style="display:flex; gap:5px; flex-wrap:wrap;">
                     <button onclick="filterChecked('all')" id="filterAll" class="cs-filter-btn"
-                            style="background:#4338ca; color:white;">
+                            style="background:#2563eb; color:white;">
                         📊 {{ t('css_filter_checked') }} <span id="allCount" style="background:rgba(255,255,255,0.25); padding:1px 6px; border-radius:50px; margin-left:3px;">0</span>
                     </button>
                     <button onclick="filterChecked('error')" id="filterError" class="cs-filter-btn"
