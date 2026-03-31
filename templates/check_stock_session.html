@@ -83,12 +83,12 @@
         transition: opacity 0.2s;
     }
     .cs-btn-finish {
-        padding: 9px 20px; background: #059669; color: white;
+        padding: 9px 20px; background: #ef4444; color: white;
         border: none; border-radius: 10px; font-size: 13px; font-weight: 600;
         cursor: pointer; display: flex; align-items: center; gap: 6px;
         transition: background 0.2s;
     }
-    .cs-btn-finish:hover { background: #047857; }
+    .cs-btn-finish:hover { background: #dc2626; }
     .cs-btn-back {
         padding: 9px 18px; background: #64748b; color: white;
         border: none; border-radius: 10px; font-size: 13px; font-weight: 600;
@@ -169,7 +169,7 @@
                 <table class="cs-table">
                     <thead>
                         <tr>
-                            <th style="width:46%;">{{ t('css_th_product') }}</th>
+                            <th style="width:46%; text-align:left;">{{ t('css_th_product') }}</th>
                             <th style="width:18%; text-align:center;">{{ t('css_th_price') }}</th>
                             <th style="width:18%; text-align:center;">{{ t('css_th_available') }}</th>
                             <th style="width:18%; text-align:center;">{{ t('css_th_action') }}</th>
@@ -222,7 +222,7 @@
                 <table class="cs-table">
                     <thead>
                         <tr>
-                            <th style="width:28%;">{{ t('css_th_product_name') }}</th>
+                            <th style="width:28%; text-align:left;">{{ t('css_th_product_name') }}</th>
                             <th style="width:11%; text-align:center;">{{ t('css_th_price2') }}</th>
                             <th style="width:10%; text-align:center;">{{ t('css_th_system') }}</th>
                             <th style="width:11%; text-align:center;">{{ t('css_th_actual') }}</th>
@@ -656,7 +656,7 @@ function renderProductsPage() {
             <td><strong>${product.name}</strong></td>
             <td style="text-align:center;">${product.price ? product.price.toLocaleString() + '$' : '-'}</td>
             <td style="text-align:center;"><span class="cs-count-badge">${product.system_quantity}</span></td>
-            <td style="text-align:center;"><button class="cs-btn-action">➡️</button></td>
+            <td style="text-align:center;"><button class="cs-btn-action">+</button></td>
         `;
         
         // Button uchun alohida click handler
