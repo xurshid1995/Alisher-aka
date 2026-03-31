@@ -201,7 +201,7 @@
 .edit-modal-overlay.active { display: flex; }
 .edit-modal {
     background: white; border-radius: 14px;
-    padding: 28px 28px 24px; width: 480px; max-width: 95vw;
+    padding: 28px 32px 24px; width: 760px; max-width: 96vw;
     box-shadow: 0 20px 60px rgba(0,0,0,0.2);
     position: relative;
 }
@@ -215,7 +215,7 @@
     cursor: pointer; color: #94a3b8; line-height: 1;
 }
 .edit-modal-close:hover { color: #ef4444; }
-.em-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.em-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
 .em-group { display: flex; flex-direction: column; gap: 5px; }
 .em-group.full { grid-column: 1 / -1; }
 .em-label { font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.4px; }
@@ -234,59 +234,6 @@
     padding: 8px 12px; background: #fef2f2; border-radius: 8px;
     display: none;
 }
-.em-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
-.em-btn-cancel {
-    padding: 8px 20px; border-radius: 8px; border: 1.5px solid #e2e8f0;
-    background: #f8fafc; color: #64748b; font-size: 13px; font-weight: 600;
-    cursor: pointer;
-}
-.em-btn-save {
-    padding: 8px 22px; border-radius: 8px; border: none;
-    background: #1a6eff; color: white; font-size: 13px; font-weight: 600;
-    cursor: pointer; transition: opacity 0.15s;
-}
-.em-btn-save:hover { opacity: 0.85; }
-.em-btn-save:disabled { opacity: 0.5; cursor: default; }
-
-/* ── Edit Modal ── */
-.edit-modal-overlay {
-    display: none; position: fixed; inset: 0;
-    background: rgba(0,0,0,0.45); z-index: 9999;
-    align-items: center; justify-content: center;
-}
-.edit-modal-overlay.active { display: flex; }
-.edit-modal {
-    background: white; border-radius: 14px;
-    padding: 28px 28px 24px; width: 480px; max-width: 95vw;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
-    position: relative;
-}
-.edit-modal-title {
-    font-size: 16px; font-weight: 700; color: #1e293b;
-    margin: 0 0 20px; display: flex; align-items: center; gap: 8px;
-}
-.edit-modal-close {
-    position: absolute; top: 16px; right: 18px;
-    background: none; border: none; font-size: 20px;
-    cursor: pointer; color: #94a3b8; line-height: 1;
-}
-.edit-modal-close:hover { color: #ef4444; }
-.em-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-.em-group { display: flex; flex-direction: column; gap: 5px; }
-.em-group.full { grid-column: 1 / -1; }
-.em-label { font-size: 12px; font-weight: 600; color: #64748b; }
-.em-input {
-    padding: 8px 12px; border: 1.5px solid #e2e8f0;
-    border-radius: 8px; font-size: 13px; color: #1e293b;
-    outline: none; transition: border-color 0.15s;
-}
-.em-input:focus { border-color: #1a6eff; }
-.em-input.error { border-color: #ef4444; background: #fef2f2; }
-.em-profit {
-    padding: 8px 12px; background: #f8fafc; border: 1.5px solid #e2e8f0;
-    border-radius: 8px; font-size: 13px; color: #059669; font-weight: 600;
-}
-.em-error { color: #ef4444; font-size: 12px; margin-top: 10px; display: none; }
 .em-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
 .em-btn-cancel {
     padding: 8px 20px; border-radius: 8px; border: 1.5px solid #e2e8f0;
