@@ -363,6 +363,7 @@
             <input type="text" id="search-input" class="ps-input ps-search-input"
                    placeholder="{{ t('sd_search') }}" onkeyup="filterTable()">
         </div>
+        <span id="product-count-badge" style="background:#1a6eff;color:#fff;font-weight:600;font-size:13px;padding:4px 12px;border-radius:20px;white-space:nowrap;">— ta</span>
         <select id="status-filter" class="ps-select" onchange="handleFilterChange()">
             <option value="">{{ t('sd_all_statuses') }}</option>
             <option value="normal">{{ t('sd_status_enough') }}</option>
@@ -577,6 +578,8 @@
                     updatePaginationButtons(data.pagination.page, data.pagination.total_pages, data.pagination.total);
                     currentPage = data.pagination.page;
                     totalPages = data.pagination.total_pages;
+                    const badge = document.getElementById('product-count-badge');
+                    if (badge) badge.textContent = data.pagination.total + ' ta';
                 } else {
                     throw new Error(data.error || 'API xatolik');
                 }
