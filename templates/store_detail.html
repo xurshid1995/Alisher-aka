@@ -423,7 +423,14 @@
                 </div>
                 <div class="em-group col-3">
                     <label class="em-label">{{ t('sd_th_barcode') }}</label>
-                    <input type="text" class="em-input" id="em-barcode">
+                    <div style="display:flex; gap:5px; align-items:center;">
+                        <input type="text" class="em-input" id="em-barcode" style="flex:1;">
+                        <button type="button" onclick="emPrintBarcode()" title="Chop etish"
+                                style="padding:6px 8px; background:transparent; border:none; border-radius:8px; cursor:pointer; display:flex; align-items:center; transition:all 0.2s; flex-shrink:0;"
+                                onmouseover="this.style.background='#eff6ff'" onmouseout="this.style.background='transparent'">
+                            <img src="https://img.icons8.com/color/48/print.png" alt="Print" style="width:28px;height:28px;">
+                        </button>
+                    </div>
                 </div>
                 <div class="em-group">
                     <label class="em-label">{{ t('sd_th_quantity') }}</label>
@@ -765,6 +772,15 @@
 
     function closeEditModal() {
         document.getElementById('editModalOverlay').classList.remove('active');
+    }
+
+    function emPrintBarcode() {
+        const productName = document.getElementById('em-productName').value.trim();
+        const barcode = document.getElementById('em-barcode').value.trim();
+        if (!productName) { alert('Mahsulot nomini kiriting'); return; }
+        if (!barcode) { alert('Barkodni kiriting'); return; }
+        const printUrl = `/print-barcode?name=${encodeURIComponent(productName)}&barcode=${encodeURIComponent(barcode)}`;
+        window.open(printUrl, '_blank', 'width=600,height=400');
     }
 
     function emUpdateProfit() {
