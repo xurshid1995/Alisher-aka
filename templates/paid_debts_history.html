@@ -4,359 +4,364 @@
 
 {% block extra_css %}
 <style>
-    .history-container {
-        padding: 20px;
-        background: #f8f9fa;
+    /* ===== PDH - Paid Debts History ===== */
+    .pdh-page {
+        padding: 24px;
+        background: #f5f6fa;
         min-height: 100vh;
     }
 
-    .page-header {
+    /* Header */
+    .pdh-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 20px;
-        padding-bottom: 15px;
-        border-bottom: 2px solid #dee2e6;
+        margin-bottom: 18px;
     }
 
-    .page-header h1 {
+    .pdh-title {
         margin: 0;
-        color: #333;
-        font-size: 28px;
-        font-weight: 600;
+        font-size: 20px;
+        font-weight: 700;
+        color: #1e293b;
+        display: flex;
+        align-items: center;
+        gap: 10px;
     }
 
-    .back-btn {
-        padding: 10px 20px;
-        background: #6c757d;
-        color: white;
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-        font-weight: 500;
-        text-decoration: none;
-        display: inline-block;
-    }
-
-    .back-btn:hover {
-        background: #5a6268;
-        color: white;
-    }
-
-    /* Qidiruv maydoni */
-    #searchInput:focus {
-        outline: none;
-        border-color: #28a745;
-        box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1);
-    }
-
-    .table-container {
-        background: white;
-        border-radius: 10px;
-        padding: 20px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-
-    .table-container h2 {
-        margin: 0 0 20px 0;
-        color: #28a745;
+    .pdh-title i {
+        color: #1a6eff;
         font-size: 20px;
     }
 
-    .history-table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 14px;
-    }
-
-    .history-table thead {
-        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-        color: white;
-    }
-
-    .history-table th {
-        padding: 12px;
-        text-align: left;
+    .pdh-btn-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 18px;
+        background: white;
+        color: #64748b;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 10px;
+        font-size: 13px;
         font-weight: 600;
+        text-decoration: none;
+        transition: all 0.18s;
+    }
+
+    .pdh-btn-back:hover {
+        background: #1a6eff;
+        color: white;
+        border-color: #1a6eff;
+        text-decoration: none;
+    }
+
+    /* Location bar */
+    .pdh-location-bar {
+        background: white;
+        border-radius: 14px;
+        padding: 12px 16px;
+        margin-bottom: 18px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .location-btn {
+        padding: 6px 14px;
+        border-radius: 20px;
+        border: 1.5px solid #e2e8f0;
+        background: white;
+        color: #64748b;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.18s;
         white-space: nowrap;
     }
 
-    .history-table tbody tr {
-        border-bottom: 1px solid #dee2e6;
-        transition: background-color 0.2s;
+    .location-btn:hover:not(.active) {
+        border-color: #2563eb;
+        color: #2563eb;
+        background: #eff6ff;
     }
 
-    .history-table tbody tr:hover {
-        background: #f8f9fa;
+    .location-btn.active {
+        background: #2563eb;
+        border-color: #2563eb;
+        color: white;
     }
 
-    .history-table td {
-        padding: 12px;
+    /* Main card */
+    .pdh-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+        overflow: hidden;
     }
 
+    .pdh-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 14px 20px;
+        background: #fafbfc;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .pdh-card-title {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 700;
+        color: #1e293b;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .pdh-card-title i {
+        color: #22c55e;
+    }
+
+    .pdh-card-body {
+        padding: 16px 20px;
+    }
+
+    /* Search */
+    .pdh-search-box {
+        position: relative;
+        margin-bottom: 16px;
+        max-width: 380px;
+    }
+
+    .pdh-search-icon {
+        position: absolute;
+        left: 11px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #94a3b8;
+        font-size: 13px;
+    }
+
+    #searchInput {
+        width: 100%;
+        padding: 9px 12px 9px 34px;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 10px;
+        font-size: 13px;
+        background: #f8fafc;
+        color: #374151;
+        transition: all 0.18s;
+        outline: none;
+    }
+
+    #searchInput:focus {
+        border-color: #2563eb;
+        box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+        background: white;
+    }
+
+    /* Table */
+    .pdh-table-container {
+        overflow-x: auto;
+    }
+
+    .pdh-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+    }
+
+    .pdh-table thead tr {
+        background: #1a6eff;
+    }
+
+    .pdh-table th {
+        padding: 11px 10px;
+        color: white;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        white-space: nowrap;
+        text-align: left;
+    }
+
+    .pdh-table th:first-child { border-radius: 0; }
+
+    .pdh-table tbody tr {
+        transition: background 0.15s;
+    }
+
+    .pdh-table tbody tr:hover {
+        background: #f8fafc;
+    }
+
+    .pdh-table td {
+        padding: 10px;
+        border-bottom: 1px solid #f1f5f9;
+        color: #374151;
+        vertical-align: middle;
+    }
+
+    .pdh-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    /* Payment badges */
     .payment-badge {
         display: inline-block;
-        padding: 4px 8px;
-        border-radius: 4px;
-        font-size: 12px;
+        padding: 3px 8px;
+        border-radius: 6px;
+        font-size: 11px;
         font-weight: 600;
-        margin-right: 5px;
+        margin: 2px 3px 2px 0;
+        white-space: nowrap;
     }
 
     .payment-cash {
-        background: #d4edda;
-        color: #155724;
+        background: #dcfce7;
+        color: #15803d;
     }
 
     .payment-click {
-        background: #d1ecf1;
-        color: #0c5460;
+        background: #dbeafe;
+        color: #1d4ed8;
     }
 
     .payment-terminal {
-        background: #fff3cd;
-        color: #856404;
+        background: #fef9c3;
+        color: #854d0e;
     }
 
+    /* Amount */
+    .pdh-amount {
+        font-weight: 700;
+        color: #16a34a;
+        font-size: 13px;
+    }
+
+    /* Receiver */
+    .pdh-receiver {
+        color: #2563eb;
+        font-weight: 600;
+        font-size: 12px;
+    }
+
+    /* No data */
     .no-data {
         text-align: center;
         padding: 40px;
-        color: #999;
-        font-size: 16px;
+        color: #94a3b8;
+        font-size: 14px;
     }
 
-    /* Location buttons */
-    #locationButtons {
-        max-height: 120px;
-        overflow-y: auto;
-    }
-
-    #locationButtons::-webkit-scrollbar {
-        width: 6px;
-    }
-
-    #locationButtons::-webkit-scrollbar-track {
-        background: #e9ecef;
-        border-radius: 3px;
-    }
-
-    #locationButtons::-webkit-scrollbar-thumb {
-        background: #6c757d;
-        border-radius: 3px;
-    }
-
-    /* Tugmalar - Bosilmagan holat */
-    .location-btn {
-        background: none !important;
-        background-color: transparent !important;
-        border: 1px solid #007bff !important;
-        color: black !important;
-        box-shadow: none !important;
-        transition: all 0.3s ease;
-        font-weight: 450;
-        font-size: 14px !important;
-        padding: 6px 12px !important;
-        border-radius: 5px;
-    }
-
-    /* Tugma bosilganda */
-    .location-btn.active {
-        background-color: #007bff !important;
-        border: 1px solid #007bff !important;
-        color: white !important;
-        box-shadow: none !important;
-        transform: scale(1.02) !important;
-    }
-
-    /* Hover effect */
-    .location-btn:hover:not(.active) {
-        background-color: rgba(0, 123, 255, 0.1) !important;
-        transform: translateY(-2px) !important;
-        box-shadow: none !important;
-    }
-
-    /* Mobile responsive styles */
+    /* Mobile */
     @media (max-width: 768px) {
-        .history-container {
-            padding: 10px;
-        }
+        .pdh-page { padding: 12px; }
 
-        .page-header {
+        .pdh-header {
             flex-direction: column;
             align-items: flex-start;
             gap: 10px;
-            margin-bottom: 15px;
+            margin-bottom: 14px;
         }
 
-        .page-header h1 {
-            font-size: 20px;
-        }
+        .pdh-btn-back { width: 100%; justify-content: center; }
 
-        .back-btn {
-            width: 100%;
-            text-align: center;
-            padding: 8px 15px;
-            font-size: 14px;
-        }
+        .pdh-location-bar { padding: 10px 12px; gap: 6px; }
 
-        #locationButtons {
-            padding: 10px !important;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            max-height: none;
-        }
+        .location-btn { font-size: 11px; padding: 5px 11px; }
 
-        .location-btn {
-            font-size: 12px !important;
-            padding: 5px 10px !important;
-            white-space: nowrap;
-        }
+        .pdh-card-body { padding: 12px; }
 
-        .table-container {
-            padding: 10px;
-            border-radius: 8px;
-        }
+        .pdh-search-box { max-width: 100%; }
 
-        .table-container h2 {
-            font-size: 16px;
-            margin-bottom: 10px;
-        }
+        .pdh-table { font-size: 11px; }
 
-        #searchInput {
-            max-width: 100% !important;
-            font-size: 13px !important;
-            padding: 8px 12px !important;
-        }
+        .pdh-table th,
+        .pdh-table td { padding: 8px 6px; }
 
-        .history-table {
-            font-size: 12px;
-            display: block;
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-            white-space: nowrap;
-        }
-
-        .history-table thead,
-        .history-table tbody,
-        .history-table tr {
-            display: table;
-            width: 100%;
-            table-layout: fixed;
-        }
-
-        .history-table thead {
-            width: calc(100% - 1em);
-        }
-
-        .history-table th,
-        .history-table td {
-            padding: 8px 5px;
-            font-size: 11px;
-        }
-
-        .history-table th:nth-child(1),
-        .history-table td:nth-child(1) { width: 40px; }
-        .history-table th:nth-child(2),
-        .history-table td:nth-child(2) { width: 100px; }
-        .history-table th:nth-child(3),
-        .history-table td:nth-child(3) { width: 120px; }
-        .history-table th:nth-child(4),
-        .history-table td:nth-child(4) { width: 100px; }
-        .history-table th:nth-child(5),
-        .history-table td:nth-child(5) { width: 150px; }
-        .history-table th:nth-child(6),
-        .history-table td:nth-child(6) { width: 100px; }
-
-        .payment-badge {
-            display: block;
-            margin: 2px 0;
-            padding: 3px 6px;
-            font-size: 10px;
-            text-align: center;
-        }
-
-        .no-data {
-            padding: 30px 15px;
-            font-size: 14px;
-        }
+        .payment-badge { font-size: 10px; padding: 2px 6px; }
     }
 
-    /* Extra small devices */
     @media (max-width: 480px) {
-        .page-header h1 {
-            font-size: 18px;
-        }
+        .pdh-title { font-size: 16px; }
 
-        .table-container h2 {
-            font-size: 14px;
-        }
-
-        .history-table th,
-        .history-table td {
-            padding: 6px 3px;
-            font-size: 10px;
-        }
-
-        .payment-badge {
-            font-size: 9px;
-            padding: 2px 4px;
-        }
+        .pdh-table th,
+        .pdh-table td { padding: 6px 4px; font-size: 10px; }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="history-container">
-    <div class="page-header">
-        <h1>📜 {{ t('pdh_heading') }}</h1>
-        <a href="/debts" class="back-btn">
+<div class="pdh-page">
+
+    <!-- Header -->
+    <div class="pdh-header">
+        <h1 class="pdh-title">
+            <i class="fas fa-history"></i>
+            {{ t('pdh_heading') }}
+        </h1>
+        <a href="/debts" class="pdh-btn-back">
             <i class="fas fa-arrow-left"></i> {{ t('pdh_back') }}
         </a>
     </div>
 
     <!-- Joylashuv tugmalari -->
-    <div id="locationButtons" style="margin: 15px 0; background: white; padding: 15px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+    <div id="locationButtons" class="pdh-location-bar">
         {% if current_user.role in ['admin', 'kassir'] %}
-        <button class="btn btn-sm me-2 mb-2 location-btn active" data-location="" onclick="selectLocation(this, '')">
+        <button class="location-btn active" data-location="" onclick="selectLocation(this, '')">
             🏢 {{ t('pdh_all') }}
         </button>
         {% endif %}
     </div>
 
     <!-- To'langan qarzlar jadvali -->
-    <div class="table-container">
-        <h2>✅ {{ t('pdh_paid_list') }}</h2>
-        
-        <!-- Qidiruv maydoni -->
-        <div style="margin-bottom: 15px;">
-            <input 
-                type="text" 
-                id="searchInput" 
-                placeholder="🔍 {{ t('pdh_search') }}"
-                style="width: 100%; max-width: 500px; padding: 10px 15px; border: 2px solid #dee2e6; border-radius: 8px; font-size: 14px; transition: border-color 0.3s;"
-                oninput="searchPayments()"
-            >
+    <div class="pdh-card">
+        <div class="pdh-card-header">
+            <h2 class="pdh-card-title">
+                <i class="fas fa-check-circle"></i>
+                {{ t('pdh_paid_list') }}
+            </h2>
         </div>
-        
-        <table class="history-table">
-            <thead>
-                <tr>
-                    <th>{{ t('pdh_th_num') }}</th>
-                    <th>📅 {{ t('pdh_th_date') }}</th>
-                    <th>👤 {{ t('pdh_th_customer') }}</th>
-                    <th>💵 {{ t('pdh_th_amount_usd') }}</th>
-                    <th>💳 {{ t('pdh_th_payment_type') }}</th>
-                    <th>👨‍💼 {{ t('pdh_th_received_by') }}</th>
-                </tr>
-            </thead>
-            <tbody id="historyTableBody">
-                <tr>
-                    <td colspan="6" class="no-data">⏳ {{ t('pdh_loading') }}</td>
-                </tr>
-            </tbody>
-        </table>
+        <div class="pdh-card-body">
+
+            <!-- Qidiruv maydoni -->
+            <div class="pdh-search-box">
+                <i class="fas fa-search pdh-search-icon"></i>
+                <input
+                    type="text"
+                    id="searchInput"
+                    placeholder="{{ t('pdh_search') }}"
+                    oninput="searchPayments()"
+                >
+            </div>
+
+            <div class="pdh-table-container">
+                <table class="pdh-table">
+                    <thead>
+                        <tr>
+                            <th>{{ t('pdh_th_num') }}</th>
+                            <th>{{ t('pdh_th_date') }}</th>
+                            <th>{{ t('pdh_th_customer') }}</th>
+                            <th>{{ t('pdh_th_amount_usd') }}</th>
+                            <th>{{ t('pdh_th_payment_type') }}</th>
+                            <th>{{ t('pdh_th_received_by') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyTableBody">
+                        <tr>
+                            <td colspan="6" class="no-data">⏳ {{ t('pdh_loading') }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
     </div>
+
 </div>
 
 <script>
@@ -391,7 +396,7 @@
             // Admin/Kassir uchun Barchasi tugmasini yaratish
             {% if current_user.role in ['admin', 'kassir'] %}
             const allButton = document.createElement('button');
-            allButton.className = 'btn btn-sm me-2 mb-2 location-btn active';
+            allButton.className = 'location-btn active';
             allButton.setAttribute('data-location', '');
             allButton.onclick = () => selectLocation(allButton, '');
             allButton.textContent = '🏢 {{ t("pdh_all") }}';
@@ -401,7 +406,7 @@
             let firstLocation = null;
             locations.forEach((loc, index) => {
                 const button = document.createElement('button');
-                button.className = 'btn btn-sm me-2 mb-2 location-btn';
+                button.className = 'location-btn';
                 button.setAttribute('data-location', loc.id);
                 button.onclick = () => selectLocation(button, loc.id);
                 button.textContent = `${loc.emoji} ${loc.name}`;
@@ -491,12 +496,12 @@
             const totalAmount = (debt.cash_usd || 0) + (debt.click_usd || 0) + (debt.terminal_usd || 0);
             
             row.innerHTML = `
-                <td style="text-align: center;">${index + 1}</td>
-                <td>${debt.payment_date}</td>
-                <td><strong>${debt.customer_name}</strong></td>
-                <td style="text-align: right; font-weight: 600; color: #28a745;">${totalAmount.toFixed(2)} USD</td>
+                <td style="text-align:center;color:#94a3b8;font-size:12px;">${index + 1}</td>
+                <td style="color:#475569;font-size:12px;">${debt.payment_date}</td>
+                <td><strong style="color:#1e293b;">${debt.customer_name}</strong></td>
+                <td><span class="pdh-amount">${totalAmount.toFixed(2)} USD</span></td>
                 <td>${paymentTypes.join(' ')}</td>
-                <td><span style="color: #007bff;">👨‍💼 ${debt.received_by}</span></td>
+                <td><span class="pdh-receiver">👨‍💼 ${debt.received_by}</span></td>
             `;
             
             tbody.appendChild(row);
