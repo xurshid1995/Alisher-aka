@@ -242,6 +242,13 @@
         font-size: 13px;
     }
 
+    .pdh-amount-uzs {
+        font-weight: 600;
+        color: #64748b;
+        font-size: 12px;
+        white-space: nowrap;
+    }
+
     /* Receiver */
     .pdh-receiver {
         color: #2563eb;
@@ -347,13 +354,14 @@
                             <th>{{ t('pdh_th_date') }}</th>
                             <th>{{ t('pdh_th_customer') }}</th>
                             <th>{{ t('pdh_th_amount_usd') }}</th>
+                            <th>SUMMA (UZS)</th>
                             <th>{{ t('pdh_th_payment_type') }}</th>
                             <th>{{ t('pdh_th_received_by') }}</th>
                         </tr>
                     </thead>
                     <tbody id="historyTableBody">
                         <tr>
-                            <td colspan="6" class="no-data">⏳ {{ t('pdh_loading') }}</td>
+                            <td colspan="7" class="no-data">⏳ {{ t('pdh_loading') }}</td>
                         </tr>
                     </tbody>
                 </table>
@@ -380,6 +388,9 @@
 
     // Sahifa yuklanganda ma'lumotlarni olish
     document.addEventListener('DOMContentLoaded', function() {
+        fetch('/api/currency-rate').then(r => r.ok ? r.json() : null).then(d => {
+            if (d) exchangeRate = d.rate?.rate || d.rate || 13000;
+        }).catch(() => {});
         loadLocations();
         loadPaidDebts();
     });
@@ -461,7 +472,7 @@
         } catch (error) {
             console.error('Xatolik:', error);
             document.getElementById('historyTableBody').innerHTML = 
-                '<tr><td colspan="6" class="no-data">❌ ' + PDHLANG.load_error + '</td></tr>';
+                '<tr><td colspan="7" class="no-data">❌ ' + PDHLANG.load_error + '</td></tr>';
         }
     }
 
@@ -470,7 +481,7 @@
         const tbody = document.getElementById('historyTableBody');
         
         if (paidDebts.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6" class="no-data">📭 ' + PDHLANG.no_data + '</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7" class="no-data">📭 ' + PDHLANG.no_data + '</td></tr>';
             return;
         }
 
@@ -494,12 +505,14 @@
             }
             
             const totalAmount = (debt.cash_usd || 0) + (debt.click_usd || 0) + (debt.terminal_usd || 0);
+            const totalUZS = Math.round(totalAmount * exchangeRate);
             
             row.innerHTML = `
                 <td style="text-align:center;color:#94a3b8;font-size:12px;">${index + 1}</td>
                 <td style="color:#475569;font-size:12px;">${debt.payment_date}</td>
                 <td><strong style="color:#1e293b;">${debt.customer_name}</strong></td>
                 <td><span class="pdh-amount">${totalAmount.toFixed(2)} USD</span></td>
+                <td><span class="pdh-amount-uzs">${totalUZS.toLocaleString('ru-RU')} UZS</span></td>
                 <td>${paymentTypes.join(' ')}</td>
                 <td><span class="pdh-receiver">👨‍💼 ${debt.received_by}</span></td>
             `;
@@ -540,7 +553,7 @@
             if (!existingNoResult) {
                 const noResultRow = document.createElement('tr');
                 noResultRow.className = 'no-result-row';
-                noResultRow.innerHTML = '<td colspan="6" class="no-data">🔍 ' + PDHLANG.not_found + '</td>';
+                noResultRow.innerHTML = '<td colspan="7" class="no-data">🔍 ' + PDHLANG.not_found + '</td>';
                 tbody.appendChild(noResultRow);
             }
         } else {
