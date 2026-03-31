@@ -51,13 +51,13 @@
             </div>
             <div class="rp-filter-row">
                 <div class="rp-filter-row-top">
-                    <div style="position:relative; flex:1; min-width:0;">
+                    <div style="position:relative; min-width:0;" class="rp-filter-customer-wrap">
                         <input type="text" id="saleCustomerFilter" oninput="onCustomerFilterInput(); updateClearFilterBtn()" onfocus="onCustomerFilterInput()"
-                               placeholder="Mijoz ismi..." autocomplete="off" class="rp-filter-input" style="width:160px;">
+                               placeholder="Mijoz ismi..." autocomplete="off" class="rp-filter-input">
                         <div id="customerFilterDropdown" style="display:none; position:absolute; top:100%; left:0; right:0; background:white; border:1.5px solid #e5e7eb; border-top:none; border-radius:0 0 10px 10px; max-height:200px; overflow-y:auto; z-index:1500; box-shadow:0 4px 12px rgba(0,0,0,0.1);"></div>
                     </div>
                     <input type="number" id="saleIdFilterReturn" oninput="filterProductSales(); updateClearFilterBtn()" placeholder="Savdo ID"
-                           class="rp-filter-input" style="width:100px;" min="1">
+                           class="rp-filter-input" min="1">
                 </div>
                 <div class="rp-filter-row-bottom">
                     <input type="date" id="saleDateFrom" oninput="filterProductSales(); updateClearFilterBtn()" class="rp-filter-input" title="Dan" style="width:140px;">
@@ -455,6 +455,7 @@
 .rp-filter-row { flex-wrap: wrap; align-items: center; gap: 6px; }
 .rp-filter-row-top,
 .rp-filter-row-bottom { display: flex; align-items: center; gap: 6px; flex-wrap: nowrap; }
+.rp-filter-customer-wrap { flex: 1; min-width: 0; position: relative; }
 
 /* Search + Location - bir qatorda (desktop) */
 .rp-search-row {
@@ -502,9 +503,9 @@
     /* Filter row - ikki qatorga bo'linadi */
     .rp-filter-row { flex-direction: column; align-items: stretch; gap: 6px; }
     /* 1-qator: mijoz 70% + savdo ID 30% */
-    .rp-filter-row-top { width: 100%; flex-wrap: nowrap; }
-    .rp-filter-row-top > div { flex: 7; min-width: 0; }
-    .rp-filter-row-top > div .rp-filter-input { width: 100% !important; }
+    .rp-filter-row-top { width: 100%; flex-wrap: nowrap; display: flex; }
+    .rp-filter-row-top .rp-filter-customer-wrap { flex: 7 !important; min-width: 0; }
+    .rp-filter-row-top .rp-filter-customer-wrap .rp-filter-input { width: 100% !important; }
     #saleIdFilterReturn { flex: 3 !important; width: auto !important; min-width: 0; }
     /* 2-qator: dan + gacha teng */
     .rp-filter-row-bottom { width: 100%; flex-wrap: nowrap; }
