@@ -11,8 +11,8 @@
     <!-- Mahsulot qidirish -->
     <div class="rp-section">
         <div class="rp-section-body">
-            <div style="display:flex; align-items:flex-end; gap:16px; flex-wrap:wrap;">
-                <div style="width:600px; flex-shrink:0;">
+            <div class="rp-search-row">
+                <div class="rp-search-col">
                     <label style="display:block; font-size:11px; font-weight:600; color:#94a3b8; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px;">{{ t('product_name_or_barcode_label') }}</label>
                     <div class="rp-search-wrap" style="position:relative;">
                         <i class="fas fa-search rp-search-icon"></i>
@@ -23,7 +23,7 @@
                         <div id="productSuggestions" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; max-height: 300px; overflow-y: auto; z-index: 1000;"></div>
                     </div>
                 </div>
-                <div class="rp-location-wrap" style="min-width:220px; flex-shrink:0;">
+                <div class="rp-location-wrap">
                     <label>📍 {{ t('return_location_label') }}</label>
                     <select id="returnLocationSelect" onchange="handleLocationChange()" class="rp-location-select">
                         <option value="">{{ t('select_location_placeholder') }}</option>
@@ -440,11 +440,71 @@
     margin-top: 4px !important;
 }
 
+.rp-search-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+.rp-search-col {
+    width: 600px;
+    flex-shrink: 0;
+}
+
 @media (max-width: 768px) {
     .return-page { padding: 12px; }
     .rp-table { font-size: 12px; }
     .rp-table th, .rp-table td { padding: 8px 6px; }
     .rp-page-header { flex-direction: column; align-items: flex-start; }
+    .rp-search-col { width: 100%; }
+    .rp-location-wrap { min-width: 100%; }
+}
+
+@media (max-width: 480px) {
+    .return-page { padding: 10px 8px 40px; }
+
+    /* Qidiruv va joylashuv - ustma-ust */
+    .rp-search-row { flex-direction: column; gap: 12px; }
+    .rp-search-col { width: 100%; flex-shrink: unset; }
+    .rp-location-wrap { min-width: 100%; width: 100%; flex-shrink: unset; }
+    .rp-location-select { width: 100%; }
+
+    /* Section */
+    .rp-section { border-radius: 12px; margin-bottom: 12px; }
+    .rp-section-body { padding: 12px; }
+    .rp-section-header { padding: 12px 14px; }
+    .rp-section-header h3 { font-size: 14px; }
+
+    /* Filter row */
+    .rp-filter-row { flex-direction: column; align-items: stretch; gap: 8px; }
+    .rp-filter-input { width: 100% !important; }
+    .rp-btn-clear { width: 100%; justify-content: center; }
+
+    /* Selected banner */
+    .rp-selected-banner { flex-direction: column; align-items: flex-start; gap: 8px; padding: 12px 14px; }
+    .rp-btn-cancel-sel { align-self: flex-end; }
+
+    /* Tables */
+    .rp-table { font-size: 11px; }
+    .rp-table th, .rp-table td { padding: 7px 5px; }
+
+    /* Info grid */
+    .info-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+    .info-item { padding: 10px 10px; }
+    .info-value { font-size: 13px; }
+
+    /* Confirm button */
+    .rp-btn-confirm { width: 100%; justify-content: center; padding: 12px 20px; }
+
+    /* Refresh button */
+    .rp-section-header { flex-wrap: wrap; }
+    .rp-btn-refresh { font-size: 12px; padding: 6px 10px; }
+
+    /* Return input */
+    .return-input { width: 60px; }
+
+    /* Page header */
+    .rp-page-header h1 { font-size: 16px; }
 }
 </style>
 
