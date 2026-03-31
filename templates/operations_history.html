@@ -85,6 +85,11 @@
                 </select>
             </div>
             <div class="ps-filter-group" style="display:flex; align-items:flex-end;">
+                <button id="clearFilterBtn" onclick="clearFilters()" style="display:none; padding: 11px 18px; background: transparent; color: #ef4444; border: 1.5px solid #ef4444; border-radius: 10px; cursor: pointer; font-weight: 600; align-items: center; gap: 6px; font-size: 14px;">
+                    <i class="fas fa-times"></i> Filterni bekor qilish
+                </button>
+            </div>
+            <div class="ps-filter-group" style="display:flex; align-items:flex-end;">
                 <button onclick="exportHistory()" style="padding: 11px 22px; background: transparent; color: #059669; border: none; border-radius: 10px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 6px; font-size: 16px;">
                     <img src="https://img.icons8.com/color/48/ms-excel.png" alt="Excel" style="width: 22px; height: 22px;"> Excel
                 </button>
@@ -261,6 +266,28 @@
     function onFilterChange() {
         clearTimeout(filterDebounceTimer);
         filterDebounceTimer = setTimeout(() => loadHistory(1), 400);
+        updateClearBtn();
+    }
+
+    function updateClearBtn() {
+        const today = new Date().toISOString().split('T')[0];
+        const s = document.getElementById('startDate').value;
+        const e = document.getElementById('endDate').value;
+        const o = document.getElementById('operationType').value;
+        const u = document.getElementById('userFilter').value;
+        const isFiltered = o !== '' || u !== '' || s !== today || e !== today;
+        const btn = document.getElementById('clearFilterBtn');
+        btn.style.display = isFiltered ? 'flex' : 'none';
+    }
+
+    function clearFilters() {
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('startDate').value = today;
+        document.getElementById('endDate').value = today;
+        document.getElementById('operationType').value = '';
+        document.getElementById('userFilter').value = '';
+        document.getElementById('clearFilterBtn').style.display = 'none';
+        loadHistory(1);
     }
 
     document.addEventListener('DOMContentLoaded', function () {
