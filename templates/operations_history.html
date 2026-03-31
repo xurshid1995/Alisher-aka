@@ -270,12 +270,11 @@
     }
 
     function updateClearBtn() {
-        const today = new Date().toISOString().split('T')[0];
         const s = document.getElementById('startDate').value;
         const e = document.getElementById('endDate').value;
         const o = document.getElementById('operationType').value;
         const u = document.getElementById('userFilter').value;
-        const isFiltered = o !== '' || u !== '' || s !== today || e !== today;
+        const isFiltered = s !== '' || e !== '' || o !== '' || u !== '';
         const btn = document.getElementById('clearFilterBtn');
         btn.style.display = isFiltered ? 'flex' : 'none';
     }
@@ -294,6 +293,7 @@
         const today = new Date().toISOString().split('T')[0];
         document.getElementById('startDate').value = today;
         document.getElementById('endDate').value = today;
+        updateClearBtn();
         loadUsers();
         setTimeout(() => loadHistory(), 300);
     });
