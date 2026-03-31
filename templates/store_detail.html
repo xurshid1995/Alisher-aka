@@ -241,9 +241,9 @@
 
 <!-- Page Header -->
 <div class="ps-header">
-    <div>
-        <h1 class="ps-title"><i class="fas fa-store"></i> {{ store.name }}</h1>
-        <div class="ps-store-meta">
+    <div style="display:flex; align-items:center; flex-wrap:wrap; gap:18px;">
+        <h1 class="ps-title" style="margin:0; white-space:nowrap;"><i class="fas fa-store"></i> {{ store.name }}</h1>
+        <div class="ps-store-meta" style="margin:0;">
             <span><i class="fas fa-map-marker-alt" style="color:#1a6eff"></i> {{ store.address or t('sd_address_empty') }}</span>
             <span><i class="fas fa-user" style="color:#1a6eff"></i> {{ store.manager_name or t('sd_manager_empty') }}</span>
             <span><i class="fas fa-phone" style="color:#1a6eff"></i> {{ store.phone or t('sd_phone_empty') }}</span>
