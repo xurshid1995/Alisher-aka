@@ -109,13 +109,13 @@ optgroup option { font-weight: normal; color: #1e293b; }
 }
 .ap-btn-excel-template:hover { background: #f0fff4; }
 .ap-btn-barcode-auto {
-    padding: 8px 13px; background: white; color: #059669;
-    border: 1.5px solid #059669; border-radius: 8px; cursor: pointer;
-    font-size: 13px; font-weight: 600; white-space: nowrap;
+    padding: 6px 10px; background: transparent;
+    border: none; border-radius: 8px; cursor: pointer;
     display: flex; align-items: center; gap: 5px;
-    transition: all 0.2s;
+    font-size: 13px; font-weight: 600; color: #059669;
+    white-space: nowrap; transition: all 0.2s;
 }
-.ap-btn-barcode-auto:hover { background: #059669; color: white; }
+.ap-btn-barcode-auto:hover { background: #f0fff4; }
 .ap-btn-barcode-print {
     padding: 6px 10px; background: transparent;
     border: none; border-radius: 8px; cursor: pointer;
@@ -303,7 +303,7 @@ optgroup option { font-weight: normal; color: #1e293b; }
                                        style="border-color:#059669; flex:1;">
                                 <button type="button" id="autoGenerateBtn" onclick="generateBarcode()"
                                         class="ap-btn-barcode-auto"
-                                        title="{{ t('ap_auto_barcode_title') }}"><i class="fas fa-sync-alt"></i> Auto</button>
+                                        title="{{ t('ap_auto_barcode_title') }}"><img src="https://img.icons8.com/color/48/synchronize.png" alt="Auto" style="width:28px;height:28px;"> Auto</button>
                                 <button type="button" onclick="printBarcodeFromForm()" id="printBarcodeBtn"
                                         class="ap-btn-barcode-print"
                                         title="{{ t('ap_print_barcode_title') }}"><img src="https://img.icons8.com/color/48/print.png" alt="Print" style="width:28px;height:28px;"></button>
