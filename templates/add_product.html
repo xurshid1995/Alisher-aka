@@ -109,18 +109,20 @@ optgroup option { font-weight: normal; color: #1e293b; }
 }
 .ap-btn-excel-template:hover { background: #f0fff4; }
 .ap-btn-barcode-auto {
-    padding: 7px 9px; background: #059669; color: white;
-    border: none; border-radius: 8px; cursor: pointer;
-    font-size: 12px; font-weight: 600; white-space: nowrap;
-    transition: background 0.2s;
+    padding: 8px 13px; background: white; color: #059669;
+    border: 1.5px solid #059669; border-radius: 8px; cursor: pointer;
+    font-size: 13px; font-weight: 600; white-space: nowrap;
+    display: flex; align-items: center; gap: 5px;
+    transition: all 0.2s;
 }
-.ap-btn-barcode-auto:hover { background: #047857; }
+.ap-btn-barcode-auto:hover { background: #059669; color: white; }
 .ap-btn-barcode-print {
-    padding: 7px 9px; background: #2563eb; color: white;
-    border: none; border-radius: 8px; cursor: pointer;
-    font-size: 13px; transition: background 0.2s;
+    padding: 8px 12px; background: white; color: #2563eb;
+    border: 1.5px solid #2563eb; border-radius: 8px; cursor: pointer;
+    font-size: 16px; display: flex; align-items: center;
+    transition: all 0.2s;
 }
-.ap-btn-barcode-print:hover { background: #1d4ed8; }
+.ap-btn-barcode-print:hover { background: #2563eb; color: white; }
 
 /* Summary bar */
 .ap-summary {
@@ -301,10 +303,10 @@ optgroup option { font-weight: normal; color: #1e293b; }
                                        style="border-color:#059669; flex:1;">
                                 <button type="button" id="autoGenerateBtn" onclick="generateBarcode()"
                                         class="ap-btn-barcode-auto"
-                                        title="{{ t('ap_auto_barcode_title') }}">🔄 Auto</button>
+                                        title="{{ t('ap_auto_barcode_title') }}"><i class="fas fa-sync-alt"></i> Auto</button>
                                 <button type="button" onclick="printBarcodeFromForm()" id="printBarcodeBtn"
                                         class="ap-btn-barcode-print"
-                                        title="{{ t('ap_print_barcode_title') }}">🖨️</button>
+                                        title="{{ t('ap_print_barcode_title') }}"><i class="fas fa-print"></i></button>
                             </div>
                         </div>
                     </div>
