@@ -710,7 +710,7 @@ function getLocationName(item) {
 
 document.addEventListener('DOMContentLoaded', function() {
     const customerId = {{ customer.id }};
-    userRole = document.querySelector('.customer-detail-container').dataset.userRole;
+    userRole = document.querySelector('.ps-page').dataset.userRole;
     loadCustomerOrders(customerId);
 });
 
