@@ -383,7 +383,7 @@
         <div class="modal-body">
             <p><strong>{{ t('delete') }}:</strong></p>
             <div class="customer-name-highlight" id="modalCustomerName"></div>
-            <p style="color: #e74c3c; font-weight: bold;">âš ï¸ Bu amal qaytarib bo'lmaydi!</p>
+            <p style="color: #e74c3c; font-weight: bold;">⚠️ Bu amal qaytarib bo'lmaydi!</p>
             <p>{{ t('header_customer_name') }}:</p>
             
             <div class="modal-input-group">
@@ -399,10 +399,10 @@
         </div>
         <div class="modal-actions">
             <button class="modal-btn modal-btn-cancel" onclick="closeDeleteModal()">
-                âŒ {{ t('btn_cancel_payment') }}
+                ❌ {{ t('btn_cancel_payment') }}
             </button>
             <button class="modal-btn modal-btn-delete" id="confirmDeleteBtn" disabled>
-                ğŸ—‘ï¸ {{ t('btn_delete_item') }}
+                🗑️ {{ t('btn_delete_item') }}
             </button>
         </div>
     </div>
@@ -521,9 +521,9 @@
     // Mijozlarni yuklash
     async function loadCustomers() {
         try {
-            console.log('ğŸ” Mijozlarni yuklayapti... currentTimeFilter:', currentTimeFilter);
+            console.log('🔍 Mijozlarni yuklayapti... currentTimeFilter:', currentTimeFilter);
             const url = `/api/customers?time_filter=${currentTimeFilter}`;
-            console.log('ğŸ“¡ API URL:', url);
+            console.log('📡 API URL:', url);
             const response = await fetch(url);
             
             if (!response.ok) {
@@ -715,7 +715,7 @@
             button.className = 'store-filter-btn';
             button.setAttribute('data-store-id', store.id.toString());
             button.onclick = () => filterByStore(store.id.toString());
-            button.innerHTML = `ğŸª ${store.name}`;
+            button.innerHTML = `🏪 ${store.name}`;
             storeButtonsContainer.appendChild(button);
         });
     }
@@ -738,11 +738,11 @@
     function deleteCustomer(customerId, customerName) {
         // Faqat admin o'chira oladi
         if (userRole !== 'admin') {
-            alert('âš ï¸ Mijozni o\'chirish uchun admin huquqi kerak!');
+            alert('⚠️ Mijozni o\'chirish uchun admin huquqi kerak!');
             return;
         }
         
-        console.log('ğŸ¯ YANGI deleteCustomer FUNKSIYASI CHAQIRILDI!');
+        console.log('🎯 YANGI deleteCustomer FUNKSIYASI CHAQIRILDI!');
         console.log('O\'chirish funksiyasi chaqirildi:', customerId, customerName);
         
         currentCustomerId = customerId;
@@ -755,7 +755,7 @@
         const confirmBtn = document.getElementById('confirmDeleteBtn');
         
         if (!modal) {
-            console.error('âŒ Modal topilmadi!');
+            console.error('❌ Modal topilmadi!');
             alert('Xatolik: Modal oyna topilmadi!');
             return;
         }
@@ -840,7 +840,7 @@
         // Tugmani o'chirish
         const confirmBtn = document.getElementById('confirmDeleteBtn');
         confirmBtn.disabled = true;
-        confirmBtn.textContent = 'â³ O\'chirilmoqda...';
+        confirmBtn.textContent = '⏳ O\'chirilmoqda...';
         
         fetch(`/api/customers/${currentCustomerId}`, {
             method: 'DELETE',
@@ -860,14 +860,14 @@
             } else {
                 alert('Xatolik yuz berdi! Mijozni o\'chirib bo\'lmadi.');
                 confirmBtn.disabled = false;
-                confirmBtn.textContent = 'ğŸ—‘ï¸ O\'chirish';
+                confirmBtn.textContent = '🗑️ O\'chirish';
             }
         })
         .catch(error => {
             console.error('Fetch xatosi:', error);
             alert('Aloqa xatosi! Qaytadan urinib ko\'ring.');
             confirmBtn.disabled = false;
-            confirmBtn.textContent = 'ğŸ—‘ï¸ O\'chirish';
+            confirmBtn.textContent = '🗑️ O\'chirish';
         });
     }
 
@@ -875,7 +875,7 @@
     function showError(message) {
         const loadingState = document.getElementById('loadingState');
         loadingState.innerHTML = `
-            <h3 style="color: #e74c3c;">âŒ Xatolik</h3>
+            <h3 style="color: #e74c3c;">❌ Xatolik</h3>
             <p>${message}</p>
         `;
     }
