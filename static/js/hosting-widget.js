@@ -266,10 +266,32 @@
             to { transform: scale(1); opacity: 1; }
         }
 
+        /* Panel pastga ochilishi (widget ekran yuqorisida bo'lganda) */
+        #hosting-widget.panel-down {
+            display: flex !important;
+            flex-direction: column-reverse !important;
+        }
+        #hosting-widget.panel-down .hw-panel {
+            margin-bottom: 0;
+            margin-top: 10px;
+        }
+
         @media (max-width: 480px) {
             #hosting-widget .hw-panel {
                 min-width: 250px;
                 padding: 15px;
+            }
+            #hosting-widget .hw-toggle {
+                cursor: grab;
+                touch-action: none;
+            }
+            #hosting-widget.hw-dragging {
+                transition: none !important;
+            }
+            #hosting-widget.hw-dragging .hw-toggle {
+                cursor: grabbing;
+                transform: scale(1.18) !important;
+                box-shadow: 0 8px 28px rgba(0,0,0,0.35);
             }
         }
     `;
@@ -327,8 +349,114 @@
     `;
     document.body.appendChild(widget);
 
+    // ============================================================
+    // MOBIL DRAG (ekran chetiga surish) - faqat <= 480px ekranlarda
+    // ============================================================
+    var hwDragHappened = false;
+
+    function hwUpdatePanelDir(topPx) {
+        if (topPx < window.innerHeight * 0.42) {
+            widget.classList.add('panel-down');
+        } else {
+            widget.classList.remove('panel-down');
+        }
+    }
+
+    function hwInitDrag() {
+        if (window.innerWidth > 480) return;
+        var MARGIN = 10;
+        var isDragging = false;
+        var startTX, startTY, startWT, startWL;
+        var toggleBtn = document.getElementById('hw-toggle');
+
+        // Saqlangan pozitsiyani tiklash
+        try {
+            var saved = JSON.parse(localStorage.getItem('hw-widget-pos'));
+            if (saved && typeof saved.top === 'number') {
+                var maxTop = window.innerHeight - 60 - MARGIN;
+                var safeTop = Math.max(MARGIN, Math.min(saved.top, maxTop));
+                widget.className = '';
+                widget.style.top = safeTop + 'px';
+                widget.style.bottom = 'auto';
+                if (saved.side === 'left') {
+                    widget.style.left = MARGIN + 'px';
+                    widget.style.right = 'auto';
+                } else {
+                    widget.style.right = MARGIN + 'px';
+                    widget.style.left = 'auto';
+                }
+                hwUpdatePanelDir(safeTop);
+            }
+        } catch (e) {}
+
+        toggleBtn.addEventListener('touchstart', function (e) {
+            var t = e.touches[0];
+            startTX = t.clientX;
+            startTY = t.clientY;
+            var r = widget.getBoundingClientRect();
+            startWT = r.top;
+            startWL = r.left;
+            isDragging = false;
+        }, { passive: true });
+
+        toggleBtn.addEventListener('touchmove', function (e) {
+            var t = e.touches[0];
+            var dx = t.clientX - startTX;
+            var dy = t.clientY - startTY;
+            if (!isDragging && (Math.abs(dx) > 6 || Math.abs(dy) > 6)) {
+                isDragging = true;
+                widget.classList.add('hw-dragging');
+            }
+            if (!isDragging) return;
+            e.preventDefault();
+            var newTop = Math.max(MARGIN, Math.min(startWT + dy, window.innerHeight - 60 - MARGIN));
+            widget.style.top = newTop + 'px';
+            widget.style.bottom = 'auto';
+            widget.style.left = (startWL + dx) + 'px';
+            widget.style.right = 'auto';
+        }, { passive: false });
+
+        toggleBtn.addEventListener('touchend', function () {
+            if (!isDragging) return;
+            widget.classList.remove('hw-dragging');
+
+            var r = widget.getBoundingClientRect();
+            var currentTop = Math.max(MARGIN, Math.min(r.top, window.innerHeight - 60 - MARGIN));
+            var side;
+
+            widget.style.top = currentTop + 'px';
+            widget.style.bottom = 'auto';
+
+            if (r.left + r.width / 2 < window.innerWidth / 2) {
+                widget.style.left = MARGIN + 'px';
+                widget.style.right = 'auto';
+                side = 'left';
+            } else {
+                widget.style.right = MARGIN + 'px';
+                widget.style.left = 'auto';
+                side = 'right';
+            }
+
+            hwUpdatePanelDir(currentTop);
+
+            try {
+                localStorage.setItem('hw-widget-pos', JSON.stringify({
+                    top: Math.round(currentTop),
+                    side: side
+                }));
+            } catch (e) {}
+
+            hwDragHappened = true;
+            setTimeout(function () { hwDragHappened = false; }, 250);
+            isDragging = false;
+        });
+    }
+
+    hwInitDrag();
+
     // Toggle
     window.toggleHostingWidget = function() {
+        if (hwDragHappened) return;
         var panel = document.getElementById('hw-panel');
         panel.classList.toggle('show');
         if (panel.classList.contains('show')) {
