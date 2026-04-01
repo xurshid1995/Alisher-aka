@@ -266,16 +266,6 @@
             to { transform: scale(1); opacity: 1; }
         }
 
-        /* Panel pastga ochilishi (widget ekran yuqorisida bo'lganda) */
-        #hosting-widget.panel-down {
-            display: flex !important;
-            flex-direction: column-reverse !important;
-        }
-        #hosting-widget.panel-down .hw-panel {
-            margin-bottom: 0;
-            margin-top: 10px;
-        }
-
         @media (max-width: 480px) {
             #hosting-widget .hw-panel {
                 min-width: 250px;
@@ -354,14 +344,6 @@
     // ============================================================
     var hwDragHappened = false;
 
-    function hwUpdatePanelDir(topPx) {
-        if (topPx < window.innerHeight * 0.42) {
-            widget.classList.add('panel-down');
-        } else {
-            widget.classList.remove('panel-down');
-        }
-    }
-
     function hwInitDrag() {
         if (window.innerWidth > 480) return;
         var MARGIN = 10;
@@ -385,7 +367,6 @@
                     widget.style.right = MARGIN + 'px';
                     widget.style.left = 'auto';
                 }
-                hwUpdatePanelDir(safeTop);
             }
         } catch (e) {}
 
@@ -436,8 +417,6 @@
                 widget.style.left = 'auto';
                 side = 'right';
             }
-
-            hwUpdatePanelDir(currentTop);
 
             try {
                 localStorage.setItem('hw-widget-pos', JSON.stringify({
