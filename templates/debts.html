@@ -140,24 +140,27 @@
 .status-badge.paid { background: #d1fae5; color: #059669; }
 
 /* Action buttons */
-.action-buttons { display: flex; gap: 6px; flex-wrap: wrap; }
+.action-buttons { display: flex; gap: 4px; align-items: center; }
 .btn-view {
-    padding: 5px 11px; background: #eff6ff; color: #2563eb;
+    width: 30px; height: 30px; background: #eff6ff; color: #2563eb;
     border: 1px solid #bfdbfe; border-radius: 7px;
-    cursor: pointer; font-size: 12px; font-weight: 600; transition: all 0.2s;
+    cursor: pointer; font-size: 14px; transition: all 0.2s;
+    display: inline-flex; align-items: center; justify-content: center;
+    text-decoration: none; flex-shrink: 0;
 }
 .btn-view:hover { background: #2563eb; color: white; border-color: #2563eb; }
 .btn-pay {
-    padding: 5px 11px; background: #f0fdf4; color: #059669;
+    width: 30px; height: 30px; background: #f0fdf4; color: #059669;
     border: 1px solid #bbf7d0; border-radius: 7px;
-    cursor: pointer; font-size: 12px; font-weight: 600; transition: all 0.2s;
+    cursor: pointer; font-size: 14px; transition: all 0.2s;
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
 }
 .btn-pay:hover { background: #059669; color: white; border-color: #059669; }
 .btn-sms {
-    padding: 5px 11px; background: #f0fdf9; color: #059669;
+    width: 30px; height: 30px; background: #f0fdf9; color: #059669;
     border: 1px solid #6ee7b7; border-radius: 7px;
-    cursor: pointer; font-size: 12px; font-weight: 600; transition: all 0.2s;
-    white-space: nowrap;
+    cursor: pointer; font-size: 14px; transition: all 0.2s;
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
 }
 .btn-sms:hover { background: #25D366; color: white; border-color: #25D366; }
 .btn-sms:disabled { background: #f1f5f9; color: #94a3b8; border-color: #e2e8f0; cursor: not-allowed; }
@@ -291,8 +294,8 @@
     .payment-actions { flex-direction: column; position: sticky; bottom: 0; background: white; padding: 12px 0 0; border-top: 1px solid #f1f5f9; }
     .btn-cancel, .btn-confirm { width: 100%; padding: 14px; font-size: 15px; border-radius: 8px; }
     .debts-table { min-width: 700px; font-size: 12px; }
-    .action-buttons { flex-direction: column; gap: 4px; }
-    .btn-view, .btn-pay, .btn-sms { width: 100%; padding: 8px; font-size: 11px; }
+    .action-buttons { gap: 4px; }
+    .btn-view, .btn-pay, .btn-sms { width: 28px; height: 28px; font-size: 13px; }
 }
 @media (max-width: 480px) {
     .dbt-stat-number { font-size: 18px; }
@@ -997,9 +1000,9 @@
                     <td>${dueDateHtml}</td>
                     <td>
                         <div class="action-buttons">
-                            <a href="/debts/customer/${debt.customer_id}" class="btn-view" style="text-decoration: none;">👁️ Ko'rish</a>
-                            ${remainingDebt > 0 ? `<button class="btn-pay" onclick="openPaymentModal(${debt.customer_id})">💳 To'lov</button>` : ''}
-                            ${remainingDebt > 0 && debt.customer_phone ? `<button class="btn-sms" onclick="sendDebtSMS(${debt.customer_id}, '${debt.customer_name}', ${remainingDebt}, ${debt.nearest_due_date ? "'" + debt.nearest_due_date + "'" : 'null'})"><img src='https://img.icons8.com/fluency/150/telegram-app.png' alt='Telegram' style='width:16px; height:16px; vertical-align:middle;'> SMS</button>` : ''}
+                            <a href="/debts/customer/${debt.customer_id}" class="btn-view" style="text-decoration: none;" title="Ko'rish"><i class="fas fa-eye"></i></a>
+                            ${remainingDebt > 0 ? `<button class="btn-pay" onclick="openPaymentModal(${debt.customer_id})" title="To'lov qilish"><i class="fas fa-credit-card"></i></button>` : ''}
+                            ${remainingDebt > 0 && debt.customer_phone ? `<button class="btn-sms" onclick="sendDebtSMS(${debt.customer_id}, '${debt.customer_name}', ${remainingDebt}, ${debt.nearest_due_date ? "'" + debt.nearest_due_date + "'" : 'null'})" title="Telegram SMS"><img src='https://img.icons8.com/fluency/150/telegram-app.png' alt='Telegram' style='width:15px; height:15px;'></button>` : ''}
                         </div>
                     </td>
                 </tr>
@@ -1063,9 +1066,9 @@
                     <td>${dueDateHtml}</td>
                     <td>
                         <div class="action-buttons">
-                            <a href="/debts/customer/${debt.customer_id}" class="btn-view" style="text-decoration: none;">👁️ Ko'rish</a>
-                            ${remainingDebt > 0 ? `<button class="btn-pay" onclick="openPaymentModal(${debt.customer_id})">💳 To'lov</button>` : ''}
-                            ${remainingDebt > 0 && debt.customer_phone ? `<button class="btn-sms" onclick="sendDebtSMS(${debt.customer_id}, '${debt.customer_name}', ${remainingDebt}, ${debt.nearest_due_date ? "'" + debt.nearest_due_date + "'" : 'null'})"><img src='https://img.icons8.com/fluency/150/telegram-app.png' alt='Telegram' style='width:16px; height:16px; vertical-align:middle;'> SMS</button>` : ''}
+                            <a href="/debts/customer/${debt.customer_id}" class="btn-view" style="text-decoration: none;" title="Ko'rish"><i class="fas fa-eye"></i></a>
+                            ${remainingDebt > 0 ? `<button class="btn-pay" onclick="openPaymentModal(${debt.customer_id})" title="To'lov qilish"><i class="fas fa-credit-card"></i></button>` : ''}
+                            ${remainingDebt > 0 && debt.customer_phone ? `<button class="btn-sms" onclick="sendDebtSMS(${debt.customer_id}, '${debt.customer_name}', ${remainingDebt}, ${debt.nearest_due_date ? "'" + debt.nearest_due_date + "'" : 'null'})" title="Telegram SMS"><img src='https://img.icons8.com/fluency/150/telegram-app.png' alt='Telegram' style='width:15px; height:15px;'></button>` : ''}
                         </div>
                     </td>
                 </tr>
