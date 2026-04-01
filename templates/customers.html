@@ -461,6 +461,60 @@
     </div>
 </div>
 
+<!-- Edit Customer Modal -->
+<div id="editCustomerModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.55); z-index:9998; align-items:center; justify-content:center; backdrop-filter:blur(2px);">
+    <div style="background:white; border-radius:16px; padding:30px; width:90%; max-width:520px; max-height:90vh; overflow-y:auto; box-shadow:0 20px 60px rgba(0,0,0,0.3); animation:slideDown 0.25s ease;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:22px; padding-bottom:14px; border-bottom:1px solid #e9ecef;">
+            <h3 style="margin:0; font-size:18px; font-weight:700; color:#1e293b;"><i class="fas fa-user-edit" style="color:#f59e0b; margin-right:8px;"></i> Mijozni tahrirlash</h3>
+            <button onclick="closeEditCustomerModal()" style="background:none; border:none; font-size:20px; cursor:pointer; color:#94a3b8; line-height:1; padding:4px;">&times;</button>
+        </div>
+
+        <div id="ecModalError" style="display:none; background:#f8d7da; border:1px solid #f5c6cb; color:#721c24; padding:10px 14px; border-radius:8px; margin-bottom:14px; font-size:13px;"></div>
+        <div id="ecModalSuccess" style="display:none; background:#d4edda; border:1px solid #c3e6cb; color:#155724; padding:10px 14px; border-radius:8px; margin-bottom:14px; font-size:13px;"></div>
+
+        <form id="editCustomerModalForm" onsubmit="submitEditCustomerModal(event)">
+            <input type="hidden" id="ecm_id">
+            <div style="margin-bottom:16px;">
+                <label style="display:block; margin-bottom:6px; font-weight:600; color:#374151; font-size:13px;">{{ t('customer_name_label') }} <span style="color:#e74c3c;">*</span></label>
+                <input type="text" id="ecm_name" name="name" required
+                    style="width:100%; padding:10px 12px; border:1.5px solid #e2e8f0; border-radius:10px; font-size:14px; box-sizing:border-box; outline:none; transition:border 0.2s;"
+                    onfocus="this.style.borderColor='#f59e0b'" onblur="this.style.borderColor='#e2e8f0'">
+            </div>
+            <div style="margin-bottom:16px;">
+                <label style="display:block; margin-bottom:6px; font-weight:600; color:#374151; font-size:13px;">{{ t('phone_number_label') }}</label>
+                <input type="tel" id="ecm_phone" name="phone" placeholder="+998(99) 406-47-49" maxlength="18"
+                    style="width:100%; padding:10px 12px; border:1.5px solid #e2e8f0; border-radius:10px; font-size:14px; box-sizing:border-box; outline:none; transition:border 0.2s;"
+                    onfocus="this.style.borderColor='#f59e0b'" onblur="this.style.borderColor='#e2e8f0'"
+                    oninput="formatAcmPhone(this)">
+            </div>
+            <div style="margin-bottom:16px;">
+                <label style="display:block; margin-bottom:6px; font-weight:600; color:#374151; font-size:13px;">{{ t('email_label') }}</label>
+                <input type="email" id="ecm_email" name="email" placeholder="{{ t('placeholder_email') }}"
+                    style="width:100%; padding:10px 12px; border:1.5px solid #e2e8f0; border-radius:10px; font-size:14px; box-sizing:border-box; outline:none; transition:border 0.2s;"
+                    onfocus="this.style.borderColor='#f59e0b'" onblur="this.style.borderColor='#e2e8f0'">
+            </div>
+            <div style="margin-bottom:16px;">
+                <label style="display:block; margin-bottom:6px; font-weight:600; color:#374151; font-size:13px;">{{ t('address_label') }}</label>
+                <textarea id="ecm_address" name="address" rows="2" placeholder="{{ t('placeholder_address') }}"
+                    style="width:100%; padding:10px 12px; border:1.5px solid #e2e8f0; border-radius:10px; font-size:14px; box-sizing:border-box; outline:none; resize:vertical; transition:border 0.2s;"
+                    onfocus="this.style.borderColor='#f59e0b'" onblur="this.style.borderColor='#e2e8f0'"></textarea>
+            </div>
+            <div style="margin-bottom:22px;">
+                <label style="display:block; margin-bottom:6px; font-weight:600; color:#374151; font-size:13px;">{{ t('label_store_required') }} <span style="color:#e74c3c;">*</span></label>
+                <select id="ecm_store_id" name="store_id" required
+                    style="width:100%; padding:10px 12px; border:1.5px solid #e2e8f0; border-radius:10px; font-size:14px; box-sizing:border-box; outline:none; background:#f8fafc; transition:border 0.2s;"
+                    onfocus="this.style.borderColor='#f59e0b'" onblur="this.style.borderColor='#e2e8f0'">
+                    <option value="">{{ t('placeholder_select_store') }}</option>
+                </select>
+            </div>
+            <div style="display:flex; gap:10px;">
+                <button type="button" onclick="closeEditCustomerModal()" style="flex:1; padding:11px; background:#f1f5f9; color:#374151; border:1.5px solid #e2e8f0; border-radius:10px; font-size:14px; font-weight:600; cursor:pointer;">❌ {{ t('btn_cancel') }}</button>
+                <button type="submit" id="ecmSubmitBtn" style="flex:2; padding:11px; background:linear-gradient(135deg,#f59e0b,#d97706); color:white; border:none; border-radius:10px; font-size:14px; font-weight:600; cursor:pointer;"><i class="fas fa-save"></i> Saqlash</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <div class="ps-page">
 
     <!-- Header -->
@@ -658,7 +712,7 @@
                         <td>${customer.last_sale_date || '-'}</td>
                         <td class="actions">
                             <button onclick="viewCustomer(${customer.id})" class="btn-view" title="${CSLANG.view}"><i class="fas fa-eye"></i></button>
-                            ${userRole === 'admin' ? `<a href="/edit-customer/${customer.id}" class="btn-edit" title="${CSLANG.edit}"><i class="fas fa-pencil-alt"></i></a>` : ''}
+                            ${userRole === 'admin' ? `<button onclick="openEditCustomerModal(${customer.id})" class="btn-edit" title="${CSLANG.edit}"><i class="fas fa-pencil-alt"></i></button>` : ''}
                             ${userRole === 'admin' ? `<button onclick="deleteCustomer(${customer.id}, '${customer.name.replace(/'/g, "\\'")}')" class="btn-delete" title="${CSLANG.delete_btn}"><i class="fas fa-trash"></i></button>` : ''}
                         </td>
                     </tr>
@@ -780,7 +834,7 @@
 
     // Mijozni tahrirlash
     function editCustomer(customerId) {
-        window.location.href = `/edit-customer?id=${customerId}`;
+        openEditCustomerModal(customerId);
     }
 
     // Modal variables
@@ -1098,6 +1152,88 @@
         } finally {
             btn.disabled = false;
             btn.innerHTML = '<i class="fas fa-user-plus"></i> {{ t("btn_add_customer") }}';
+        }
+    }
+
+    // ==================== EDIT CUSTOMER MODAL ====================
+    function openEditCustomerModal(customerId) {
+        const customer = allCustomers.find(c => c.id === customerId);
+        if (!customer) return;
+
+        document.getElementById('ecm_id').value = customer.id;
+        document.getElementById('ecm_name').value = customer.name || '';
+        document.getElementById('ecm_phone').value = customer.phone || '';
+        document.getElementById('ecm_email').value = customer.email || '';
+        document.getElementById('ecm_address').value = customer.address || '';
+
+        const sel = document.getElementById('ecm_store_id');
+        sel.innerHTML = '<option value="">{{ t("placeholder_select_store") }}</option>';
+        allStores.forEach(s => {
+            const o = document.createElement('option');
+            o.value = s.id; o.textContent = s.name;
+            if (s.id === customer.store_id) o.selected = true;
+            sel.appendChild(o);
+        });
+
+        document.getElementById('ecModalError').style.display = 'none';
+        document.getElementById('ecModalSuccess').style.display = 'none';
+
+        const modal = document.getElementById('editCustomerModal');
+        modal.style.display = 'flex';
+        setTimeout(() => document.getElementById('ecm_name').focus(), 100);
+    }
+
+    function closeEditCustomerModal() {
+        document.getElementById('editCustomerModal').style.display = 'none';
+    }
+
+    document.getElementById('editCustomerModal').addEventListener('click', function(e) {
+        if (e.target === this) closeEditCustomerModal();
+    });
+
+    async function submitEditCustomerModal(event) {
+        event.preventDefault();
+        const phone = document.getElementById('ecm_phone').value;
+        if (phone && phone.trim() !== '' && phone.length !== 18) {
+            document.getElementById('ecModalError').textContent = '{{ t("phone_format_error") }}';
+            document.getElementById('ecModalError').style.display = 'block';
+            return;
+        }
+        const customerId = document.getElementById('ecm_id').value;
+        const btn = document.getElementById('ecmSubmitBtn');
+        btn.disabled = true;
+        btn.innerHTML = '⏳ Saqlanmoqda...';
+        document.getElementById('ecModalError').style.display = 'none';
+        try {
+            const res = await fetch(`/api/customers/${customerId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: document.getElementById('ecm_name').value,
+                    phone: document.getElementById('ecm_phone').value,
+                    email: document.getElementById('ecm_email').value,
+                    address: document.getElementById('ecm_address').value,
+                    store_id: document.getElementById('ecm_store_id').value
+                })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                document.getElementById('ecModalSuccess').textContent = '✅ Mijoz muvaffaqiyatli yangilandi!';
+                document.getElementById('ecModalSuccess').style.display = 'block';
+                setTimeout(() => {
+                    closeEditCustomerModal();
+                    loadCustomers();
+                }, 1200);
+            } else {
+                document.getElementById('ecModalError').textContent = (data.error || 'Xatolik yuz berdi');
+                document.getElementById('ecModalError').style.display = 'block';
+            }
+        } catch(e) {
+            document.getElementById('ecModalError').textContent = e.message;
+            document.getElementById('ecModalError').style.display = 'block';
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-save"></i> Saqlash';
         }
     }
 </script>
