@@ -275,11 +275,6 @@
         </div>
     </div>
 
-    <!-- Results Info -->
-    <div id="resultsInfo" class="ps-results-info" style="display:none;">
-        <span id="resultsText"></span>
-    </div>
-
     <!-- Table Card -->
     <div class="ps-table-card">
         <div class="ps-table-wrap">
@@ -422,15 +417,6 @@ function filterAndDisplay() {
     document.getElementById('checkedCount').textContent = allProducts.filter(p => p.status !== 'unchecked').length;
     document.getElementById('uncheckedCount').textContent = allProducts.filter(p => p.status === 'unchecked').length;
     document.getElementById('errorCount').textContent = allProducts.filter(p => p.difference !== 0 && p.difference !== null).length;
-
-    const resultsInfo = document.getElementById('resultsInfo');
-    const resultsText = document.getElementById('resultsText');
-    if (filtered.length < allProducts.length || q || currentFilter !== 'all') {
-        resultsText.innerHTML = `<span class="ps-count-badge">${filtered.length}</span> ta natija`;
-        resultsInfo.style.display = 'block';
-    } else {
-        resultsInfo.style.display = 'none';
-    }
 
     displayTable(filtered);
 }
