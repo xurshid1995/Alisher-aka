@@ -93,29 +93,33 @@
 /* Filter toggle buttons */
 .filter-tab-group { display: flex; gap: 6px; flex-wrap: wrap; }
 .filter-tab {
-    padding: 7px 14px; border-radius: 10px; border: 1.5px solid #e2e8f0;
-    background: white; color: #374151; font-size: 13px; font-weight: 500;
+    padding: 7px 14px !important; border-radius: 10px !important;
+    border: 1.5px solid transparent !important;
+    font-size: 13px !important; font-weight: 600 !important; color: #fff !important;
     cursor: pointer; transition: all 0.2s; white-space: nowrap;
-    display: inline-flex; align-items: center; gap: 5px;
+    display: inline-flex !important; align-items: center; gap: 5px;
+    text-decoration: none !important; outline: none;
+    -webkit-appearance: none; appearance: none;
 }
-/* Default (inactive) subtle colors per tab */
-#filterAll     { background: #eff6ff; border-color: #bfdbfe; color: #1d4ed8; }
-#filterChecked { background: #f0fdf4; border-color: #bbf7d0; color: #16a34a; }
-#filterUnchecked { background: #f8fafc; border-color: #e2e8f0; color: #475569; }
-#filterError   { background: #fff1f2; border-color: #fecdd3; color: #dc2626; }
-
 .filter-tab .tab-count {
-    background: rgba(0,0,0,0.07); color: inherit; font-size: 11px; font-weight: 700;
+    background: rgba(255,255,255,0.25) !important; color: #fff !important;
+    font-size: 11px; font-weight: 700;
     padding: 1px 6px; border-radius: 6px; min-width: 20px; text-align: center;
 }
-.filter-tab.active-all    { background: #1a6eff; color: white; border-color: #1a6eff; }
-.filter-tab.active-all .tab-count    { background: rgba(255,255,255,0.25); color: white; }
-.filter-tab.active-checked { background: #16a34a; color: white; border-color: #16a34a; }
-.filter-tab.active-checked .tab-count { background: rgba(255,255,255,0.25); color: white; }
-.filter-tab.active-unchecked { background: #64748b; color: white; border-color: #64748b; }
-.filter-tab.active-unchecked .tab-count { background: rgba(255,255,255,0.25); color: white; }
-.filter-tab.active-error  { background: #dc2626; color: white; border-color: #dc2626; }
-.filter-tab.active-error .tab-count  { background: rgba(255,255,255,0.25); color: white; }
+/* Default (non-active) colors per button */
+#filterAll     { background: #2563eb !important; border-color: #2563eb !important; }
+#filterAll:hover { background: #1d4ed8 !important; border-color: #1d4ed8 !important; }
+#filterChecked { background: #16a34a !important; border-color: #16a34a !important; }
+#filterChecked:hover { background: #15803d !important; border-color: #15803d !important; }
+#filterUnchecked { background: #4b5563 !important; border-color: #4b5563 !important; }
+#filterUnchecked:hover { background: #374151 !important; border-color: #374151 !important; }
+#filterError   { background: #dc2626 !important; border-color: #dc2626 !important; }
+#filterError:hover { background: #b91c1c !important; border-color: #b91c1c !important; }
+/* Active state — use ID+class for highest specificity */
+#filterAll.active-all        { background: #1a6eff !important; border-color: #1a6eff !important; box-shadow: 0 3px 10px rgba(26,110,255,0.5); }
+#filterChecked.active-checked { background: #15803d !important; border-color: #15803d !important; box-shadow: 0 3px 10px rgba(21,128,61,0.5); }
+#filterUnchecked.active-unchecked { background: #1e293b !important; border-color: #1e293b !important; box-shadow: 0 3px 10px rgba(30,41,59,0.5); }
+#filterError.active-error    { background: #b91c1c !important; border-color: #b91c1c !important; box-shadow: 0 3px 10px rgba(185,28,28,0.5); }
 
 /* Results info */
 .ps-results-info {
