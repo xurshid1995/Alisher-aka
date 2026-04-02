@@ -4,215 +4,291 @@
 
 {% block extra_css %}
 <style>
-    .page-header-view {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 1.5rem 2rem;
-        border-radius: 10px;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        margin-bottom: 20px;
-    }
+.ps-page {
+    padding: 28px 28px 40px;
+    background: #f5f6fa;
+    min-height: 100vh;
+    font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+}
+.ps-header {
+    display: flex; align-items: center;
+    justify-content: space-between; margin-bottom: 16px;
+}
+.ps-title { font-size: 18px; font-weight: 700; color: #1e293b; margin: 0; }
+.ps-title i { color: #7c3aed; margin-right: 8px; }
+.ps-back-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 16px; background: #3d6e8f; color: white;
+    border: 1px solid #2d5a7a; border-radius: 10px;
+    font-size: 13px; font-weight: 600; text-decoration: none;
+    transition: all 0.2s; cursor: pointer;
+}
+.ps-back-btn:hover { background: #2d5a7a; color: white; text-decoration: none; }
 
-    .page-header-view h2 {
-        margin: 0;
-        font-size: 1.75rem;
-        font-weight: 600;
-    }
+/* Meta info strip */
+.ps-meta-strip {
+    background: white; border-radius: 12px;
+    padding: 12px 18px; margin-bottom: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    display: flex; gap: 20px; flex-wrap: wrap; align-items: center;
+    font-size: 13px; color: #64748b;
+}
+.ps-meta-strip strong { color: #1e293b; }
 
-    .stats-card {
-        background: white;
-        padding: 20px;
-        border-radius: 10px;
-        text-align: center;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
+/* Stat cards */
+.ps-stats {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 12px; margin-bottom: 16px;
+}
+@media (max-width: 900px) { .ps-stats { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 560px) { .ps-stats { grid-template-columns: repeat(2, 1fr); } }
+.ps-stat-card {
+    background: white; border-radius: 14px;
+    padding: 16px 14px; text-align: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+    transition: transform 0.15s;
+}
+.ps-stat-card:hover { transform: translateY(-2px); }
+.ps-stat-icon {
+    width: 44px; height: 44px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; margin: 0 auto 8px;
+}
+.ps-icon-blue   { background: #eff6ff; color: #2563eb; }
+.ps-icon-green  { background: #f0fdf4; color: #16a34a; }
+.ps-icon-teal   { background: #f0fdfa; color: #0d9488; }
+.ps-icon-gray   { background: #f8fafc; color: #64748b; }
+.ps-icon-red    { background: #fff5f5; color: #dc2626; }
+.ps-icon-amber  { background: #fffbeb; color: #d97706; }
+.ps-stat-number { display: block; font-size: 22px; font-weight: 700; color: #1e293b; }
+.ps-stat-label  { display: block; font-size: 11px; color: #64748b; margin-top: 2px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.4px; }
+.ps-stat-sub    { display: block; font-size: 11px; color: #94a3b8; margin-top: 1px; }
 
-    .stats-icon {
-        font-size: 32px;
-        margin-bottom: 5px;
-    }
+/* Filter panel */
+.ps-filter-panel {
+    background: white; border-radius: 16px;
+    padding: 16px 20px; margin-bottom: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+.ps-filter-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.ps-search-box { position: relative; flex: 1; min-width: 220px; }
+.ps-search-icon {
+    position: absolute; left: 13px; top: 50%; transform: translateY(-50%);
+    color: #94a3b8; font-size: 13px; pointer-events: none;
+}
+.ps-input {
+    padding: 9px 14px; border: 1.5px solid #e2e8f0; border-radius: 10px;
+    font-size: 13px; background: #f8fafc; color: #1e293b;
+    transition: all 0.2s; outline: none; width: 100%; box-sizing: border-box;
+}
+.ps-input:focus { border-color: #7c3aed; box-shadow: 0 0 0 3px rgba(124,58,237,0.1); background: white; }
+.ps-search-input { padding-left: 38px !important; }
+.ps-clear-btn {
+    position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+    background: none; border: none; color: #94a3b8; cursor: pointer;
+    padding: 4px; border-radius: 50%; transition: all 0.15s;
+}
+.ps-clear-btn:hover { background: #f1f5f9; color: #475569; }
 
-    .stats-value {
-        font-size: 24px;
-        font-weight: bold;
-    }
+/* Filter toggle buttons */
+.filter-tab-group { display: flex; gap: 6px; flex-wrap: wrap; }
+.filter-tab {
+    padding: 7px 14px; border-radius: 10px; border: 1.5px solid #e2e8f0;
+    background: white; color: #374151; font-size: 13px; font-weight: 500;
+    cursor: pointer; transition: all 0.2s; white-space: nowrap;
+    display: inline-flex; align-items: center; gap: 5px;
+}
+.filter-tab .tab-count {
+    background: #f1f5f9; color: #64748b; font-size: 11px; font-weight: 700;
+    padding: 1px 6px; border-radius: 6px; min-width: 20px; text-align: center;
+}
+.filter-tab.active-all    { background: #1a6eff; color: white; border-color: #1a6eff; }
+.filter-tab.active-all .tab-count    { background: rgba(255,255,255,0.25); color: white; }
+.filter-tab.active-checked { background: #16a34a; color: white; border-color: #16a34a; }
+.filter-tab.active-checked .tab-count { background: rgba(255,255,255,0.25); color: white; }
+.filter-tab.active-unchecked { background: #64748b; color: white; border-color: #64748b; }
+.filter-tab.active-unchecked .tab-count { background: rgba(255,255,255,0.25); color: white; }
+.filter-tab.active-error  { background: #dc2626; color: white; border-color: #dc2626; }
+.filter-tab.active-error .tab-count  { background: rgba(255,255,255,0.25); color: white; }
 
-    .stats-label {
-        font-size: 14px;
-        margin-top: 5px;
-    }
+/* Results info */
+.ps-results-info {
+    font-size: 13px; color: #64748b; margin-bottom: 10px; padding: 0 4px;
+}
+.ps-count-badge {
+    display: inline-flex; align-items: center;
+    background: #7c3aed; color: white;
+    font-size: 13px; font-weight: 600;
+    padding: 4px 12px; border-radius: 8px;
+}
 
-    .stats-sublabel {
-        font-size: 12px;
-        opacity: 0.8;
-        margin-top: 2px;
-    }
+/* Table card */
+.ps-table-card {
+    background: white; border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06); overflow: hidden;
+}
+.ps-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; max-height: 65vh; overflow-y: auto; }
+.ps-table {
+    width: 100%; min-width: 700px; border-collapse: collapse; font-size: 13px;
+}
+.ps-table thead tr { background: #7c3aed; }
+.ps-table th {
+    padding: 12px 10px; text-align: center;
+    font-size: 11px; font-weight: 700; color: white;
+    text-transform: uppercase; letter-spacing: 0.5px;
+    border: none; border-bottom: 1px solid #6d28d9;
+    white-space: nowrap; position: sticky; top: 0; z-index: 2;
+    background: #7c3aed;
+}
+.ps-table th.col-name { text-align: left; }
+.ps-table td {
+    padding: 10px 10px; font-size: 13px; color: #374151;
+    border: none; border-bottom: 1px solid #f1f5f9;
+    vertical-align: middle; text-align: center;
+}
+.ps-table td.col-name { text-align: left; font-weight: 500; }
+.ps-table tbody tr:hover { background: #faf5ff; }
+.ps-table tbody tr:last-child td { border-bottom: none; }
 
-    .view-box {
-        background: white;
-        border-radius: 10px;
-        padding: 20px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        margin-bottom: 20px;
-    }
+/* Status badges */
+.status-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600;
+}
+.badge-unchecked { background: #f1f5f9; color: #64748b; }
+.badge-normal    { background: #f0fdfa; color: #0d9488; }
+.badge-excess    { background: #f0fdf4; color: #16a34a; }
+.badge-deficit   { background: #fff5f5; color: #dc2626; }
 
-    .table-wrapper-view {
-        border: 1px solid #dee2e6;
-        border-radius: 4px;
-        overflow-x: auto;
-        max-height: 600px;
-        overflow-y: auto;
-    }
+/* diff cell */
+.diff-plus  { color: #16a34a; font-weight: 700; }
+.diff-minus { color: #dc2626; font-weight: 700; }
+.diff-zero  { color: #0d9488; font-weight: 600; }
 
-    .filter-btn {
-        padding: 8px 16px;
-        border-radius: 25px;
-        border: none;
-        cursor: pointer;
-        font-size: 13px;
-        font-weight: 600;
-        white-space: nowrap;
-        transition: opacity 0.3s;
-    }
+/* No data */
+.ps-no-data { text-align: center; padding: 50px 20px; color: #94a3b8; }
+.ps-no-data i { font-size: 40px; margin-bottom: 12px; display: block; }
 
-    .filter-btn:hover {
-        opacity: 0.8 !important;
-    }
-
-    .badge-count {
-        background: rgba(255,255,255,0.3);
-        padding: 2px 8px;
-        border-radius: 50px;
-        margin-left: 4px;
-        min-width: 25px;
-        display: inline-block;
-        text-align: center;
-    }
+@media (max-width: 640px) {
+    .ps-page { padding: 14px 12px 30px; }
+    .ps-meta-strip { gap: 10px; font-size: 12px; }
+}
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid">
-    <!-- Sahifa sarlavhasi -->
-    <div class="page-header-view">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <div>
-                <h2><i class="fas fa-clipboard-check"></i> {{ t('csv_title') }}</h2>
-                <div style="margin-top: 10px; display: flex; gap: 20px; flex-wrap: wrap; font-size: 14px;">
-                    <div><strong>{{ t('csv_datetime') }}</strong> {{ check_session.started_at.strftime('%d.%m.%Y - %H:%M') }}</div>
-                    <div><strong>{{ t('csv_started_by') }}</strong> {{ check_session.user.first_name }} {{ check_session.user.last_name }}</div>
-                    {% if check_session.completed_by %}
-                    <div><strong>{{ t('csv_completed_by') }}</strong> {{ check_session.completed_by.first_name }} {{ check_session.completed_by.last_name }}</div>
-                    {% endif %}
-                    <div><strong>{{ t('csv_location') }}</strong> {{ '🏪' if check_session.location_type == 'store' else '📦' }} {{ check_session.location_name }}</div>
-                </div>
+<div class="ps-page">
+
+    <!-- Header -->
+    <div class="ps-header">
+        <div>
+            <h1 class="ps-title"><i class="fas fa-clipboard-check"></i> {{ t('csv_title') }}</h1>
+        </div>
+        <a href="/check_stock" class="ps-back-btn">
+            <i class="fas fa-arrow-left"></i> {{ t('csv_back') }}
+        </a>
+    </div>
+
+    <!-- Meta strip -->
+    <div class="ps-meta-strip">
+        <span><strong>{{ t('csv_datetime') }}</strong> {{ check_session.started_at.strftime('%d.%m.%Y - %H:%M') }}</span>
+        <span><strong>{{ t('csv_started_by') }}</strong> {{ check_session.user.first_name }} {{ check_session.user.last_name }}</span>
+        {% if check_session.completed_by %}
+        <span><strong>{{ t('csv_completed_by') }}</strong> {{ check_session.completed_by.first_name }} {{ check_session.completed_by.last_name }}</span>
+        {% endif %}
+        <span><strong>{{ t('csv_location') }}</strong> {{ '🏪' if check_session.location_type == 'store' else '📦' }} {{ check_session.location_name }}</span>
+    </div>
+
+    <!-- Stat Cards -->
+    <div class="ps-stats">
+        <div class="ps-stat-card">
+            <div class="ps-stat-icon ps-icon-blue"><i class="fas fa-boxes"></i></div>
+            <span class="ps-stat-number" id="totalProducts">0</span>
+            <span class="ps-stat-label">{{ t('csv_total_products') }}</span>
+            <span class="ps-stat-sub">{{ t('csv_pcs') }}</span>
+        </div>
+        <div class="ps-stat-card">
+            <div class="ps-stat-icon ps-icon-green"><i class="fas fa-check-circle"></i></div>
+            <span class="ps-stat-number" id="checkedProducts">0</span>
+            <span class="ps-stat-label">{{ t('csv_checked') }}</span>
+            <span class="ps-stat-sub">{{ t('csv_pcs') }}</span>
+        </div>
+        <div class="ps-stat-card">
+            <div class="ps-stat-icon ps-icon-teal"><i class="fas fa-check-double"></i></div>
+            <span class="ps-stat-number" id="correctProducts">0</span>
+            <span class="ps-stat-label">{{ t('csv_correct') }}</span>
+            <span class="ps-stat-sub">{{ t('csv_no_errors') }}</span>
+        </div>
+        <div class="ps-stat-card">
+            <div class="ps-stat-icon ps-icon-gray"><i class="fas fa-question-circle"></i></div>
+            <span class="ps-stat-number" id="uncheckedProducts">0</span>
+            <span class="ps-stat-label">{{ t('csv_unchecked') }}</span>
+            <span class="ps-stat-sub">{{ t('csv_pcs') }}</span>
+        </div>
+        <div class="ps-stat-card">
+            <div class="ps-stat-icon ps-icon-red"><i class="fas fa-exclamation-triangle"></i></div>
+            <span class="ps-stat-number" id="errorProducts">0</span>
+            <span class="ps-stat-label">{{ t('csv_errors') }}</span>
+            <span class="ps-stat-sub">{{ t('csv_error_count') }}</span>
+        </div>
+        <div class="ps-stat-card">
+            <div class="ps-stat-icon ps-icon-amber"><i class="fas fa-bolt"></i></div>
+            <span class="ps-stat-number" id="accuracyPercent">0%</span>
+            <span class="ps-stat-label">{{ t('csv_accuracy') }}</span>
+            <span class="ps-stat-sub">{{ t('csv_percent') }}</span>
+        </div>
+    </div>
+
+    <!-- Filter Panel -->
+    <div class="ps-filter-panel">
+        <div class="ps-filter-row">
+            <div class="ps-search-box">
+                <i class="fas fa-search ps-search-icon"></i>
+                <input type="text" id="searchInput" placeholder="{{ t('csv_search') }}" class="ps-input ps-search-input">
+                <button id="clearSearchBtn" class="ps-clear-btn" style="display:none;"><i class="fas fa-times"></i></button>
             </div>
-            <div>
-                <a href="/check_stock" class="btn btn-light btn-lg">
-                    <i class="fas fa-arrow-left me-2"></i>{{ t('csv_back') }}
-                </a>
+            <div class="filter-tab-group">
+                <button onclick="filterProducts('all')" id="filterAll" class="filter-tab active-all">
+                    <i class="fas fa-th-list"></i> {{ t('csv_filter_all') }} <span id="allCount" class="tab-count">0</span>
+                </button>
+                <button onclick="filterProducts('checked')" id="filterChecked" class="filter-tab">
+                    <i class="fas fa-check"></i> {{ t('csv_filter_checked') }} <span id="checkedCount" class="tab-count">0</span>
+                </button>
+                <button onclick="filterProducts('unchecked')" id="filterUnchecked" class="filter-tab">
+                    <i class="fas fa-question"></i> {{ t('csv_filter_unchecked') }} <span id="uncheckedCount" class="tab-count">0</span>
+                </button>
+                <button onclick="filterProducts('error')" id="filterError" class="filter-tab">
+                    <i class="fas fa-exclamation"></i> {{ t('csv_filter_errors') }} <span id="errorCount" class="tab-count">0</span>
+                </button>
             </div>
         </div>
     </div>
 
-    <!-- Statistika -->
-    <div style="display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; justify-content: space-between;">
-        <div style="flex: 1; min-width: 150px;">
-            <div class="stats-card" style="background: #007bff; color: white;">
-                <div class="stats-icon">📦</div>
-                <div class="stats-value" id="totalProducts">0</div>
-                <div class="stats-label">{{ t('csv_total_products') }}</div>
-                <div class="stats-sublabel">{{ t('csv_pcs') }}</div>
-            </div>
-        </div>
-        <div style="flex: 1; min-width: 150px;">
-            <div class="stats-card" style="background: #28a745; color: white;">
-                <div class="stats-icon">✅</div>
-                <div class="stats-value" id="checkedProducts">0</div>
-                <div class="stats-label">{{ t('csv_checked') }}</div>
-                <div class="stats-sublabel">{{ t('csv_pcs') }}</div>
-            </div>
-        </div>
-        <div style="flex: 1; min-width: 150px;">
-            <div class="stats-card" style="background: #17a2b8; color: white;">
-                <div class="stats-icon">✔️</div>
-                <div class="stats-value" id="correctProducts">0</div>
-                <div class="stats-label">{{ t('csv_correct') }}</div>
-                <div class="stats-sublabel">{{ t('csv_no_errors') }}</div>
-            </div>
-        </div>
-        <div style="flex: 1; min-width: 150px;">
-            <div class="stats-card" style="background: #6c757d; color: white;">
-                <div class="stats-icon">❓</div>
-                <div class="stats-value" id="uncheckedProducts">0</div>
-                <div class="stats-label">{{ t('csv_unchecked') }}</div>
-                <div class="stats-sublabel">{{ t('csv_pcs') }}</div>
-            </div>
-        </div>
-        <div style="flex: 1; min-width: 150px;">
-            <div class="stats-card" style="background: #dc3545; color: white;">
-                <div class="stats-icon">⚠️</div>
-                <div class="stats-value" id="errorProducts">0</div>
-                <div class="stats-label">{{ t('csv_errors') }}</div>
-                <div class="stats-sublabel">{{ t('csv_error_count') }}</div>
-            </div>
-        </div>
-        <div style="flex: 1; min-width: 150px;">
-            <div class="stats-card" style="background: #ffc107; color: white;">
-                <div class="stats-icon">⚡</div>
-                <div class="stats-value" id="accuracyPercent">0%</div>
-                <div class="stats-label">{{ t('csv_accuracy') }}</div>
-                <div class="stats-sublabel">{{ t('csv_percent') }}</div>
-            </div>
-        </div>
+    <!-- Results Info -->
+    <div id="resultsInfo" class="ps-results-info" style="display:none;">
+        <span id="resultsText"></span>
     </div>
 
-    <!-- Mahsulotlar jadvali -->
-    <div class="view-box">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-            <h4 style="margin: 0; color: #333;"><i class="fas fa-list"></i> {{ t('csv_all_products') }}</h4>
-            <div style="color: #666;">
-                <span id="tableCount" style="font-weight: 600; font-size: 18px; color: #007bff;">0</span> {{ t('csv_product_count') }}
-            </div>
-        </div>
-
-        <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
-            <input type="text" 
-                   id="searchInput" 
-                   placeholder="🔍 {{ t('csv_search') }}" 
-                   style="flex: 1; min-width: 250px; padding: 10px 12px; border: 1px solid #ced4da; border-radius: 25px; font-size: 14px;">
-            
-            <button onclick="filterProducts('all')" id="filterAll" class="filter-btn" style="background: #007bff; color: white;">
-                📊 {{ t('csv_filter_all') }} <span id="allCount" class="badge-count">0</span>
-            </button>
-            <button onclick="filterProducts('checked')" id="filterChecked" class="filter-btn" style="background: #28a745; color: white;">
-                ✅ {{ t('csv_filter_checked') }} <span id="checkedCount" class="badge-count">0</span>
-            </button>
-            <button onclick="filterProducts('unchecked')" id="filterUnchecked" class="filter-btn" style="background: #6c757d; color: white;">
-                ❓ {{ t('csv_filter_unchecked') }} <span id="uncheckedCount" class="badge-count">0</span>
-            </button>
-            <button onclick="filterProducts('error')" id="filterError" class="filter-btn" style="background: #dc3545; color: white;">
-                ⚠️ {{ t('csv_filter_errors') }} <span id="errorCount" class="badge-count">0</span>
-            </button>
-        </div>
-
-        <div class="table-wrapper-view">
-            <table style="width: 100%; border-collapse: collapse;">
-                <thead style="position: sticky; top: 0; background: #f8f9fa; z-index: 10;">
+    <!-- Table Card -->
+    <div class="ps-table-card">
+        <div class="ps-table-wrap">
+            <table class="ps-table">
+                <thead>
                     <tr>
-                        <th style="padding: 12px; text-align: left; border-bottom: 2px solid #dee2e6; font-weight: 600;">{{ t('csv_th_num') }}</th>
-                        <th style="padding: 12px; text-align: left; border-bottom: 2px solid #dee2e6; font-weight: 600;">{{ t('csv_th_product') }}</th>
-                        <th style="padding: 12px; text-align: center; border-bottom: 2px solid #dee2e6; font-weight: 600;">{{ t('csv_th_price') }}</th>
-                        <th style="padding: 12px; text-align: center; border-bottom: 2px solid #dee2e6; font-weight: 600;">{{ t('csv_th_system') }}</th>
-                        <th style="padding: 12px; text-align: center; border-bottom: 2px solid #dee2e6; font-weight: 600;">{{ t('csv_th_actual') }}</th>
-                        <th style="padding: 12px; text-align: center; border-bottom: 2px solid #dee2e6; font-weight: 600;">{{ t('csv_th_diff') }}</th>
-                        <th style="padding: 12px; text-align: center; border-bottom: 2px solid #dee2e6; font-weight: 600;">{{ t('csv_th_status') }}</th>
+                        <th style="width:50px;">{{ t('csv_th_num') }}</th>
+                        <th class="col-name">{{ t('csv_th_product') }}</th>
+                        <th style="width:90px;">{{ t('csv_th_price') }}</th>
+                        <th style="width:90px;">{{ t('csv_th_system') }}</th>
+                        <th style="width:90px;">{{ t('csv_th_actual') }}</th>
+                        <th style="width:80px;">{{ t('csv_th_diff') }}</th>
+                        <th style="width:120px;">{{ t('csv_th_status') }}</th>
                     </tr>
                 </thead>
                 <tbody id="productsTableBody">
                     <tr>
-                        <td colspan="7" style="text-align: center; padding: 40px 20px; color: #999;">
-                            <div style="font-size: 48px; margin-bottom: 10px; opacity: 0.5;">📋</div>
+                        <td colspan="7" class="ps-no-data">
+                            <i class="fas fa-spinner fa-spin"></i>
                             <div>{{ t('csv_loading') }}</div>
                         </td>
                     </tr>
@@ -220,6 +296,7 @@
             </table>
         </div>
     </div>
+
 </div>
 
 <script>
@@ -236,53 +313,39 @@ const sessionId = {{ check_session.id }};
 const locationType = '{{ check_session.location_type }}';
 const locationId = {{ check_session.location_id }};
 
-// Session debugging - development mode
-console.log('🔍 Check Stock View Debug Info:');
-console.log('Session ID:', sessionId);
-console.log('Location Type:', locationType);
-console.log('Location ID:', locationId);
-
 let allProducts = [];
-let checkedProducts = [];
+let checkedProductsData = [];
 let currentFilter = 'all';
 
-// Sahifa yuklanganda
 document.addEventListener('DOMContentLoaded', async function() {
     await loadData();
-    
-    // Qidiruv input
-    document.getElementById('searchInput').addEventListener('input', function() {
+
+    const searchInput = document.getElementById('searchInput');
+    const clearBtn = document.getElementById('clearSearchBtn');
+    searchInput.addEventListener('input', function() {
+        clearBtn.style.display = this.value ? 'block' : 'none';
         filterAndDisplay();
     });
-    
-    // Boshlang'ich filtr
-    document.getElementById('filterAll').style.opacity = '1';
-    document.getElementById('filterChecked').style.opacity = '0.6';
-    document.getElementById('filterUnchecked').style.opacity = '0.6';
-    document.getElementById('filterError').style.opacity = '0.6';
+    clearBtn.addEventListener('click', function() {
+        searchInput.value = '';
+        this.style.display = 'none';
+        filterAndDisplay();
+    });
 });
 
-// Ma'lumotlarni yuklash
 async function loadData() {
     try {
-        // Tekshirilgan mahsulotlarni olish
-        const checkedResponse = await fetch(`/api/check_stock/session_items/${sessionId}`);
-        const checkedData = await checkedResponse.json();
-        
-        if (checkedData.success) {
-            checkedProducts = checkedData.items || [];
-        }
-        
-        // Barcha mahsulotlarni olish
-        const allResponse = await fetch(`/api/check_stock/all_location_products?location_type=${locationType}&location_id=${locationId}`);
-        const allData = await allResponse.json();
-        
+        const [checkedResp, allResp] = await Promise.all([
+            fetch(`/api/check_stock/session_items/${sessionId}`),
+            fetch(`/api/check_stock/all_location_products?location_type=${locationType}&location_id=${locationId}`)
+        ]);
+        const checkedData = await checkedResp.json();
+        const allData = await allResp.json();
+
+        if (checkedData.success) checkedProductsData = checkedData.items || [];
         if (allData.success) {
-            allProducts = allData.products || [];
-            
-            // Tekshirilgan mahsulotlarni allProducts bilan birlashtirish
-            allProducts = allProducts.map(product => {
-                const checked = checkedProducts.find(c => c.product_id === product.id);
+            allProducts = (allData.products || []).map(product => {
+                const checked = checkedProductsData.find(c => c.product_id === product.id);
                 return {
                     ...product,
                     actual_quantity: checked ? checked.actual_quantity : null,
@@ -291,152 +354,108 @@ async function loadData() {
                 };
             });
         }
-        
         calculateStatistics();
         filterAndDisplay();
     } catch (error) {
-        console.error('Ma\'lumotlarni yuklashda xatolik:', error);
+        console.error('Yuklashda xatolik:', error);
+        document.getElementById('productsTableBody').innerHTML =
+            '<tr><td colspan="7" class="ps-no-data"><i class="fas fa-exclamation-circle"></i><div>Xatolik yuz berdi</div></td></tr>';
     }
 }
 
-// Statistikani hisoblash
 function calculateStatistics() {
-    const totalProducts = allProducts.length;
-    const checkedCount = allProducts.filter(p => p.status !== 'unchecked').length;
-    const uncheckedCount = totalProducts - checkedCount;
-    const errorCount = allProducts.filter(p => p.difference !== 0 && p.difference !== null).length;
-    const correctCount = allProducts.filter(p => p.difference === 0 && p.status !== 'unchecked').length;
-    const accuracy = totalProducts > 0 ? Math.round(((checkedCount - errorCount) / totalProducts) * 100) : 0;
-    
-    document.getElementById('totalProducts').textContent = totalProducts;
-    document.getElementById('checkedProducts').textContent = checkedCount;
-    document.getElementById('correctProducts').textContent = correctCount;
-    document.getElementById('uncheckedProducts').textContent = uncheckedCount;
-    document.getElementById('errorProducts').textContent = errorCount;
+    const total = allProducts.length;
+    const checked = allProducts.filter(p => p.status !== 'unchecked').length;
+    const unchecked = total - checked;
+    const errors = allProducts.filter(p => p.difference !== 0 && p.difference !== null).length;
+    const correct = allProducts.filter(p => p.difference === 0 && p.status !== 'unchecked').length;
+    const accuracy = total > 0 ? Math.round(((checked - errors) / total) * 100) : 0;
+
+    document.getElementById('totalProducts').textContent = total;
+    document.getElementById('checkedProducts').textContent = checked;
+    document.getElementById('correctProducts').textContent = correct;
+    document.getElementById('uncheckedProducts').textContent = unchecked;
+    document.getElementById('errorProducts').textContent = errors;
     document.getElementById('accuracyPercent').textContent = accuracy + '%';
 }
 
-// Filtr
 function filterProducts(type) {
     currentFilter = type;
-    
-    // Reset opacity
-    document.getElementById('filterAll').style.opacity = '0.6';
-    document.getElementById('filterChecked').style.opacity = '0.6';
-    document.getElementById('filterUnchecked').style.opacity = '0.6';
-    document.getElementById('filterError').style.opacity = '0.6';
-    
-    // Set active
-    document.getElementById(`filter${type.charAt(0).toUpperCase() + type.slice(1)}`).style.opacity = '1';
-    
+    // Reset all tabs
+    ['filterAll','filterChecked','filterUnchecked','filterError'].forEach(id => {
+        const btn = document.getElementById(id);
+        btn.className = 'filter-tab';
+    });
+    const activeClasses = { all:'active-all', checked:'active-checked', unchecked:'active-unchecked', error:'active-error' };
+    document.getElementById('filter' + type.charAt(0).toUpperCase() + type.slice(1)).classList.add(activeClasses[type]);
     filterAndDisplay();
 }
 
-// Filtr va qidiruv
 function filterAndDisplay() {
-    const searchQuery = document.getElementById('searchInput').value.trim().toLowerCase();
-    
+    const q = document.getElementById('searchInput').value.trim().toLowerCase();
+    const words = q ? q.split(/\s+/) : [];
+
     let filtered = [...allProducts];
-    
-    // Filtr
-    if (currentFilter === 'checked') {
-        filtered = filtered.filter(p => p.status !== 'unchecked');
-    } else if (currentFilter === 'unchecked') {
-        filtered = filtered.filter(p => p.status === 'unchecked');
-    } else if (currentFilter === 'error') {
-        filtered = filtered.filter(p => p.difference !== 0 && p.difference !== null);
-    }
-    
-    // Qidiruv - qisman so'zlar bilan
-    if (searchQuery) {
-        // Qidiruv so'zlarini bo'sh joylarga ajratish
-        const searchWords = searchQuery.split(/\s+/).filter(word => word.length > 0);
-        
+    if (currentFilter === 'checked')   filtered = filtered.filter(p => p.status !== 'unchecked');
+    else if (currentFilter === 'unchecked') filtered = filtered.filter(p => p.status === 'unchecked');
+    else if (currentFilter === 'error') filtered = filtered.filter(p => p.difference !== 0 && p.difference !== null);
+
+    if (words.length) {
         filtered = filtered.filter(p => {
-            const productName = p.name.toLowerCase();
-            const productBarcode = (p.barcode || '').toLowerCase();
-            const searchText = productName + ' ' + productBarcode;
-            
-            // Har bir so'z mos kelishi kerak
-            return searchWords.every(word => searchText.includes(word));
+            const text = (p.name + ' ' + (p.barcode || '')).toLowerCase();
+            return words.every(w => text.includes(w));
         });
     }
-    
-    // Filter counts
-    const allCount = allProducts.length;
-    const checkedCount = allProducts.filter(p => p.status !== 'unchecked').length;
-    const uncheckedCount = allProducts.filter(p => p.status === 'unchecked').length;
-    const errorCount = allProducts.filter(p => p.difference !== 0 && p.difference !== null).length;
-    
-    document.getElementById('allCount').textContent = allCount;
-    document.getElementById('checkedCount').textContent = checkedCount;
-    document.getElementById('uncheckedCount').textContent = uncheckedCount;
-    document.getElementById('errorCount').textContent = errorCount;
-    document.getElementById('tableCount').textContent = filtered.length;
-    
+
+    // Update counts
+    document.getElementById('allCount').textContent = allProducts.length;
+    document.getElementById('checkedCount').textContent = allProducts.filter(p => p.status !== 'unchecked').length;
+    document.getElementById('uncheckedCount').textContent = allProducts.filter(p => p.status === 'unchecked').length;
+    document.getElementById('errorCount').textContent = allProducts.filter(p => p.difference !== 0 && p.difference !== null).length;
+
+    const resultsInfo = document.getElementById('resultsInfo');
+    const resultsText = document.getElementById('resultsText');
+    if (filtered.length < allProducts.length || q || currentFilter !== 'all') {
+        resultsText.innerHTML = `<span class="ps-count-badge">${filtered.length}</span> ta natija`;
+        resultsInfo.style.display = 'block';
+    } else {
+        resultsInfo.style.display = 'none';
+    }
+
     displayTable(filtered);
 }
 
-// Jadvalni ko'rsatish
 function displayTable(products) {
     const tbody = document.getElementById('productsTableBody');
-    
     if (products.length === 0) {
-        tbody.innerHTML = `
-            <tr>
-                <td colspan="7" style="text-align: center; padding: 40px 20px; color: #999;">
-                    <div style="font-size: 48px; margin-bottom: 10px; opacity: 0.5;">🔍</div>
-                    <div>${CSVLANG.not_found}</div>
-                </td>
-            </tr>
-        `;
+        tbody.innerHTML = '<tr><td colspan="7" class="ps-no-data"><i class="fas fa-search"></i><div>' + CSVLANG.not_found + '</div></td></tr>';
         return;
     }
-    
-    tbody.innerHTML = '';
-    
-    products.forEach((product, index) => {
-        const row = document.createElement('tr');
-        
-        // Rang
-        let diffColor = '#6c757d';
-        if (product.difference > 0) diffColor = '#28a745';
-        if (product.difference < 0) diffColor = '#dc3545';
-        
-        // Badge
-        let statusBadge = '<span style="background: #6c757d; color: white; padding: 3px 10px; border-radius: 12px; font-size: 11px;">' + CSVLANG.status_unchecked + '</span>';
-        if (product.status !== 'unchecked') {
-            if (product.difference > 0) {
-                statusBadge = '<span style="background: #28a745; color: white; padding: 3px 10px; border-radius: 12px; font-size: 11px;">' + CSVLANG.status_excess + '</span>';
-            } else if (product.difference < 0) {
-                statusBadge = '<span style="background: #dc3545; color: white; padding: 3px 10px; border-radius: 12px; font-size: 11px;">' + CSVLANG.status_deficit + '</span>';
-            } else {
-                statusBadge = '<span style="background: #17a2b8; color: white; padding: 3px 10px; border-radius: 12px; font-size: 11px;">' + CSVLANG.status_normal + '</span>';
-            }
+    tbody.innerHTML = products.map((p, i) => {
+        let diffHtml = '-';
+        if (p.difference !== null) {
+            const cls = p.difference > 0 ? 'diff-plus' : p.difference < 0 ? 'diff-minus' : 'diff-zero';
+            const sign = p.difference > 0 ? '+' : '';
+            diffHtml = `<span class="${cls}">${sign}${p.difference}</span>`;
         }
-        
-        row.innerHTML = `
-            <td style="padding: 10px 12px; border-bottom: 1px solid #f0f0f0;">${index + 1}</td>
-            <td style="padding: 10px 12px; border-bottom: 1px solid #f0f0f0;">${product.name}</td>
-            <td style="padding: 10px 12px; border-bottom: 1px solid #f0f0f0; text-align: center;">
-                ${product.price ? product.price.toLocaleString() + ' $' : '-'}
-            </td>
-            <td style="padding: 10px 12px; border-bottom: 1px solid #f0f0f0; text-align: center;">
-                ${product.system_quantity || 0}
-            </td>
-            <td style="padding: 10px 12px; border-bottom: 1px solid #f0f0f0; text-align: center;">
-                ${product.actual_quantity !== null ? product.actual_quantity : '-'}
-            </td>
-            <td style="padding: 10px 12px; border-bottom: 1px solid #f0f0f0; text-align: center; color: ${diffColor}; font-weight: 600;">
-                ${product.difference !== null ? (product.difference > 0 ? '+' : '') + product.difference : '-'}
-            </td>
-            <td style="padding: 10px 12px; border-bottom: 1px solid #f0f0f0; text-align: center;">
-                ${statusBadge}
-            </td>
-        `;
-        
-        tbody.appendChild(row);
-    });
+
+        let badge = `<span class="status-badge badge-unchecked"><i class="fas fa-question-circle"></i> ${CSVLANG.status_unchecked}</span>`;
+        if (p.status !== 'unchecked') {
+            if (p.difference > 0)       badge = `<span class="status-badge badge-excess"><i class="fas fa-plus-circle"></i> ${CSVLANG.status_excess}</span>`;
+            else if (p.difference < 0)  badge = `<span class="status-badge badge-deficit"><i class="fas fa-minus-circle"></i> ${CSVLANG.status_deficit}</span>`;
+            else                         badge = `<span class="status-badge badge-normal"><i class="fas fa-check-circle"></i> ${CSVLANG.status_normal}</span>`;
+        }
+
+        return `<tr>
+            <td>${i + 1}</td>
+            <td class="col-name">${p.name}</td>
+            <td>${p.price ? '$' + parseFloat(p.price).toFixed(2) : '-'}</td>
+            <td>${p.system_quantity ?? 0}</td>
+            <td>${p.actual_quantity !== null ? p.actual_quantity : '-'}</td>
+            <td>${diffHtml}</td>
+            <td>${badge}</td>
+        </tr>`;
+    }).join('');
 }
 </script>
 {% endblock %}
