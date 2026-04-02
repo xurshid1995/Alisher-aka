@@ -468,9 +468,9 @@
             document.getElementById('customerAddress').textContent = debtData.customer.address || '-';
             
             // Statistika
-            document.getElementById('totalDebt').textContent = `$${debtData.total_debt.toFixed(2)}`;
+            document.getElementById('totalDebt').textContent = formatUSD(debtData.total_debt);
             document.getElementById('salesCount').textContent = debtData.history ? debtData.history.length : 0;
-            document.getElementById('displayRemainingDebt').textContent = `$${debtData.remaining_debt.toFixed(2)}`;
+            document.getElementById('displayRemainingDebt').textContent = formatUSD(debtData.remaining_debt);
             
             // Qarzlar tarixi
             renderHistory();
@@ -525,7 +525,7 @@
             let itemsHtml = '';
             if (h.items && h.items.length > 0) {
                 itemsHtml = h.items.map(item => 
-                    `<div style="font-size: 13px; line-height: 1.4;">📦 ${item.product_name} <span style="color: #666;">(${item.quantity.toFixed(0)} × $${item.unit_price.toFixed(2)})</span></div>`
+                    `<div style="font-size: 13px; line-height: 1.4;">📦 ${item.product_name} <span style="color: #666;">(${item.quantity.toFixed(0)} × ${formatUSD(item.unit_price)})</span></div>`
                 ).join('');
             } else if (h.items_text) {
                 itemsHtml = `<span style="font-size: 13px;">${h.items_text}</span>`;
@@ -538,9 +538,9 @@
                     <td>${h.sale_date}</td>
                     <td><strong>#${h.sale_id}</strong></td>
                     <td style="max-width: 250px;">${itemsHtml}</td>
-                    <td><strong>$${(h.total_usd || h.debt_amount || 0).toFixed(2)}</strong></td>
-                    <td style="color: #28a745;">$${(h.paid_usd || h.paid_amount || 0).toFixed(2)}</td>
-                    <td><strong style="color: #dc3545;">$${(h.debt_usd || h.remaining || 0).toFixed(2)}</strong></td>
+                    <td><strong>${formatUSD(h.total_usd || h.debt_amount || 0)}</strong></td>
+                    <td style="color: #28a745;">${formatUSD(h.paid_usd || h.paid_amount || 0)}</td>
+                    <td><strong style="color: #dc3545;">${formatUSD(h.debt_usd || h.remaining || 0)}</strong></td>
                     <td>${dueDateHtml}</td>
                     <td>
                         <button onclick="viewSaleDetails(${h.sale_id})" style="background: #007bff; color: white; border: none; padding: 5px 12px; border-radius: 4px; cursor: pointer; font-size: 13px;">👁️ ${CDDLANG.view}</button>
@@ -597,7 +597,7 @@
         }
 
         if (totalPayment > debtData.remaining_debt) {
-            if (!confirm(`${CDDLANG.amount_exceeds} ($${debtData.remaining_debt.toFixed(2)}) ${CDDLANG.amount_exceeds2}`)) {
+            if (!confirm(`${CDDLANG.amount_exceeds} (${formatUSD(debtData.remaining_debt)}) ${CDDLANG.amount_exceeds2}`)) {
                 return;
             }
         }

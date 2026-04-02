@@ -861,14 +861,14 @@ function updateStatistics(data) {
     const exchangeRate = window.currentExchangeRate;
     
     // Formatlash va ko'rsatish (bo'sh joy bilan)
-    document.getElementById('totalSales').textContent = totalSales.toLocaleString();
-    document.getElementById('totalAmount').textContent = '$' + totalAmount.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    document.getElementById('totalSales').textContent = formatNum(totalSales);
+    document.getElementById('totalAmount').textContent = formatUSD(totalAmount);
     
 
     
     // UZS qiymatni faqat kurs mavjud bo'lsagina ko'rsatish
     if (exchangeRate) {
-        document.getElementById('totalAmountUZS').textContent = Math.round(totalAmount * exchangeRate).toLocaleString() + ' UZS';
+        document.getElementById('totalAmountUZS').textContent = formatUZS(totalAmount * exchangeRate);
     } else {
         document.getElementById('totalAmountUZS').textContent = DLANG.dl_rate_loading;
     }
@@ -878,24 +878,20 @@ function updateStatistics(data) {
         console.log('💰 To\'lov turlari yangilanmoqda:', data.payment_totals);
         const payments = [];
         if (data.payment_totals.cash > 0) {
-            const cashUSD = data.payment_totals.cash.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
             const cashUZS = Math.round(data.payment_totals.cash * exchangeRate);
-            payments.push(`<span style="display: inline-block; background: #f8f9fa; padding: 4px 10px; margin-right: 8px; border-radius: 4px; border-left: 3px solid #28a745; font-size: 14px;">💵 ${DLANG.cash}: <strong>$${cashUSD}</strong><br><span style="font-size: 11px; color: #666;">${cashUZS.toLocaleString()} UZS</span></span>`);
+            payments.push(`<span style="display: inline-block; background: #f8f9fa; padding: 4px 10px; margin-right: 8px; border-radius: 4px; border-left: 3px solid #28a745; font-size: 14px;">💵 ${DLANG.cash}: <strong>${formatUSD(data.payment_totals.cash)}</strong><br><span style="font-size: 11px; color: #666;">${formatUZS(cashUZS)}</span></span>`);
         }
         if (data.payment_totals.click > 0) {
-            const clickUSD = data.payment_totals.click.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
             const clickUZS = Math.round(data.payment_totals.click * exchangeRate);
-            payments.push(`<span style="display: inline-block; background: #f8f9fa; padding: 4px 10px; margin-right: 8px; border-radius: 4px; border-left: 3px solid #007bff; font-size: 14px;">📱 ${DLANG.click}: <strong>$${clickUSD}</strong><br><span style="font-size: 11px; color: #666;">${clickUZS.toLocaleString()} UZS</span></span>`);
+            payments.push(`<span style="display: inline-block; background: #f8f9fa; padding: 4px 10px; margin-right: 8px; border-radius: 4px; border-left: 3px solid #007bff; font-size: 14px;">📱 ${DLANG.click}: <strong>${formatUSD(data.payment_totals.click)}</strong><br><span style="font-size: 11px; color: #666;">${formatUZS(clickUZS)}</span></span>`);
         }
         if (data.payment_totals.terminal > 0) {
-            const termUSD = data.payment_totals.terminal.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
             const termUZS = Math.round(data.payment_totals.terminal * exchangeRate);
-            payments.push(`<span style="display: inline-block; background: #f8f9fa; padding: 4px 10px; margin-right: 8px; border-radius: 4px; border-left: 3px solid #17a2b8; font-size: 14px;">💳 ${DLANG.terminal}: <strong>$${termUSD}</strong><br><span style="font-size: 11px; color: #666;">${termUZS.toLocaleString()} UZS</span></span>`);
+            payments.push(`<span style="display: inline-block; background: #f8f9fa; padding: 4px 10px; margin-right: 8px; border-radius: 4px; border-left: 3px solid #17a2b8; font-size: 14px;">💳 ${DLANG.terminal}: <strong>${formatUSD(data.payment_totals.terminal)}</strong><br><span style="font-size: 11px; color: #666;">${formatUZS(termUZS)}</span></span>`);
         }
         if (data.payment_totals.debt > 0) {
-            const debtUSD = data.payment_totals.debt.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
             const debtUZS = Math.round(data.payment_totals.debt * exchangeRate);
-            payments.push(`<span style="display: inline-block; background: #f8f9fa; padding: 4px 10px; margin-right: 8px; border-radius: 4px; border-left: 3px solid #dc3545; font-size: 14px;">📝 ${DLANG.debt}: <strong>$${debtUSD}</strong><br><span style="font-size: 11px; color: #666;">${debtUZS.toLocaleString()} UZS</span></span>`);
+            payments.push(`<span style="display: inline-block; background: #f8f9fa; padding: 4px 10px; margin-right: 8px; border-radius: 4px; border-left: 3px solid #dc3545; font-size: 14px;">📝 ${DLANG.debt}: <strong>${formatUSD(data.payment_totals.debt)}</strong><br><span style="font-size: 11px; color: #666;">${formatUZS(debtUZS)}</span></span>`);
         }
         
         document.getElementById('paymentMethods').innerHTML = payments.length > 0 ? payments.join('') : '-';
@@ -907,9 +903,9 @@ function updateStatistics(data) {
     
     // Foyda faqat sotuvchi bo'lmasa yangilanadi
     if (userRole !== 'sotuvchi') {
-        document.getElementById('totalProfit').textContent = '$' + totalProfit.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        document.getElementById('totalProfit').textContent = formatUSD(totalProfit);
         if (exchangeRate) {
-            document.getElementById('totalProfitUZS').textContent = Math.round(totalProfit * exchangeRate).toLocaleString() + ' UZS';
+            document.getElementById('totalProfitUZS').textContent = formatUZS(totalProfit * exchangeRate);
         } else {
             document.getElementById('totalProfitUZS').textContent = DLANG.dl_rate_loading;
         }

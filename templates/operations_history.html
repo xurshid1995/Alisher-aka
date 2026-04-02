@@ -353,10 +353,10 @@
     }
 
     function updateStats(ops, total) {
-        document.getElementById('statTotalOps').textContent = total;
+        document.getElementById('statTotalOps').textContent = formatNum(total);
         const saleCount = ops.filter(o => o.operation_type === 'sale').length;
-        document.getElementById('statSaleOps').textContent  = saleCount;
-        document.getElementById('statOtherOps').textContent = total - saleCount;
+        document.getElementById('statSaleOps').textContent  = formatNum(saleCount);
+        document.getElementById('statOtherOps').textContent = formatNum(total - saleCount);
     }
 
     function updateResultsInfo(total) {

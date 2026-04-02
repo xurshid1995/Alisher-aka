@@ -708,8 +708,8 @@
                         <td class="customer-email">
                             <div style="display: flex; flex-direction: row; flex-wrap: nowrap; gap: 4px; align-items: center;">
                                 <span style="font-size: 0.82rem; background: #edf4ff; color: #1a6eff; border-radius: 6px; padding: 2px 7px; white-space: nowrap;"><i class="fas fa-shopping-cart"></i> ${CSLANG.count}: <strong>${customer.total_sales || 0}</strong></span>
-                                <span style="font-size: 0.82rem; background: #fff7ed; color: #d97706; border-radius: 6px; padding: 2px 7px; white-space: nowrap;"><i class="fas fa-dollar-sign"></i> ${CSLANG.amount}: <strong>$${customer.total_amount ? parseFloat(customer.total_amount).toFixed(2) : '0.00'}</strong></span>
-                                ${userRole !== 'sotuvchi' ? `<span style="font-size: 0.82rem; background: #f0fdf4; color: #059669; border-radius: 6px; padding: 2px 7px; white-space: nowrap;"><i class="fas fa-chart-bar"></i> ${CSLANG.profit}: <strong>$${customer.total_profit ? parseFloat(customer.total_profit).toFixed(2) : '0.00'}</strong></span>` : ''}
+                                <span style="font-size: 0.82rem; background: #fff7ed; color: #d97706; border-radius: 6px; padding: 2px 7px; white-space: nowrap;"><i class="fas fa-dollar-sign"></i> ${CSLANG.amount}: <strong>${formatUSD(customer.total_amount || 0)}</strong></span>
+                                ${userRole !== 'sotuvchi' ? `<span style="font-size: 0.82rem; background: #f0fdf4; color: #059669; border-radius: 6px; padding: 2px 7px; white-space: nowrap;"><i class="fas fa-chart-bar"></i> ${CSLANG.profit}: <strong>${formatUSD(customer.total_profit || 0)}</strong></span>` : ''}
                             </div>
                         </td>
                         <td>${customer.last_sale_date || '-'}</td>

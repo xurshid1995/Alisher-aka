@@ -805,12 +805,11 @@ function convertToUZS(usdAmount, saleRate = null) {
 
 // Narxni formatlash (USD va som) - savdo-tarixi uslubida
 function formatPrice(usdAmount, saleRate = null) {
-    const usdFormatted = parseFloat(usdAmount).toFixed(2);
     const uzsFormatted = convertToUZS(usdAmount, saleRate);
     if (uzsFormatted) {
-        return `$${usdFormatted}<br><small style="color: #007bff; font-size: 13px;">${parseInt(uzsFormatted).toLocaleString('uz-UZ')}</small>`;
+        return `${formatUSD(usdAmount)}<br><small style="color: #007bff; font-size: 13px;">${parseInt(uzsFormatted).toLocaleString('uz-UZ')}</small>`;
     }
-    return `$${usdFormatted}`;
+    return formatUSD(usdAmount);
 }
 
 function displayOrders(orders) {
@@ -1080,11 +1079,11 @@ function showSaleDetailsModal(sale) {
                                         <td>${item.location_name}</td>
                                         <td style="font-weight: ${isReturned ? '600' : 'normal'};">${item.quantity}</td>
                                         <td>
-                                            <div>$${unitPriceUSD.toFixed(2)}</div>
+                                            <div>${formatUSD(unitPriceUSD)}</div>
                                             <div style="font-size: 11px; color: ${isReturned ? '#c62828' : '#666'};">${unitPriceUZS.toLocaleString('uz-UZ')} so'm</div>
                                         </td>
                                         <td>
-                                            <div>$${totalPriceUSD.toFixed(2)}</div>
+                                            <div>${formatUSD(totalPriceUSD)}</div>
                                             <div style="font-size: 11px; color: ${isReturned ? '#c62828' : '#666'};">${totalPriceUZS.toLocaleString('uz-UZ')} so'm</div>
                                         </td>
                                     </tr>
@@ -1108,11 +1107,11 @@ function showSaleDetailsModal(sale) {
                                             <td>${item.location_name}</td>
                                             <td style="font-weight: 600;">-${item.returned_quantity}</td>
                                             <td>
-                                                <div>$${unitPriceUSD.toFixed(2)}</div>
+                                                <div>${formatUSD(unitPriceUSD)}</div>
                                                 <div style="font-size: 11px; color: #c62828;">${unitPriceUZS.toLocaleString('uz-UZ')} so'm</div>
                                             </td>
                                             <td>
-                                                <div>-$${totalPriceUSD.toFixed(2)}</div>
+                                                <div>-${formatUSD(totalPriceUSD)}</div>
                                                 <div style="font-size: 11px; color: #c62828;">-${totalPriceUZS.toLocaleString('uz-UZ')} so'm</div>
                                                 <div style="font-size: 11px; font-style: italic; margin-top: 4px;">
                                                     ${item.return_date ? new Date(item.return_date).toLocaleString('uz-UZ', {timeZone: 'Asia/Tashkent', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'}) : ''}
@@ -1188,10 +1187,10 @@ function formatPaymentDetailsForPrint(paymentDetails, currency = 'uzs', exchange
             if (terminalUSD > 0) formatted.push('Terminal: ' + Math.round(terminalUSD * exchangeRate).toLocaleString('uz-UZ') + ' som');
             if (debtUSD > 0) formatted.push('Qarz: ' + Math.round(debtUSD * exchangeRate).toLocaleString('uz-UZ') + ' som');
         } else {
-            if (cashUSD > 0) formatted.push('Naqd: $' + cashUSD.toFixed(2));
-            if (clickUSD > 0) formatted.push('Click: $' + clickUSD.toFixed(2));
-            if (terminalUSD > 0) formatted.push('Terminal: $' + terminalUSD.toFixed(2));
-            if (debtUSD > 0) formatted.push('Qarz: $' + debtUSD.toFixed(2));
+            if (cashUSD > 0) formatted.push('Naqd: ' + formatUSD(cashUSD));
+            if (clickUSD > 0) formatted.push('Click: ' + formatUSD(clickUSD));
+            if (terminalUSD > 0) formatted.push('Terminal: ' + formatUSD(terminalUSD));
+            if (debtUSD > 0) formatted.push('Qarz: ' + formatUSD(debtUSD));
         }
         
         return formatted.join('<br>');
@@ -1462,11 +1461,11 @@ function generatePrintableReceipt(sale, currency = 'uzs') {
                             
                             let priceDisplay;
                             if (currency === 'both') {
-                                priceDisplay = '$' + priceUSD.toFixed(2) + '<br><span class="uzs-value">' + priceUZS.toLocaleString('uz-UZ') + '</span>';
+                                priceDisplay = formatUSD(priceUSD) + '<br><span class="uzs-value">' + priceUZS.toLocaleString('uz-UZ') + '</span>';
                             } else if (currency === 'uzs') {
                                 priceDisplay = priceUZS.toLocaleString('uz-UZ');
                             } else {
-                                priceDisplay = '$' + priceUSD.toFixed(2);
+                                priceDisplay = formatUSD(priceUSD);
                             }
                             
                             return '<tr><td style="max-width: 25mm;">' + item.product_name + '</td><td>' + item.quantity + '</td><td>' + priceDisplay + '</td></tr>';
@@ -1539,15 +1538,15 @@ function updateStats(orders) {
     const totalOrders = orders.length;
     const totalAmount = orders.reduce((sum, order) => sum + parseFloat(order.total_amount || 0), 0);
     
-    document.getElementById('totalOrders').textContent = totalOrders;
-    document.getElementById('totalAmount').textContent = totalAmount > 0 ? '$' + totalAmount.toLocaleString('uz-UZ') : '$0';
+    document.getElementById('totalOrders').textContent = formatNum(totalOrders);
+    document.getElementById('totalAmount').textContent = totalAmount > 0 ? formatUSD(totalAmount) : '$0.00';
     
     // Foyda faqat admin va manager uchun
     if (userRole === 'admin' || userRole === 'manager') {
         const totalProfit = orders.reduce((sum, order) => sum + parseFloat(order.total_profit || 0), 0);
         const profitElement = document.getElementById('totalProfit');
         if (profitElement) {
-            profitElement.textContent = totalProfit > 0 ? '$' + totalProfit.toLocaleString('uz-UZ') : '$0';
+            profitElement.textContent = totalProfit > 0 ? formatUSD(totalProfit) : '$0.00';
         }
     }
 }

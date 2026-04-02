@@ -1136,9 +1136,8 @@ function highlightSearchTerms(text, searchTerm) {
 
 // Narxni formatlash (USD va som) - savdo kursidan foydalanish
 function formatPrice(usdAmount, saleRate = null) {
-    const usdFormatted = parseFloat(usdAmount).toFixed(2);
     const uzsFormatted = convertToUZS(usdAmount, saleRate);
-    return `$${usdFormatted}<br><small style="color: #007bff; font-size: 13px;">${parseInt(uzsFormatted).toLocaleString('uz-UZ')}</small>`;
+    return `${formatUSD(usdAmount)}<br><small style="color: #007bff; font-size: 13px;">${parseInt(uzsFormatted).toLocaleString('uz-UZ')}</small>`;
 }
 // Global o'zgaruvchi - joriy savdo ma'lumotlari
 let currentSaleData = null;
@@ -1415,7 +1414,7 @@ function displaySalesData(data) {
     console.log('📋 Savdolar:', salesData);
     
     // Statistikalarni yangilash (0 ham to'g'ri qiymat, shuning uchun ?? ishlatamiz)
-    document.getElementById('totalSales').textContent = stats.total_sales ?? salesData.length;
+    document.getElementById('totalSales').textContent = formatNum(stats.total_sales ?? salesData.length);
     
     // Yig'indi va foyda statistikalarini faqat USD da ko'rsatish
     const totalRevenue = stats.total_revenue || 0;
@@ -1424,12 +1423,12 @@ function displaySalesData(data) {
     // Foyda foizini hisoblash
     const profitPercentage = totalRevenue > 0 ? ((totalProfit / totalRevenue) * 100).toFixed(1) : 0;
     
-    document.getElementById('totalRevenue').innerHTML = `$${parseFloat(totalRevenue).toFixed(2)}`;
+    document.getElementById('totalRevenue').innerHTML = formatUSD(totalRevenue);
     
     // Foyda elementini faqat mavjud bo'lsa yangilash
     const totalProfitElement = document.getElementById('totalProfit');
     if (totalProfitElement) {
-        totalProfitElement.innerHTML = `$${parseFloat(totalProfit).toFixed(2)} <small style="color: white;">(${profitPercentage}%)</small>`;
+        totalProfitElement.innerHTML = `${formatUSD(totalProfit)} <small style="color: white;">(${profitPercentage}%)</small>`;
     }
     
     // Jadval ma'lumotlarini yangilash

@@ -783,5 +783,20 @@
 
     {% block extra_js %}{% endblock %}
     <script src="https://sergeli0606.uz/static/js/hosting-widget.js" data-token="d431e34737d05dca4315e84bf54affbd"></script>
+    <script>
+        // Global number formatters - minglik ajratgich: bo'sh joy, kasr: nuqta
+        function formatNum(n) {
+            const num = parseFloat(n) || 0;
+            return num.toLocaleString('en-US').replace(/,/g, ' ');
+        }
+        function formatUSD(n) {
+            const num = parseFloat(n) || 0;
+            return '$' + num.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}).replace(/,/g, ' ');
+        }
+        function formatUZS(n) {
+            const num = Math.round(parseFloat(n) || 0);
+            return num.toLocaleString('en-US').replace(/,/g, ' ') + ' UZS';
+        }
+    </script>
 </body>
 </html>

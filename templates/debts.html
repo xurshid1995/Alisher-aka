@@ -884,9 +884,9 @@
         const html = paidDebts.map((debt, index) => {
             // To'lov turlarini aniqlash
             const payments = [];
-            if (debt.cash_usd > 0) payments.push(`💵 ${DBLANG.cash}: $${debt.cash_usd.toFixed(2)}`);
-            if (debt.click_usd > 0) payments.push(`📱 ${DBLANG.click_payment}: $${debt.click_usd.toFixed(2)}`);
-            if (debt.terminal_usd > 0) payments.push(`🏧 ${DBLANG.terminal}: $${debt.terminal_usd.toFixed(2)}`);
+            if (debt.cash_usd > 0) payments.push(`💵 ${DBLANG.cash}: ${formatUSD(debt.cash_usd)}`);
+            if (debt.click_usd > 0) payments.push(`📱 ${DBLANG.click_payment}: ${formatUSD(debt.click_usd)}`);
+            if (debt.terminal_usd > 0) payments.push(`🏧 ${DBLANG.terminal}: ${formatUSD(debt.terminal_usd)}`);
             
             const paymentText = payments.length > 0 ? payments.join(', ') : '-';
             
@@ -896,7 +896,7 @@
                     <td>${debt.sale_date}</td>
                     <td>${debt.customer_name}</td>
                     <td><strong>#${debt.sale_id}</strong></td>
-                    <td><strong style="color: #28a745">$${debt.total_amount.toFixed(2)}</strong></td>
+                    <td><strong style="color: #28a745">${formatUSD(debt.total_amount)}</strong></td>
                     <td style="font-size: 13px;">${paymentText}</td>
                 </tr>
             `;
@@ -910,8 +910,8 @@
         const totalDebt = debts.reduce((sum, d) => sum + (d.remaining_debt || 0), 0);
         const debtCustomers = debts.filter(d => (d.remaining_debt || 0) > 0).length;
 
-        document.getElementById('debtCustomers').textContent = debtCustomers;
-        document.getElementById('totalDebt').textContent = `$${totalDebt.toFixed(2)}`;
+        document.getElementById('debtCustomers').textContent = formatNum(debtCustomers);
+        document.getElementById('totalDebt').textContent = formatUSD(totalDebt);
     }
 
     // Qarz muddati ustuni uchun yordamchi funksiya

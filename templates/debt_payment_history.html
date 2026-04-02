@@ -202,11 +202,11 @@
                     <td>${index + 1}</td>
                     <td>${payment.sale_date}</td>
                     <td><strong>${payment.customer_name}</strong></td>
-                    <td class="amount">$${totalUsd.toFixed(2)}</td>
+                    <td class="amount">${formatUSD(totalUsd)}</td>
                     <td class="amount">${totalUzs.toLocaleString('uz-UZ')} so'm</td>
-                    <td>${cashUsd > 0 ? `<span class="payment-type payment-cash">$${cashUsd.toFixed(2)}</span>` : '-'}</td>
-                    <td>${clickUsd > 0 ? `<span class="payment-type payment-click">$${clickUsd.toFixed(2)}</span>` : '-'}</td>
-                    <td>${terminalUsd > 0 ? `<span class="payment-type payment-terminal">$${terminalUsd.toFixed(2)}</span>` : '-'}</td>
+                    <td>${cashUsd > 0 ? `<span class="payment-type payment-cash">${formatUSD(cashUsd)}</span>` : '-'}</td>
+                    <td>${clickUsd > 0 ? `<span class="payment-type payment-click">${formatUSD(clickUsd)}</span>` : '-'}</td>
+                    <td>${terminalUsd > 0 ? `<span class="payment-type payment-terminal">${formatUSD(terminalUsd)}</span>` : '-'}</td>
                 </tr>
             `;
         }).join('');
