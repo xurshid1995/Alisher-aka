@@ -1882,8 +1882,15 @@
             const product = result.data || result;
             console.log('✅ Mahsulot topildi:', product);
             
-            // Mahsulotni darhol savatga qo'shish
-            addToCart(product.id, product.name, product.available_quantity, product.sell_price, product.cost_price);
+            // Mahsulotni darhol savatga qo'shish (raqamlarga o'tkazish)
+            addToCart(
+                product.id,
+                product.name,
+                parseFloat(product.available_quantity) || 0,
+                parseFloat(product.sell_price) || 0,
+                parseFloat(product.cost_price) || 0,
+                product.unit_type || 'dona'
+            );
             
             // Statusni ko'rsatish
             showBarcodeStatus(`✓ ${product.name} savatga qo'shildi!`, 'success');
@@ -1898,7 +1905,7 @@
             
         } catch (error) {
             console.error('❌ Barcode qidiruv xatosi:', error);
-            showBarcodeStatus('❌ Server xatosi', 'error');
+            showBarcodeStatus('❌ Xato: ' + (error.message || 'Noma\'lum xato'), 'error');
             const universalSearch = getActiveTabElement('universalSearch');
             if (universalSearch) universalSearch.value = '';
         }
