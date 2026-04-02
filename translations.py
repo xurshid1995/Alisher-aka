@@ -1472,7 +1472,7 @@ TRANSLATIONS = {
         # ==================== WAREHOUSES PAGE ====================
         'heading_warehouses': '🏭 Omborlar boshqaruvi',
         'breadcrumb_warehouses': 'Ombor boshqaruvi / Omborlar',
-        'btn_add_warehouse': '➕ Yangi ombor qo\'shish',
+        'btn_add_warehouse': 'Ombor qo\'shish',
         'empty_warehouses': 'Omborlar topilmadi',
         'empty_warehouses_msg': 'Hali omborlar qo\'shilmagan. Birinchi omborni qo\'shing!',
         'btn_add_first_warehouse': '➕ Birinchi omborni qo\'shish',
@@ -3502,7 +3502,7 @@ TRANSLATIONS = {
         # ==================== WAREHOUSES PAGE ====================
         'heading_warehouses': '🏭 Омборлар бошқаруви',
         'breadcrumb_warehouses': 'Омбор бошқаруви / Омборлар',
-        'btn_add_warehouse': '➕ Янги омбор қўшиш',
+        'btn_add_warehouse': 'Омбор қўшиш',
         'empty_warehouses': 'Омборлар топилмади',
         'empty_warehouses_msg': 'Ҳали омборлар қўшилмаган. Биринчи омборни қўшинг!',
         'btn_add_first_warehouse': '➕ Биринчи омборни қўшиш',
@@ -5532,7 +5532,7 @@ TRANSLATIONS = {
         # ==================== WAREHOUSES PAGE ====================
         'heading_warehouses': '🏭 Управление складами',
         'breadcrumb_warehouses': 'Управление складами / Склады',
-        'btn_add_warehouse': '➕ Добавить новый склад',
+        'btn_add_warehouse': 'Добавить склад',
         'empty_warehouses': 'Склады не найдены',
         'empty_warehouses_msg': 'Склады ещё не добавлены. Добавьте первый склад!',
         'btn_add_first_warehouse': '➕ Добавить первый склад',
