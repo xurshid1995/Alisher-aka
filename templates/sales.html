@@ -1873,8 +1873,8 @@
             if (!response.ok || !result.success) {
                 const errorMsg = result.error || 'Mahsulot topilmadi';
                 showBarcodeStatus(`❌ ${errorMsg}`, 'error');
-                // Barcode inputni tozalash
-                document.getElementById('barcodeInput').value = '';
+                const universalSearch = getActiveTabElement('universalSearch');
+                if (universalSearch) universalSearch.value = '';
                 return;
             }
             
