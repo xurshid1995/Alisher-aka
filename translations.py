@@ -1448,7 +1448,7 @@ TRANSLATIONS = {
         # ==================== STORES PAGE ====================
         'heading_stores': '🏬 Do\'konlar boshqaruvi',
         'breadcrumb_stores': 'Dokon boshqaruvi / Do\'konlar',
-        'btn_add_store': '➕ Yangi do\'kon qo\'shish',
+        'btn_add_store': 'Do\'kon qo\'shish',
         'empty_stores': 'Do\'konlar topilmadi',
         'empty_stores_msg': 'Hali do\'konlar qo\'shilmagan. Birinchi do\'konni qo\'shing!',
         'btn_add_first_store': '➕ Birinchi do\'konni qo\'shish',
@@ -3478,7 +3478,7 @@ TRANSLATIONS = {
         # ==================== STORES PAGE ====================
         'heading_stores': '🏬 Дўконлар бошқаруви',
         'breadcrumb_stores': 'Дўкон бошқаруви / Дўконлар',
-        'btn_add_store': '➕ Янги дўкон қўшиш',
+        'btn_add_store': 'Дўкон қўшиш',
         'empty_stores': 'Дўконлар топилмади',
         'empty_stores_msg': 'Ҳали дўконлар қўшилмаган. Биринчи дўконни қўшинг!',
         'btn_add_first_store': '➕ Биринчи дўконни қўшиш',
@@ -5508,7 +5508,7 @@ TRANSLATIONS = {
         # ==================== STORES PAGE ====================
         'heading_stores': '🏬 Управление магазинами',
         'breadcrumb_stores': 'Управление магазинами / Магазины',
-        'btn_add_store': '➕ Добавить новый магазин',
+        'btn_add_store': 'Добавить магазин',
         'empty_stores': 'Магазины не найдены',
         'empty_stores_msg': 'Магазины ещё не добавлены. Добавьте первый магазин!',
         'btn_add_first_store': '➕ Добавить первый магазин',
