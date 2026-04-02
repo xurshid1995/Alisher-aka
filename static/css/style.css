@@ -538,7 +538,7 @@ body {
 
 /* Tugmalar */
 .btn {
-    background: linear-gradient(135deg, #6366f1, #4f46e5);
+    background: linear-gradient(135deg, #1a6eff, #1557cc);
     color: white;
     padding: 0.8rem 2rem;
     border: none;
@@ -553,9 +553,9 @@ body {
 }
 
 .btn:hover {
-    background: linear-gradient(135deg, #4f46e5, #4338ca);
+    background: linear-gradient(135deg, #1557cc, #1043aa);
     transform: translateY(-2px);
-    box-shadow: 0 4px 14px rgba(99, 102, 241, 0.3);
+    box-shadow: 0 4px 14px rgba(26, 110, 255, 0.3);
 }
 
 .btn-success {
@@ -898,14 +898,14 @@ input[name="price"] {
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, #6366f1, #4f46e5);
+    background: linear-gradient(135deg, #1a6eff, #1557cc);
     color: white;
     border-radius: 8px;
 }
 
 .btn-primary:hover {
-    background: linear-gradient(135deg, #4f46e5, #4338ca);
-    box-shadow: 0 4px 12px rgba(99,102,241,0.28);
+    background: linear-gradient(135deg, #1557cc, #1043aa);
+    box-shadow: 0 4px 12px rgba(26,110,255,0.28);
 }
 
 .btn-success {
@@ -1163,16 +1163,16 @@ footer {
 }
 
 .submit-btn {
-    background: linear-gradient(135deg, #6366f1, #4f46e5);
+    background: linear-gradient(135deg, #1a6eff, #1557cc);
     color: white;
     flex: 2;
     border-radius: 8px;
 }
 
 .submit-btn:hover {
-    background: linear-gradient(135deg, #4f46e5, #4338ca);
+    background: linear-gradient(135deg, #1557cc, #1043aa);
     transform: translateY(-2px);
-    box-shadow: 0 4px 14px rgba(99,102,241,0.28);
+    box-shadow: 0 4px 14px rgba(26,110,255,0.28);
 }
 
 .btn-cancel {
