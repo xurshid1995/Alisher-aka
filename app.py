@@ -1769,15 +1769,21 @@ def api_products():
         db.joinedload(Product.store_stocks)
     )
 
-    # Search filter - qisman so'zlar bilan qidirish
+    # Search filter - qisman so'zlar bilan qidirish (nom va barcode bo'yicha)
     if search:
+        from sqlalchemy import or_
         # Qidiruv so'zlarini bo'laklarga ajratish
         search_words = search.lower().split()
 
-        # Har bir so'z uchun filter qo'shish (barcha so'zlar mahsulot nomida bo'lishi kerak)
+        # Har bir so'z uchun filter qo'shish (nom YOKI barcode bo'yicha)
         for word in search_words:
             if word:  # Bo'sh so'zlarni o'tkazib yuborish
-                query = query.filter(Product.name.ilike(f'%{word}%'))
+                query = query.filter(
+                    or_(
+                        Product.name.ilike(f'%{word}%'),
+                        Product.barcode.ilike(f'%{word}%')
+                    )
+                )
 
     # Location filter - yangi format (location_type va location_id)
     if location_type and location_id:
