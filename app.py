@@ -3143,9 +3143,11 @@ def search_product(product_name):
     try:
         logger.debug(f"🔍 Qidiruv so'rovi: '{product_name}'")
 
-        # Optimized query - eager loading va limit
+        # Optimized query - qisman so'zlar bilan qidiruv (har bir so'z alohida)
+        words = product_name.split()
+        filters = [Product.name.ilike(f'%{w}%') for w in words]
         products = Product.query.filter(
-            Product.name.ilike(f'%{product_name}%')
+            db.and_(*filters)
         ).options(
             db.joinedload(Product.warehouse_stocks).joinedload(WarehouseStock.warehouse),
             db.joinedload(Product.store_stocks).joinedload(StoreStock.store)
