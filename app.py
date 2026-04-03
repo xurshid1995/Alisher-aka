@@ -13596,7 +13596,11 @@ def get_settings():
             'stock_check_visible': True,  # Sotuvchi uchun qoldiq tekshirish sahifasi ko'rinadimi
             'auto_currency_update': False,
             'auto_backup': False,
-            'default_reminder_time': '10:00'  # Qarz eslatma default vaqti
+            'default_reminder_time': '10:00',  # Qarz eslatma default vaqti
+            'telegram_group_name': 'DiamondCarAccesories',
+            'telegram_group_link': 'https://t.me/DiamondCarAccesories',
+            'telegram_bot_name': '@Sergeli143_bot',
+            'telegram_bot_link': 'https://t.me/Sergeli143_bot',
         }
 
         # Bazadan sozlamalarni olish
