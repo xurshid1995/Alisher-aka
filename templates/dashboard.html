@@ -22,6 +22,12 @@
                         <button class="db-tf-btn db-tf-btn-wide active" data-period="today" onclick="selectTimePeriod(this, 'today')">📅 {{ t('today') }}</button>
                         <button class="db-tf-btn" data-period="week" onclick="selectTimePeriod(this, 'week')">📊 {{ t('this_week') }}</button>
                         <button class="db-tf-btn" data-period="month" onclick="selectTimePeriod(this, 'month')">📈 {{ t('this_month') }}</button>
+                        <span class="db-tf-sep">|</span>
+                        <div class="db-daterange">
+                            <input type="date" id="customDateFrom" class="db-date-input" title="{{ t('date_from') }}" onchange="applyCustomRange()">
+                            <span class="db-date-sep">—</span>
+                            <input type="date" id="customDateTo" class="db-date-input" title="{{ t('date_to') }}" onchange="applyCustomRange()">
+                        </div>
                     </div>
                 </div>
                 <div class="db-location-row">
@@ -153,6 +159,43 @@
     border-color: #1a6eff;
     color: #ffffff;
     font-weight: 600;
+}
+.db-tf-sep {
+    color: #cbd5e1;
+    font-size: 16px;
+    align-self: center;
+    padding: 0 2px;
+    user-select: none;
+}
+.db-daterange {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.db-date-input {
+    border: 1.5px solid #e2e8f0;
+    border-radius: 20px;
+    padding: 4px 10px;
+    font-size: 12px;
+    color: #475569;
+    background: transparent;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.2s;
+    width: 130px;
+    font-family: inherit;
+}
+.db-date-input:focus { border-color: #1a6eff; }
+.db-date-input.active {
+    border-color: #1a6eff;
+    background: #eff4ff;
+    color: #1a6eff;
+    font-weight: 600;
+}
+.db-date-sep {
+    color: #94a3b8;
+    font-size: 14px;
+    user-select: none;
 }
 
 /* Location buttons */
@@ -395,6 +438,8 @@
     .db-page-title-text { font-size: 20px; }
     .db-card-head { gap: 8px; }
     .db-tf-btn { padding: 4px 10px; font-size: 11px; }
+    .db-date-input { width: 110px; font-size: 11px; padding: 3px 8px; }
+    .db-tf-sep { display: none; }
     .db-loc-btn { padding: 3px 10px; font-size: 11px; }
     .db-mini-val { font-size: 16px; }
     .db-stats-col-val { font-size: 15px; }
@@ -428,6 +473,7 @@ const DLANG = {
 let salesChart;
 let currentSalesData = null;
 const userRole = '{{ session.role }}';
+let currentPeriod = 'today';
 
 document.addEventListener('DOMContentLoaded', function() {
     // Avval valyuta kursini yuklash, keyin savdo ma'lumotlarini
@@ -512,7 +558,7 @@ function selectLocation(clickedButton, locationId, locationType = null) {
     console.log('✅ Tugma aktiv qilindi');
     
     // Aktiv vaqt filtrini ham yuboramiz
-    const activePeriod = document.querySelector('.db-tf-btn.active')?.getAttribute('data-period') || 'today';
+    const activePeriod = document.querySelector('.db-tf-btn.active')?.getAttribute('data-period') || currentPeriod || 'today';
     console.log('📅 Aktiv vaqt:', activePeriod);
     
     console.log('📊 loadSalesChart chaqirilmoqda...');
@@ -523,16 +569,40 @@ function selectTimePeriod(clickedButton, period) {
     document.querySelectorAll('.db-tf-btn').forEach(btn => {
         btn.classList.remove('active');
     });
-    
     clickedButton.classList.add('active');
-    
-    console.log('Tanlangan vaqt:', period);
-    
-    // Aktiv joylashuvni va turini topamiz
+    currentPeriod = period;
+
+    // Custom date inputlarni tozalash
+    const df = document.getElementById('customDateFrom');
+    const dt = document.getElementById('customDateTo');
+    if (df) { df.value = ''; df.classList.remove('active'); }
+    if (dt) { dt.value = ''; dt.classList.remove('active'); }
+
     const activeLocationBtn = document.querySelector('.db-loc-btn.active');
     const activeLocation = activeLocationBtn?.getAttribute('data-location') || '';
     const activeLocationType = activeLocationBtn?.getAttribute('data-location-type') || null;
     loadSalesChart(activeLocation, period, activeLocationType);
+}
+
+function applyCustomRange() {
+    const dateFrom = document.getElementById('customDateFrom')?.value || '';
+    const dateTo = document.getElementById('customDateTo')?.value || '';
+    if (!dateFrom && !dateTo) return;
+
+    // Period tugmalarini deaktiv qilish
+    document.querySelectorAll('.db-tf-btn').forEach(btn => btn.classList.remove('active'));
+    currentPeriod = 'custom';
+
+    // Inputlarga active ko'rinish
+    const df = document.getElementById('customDateFrom');
+    const dt = document.getElementById('customDateTo');
+    if (df) df.classList.toggle('active', !!dateFrom);
+    if (dt) dt.classList.toggle('active', !!dateTo);
+
+    const activeLocationBtn = document.querySelector('.db-loc-btn.active');
+    const activeLocation = activeLocationBtn?.getAttribute('data-location') || '';
+    const activeLocationType = activeLocationBtn?.getAttribute('data-location-type') || null;
+    loadSalesChart(activeLocation, 'custom', activeLocationType);
 }
 
 async function loadSalesChart(locationId = null, period = null, locationType = null) {
@@ -554,9 +624,17 @@ async function loadSalesChart(locationId = null, period = null, locationType = n
         // Agar period berilmasa, aktiv period tugmasidan olamiz
         if (!period) {
             const activePeriodBtn = document.querySelector('.db-tf-btn.active');
-            period = activePeriodBtn ? activePeriodBtn.getAttribute('data-period') : 'today';
+            period = activePeriodBtn ? activePeriodBtn.getAttribute('data-period') : (currentPeriod || 'today');
         }
-        params.append('period', period);
+
+        // Custom date range
+        const customDateFrom = document.getElementById('customDateFrom')?.value || '';
+        const customDateTo = document.getElementById('customDateTo')?.value || '';
+
+        // Custom range bo'lsa kunlik guruhlash (period='month' mantigi ishlatiladi)
+        params.append('period', period === 'custom' ? 'month' : period);
+        if (customDateFrom) params.append('date_from', customDateFrom);
+        if (customDateTo) params.append('date_to', customDateTo);
         
         const response = await fetch(`/api/sales-chart?${params}`);
         const data = await response.json();
