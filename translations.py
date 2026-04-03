@@ -1542,8 +1542,8 @@ TRANSLATIONS = {
         'total_profit_label': '📊 Jami foyda',
 
         # ==================== DEBTS PAGE EXTRA ====================
-        'send_telegram_all': 'Barchaga Telegram yuborish',
-        'debt_payment_history_link': 'Mijozlarni qarz to\'lash tarixi',
+        'send_telegram_all': 'Barchaga xabar yuborish',
+        'debt_payment_history_link': 'Qarz to\'lash tarixi',
         'total_debt_label': 'Umumiy qarz',
         'search_debt_placeholder': 'Mijoz nomi yoki telefon raqamini kiriting...',
         'header_customer': 'Mijoz',
@@ -3526,8 +3526,8 @@ TRANSLATIONS = {
         'total_profit_label': '📊 Жами фойда',
 
         # ==================== DEBTS PAGE EXTRA ====================
-        'send_telegram_all': 'Барчага Телеграм юбориш',
-        'debt_payment_history_link': 'Мижозларни қарз тўлаш тарихи',
+        'send_telegram_all': 'Барчага хабар юбориш',
+        'debt_payment_history_link': 'Қарз тўлаш тарихи',
         'total_debt_label': 'Умумий қарз',
         'search_debt_placeholder': 'Мижоз номи ёки телефон рақамини киритинг...',
         'header_customer': 'Мижоз',
@@ -5510,8 +5510,8 @@ TRANSLATIONS = {
         'total_profit_label': '📊 Общая прибыль',
 
         # ==================== DEBTS PAGE EXTRA ====================
-        'send_telegram_all': 'Отправить Telegram всем',
-        'debt_payment_history_link': 'История оплаты долгов клиентов',
+        'send_telegram_all': 'Отправить сообщение всем',
+        'debt_payment_history_link': 'История оплаты долгов',
         'total_debt_label': 'Общий долг',
         'search_debt_placeholder': 'Введите имя клиента или номер телефона...',
         'header_customer': 'Клиент',
