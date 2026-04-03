@@ -1,172 +1,319 @@
-{% extends "base.html" %}
+{% extends "base_with_sidebar.html" %}
 
-{% block title %}{{ t('settings') }} - DOKON{% endblock %}
+{% block title %}{{ t('settings') }}{% endblock %}
 
 {% block extra_css %}
 <style>
-        .settings-container {
-            max-width: 800px;
-            margin: 20px auto;
-            padding: 20px;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        
-        .setting-group {
-            margin-bottom: 30px;
-            padding: 20px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-        }
-        
-        .setting-title {
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 10px;
-            color: #333;
-        }
-        
-        .setting-description {
-            color: #666;
-            margin-bottom: 15px;
-        }
-        
-        .toggle-container {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .toggle-switch {
-            position: relative;
-            width: 60px;
-            height: 30px;
-            background: #ccc;
-            border-radius: 15px;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-        
-        .toggle-switch.active {
-            background: #007bff;
-        }
-        
-        .toggle-slider {
-            position: absolute;
-            top: 3px;
-            left: 3px;
-            width: 24px;
-            height: 24px;
-            background: white;
-            border-radius: 50%;
-            transition: transform 0.3s;
-        }
-        
-        .toggle-switch.active .toggle-slider {
-            transform: translateX(30px);
-        }
-        
-        .toggle-label {
-            font-weight: 500;
-        }
-        
-        .save-button {
-            background: #28a745;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-            margin-top: 20px;
-        }
-        
-        .save-button:hover {
-            background: #218838;
-        }
-        
-        .role-restriction {
-            background: #fff3cd;
-            border: 1px solid #ffeaa7;
-            padding: 10px;
-            border-radius: 4px;
-            color: #856404;
-            margin-top: 10px;
+    .ps-page {
+        padding: 24px;
+        max-width: 1400px;
+        margin: 0 auto;
     }
+
+    /* ===== HEADER ===== */
+    .ps-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+    .ps-header-left { display: flex; align-items: center; gap: 12px; }
+    .ps-title {
+        font-size: 22px;
+        font-weight: 700;
+        color: #1e293b;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .ps-title i { color: #1a6eff; }
+
+    /* ===== BUTTONS ===== */
+    .btn-primary {
+        background: #1a6eff;
+        color: #fff;
+        border: none;
+        border-radius: 10px;
+        padding: 10px 22px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        transition: background 0.18s;
+        text-decoration: none;
+    }
+    .btn-primary:hover { background: #1557d6; }
+    .btn-secondary {
+        background: #f1f5f9;
+        color: #475569;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 10px 22px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        transition: background 0.18s;
+        text-decoration: none;
+    }
+    .btn-secondary:hover { background: #e2e8f0; }
+
+    /* ===== SETTINGS CARDS ===== */
+    .settings-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+    @media (max-width: 768px) {
+        .settings-grid { grid-template-columns: 1fr; }
+        .ps-title { font-size: 18px; }
+        .ps-page { padding: 14px; }
+    }
+
+    .setting-card {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+        border: 1.5px solid #e2e8f0;
+        padding: 24px;
+        transition: box-shadow 0.18s;
+    }
+    .setting-card:hover { box-shadow: 0 4px 20px rgba(26,110,255,0.1); }
+
+    .setting-card-header {
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+        margin-bottom: 16px;
+    }
+    .setting-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        flex-shrink: 0;
+    }
+    .setting-icon.blue  { background: #eff6ff; color: #1a6eff; }
+    .setting-icon.green { background: #f0fdf4; color: #22c55e; }
+    .setting-icon.amber { background: #fffbeb; color: #f59e0b; }
+    .setting-icon.purple{ background: #faf5ff; color: #a855f7; }
+
+    .setting-card-meta { flex: 1; }
+    .card-title {
+        font-size: 15px;
+        font-weight: 700;
+        color: #1e293b;
+        margin: 0 0 4px 0;
+    }
+    .card-desc {
+        font-size: 13px;
+        color: #64748b;
+        line-height: 1.5;
+        margin: 0;
+    }
+
+    .setting-card-body { border-top: 1px solid #f1f5f9; padding-top: 16px; }
+
+    /* Toggle switch */
+    .toggle-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+    }
+    .toggle-label-text {
+        font-size: 14px;
+        font-weight: 500;
+        color: #374151;
+    }
+    .toggle-wrap {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .toggle-switch {
+        position: relative;
+        width: 52px;
+        height: 28px;
+        background: #cbd5e1;
+        border-radius: 14px;
+        cursor: pointer;
+        transition: background 0.3s;
+        flex-shrink: 0;
+    }
+    .toggle-switch.active { background: #1a6eff; }
+    .toggle-slider {
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        width: 22px;
+        height: 22px;
+        background: white;
+        border-radius: 50%;
+        transition: transform 0.3s;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+    }
+    .toggle-switch.active .toggle-slider { transform: translateX(24px); }
+    .toggle-status {
+        font-size: 13px;
+        font-weight: 600;
+        color: #94a3b8;
+        min-width: 60px;
+    }
+    .toggle-switch.active ~ .toggle-status { color: #1a6eff; }
+
+    /* Language select */
+    .lang-select {
+        width: 100%;
+        padding: 10px 14px;
+        font-size: 14px;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 10px;
+        background: #f8fafc;
+        color: #1e293b;
+        cursor: pointer;
+        outline: none;
+        transition: border-color 0.18s;
+        appearance: auto;
+    }
+    .lang-select:focus { border-color: #1a6eff; background: #fff; }
+
+    /* Warning note */
+    .note-box {
+        background: #fffbeb;
+        border: 1.5px solid #fde68a;
+        border-left: 4px solid #f59e0b;
+        border-radius: 8px;
+        padding: 10px 14px;
+        font-size: 13px;
+        color: #92400e;
+        margin-top: 14px;
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    .note-box i { color: #f59e0b; margin-top: 1px; flex-shrink: 0; }
 </style>
 {% endblock %}
 
-{% block content %}    <div class="settings-container">
-        <h1>{{ t('heading_system_settings') }}</h1>
-        
-        <!-- Qoldiq tekshirish sahifasi sozlamasi -->
-        <div class="setting-group">
-            <div class="setting-title">{{ t('label_stock_check_page') }}</div>
-            <div class="setting-description">
-                {{ t('description_stock_check_visible') }}
-            </div>
-            
-            <div class="toggle-container">
-                <div class="toggle-switch" id="stockToggle" onclick="toggleSetting('stock_check_visible')">
-                    <div class="toggle-slider"></div>
+{% block content %}
+<div class="ps-page">
+
+    <!-- Page Header -->
+    <div class="ps-header">
+        <div class="ps-header-left">
+            <h1 class="ps-title"><i class="fas fa-cog"></i> {{ t('heading_system_settings') }}</h1>
+        </div>
+        <div>
+            <button class="btn-primary" onclick="saveSettings()">
+                <i class="fas fa-save"></i> {{ t('btn_save_settings') }}
+            </button>
+        </div>
+    </div>
+
+    <!-- Settings Grid -->
+    <div class="settings-grid">
+
+        <!-- Qoldiq tekshirish sahifasi -->
+        <div class="setting-card">
+            <div class="setting-card-header">
+                <div class="setting-icon blue"><i class="fas fa-boxes"></i></div>
+                <div class="setting-card-meta">
+                    <p class="card-title">{{ t('label_stock_check_page') }}</p>
+                    <p class="card-desc">{{ t('description_stock_check_visible') }}</p>
                 </div>
-                <span class="toggle-label" id="stockLabel">{{ t('status_hidden') }}</span>
             </div>
-            
-            <div class="role-restriction">
-                <strong>{{ t('label_note') }}</strong> {{ t('stock_check_restriction') }}
+            <div class="setting-card-body">
+                <div class="toggle-row">
+                    <span class="toggle-label-text">{{ t('label_stock_check_page') }}</span>
+                    <div class="toggle-wrap">
+                        <div class="toggle-switch" id="stockToggle" onclick="toggleSetting('stock_check_visible')">
+                            <div class="toggle-slider"></div>
+                        </div>
+                        <span class="toggle-status" id="stockLabel">{{ t('status_hidden') }}</span>
+                    </div>
+                </div>
+                <div class="note-box">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span><strong>{{ t('label_note') }}</strong> {{ t('stock_check_restriction') }}</span>
+                </div>
             </div>
         </div>
-        
+
         <!-- Til sozlamalari -->
-        <div class="setting-group">
-            <div class="setting-title">{{ t('label_ui_language') }}</div>
-            <div class="setting-description">
-                {{ t('description_language_selection') }}
+        <div class="setting-card">
+            <div class="setting-card-header">
+                <div class="setting-icon purple"><i class="fas fa-language"></i></div>
+                <div class="setting-card-meta">
+                    <p class="card-title">{{ t('label_ui_language') }}</p>
+                    <p class="card-desc">{{ t('description_language_selection') }}</p>
+                </div>
             </div>
-            
-            <div style="margin-top: 15px;">
-                <select id="languageSelect" style="padding: 8px 12px; font-size: 16px; border: 1px solid #ddd; border-radius: 4px; width: 100%; max-width: 300px;">
-                    <option value="uz_latin" {% if current_language == 'uz_latin' %}selected{% endif %}>{{ t('language_uzbek_latin') }}</option>
+            <div class="setting-card-body">
+                <select id="languageSelect" class="lang-select">
+                    <option value="uz_latin"    {% if current_language == 'uz_latin'    %}selected{% endif %}>{{ t('language_uzbek_latin') }}</option>
                     <option value="uz_cyrillic" {% if current_language == 'uz_cyrillic' %}selected{% endif %}>{{ t('language_uzbek_cyrillic') }}</option>
-                    <option value="ru" {% if current_language == 'ru' %}selected{% endif %}>{{ t('language_russian') }}</option>
+                    <option value="ru"          {% if current_language == 'ru'          %}selected{% endif %}>{{ t('language_russian') }}</option>
                 </select>
             </div>
         </div>
-        
-        <!-- Currency sozlamalari -->
-        <div class="setting-group">
-            <div class="setting-title">{{ t('label_currency_settings') }}</div>
-            <div class="setting-description">
-                {{ t('description_auto_currency') }}
-            </div>
-            
-            <div class="toggle-container">
-                <div class="toggle-switch" id="currencyToggle" onclick="toggleSetting('auto_currency_update')">
-                    <div class="toggle-slider"></div>
+
+        <!-- Valyuta sozlamalari -->
+        <div class="setting-card">
+            <div class="setting-card-header">
+                <div class="setting-icon amber"><i class="fas fa-dollar-sign"></i></div>
+                <div class="setting-card-meta">
+                    <p class="card-title">{{ t('label_currency_settings') }}</p>
+                    <p class="card-desc">{{ t('description_auto_currency') }}</p>
                 </div>
-                <span class="toggle-label" id="currencyLabel">{{ t('status_off') }}</span>
+            </div>
+            <div class="setting-card-body">
+                <div class="toggle-row">
+                    <span class="toggle-label-text">{{ t('label_currency_settings') }}</span>
+                    <div class="toggle-wrap">
+                        <div class="toggle-switch" id="currencyToggle" onclick="toggleSetting('auto_currency_update')">
+                            <div class="toggle-slider"></div>
+                        </div>
+                        <span class="toggle-status" id="currencyLabel">{{ t('status_off') }}</span>
+                    </div>
+                </div>
             </div>
         </div>
-        
-        <!-- Backup sozlamalari -->
-        <div class="setting-group">
-            <div class="setting-title">{{ t('label_auto_backup') }}</div>
-            <div class="setting-description">
-                {{ t('description_auto_backup') }}
-            </div>
-            
-            <div class="toggle-container">
-                <div class="toggle-switch" id="backupToggle" onclick="toggleSetting('auto_backup')">
-                    <div class="toggle-slider"></div>
+
+        <!-- Avtomatik zaxira -->
+        <div class="setting-card">
+            <div class="setting-card-header">
+                <div class="setting-icon green"><i class="fas fa-database"></i></div>
+                <div class="setting-card-meta">
+                    <p class="card-title">{{ t('label_auto_backup') }}</p>
+                    <p class="card-desc">{{ t('description_auto_backup') }}</p>
                 </div>
-                <span class="toggle-label" id="backupLabel">{{ t('status_off') }}</span>
+            </div>
+            <div class="setting-card-body">
+                <div class="toggle-row">
+                    <span class="toggle-label-text">{{ t('label_auto_backup') }}</span>
+                    <div class="toggle-wrap">
+                        <div class="toggle-switch" id="backupToggle" onclick="toggleSetting('auto_backup')">
+                            <div class="toggle-slider"></div>
+                        </div>
+                        <span class="toggle-status" id="backupLabel">{{ t('status_off') }}</span>
+                    </div>
+                </div>
             </div>
         </div>
-        
-        <button class="save-button" onclick="saveSettings()">{{ t('btn_save_settings') }}</button>
-    </div>
+
+    </div><!-- /settings-grid -->
+</div><!-- /ps-page -->
 
 {% endblock %}
 
