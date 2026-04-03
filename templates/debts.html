@@ -711,7 +711,7 @@
             // Admin uchun "Barchasi" tugmasini ko'rsatish
             if (userRole === 'admin') {
                 const allButton = document.createElement('button');
-                allButton.className = 'btn btn-sm me-2 mb-2 location-btn';
+                allButton.className = 'location-btn';
                 allButton.setAttribute('data-location', '');
                 allButton.onclick = () => selectLocation(allButton, '');
                 allButton.textContent = '🏢 ' + DBLANG.all;
@@ -721,7 +721,7 @@
             let firstLocation = null;
             locations.forEach((loc, index) => {
                 const button = document.createElement('button');
-                button.className = 'btn btn-sm me-2 mb-2 location-btn';
+                button.className = 'location-btn';
                 button.setAttribute('data-location', loc.id);
                 button.onclick = () => selectLocation(button, loc.id, loc.type);
                 button.textContent = `${loc.emoji} ${loc.name}`;
