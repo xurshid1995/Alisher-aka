@@ -421,28 +421,6 @@
             </div>
         </div>
 
-        <!-- Telegram to'lov tasdiq xabari -->
-        <div class="setting-card">
-            <div class="setting-card-header">
-                <div class="setting-icon blue"><i class="fab fa-telegram"></i></div>
-                <div class="setting-card-meta">
-                    <p class="card-title">Telegram to'lov tasdiq xabari</p>
-                    <p class="card-desc">Mijoz qarzini to'laganda unga Telegram orqali tasdiq xabari yuboriladimi</p>
-                </div>
-            </div>
-            <div class="setting-card-body">
-                <div class="toggle-row">
-                    <span class="toggle-label-text">Telegram xabari</span>
-                    <div class="toggle-wrap">
-                        <div class="toggle-switch active" id="telegramPaymentToggle" onclick="toggleSetting('telegram_payment_confirm')">
-                            <div class="toggle-slider"></div>
-                        </div>
-                        <span class="toggle-status" id="telegramPaymentLabel">{{ t('status_enabled') }}</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
     </div><!-- /settings-grid -->
 </div><!-- /ps-page -->
 
@@ -569,8 +547,7 @@
             stock_check_visible: false,
             auto_backup: false,
             default_reminder_time: '10:00',
-            dashboard_default_period: 'today',
-            telegram_payment_confirm: true
+            dashboard_default_period: 'today'
         };
 
         // Sozlamalarni serverdan olish
@@ -627,17 +604,6 @@
             } else {
                 backupToggle.classList.remove('active');
                 backupLabel.textContent = SLANG.status_off;
-            }
-
-            // Telegram payment toggle
-            const telegramPaymentToggle = document.getElementById('telegramPaymentToggle');
-            const telegramPaymentLabel = document.getElementById('telegramPaymentLabel');
-            if (settings.telegram_payment_confirm !== false) {
-                telegramPaymentToggle.classList.add('active');
-                telegramPaymentLabel.textContent = SLANG.status_enabled;
-            } else {
-                telegramPaymentToggle.classList.remove('active');
-                telegramPaymentLabel.textContent = SLANG.status_off;
             }
 
             // Default reminder time
