@@ -4,280 +4,283 @@
 
 {% block extra_css %}
 <style>
-    .add-user-container {
-        padding: 1rem 2rem;
-        background: #f8f9fa;
-        min-height: auto;
-        width: 100%;
-        box-sizing: border-box;
-    }
+/* ============================================================
+   FOYDALANUVCHI QO'SHISH - PS DIZAYN TIZIMI
+   ============================================================ */
+.ps-page {
+    padding: 28px 28px 40px;
+    background: #f5f6fa;
+    min-height: 100vh;
+    font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+}
 
-    .page-header {
-        padding: 2rem;
-        margin-bottom: 2rem;
-        text-align: left;
-    }
+/* ── Header ── */
+.ps-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+}
+.ps-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+}
+.ps-title i { color: #1a6eff; margin-right: 8px; }
+.ps-back-btn {
+    background: #f1f5f9;
+    color: #475569;
+    border: 1.5px solid #e2e8f0;
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+}
+.ps-back-btn:hover { background: #e2e8f0; color: #1e293b; text-decoration: none; }
 
-    .page-header h1 {
-        margin: 0;
-        font-size: 2.5rem;
-        font-weight: 600;
-        display: flex;
-        align-items: center;
-        justify-content: flex-start;
-        gap: 1rem;
-        color: #333;
-    }
+/* ── Layout ── */
+.form-layout {
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+    width: 100%;
+}
 
-    .page-header p {
-        margin: 0.5rem 0 0 0;
-        font-size: 1.1rem;
-        color: #666;
-    }
+/* ── Cards ── */
+.form-section,
+.info-section {
+    flex: 1;
+    min-width: 0;
+    background: white;
+    border-radius: 16px;
+    padding: 28px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
 
-    .form-layout {
-        display: flex;
-        gap: 2rem;
-        align-items: flex-start;
-        width: 100%;
-        max-width: none;
-        margin: 0;
-    }
+.card-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 20px 0;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #1a6eff;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.card-title i { color: #1a6eff; }
 
-    .form-section {
-        flex: 1;
-        min-width: 0;
-        background: white;
-        padding: 2rem;
-        border-radius: 12px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
+/* ── Form groups ── */
+.form-group {
+    margin-bottom: 18px;
+}
+.form-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 13px;
+    background: #f8fafc;
+    color: #1e293b;
+    transition: all 0.2s;
+    outline: none;
+    box-sizing: border-box;
+}
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+    background: white;
+}
+.form-group.checkbox {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 4px;
+}
+.form-group.checkbox input { width: auto; }
+.form-group.checkbox label {
+    margin: 0;
+    text-transform: none;
+    font-size: 13px;
+    font-weight: 500;
+    color: #374151;
+    letter-spacing: 0;
+}
 
-    .info-section {
-        flex: 1;
-        min-width: 0;
-        background: white;
-        padding: 2rem;
-        border-radius: 12px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
+.form-row {
+    display: flex;
+    gap: 14px;
+}
+.form-row .form-group { flex: 1; }
 
-    .info-section h3 {
-        color: #333;
-        margin-bottom: 1rem;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
+/* ── Success / Error messages ── */
+.success-message {
+    background: #d1fae5;
+    color: #065f46;
+    padding: 12px 16px;
+    border-radius: 10px;
+    margin-bottom: 16px;
+    font-size: 13px;
+    font-weight: 500;
+    border: 1px solid #a7f3d0;
+    display: none;
+}
+.error-message {
+    color: #ef4444;
+    font-size: 12px;
+    margin-top: 4px;
+    display: none;
+}
 
-    .info-item {
-        margin-bottom: 1.5rem;
-        padding: 1rem;
-        background: #f8f9fa;
-        border-radius: 8px;
-        border-left: 4px solid #007bff;
-    }
+/* ── Action buttons ── */
+.form-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid #f1f5f9;
+}
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+.btn-primary {
+    background: #1a6eff;
+    color: white;
+}
+.btn-primary:hover { background: #1558d6; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(26,110,255,0.3); }
+.btn-secondary {
+    background: #f1f5f9;
+    color: #475569;
+    border: 1.5px solid #e2e8f0;
+}
+.btn-secondary:hover { background: #e2e8f0; color: #1e293b; }
+.btn-danger {
+    background: #fee2e2;
+    color: #dc2626;
+}
+.btn-danger:hover { background: #dc2626; color: white; }
 
-    .info-item h4 {
-        margin: 0 0 0.5rem 0;
-        color: #333;
-        font-size: 1rem;
-    }
+.required { color: #ef4444; }
+.loading { opacity: 0.6; pointer-events: none; }
 
-    .info-item p {
-        margin: 0;
-        color: #666;
-        font-size: 0.9rem;
-    }
+/* ── Permissions section ── */
+.permissions-control { margin-top: 4px; }
+.permission-group {
+    margin-bottom: 16px;
+    padding: 14px 16px;
+    background: #f8fafc;
+    border-radius: 12px;
+    border-left: 3px solid #1a6eff;
+}
+.permission-group h4 {
+    margin: 0 0 8px 0;
+    font-size: 13px;
+    font-weight: 700;
+    color: #1e293b;
+}
+.permission-group p {
+    font-size: 12px;
+    color: #64748b;
+    margin: 0 0 10px 0;
+}
+.permission-item {
+    display: flex;
+    align-items: center;
+    margin: 6px 0;
+    cursor: pointer;
+    padding: 2px 0;
+}
+.permission-item input[type="checkbox"] {
+    margin-right: 8px;
+    accent-color: #1a6eff;
+    width: 15px;
+    height: 15px;
+}
+.permission-item span {
+    font-size: 13px;
+    color: #374151;
+}
+.location-selection {
+    margin-left: 20px !important;
+    margin-top: 10px !important;
+    background: white;
+    border-radius: 8px;
+    padding: 10px;
+    border: 1px solid #e2e8f0;
+}
+.location-selection h5 {
+    font-size: 11px;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 0 0 8px 0;
+}
 
-    @media (max-width: 768px) {
-        .form-layout {
-            flex-direction: column;
-        }
-        .form-row {
-            flex-direction: column;
-        }
-    }
+.admin-note {
+    padding: 14px 16px;
+    background: #eff6ff;
+    border-radius: 12px;
+    border-left: 3px solid #1a6eff;
+    color: #1d4ed8;
+    font-size: 13px;
+}
 
-    .form-group {
-        margin-bottom: 1.5rem;
-    }
-
-    .form-group label {
-        display: block;
-        margin-bottom: 0.5rem;
-        font-weight: 600;
-        color: #333;
-    }
-
-    .form-group input,
-    .form-group select,
-    .form-group textarea {
-        width: 100%;
-        padding: 0.75rem;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        font-size: 1rem;
-        transition: border-color 0.3s;
-    }
-
-    .form-group input:focus,
-    .form-group select:focus,
-    .form-group textarea:focus {
-        outline: none;
-        border-color: #007bff;
-        box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
-    }
-
-    .form-group.checkbox {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-
-    .form-group.checkbox input {
-        width: auto;
-    }
-
-    .form-actions {
-        display: flex;
-        gap: 1rem;
-        justify-content: flex-end;
-        margin-top: 2rem;
-    }
-
-    .btn {
-        padding: 0.75rem 1.5rem;
-        border: none;
-        border-radius: 8px;
-        font-size: 1rem;
-        cursor: pointer;
-        transition: all 0.3s;
-    }
-
-    .btn-primary {
-        background: #007bff;
-        color: white;
-    }
-
-    .btn-primary:hover {
-        background: #0056b3;
-    }
-
-    .btn-secondary {
-        background: #6c757d;
-        color: white;
-    }
-
-    /* Huquqlar boshqaruvi stillari */
-    .permissions-control {
-        margin-top: 1rem;
-    }
-
-    .permission-group {
-        margin-bottom: 1.5rem;
-        padding: 1rem;
-        background: #f8f9fa;
-        border-radius: 8px;
-        border-left: 4px solid #007bff;
-    }
-
-    .permission-group h4 {
-        margin: 0 0 0.75rem 0;
-        font-size: 1rem;
-        color: #495057;
-    }
-
-    .permission-item {
-        display: flex;
-        align-items: center;
-        margin: 0.5rem 0;
-        cursor: pointer;
-        padding: 0.25rem 0;
-    }
-
-    .permission-item input[type="checkbox"] {
-        margin-right: 0.5rem;
-        transform: scale(1.1);
-    }
-
-    .permission-item span {
-        font-size: 0.9rem;
-        color: #495057;
-    }
-
-    .permission-controls {
-        margin-bottom: 1rem;
-        padding: 0.5rem 0;
-        border-bottom: 1px solid #e9ecef;
-    }
-
-    .permission-controls .permission-item span {
-        color: #007bff;
-        font-weight: 600;
-    }
-
-    .admin-note {
-        padding: 1rem;
-        background: #e7f3ff;
-        border-radius: 8px;
-        border-left: 4px solid #007bff;
-        color: #0056b3;
-        font-size: 0.95rem;
-    }
-
-    .btn-secondary:hover {
-        background: #545b62;
-    }
-
-    .required {
-        color: #e74c3c;
-    }
-
-    .error-message {
-        color: #e74c3c;
-        font-size: 0.875rem;
-        margin-top: 0.25rem;
-        display: none;
-    }
-
-    .success-message {
-        background: #d4edda;
-        color: #155724;
-        padding: 1rem;
-        border-radius: 8px;
-        margin-bottom: 1rem;
-        display: none;
-    }
-
-    .loading {
-        opacity: 0.6;
-        pointer-events: none;
-    }
-
-    .form-row {
-        display: flex;
-        gap: 1rem;
-    }
-
-    .form-row .form-group {
-        flex: 1;
-    }
+/* ── Responsive ── */
+@media (max-width: 1024px) {
+    .ps-page { padding: 18px; }
+}
+@media (max-width: 768px) {
+    .ps-page { padding: 12px; }
+    .form-layout { flex-direction: column; }
+    .form-row { flex-direction: column; gap: 0; }
+    .ps-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+}
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="add-user-container">
-    <div class="page-header" style="padding: 0.25rem 2rem; margin-bottom: 0.25rem; text-align: right;">
-        <h1 style="margin: 0; font-size: 2rem;">{{ t('heading_add_user') }}</h1>
+<div class="ps-page">
+    <!-- Header -->
+    <div class="ps-header">
+        <h1 class="ps-title"><i class="fas fa-user-plus"></i> {{ t('heading_add_user') }}</h1>
+        <a href="/users" class="ps-back-btn"><i class="fas fa-arrow-left"></i> {{ t('btn_back') }}</a>
     </div>
 
     <div class="form-layout">
         <!-- Form qismi -->
         <div class="form-section">
-            <h3 style="margin: 0 0 1.5rem 0; color: #333; font-size: 1.25rem; border-bottom: 2px solid #007bff; padding-bottom: 0.5rem;">
-                {{ t('label_user_info') }}
-            </h3>
+            <h3 class="card-title"><i class="fas fa-id-card"></i> {{ t('label_user_info') }}</h3>
             
             <div class="success-message" id="successMessage"></div>
             
@@ -341,10 +344,10 @@
 
             <div class="form-actions">
                 <button type="button" class="btn btn-secondary" onclick="goBack()">
-                    {{ t('btn_back') }}
+                    <i class="fas fa-arrow-left"></i> {{ t('btn_back') }}
                 </button>
                 <button type="submit" class="btn btn-primary" id="submitBtn">
-                    {{ t('btn_save') }}
+                    <i class="fas fa-save"></i> {{ t('btn_save') }}
                 </button>
             </div>
         </form>
@@ -352,7 +355,7 @@
 
         <!-- Sotuvchi huquqlari boshqaruvi -->
         <div class="info-section">
-            <h3>{{ t('seller_rights_title') }}</h3>
+            <h3 class="card-title"><i class="fas fa-shield-alt"></i> {{ t('seller_rights_title') }}</h3>
             
             <div class="permissions-control" id="sellerPermissions" style="display: none;">
                 
