@@ -28,6 +28,7 @@ from sqlalchemy.exc import (
 )
 from werkzeug.exceptions import BadRequest
 from werkzeug.security import check_password_hash
+from flask_wtf.csrf import CSRFProtect
 
 # Windows console uchun UTF-8 qo'llab-quvvatlash
 if sys.platform.startswith('win'):
@@ -100,14 +101,19 @@ app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
 }
 
 # Session xavfsizligi
-app.config['SESSION_COOKIE_SECURE'] = False  # HTTP uchun False, HTTPS uchun True
+_secure = os.getenv('SESSION_COOKIE_SECURE', 'False').lower() == 'true'
+app.config['SESSION_COOKIE_SECURE'] = _secure  # Production HTTPS uchun .env da True qiling
 app.config['SESSION_COOKIE_HTTPONLY'] = True  # JavaScript orqali o'qib bo'lmaydi
-app.config['SESSION_COOKIE_SAMESITE'] = 'None' if app.config['SESSION_COOKIE_SECURE'] else 'Lax'  # Cross-site uchun None, HTTP uchun Lax
+app.config['SESSION_COOKIE_SAMESITE'] = 'None' if _secure else 'Lax'  # Cross-site uchun None, HTTP uchun Lax
 app.config['PERMANENT_SESSION_LIFETIME'] = 43200  # 12 soat (uzaytirilgan ish vaqti)
 app.config['SESSION_COOKIE_DOMAIN'] = None  # Subdomen muammosini hal qilish
+app.config['WTF_CSRF_HEADERS'] = ['X-CSRFToken']  # AJAX CSRF header
 
 # SQLAlchemy obyektini yaratish
 db = SQLAlchemy(app)
+
+# CSRF himoya - barcha POST/PUT/DELETE so'rovlari uchun
+csrf = CSRFProtect(app)
 
 # Decimal aniqlik o'rnatish
 getcontext().prec = 10
@@ -13101,26 +13107,26 @@ def api_sales_statistics():
         query = """
             SELECT
                 COUNT(*) as total_sales,
-                COALESCE(SUM(si.price * si.quantity), 0) as total_revenue,
-                COALESCE(AVG(si.price * si.quantity), 0) as avg_sale
+                COALESCE(SUM(si.unit_price * si.quantity), 0) as total_revenue,
+                COALESCE(AVG(si.unit_price * si.quantity), 0) as avg_sale
             FROM sale_items si
             JOIN sales s ON si.sale_id = s.id
         """
 
         conditions = []
-        params = []
+        params = {}
 
         if location_id:
-            conditions.append("s.location_id = %s")
-            params.append(location_id)
+            conditions.append("s.location_id = :location_id")
+            params['location_id'] = location_id
 
         if date_from:
-            conditions.append("s.sale_date >= %s")
-            params.append(date_from)
+            conditions.append("s.sale_date >= :date_from")
+            params['date_from'] = date_from
 
         if date_to:
-            conditions.append("s.sale_date <= %s")
-            params.append(date_to)
+            conditions.append("s.sale_date <= :date_to")
+            params['date_to'] = date_to
 
         if conditions:
             query += " WHERE " + " AND ".join(conditions)
@@ -13143,15 +13149,15 @@ def api_sales_statistics():
         """
 
         top_conditions = []
-        top_params = []
+        top_params = {}
 
         if date_from:
-            top_conditions.append("s.sale_date >= %s")
-            top_params.append(date_from)
+            top_conditions.append("s.sale_date >= :date_from")
+            top_params['date_from'] = date_from
 
         if date_to:
-            top_conditions.append("s.sale_date <= %s")
-            top_params.append(date_to)
+            top_conditions.append("s.sale_date <= :date_to")
+            top_params['date_to'] = date_to
 
         if top_conditions:
             top_location_query += " WHERE " + " AND ".join(top_conditions)
@@ -13400,15 +13406,15 @@ def api_location_chart():
         """
 
         conditions = []
-        params = []
+        params = {}
 
         if date_from:
-            conditions.append("s.sale_date >= %s")
-            params.append(date_from)
+            conditions.append("s.sale_date >= :date_from")
+            params['date_from'] = date_from
 
         if date_to:
-            conditions.append("s.sale_date <= %s")
-            params.append(date_to)
+            conditions.append("s.sale_date <= :date_to")
+            params['date_to'] = date_to
 
         if conditions:
             query += " WHERE " + " AND ".join(conditions)
@@ -13455,7 +13461,7 @@ def api_recent_sales():
                 END as location_name,
                 p.name as product_name,
                 si.quantity,
-                (si.price * si.quantity) as total_amount
+                si.total_price as total_amount
             FROM sales s
             JOIN sale_items si ON s.id = si.sale_id
             JOIN products p ON si.product_id = p.id
@@ -13464,25 +13470,25 @@ def api_recent_sales():
         """
 
         conditions = []
-        params = []
+        params = {}
 
         if location_id:
-            conditions.append("s.location_id = %s")
-            params.append(location_id)
+            conditions.append("s.location_id = :location_id")
+            params['location_id'] = location_id
 
         if date_from:
-            conditions.append("s.sale_date >= %s")
-            params.append(date_from)
+            conditions.append("s.sale_date >= :date_from")
+            params['date_from'] = date_from
 
         if date_to:
-            conditions.append("s.sale_date <= %s")
-            params.append(date_to)
+            conditions.append("s.sale_date <= :date_to")
+            params['date_to'] = date_to
 
         if conditions:
             query += " WHERE " + " AND ".join(conditions)
 
-        query += " ORDER BY s.sale_date DESC, s.id DESC LIMIT %s"
-        params.append(limit)
+        query += " ORDER BY s.sale_date DESC, s.id DESC LIMIT :limit"
+        params['limit'] = limit
 
         result = db.session.execute(text(query), params)
         results = result.fetchall()

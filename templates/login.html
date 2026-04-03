@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="google" content="notranslate">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ t('login_title') }}</title>
     {% if current_language == 'ru' %}
     <link type="image/png" sizes="96x96" rel="icon" href="{{ url_for('static', filename='images/icons8-russia-emoji-96.png') }}">
@@ -594,6 +595,23 @@
             menu.style.display = 'none';
         }
     });
+
+    // CSRF himoya - POST fetch so'rovlariga X-CSRFToken header qo'shish
+    (function () {
+        const _origFetch = window.fetch;
+        window.fetch = function (url, options) {
+            options = options || {};
+            const method = (options.method || 'GET').toUpperCase();
+            if (['POST', 'PUT', 'DELETE', 'PATCH'].includes(method)) {
+                const token = document.querySelector('meta[name="csrf-token"]');
+                if (token) {
+                    const hdrs = options.headers || {};
+                    options.headers = Object.assign({}, hdrs, { 'X-CSRFToken': token.content });
+                }
+            }
+            return _origFetch(url, options);
+        };
+    })();
     </script>
 </body>
 </html>
