@@ -6843,7 +6843,9 @@ def api_debt_payment():
             logger.error(f"OperationHistory log xatoligi: {log_error}")
 
         # Telegram orqali mijozga xabar yuborish
-        if customer and customer.telegram_chat_id:
+        tg_setting = Settings.query.filter_by(key='telegram_payment_confirm').first()
+        tg_enabled = tg_setting.value.lower() != 'false' if tg_setting else True
+        if customer and customer.telegram_chat_id and tg_enabled:
             try:
                 from debt_scheduler import get_scheduler_instance
 
@@ -13416,7 +13418,8 @@ def get_settings():
             'auto_currency_update': False,
             'auto_backup': False,
             'default_reminder_time': '10:00',
-            'dashboard_default_period': 'today'
+            'dashboard_default_period': 'today',
+            'telegram_payment_confirm': True
         }
 
         # Bazadan sozlamalarni olish
@@ -13906,6 +13909,11 @@ def api_send_debt_sms():
 def api_send_payment_sms():
     """To'lov tasdiqlash Telegram yuborish"""
     try:
+        # Telegram to'lov tasdiq sozlamasini tekshirish
+        tg_setting = Settings.query.filter_by(key='telegram_payment_confirm').first()
+        if tg_setting and tg_setting.value.lower() == 'false':
+            return jsonify({'success': False, 'error': 'Telegram to\'lov xabarlari o\'chirilgan (sozlamalar orqali yoqing)'})
+
         data = request.get_json()
         customer_id = data.get('customer_id')
         paid_amount_usd = float(data.get('paid_amount_usd', 0))
