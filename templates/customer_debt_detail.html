@@ -308,19 +308,15 @@
 {% block content %}
 <div class="ps-page">
 
-    <!-- Page Header -->
+    <!-- Page Header + Mijoz ma'lumotlari -->
     <div class="ps-header">
-        <div>
-            <h1 class="ps-title"><i class="fas fa-money-bill-wave"></i> {{ t('cdd_heading') }}</h1>
+        <h1 class="ps-title"><i class="fas fa-money-bill-wave"></i> {{ t('cdd_heading') }}</h1>
+        <div class="ps-customer-bar" style="margin-bottom:0;flex:1;margin-left:16px;">
+            <div class="cbar-item"><i class="fas fa-user"></i> <span id="customerName">-</span></div>
+            <div class="cbar-item"><i class="fas fa-phone"></i> <span id="customerPhone">-</span></div>
+            <div class="cbar-item"><i class="fas fa-map-marker-alt"></i> <span id="customerAddress">-</span></div>
         </div>
         <a href="/debts" class="ps-back-btn">← {{ t('cdd_back') }}</a>
-    </div>
-
-    <!-- Mijoz ma'lumotlari -->
-    <div class="ps-customer-bar">
-        <div class="cbar-item"><i class="fas fa-user"></i> <span id="customerName">-</span></div>
-        <div class="cbar-item"><i class="fas fa-phone"></i> <span id="customerPhone">-</span></div>
-        <div class="cbar-item"><i class="fas fa-map-marker-alt"></i> <span id="customerAddress">-</span></div>
     </div>
 
     <!-- Statistika -->
