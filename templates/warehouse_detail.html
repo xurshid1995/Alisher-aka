@@ -192,6 +192,49 @@
 .btn-action-delete { background: #e74c3c; color: white; }
 .actions { white-space: nowrap; }
 
+/* ── Edit Modal ── */
+.edit-modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.45); z-index: 9999;
+    align-items: center; justify-content: center;
+}
+.edit-modal-overlay.active { display: flex; }
+.edit-modal {
+    background: white; border-radius: 14px;
+    padding: 28px 28px 24px; width: 620px; max-width: 96vw;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2); position: relative;
+}
+.edit-modal-title {
+    font-size: 16px; font-weight: 700; color: #1e293b;
+    margin: 0 0 20px; display: flex; align-items: center; gap: 8px;
+}
+.edit-modal-close {
+    position: absolute; top: 16px; right: 18px;
+    background: none; border: none; font-size: 20px;
+    cursor: pointer; color: #94a3b8; line-height: 1;
+}
+.edit-modal-close:hover { color: #ef4444; }
+.em-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 14px; }
+.em-grid .em-group { grid-column: span 5; }
+.em-grid .em-group.col-6 { grid-column: span 6; }
+.em-grid .em-group.col-2 { grid-column: span 2; }
+.em-grid .em-group.col-1 { grid-column: span 1; }
+.em-grid .em-group.full { grid-column: span 10; }
+.em-btn-auto { padding: 5px 8px; background: transparent; border: none; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 600; color: #059669; white-space: nowrap; transition: all 0.2s; width: 100%; height: 38px; justify-content: center; }
+.em-btn-auto:hover { background: #f0fff4; }
+.em-group { display: flex; flex-direction: column; gap: 5px; }
+.em-group.full { grid-column: 1 / -1; }
+.em-label { font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.4px; }
+.em-input { padding: 8px 12px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 13px; color: #1e293b; font-weight: 600; outline: none; transition: border-color 0.15s; }
+.em-input:focus { border-color: #1a6eff; }
+.em-profit { padding: 8px 12px; background: #f0f9ff; border: 1.5px solid #bae6fd; border-radius: 8px; font-size: 13px; color: #0284c7; font-weight: 600; }
+.em-error { color: #ef4444; font-size: 12px; margin-top: 10px; padding: 8px 12px; background: #fef2f2; border-radius: 8px; display: none; }
+.em-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+.em-btn-cancel { padding: 8px 20px; border-radius: 8px; border: 1.5px solid #e2e8f0; background: #f8fafc; color: #64748b; font-size: 13px; font-weight: 600; cursor: pointer; }
+.em-btn-save { padding: 8px 22px; border-radius: 8px; border: none; background: #1a6eff; color: white; font-size: 13px; font-weight: 600; cursor: pointer; transition: opacity 0.15s; }
+.em-btn-save:hover { opacity: 0.85; }
+.em-btn-save:disabled { opacity: 0.5; cursor: default; }
+
 /* ── Pagination ── */
 .ps-pagination {
     display: flex; justify-content: space-between; align-items: center;
@@ -348,6 +391,68 @@
 </div>
 
 </div><!-- /.ps-page -->
+
+<!-- Edit Modal -->
+<div class="edit-modal-overlay" id="editModalOverlay">
+    <div class="edit-modal">
+        <button class="edit-modal-close" onclick="closeEditModal()">&#x2715;</button>
+        <div class="edit-modal-title"><i class="fas fa-edit" style="color:#1a6eff"></i> {{ t('sd_edit') }}</div>
+        <form id="editStockForm" onsubmit="submitEditModal(event)">
+            <input type="hidden" id="em-warehouse-id">
+            <input type="hidden" id="em-product-id">
+            <div class="em-grid">
+                <div class="em-group col-6">
+                    <label class="em-label">{{ t('sd_th_product') }}</label>
+                    <input type="text" class="em-input" id="em-productName" required>
+                </div>
+                <div class="em-group col-2">
+                    <label class="em-label">{{ t('sd_th_barcode') }}</label>
+                    <input type="text" class="em-input" id="em-barcode" maxlength="8" pattern="[0-9]{8}" inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,8)">
+                </div>
+                <div class="em-group col-1" style="justify-content:flex-end;">
+                    <label class="em-label" style="visibility:hidden;">.</label>
+                    <button type="button" onclick="emGenerateBarcode()" class="em-btn-auto" title="Avtomatik barcode">
+                        <img src="https://img.icons8.com/color/48/synchronize.png" alt="Auto" style="width:20px;height:20px;"> Auto
+                    </button>
+                </div>
+                <div class="em-group col-1" style="justify-content:flex-end;">
+                    <label class="em-label" style="visibility:hidden;">.</label>
+                    <button type="button" onclick="emPrintBarcode()" title="Chop etish"
+                            style="width:100%; height:38px; background:none; border:none; border-radius:8px; cursor:pointer; display:flex; align-items:center; justify-content:center;"
+                            onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'">
+                        <img src="https://img.icons8.com/color/48/print.png" alt="Print" style="width:22px;height:22px;">
+                    </button>
+                </div>
+                <div class="em-group">
+                    <label class="em-label">{{ t('sd_th_quantity') }}</label>
+                    <input type="number" class="em-input" id="em-quantity" min="0" step="1" required>
+                </div>
+                <div class="em-group">
+                    <label class="em-label">Min. zaxira</label>
+                    <input type="number" class="em-input" id="em-minStock" min="0" step="1">
+                </div>
+                <div class="em-group">
+                    <label class="em-label">{{ t('sd_th_cost') }}</label>
+                    <input type="number" class="em-input" id="em-costPrice" min="0" step="0.01" required oninput="emUpdateProfit()">
+                </div>
+                <div class="em-group">
+                    <label class="em-label">{{ t('sd_th_sell') }}</label>
+                    <input type="number" class="em-input" id="em-sellPrice" min="0" step="0.01" required oninput="emUpdateProfit()">
+                </div>
+                <div class="em-group full">
+                    <label class="em-label">{{ t('sd_th_unit_profit') }}</label>
+                    <div class="em-profit" id="em-profitDisplay">$0.00 (0.0%)</div>
+                </div>
+            </div>
+            <div class="em-error" id="em-error"></div>
+            <div class="em-footer">
+                <button type="button" class="em-btn-cancel" onclick="closeEditModal()">Bekor qilish</button>
+                <button type="submit" class="em-btn-save" id="em-save-btn">Saqlash</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 {% endblock %}
 
 {% block extra_js %}
@@ -382,7 +487,8 @@
     let totalPages = 1;
     const itemsPerPage = 50;
     const warehouseId = {{ warehouse.id }};
-    let currentSearchTerm = ''; // Qidiruv matnini saqlash
+    let currentSearchTerm = '';
+    const stockItemMap = {}; // productId -> mahsulot ma'lumotlari
 
     // Qidiruv matnini ajratib ko'rsatish funksiyasi (har bir so'zni alohida)
     function highlightSearchText(text, searchTerm) {
@@ -484,6 +590,18 @@
             return;
         }
 
+        // stockItemMap ni to'ldirish (modal uchun)
+        stockInfo.forEach(item => {
+            stockItemMap[item.stock.product.id] = {
+                name: item.stock.product.name,
+                barcode: item.stock.product.barcode || '',
+                quantity: item.stock.quantity,
+                minStock: item.stock.product.min_stock || 0,
+                costPrice: item.stock.product.cost_price,
+                sellPrice: item.stock.product.sell_price,
+            };
+        });
+
         tbody.innerHTML = stockInfo.map(item => {
             // Mahsulot nomini highlight qilish
             const highlightedName = highlightSearchText(item.stock.product.name, currentSearchTerm);
@@ -513,7 +631,7 @@
                 <td style="font-weight:700;color:#0891b2;">${item.profit_percentage.toFixed(1)}%</td>
                 <td>${statusBadge}</td>
                 <td class="actions">
-                    <a href="/edit_stock/${warehouseId}/${item.stock.product.id}" class="btn-action btn-action-edit">✏️ ${WDLANG.edit}</a>
+                    <button onclick="openEditModal(${item.stock.product.id})" class="btn-action btn-action-edit">✏️ ${WDLANG.edit}</button>
                     <button onclick="deleteStock(${warehouseId}, ${item.stock.product.id}, this)"
                             data-product-name="${item.stock.product.name}"
                             class="btn-action btn-action-delete">🗑️ ${WDLANG.delete}</button>
@@ -615,7 +733,6 @@
             .then(response => response.json().then(data => ({status: response.status, data: data})))
             .then(result => {
                 if (result.status === 200) {
-                    // Joriy sahifani qayta yuklash
                     const searchValue = document.querySelector('#search-input').value;
                     const statusValue = document.querySelector('#status-filter').value;
                     loadStockData(currentPage, searchValue, statusValue);
@@ -628,6 +745,125 @@
                 console.error('Error:', error);
                 alert('❌ ' + WDLANG.delete_error + '\n\n' + error.message);
             });
+        }
+    }
+
+    // ── Edit Modal funksiyalari ──
+    let currentEditProductId = null;
+
+    function openEditModal(productId) {
+        const d = stockItemMap[productId];
+        if (!d) return;
+        currentEditProductId = productId;
+        document.getElementById('em-warehouse-id').value = warehouseId;
+        document.getElementById('em-product-id').value = productId;
+        document.getElementById('em-productName').value = d.name;
+        document.getElementById('em-barcode').value = d.barcode;
+        document.getElementById('em-quantity').value = d.quantity;
+        document.getElementById('em-minStock').value = d.minStock;
+        document.getElementById('em-costPrice').value = parseFloat(d.costPrice).toFixed(2);
+        document.getElementById('em-sellPrice').value = parseFloat(d.sellPrice).toFixed(2);
+        document.getElementById('em-error').style.display = 'none';
+        emUpdateProfit();
+        document.getElementById('editModalOverlay').classList.add('active');
+        setTimeout(() => document.getElementById('em-productName').focus(), 100);
+    }
+
+    function closeEditModal() {
+        document.getElementById('editModalOverlay').classList.remove('active');
+        currentEditProductId = null;
+    }
+
+    function emGenerateBarcode() {
+        const barcodeInput = document.getElementById('em-barcode');
+        if (barcodeInput.value.trim() !== '') return;
+        barcodeInput.value = '...';
+        barcodeInput.disabled = true;
+        fetch('/api/next-barcode', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ temp_barcodes: [] })
+        })
+        .then(r => r.json())
+        .then(data => {
+            barcodeInput.disabled = false;
+            if (data.success) {
+                barcodeInput.value = data.barcode;
+                barcodeInput.style.background = '#d4edda';
+                setTimeout(() => { barcodeInput.style.background = ''; }, 500);
+            }
+        })
+        .catch(() => { barcodeInput.disabled = false; barcodeInput.value = ''; });
+    }
+
+    function emPrintBarcode() {
+        const productName = document.getElementById('em-productName').value.trim();
+        const barcode = document.getElementById('em-barcode').value.trim();
+        if (!productName) { alert('Mahsulot nomini kiriting'); return; }
+        if (!barcode) { alert('Barkodni kiriting'); return; }
+        window.open(`/print-barcode?name=${encodeURIComponent(productName)}&barcode=${encodeURIComponent(barcode)}`, '_blank', 'width=600,height=400');
+    }
+
+    function emUpdateProfit() {
+        const cost = parseFloat(document.getElementById('em-costPrice').value) || 0;
+        const sell = parseFloat(document.getElementById('em-sellPrice').value) || 0;
+        const profit = sell - cost;
+        const pct = cost > 0 ? (profit / cost * 100).toFixed(1) : '0.0';
+        const el = document.getElementById('em-profitDisplay');
+        el.textContent = `$${profit.toFixed(2)} (${pct}%)`;
+        el.style.color = profit >= 0 ? '#0284c7' : '#ef4444';
+    }
+
+    document.getElementById('editModalOverlay').addEventListener('click', function(e) {
+        if (e.target === this) closeEditModal();
+    });
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeEditModal();
+    });
+
+    async function submitEditModal(e) {
+        e.preventDefault();
+        const wId = document.getElementById('em-warehouse-id').value;
+        const pId = document.getElementById('em-product-id').value;
+        const errorEl = document.getElementById('em-error');
+        const saveBtn = document.getElementById('em-save-btn');
+
+        const payload = {
+            productName: document.getElementById('em-productName').value.trim(),
+            barcode: document.getElementById('em-barcode').value.trim(),
+            quantity: document.getElementById('em-quantity').value,
+            minStock: document.getElementById('em-minStock').value,
+            costPrice: document.getElementById('em-costPrice').value,
+            sellPrice: document.getElementById('em-sellPrice').value,
+        };
+
+        errorEl.style.display = 'none';
+        saveBtn.disabled = true;
+        saveBtn.textContent = '...';
+
+        try {
+            const res = await fetch(`/api/edit_warehouse_stock/${wId}/${pId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            if (data.success) {
+                closeEditModal();
+                const searchValue = document.querySelector('#search-input').value;
+                const statusValue = document.querySelector('#status-filter').value;
+                loadStockData(currentPage, searchValue, statusValue);
+            } else {
+                errorEl.textContent = '❌ ' + data.error;
+                errorEl.style.display = 'block';
+            }
+        } catch (err) {
+            errorEl.textContent = '❌ Xatolik: ' + err.message;
+            errorEl.style.display = 'block';
+        } finally {
+            saveBtn.disabled = false;
+            saveBtn.textContent = 'Saqlash';
         }
     }
 </script>
