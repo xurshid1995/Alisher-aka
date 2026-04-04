@@ -2122,7 +2122,6 @@ function showSaleDetailsModal(sale) {
                             <thead>
                                 <tr>
                                     <th>${SHLANG.product}</th>
-                                    <th>${SHLANG.location}</th>
                                     <th>${SHLANG.quantity}</th>
                                     <th>${SHLANG.price}</th>
                                     <th>${SHLANG.subtotal}</th>
@@ -2144,7 +2143,6 @@ function showSaleDetailsModal(sale) {
                                     return `
                                     <tr style="${rowStyle}">
                                         <td style="font-weight: ${isReturned ? '600' : 'normal'};">${quantityBadge}${item.product_name}${isReturned ? ' (' + SHLANG.returned + ')' : ''}</td>
-                                        <td>${item.location_name}</td>
                                         <td style="font-weight: ${isReturned ? '600' : 'normal'};">${item.quantity}</td>
                                         <td>
                                             <div>$${unitPriceUSD.toFixed(2)}</div>
@@ -2158,7 +2156,7 @@ function showSaleDetailsModal(sale) {
                                 `}).join('')}
                                 ${sale.returned_products && sale.returned_products.length > 0 ? `
                                     <tr style="background: #fff3cd; border-top: 2px solid #ffc107;">
-                                        <td colspan="5" style="text-align: center; font-weight: 600; padding: 10px; color: #856404;">
+                                        <td colspan="4" style="text-align: center; font-weight: 600; padding: 10px; color: #856404;">
                                             ⚠️ ${SHLANG.returned_products}
                                         </td>
                                     </tr>
@@ -2172,7 +2170,6 @@ function showSaleDetailsModal(sale) {
                                         return `
                                         <tr style="background: #ffebee; color: #c62828;">
                                             <td style="font-weight: 600;">❌ ${item.product_name} (${SHLANG.returned})</td>
-                                            <td>${item.location_name}</td>
                                             <td style="font-weight: 600;">-${item.returned_quantity}</td>
                                             <td>
                                                 <div>$${unitPriceUSD.toFixed(2)}</div>
