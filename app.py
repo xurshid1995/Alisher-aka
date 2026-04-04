@@ -6428,6 +6428,7 @@ def api_debts():
 
                 logger.info(f"🔍 Debts query store_ids: {allowed_store_ids}")
 
+                from sqlalchemy import bindparam
                 query = text("""
                     SELECT
                         c.id as customer_id,
@@ -6444,11 +6445,11 @@ def api_debts():
                         MAX(s.sale_date) as last_sale_date
                     FROM customers c
                     LEFT JOIN sales s ON c.id = s.customer_id AND s.debt_usd > 0
-                    WHERE c.store_id = ANY(:store_ids)
+                    WHERE c.store_id IN :store_ids
                     GROUP BY c.id, c.name, c.phone, c.address, c.last_debt_payment_date, c.last_debt_payment_usd, c.last_debt_payment_rate
                     HAVING COALESCE(SUM(s.debt_usd), 0) > 0
                     ORDER BY GREATEST(COALESCE(MAX(s.sale_date), '1970-01-01'), COALESCE(c.last_debt_payment_date, '1970-01-01')) DESC
-                """)
+                """).bindparams(bindparam('store_ids', expanding=True))
                 result = db.session.execute(query, {'store_ids': allowed_store_ids})
             else:
                 # Admin - barcha qarzlar
@@ -6603,6 +6604,7 @@ def api_paid_debts():
                 if not allowed_store_ids:
                     return jsonify({'success': True, 'paid_debts': []})
 
+                from sqlalchemy import bindparam
                 query = text("""
                 SELECT
                     s.id as sale_id,
@@ -6618,11 +6620,11 @@ def api_paid_debts():
                 JOIN debt_payments dp ON dp.sale_id = s.id
                 WHERE s.payment_status = 'paid'
                     AND s.debt_usd = 0
-                    AND c.store_id = ANY(:store_ids)
+                    AND c.store_id IN :store_ids
                 GROUP BY s.id, c.name, s.created_at, s.total_amount, s.cash_usd, s.click_usd, s.terminal_usd
                 ORDER BY MAX(dp.payment_date) DESC
                 LIMIT 200
-            """)
+            """).bindparams(bindparam('store_ids', expanding=True))
                 result = db.session.execute(query, {'store_ids': allowed_store_ids})
             else:
                 # Admin - barcha qarzlarni ko'radi
