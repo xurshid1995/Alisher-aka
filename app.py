@@ -3974,7 +3974,7 @@ def api_product_operations(product_id):
                 OperationHistory.table_name == 'products'
             ),
             # 2. new_data ichida product_id bo'lgan operatsiyalar (transfer, ba'zi add_product)
-            sa_text(f"(new_data->>'product_id')::text = '{product_id}'"),
+            sa_text("(new_data->>'product_id')::text = :pid").bindparams(pid=str(product_id)),
         ]
 
         # 3. Ombor stok operatsiyalari (edit_stock)
@@ -13154,6 +13154,30 @@ def get_stock_by_location():
         }), 500
 
 
+# ==================== ERROR HANDLERS ====================
+@app.errorhandler(404)
+def page_not_found(e):
+    if request.path.startswith('/api/'):
+        return jsonify({'error': 'Sahifa topilmadi', 'success': False}), 404
+    return render_template('base.html'), 404
+
+
+@app.errorhandler(403)
+def forbidden(e):
+    if request.path.startswith('/api/'):
+        return jsonify({'error': 'Ruxsat yo\'q', 'success': False}), 403
+    return redirect(url_for('login_page'))
+
+
+@app.errorhandler(500)
+def internal_server_error(e):
+    logger.error(f"500 xatolik: {str(e)}")
+    db.session.rollback()
+    if request.path.startswith('/api/'):
+        return jsonify({'error': 'Server xatoligi yuz berdi', 'success': False}), 500
+    return render_template('base.html'), 500
+
+
 # ==================== LOGIN SAHIFASI ====================
 @app.route('/login')
 def login_page():
@@ -15260,5 +15284,6 @@ if __name__ == '__main__':
     except Exception as e:
         logger.warning(f"⚠️ Telegram bot scheduler ishga tushmadi: {e}")
 
-    # Development rejimi uchun debug=True (avtomatik qayta yuklash)
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    # Debug rejimi faqat development uchun - production'da False bo'lishi shart
+    debug_mode = os.getenv('FLASK_DEBUG', 'False').lower() == 'true'
+    app.run(debug=debug_mode, host='0.0.0.0', port=5000)
