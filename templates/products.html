@@ -448,13 +448,17 @@
     let currencyRate = 0;
 
     // Valyuta kursini yuklash
-    async function loadCurrencyRate() {
+    async function loadProductCurrencyRate() {
         try {
             const response = await fetch('/api/currency-rate');
             const data = await response.json();
             if (data.success && data.rate) {
                 currencyRate = parseFloat(data.rate.rate);
                 console.log('💱 Valyuta kursi yuklandi:', currencyRate);
+                // Header display ni ham yangilash
+                if (typeof updateCurrencyDisplay === 'function') {
+                    updateCurrencyDisplay(currencyRate);
+                }
             }
         } catch (error) {
             console.error('Valyuta kursini yuklashda xatolik:', error);
@@ -483,7 +487,7 @@
 
     // Sahifa yuklanganda
     document.addEventListener('DOMContentLoaded', function() {
-        loadCurrencyRate();
+        loadProductCurrencyRate();
         loadProducts();
         
         // Qidiruv maydoniga fokus berish
