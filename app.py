@@ -3669,7 +3669,7 @@ def api_return_product():
             # 1. AVVAL qarzdan qaytarish (agar qarz mavjud bo'lsa)
             if sale.debt_usd and sale.debt_usd > 0 and remaining_refund > 0:
                 debt_refund = min(Decimal(str(sale.debt_usd)), remaining_refund)
-                sale.debt_usd = float(Decimal(str(sale.debt_usd)) - debt_refund)
+                sale.debt_usd = Decimal(str(sale.debt_usd)) - debt_refund
                 remaining_refund -= debt_refund
                 refunded_payments.append(('debt', float(debt_refund)))
                 logger.info(f"  📝 Qarzdan kamaytirildi: ${debt_refund} (Qolgan qarz: ${sale.debt_usd})")
@@ -3677,7 +3677,7 @@ def api_return_product():
             # 2. Naqddan qaytarish
             if sale.cash_usd and sale.cash_usd > 0 and remaining_refund > 0:
                 cash_refund = min(Decimal(str(sale.cash_usd)), remaining_refund)
-                sale.cash_usd = float(Decimal(str(sale.cash_usd)) - cash_refund)
+                sale.cash_usd = Decimal(str(sale.cash_usd)) - cash_refund
                 remaining_refund -= cash_refund
                 refunded_payments.append(('cash', float(cash_refund)))
                 logger.info(f"  💵 Naqd puldan qaytarildi: ${cash_refund}")
@@ -3685,7 +3685,7 @@ def api_return_product():
             # 3. Click dan qaytarish
             if sale.click_usd and sale.click_usd > 0 and remaining_refund > 0:
                 click_refund = min(Decimal(str(sale.click_usd)), remaining_refund)
-                sale.click_usd = float(Decimal(str(sale.click_usd)) - click_refund)
+                sale.click_usd = Decimal(str(sale.click_usd)) - click_refund
                 remaining_refund -= click_refund
                 refunded_payments.append(('click', float(click_refund)))
                 logger.info(f"  📱 Click dan qaytarildi: ${click_refund}")
@@ -3693,14 +3693,14 @@ def api_return_product():
             # 4. Terminal dan qaytarish
             if sale.terminal_usd and sale.terminal_usd > 0 and remaining_refund > 0:
                 terminal_refund = min(Decimal(str(sale.terminal_usd)), remaining_refund)
-                sale.terminal_usd = float(Decimal(str(sale.terminal_usd)) - terminal_refund)
+                sale.terminal_usd = Decimal(str(sale.terminal_usd)) - terminal_refund
                 remaining_refund -= terminal_refund
                 refunded_payments.append(('terminal', float(terminal_refund)))
                 logger.info(f"  💳 Terminal dan qaytarildi: ${terminal_refund}")
 
             # 5. Agar hali ham qolsa, qarzga qo'shish (manfiy qarz - endi do'kon mijozga qarzdor)
             if remaining_refund > 0:
-                sale.debt_usd = float(Decimal(str(sale.debt_usd or 0)) + remaining_refund)
+                sale.debt_usd = Decimal(str(sale.debt_usd or 0)) + remaining_refund
                 logger.info(f"  📝 Qarzga qo'shildi: ${remaining_refund} (Jami qarz: ${sale.debt_usd})")
 
             # Qaytarilgan to'lovlarni operation_history ga yozish
@@ -6944,7 +6944,7 @@ def api_debt_payment():
             cash_for_this = min(remaining_cash, payment_for_this_sale)
             if cash_for_this > 0:
                 sale.cash_usd = (sale.cash_usd or Decimal('0')) + cash_for_this
-                sale.cash_amount = float(sale.cash_usd)  # USD da saqlaymiz
+                sale.cash_amount = sale.cash_usd  # USD da saqlaymiz
                 remaining_cash -= cash_for_this
                 payment_for_this_sale -= cash_for_this
 
@@ -6952,7 +6952,7 @@ def api_debt_payment():
             click_for_this = min(remaining_click, payment_for_this_sale)
             if click_for_this > 0:
                 sale.click_usd = (sale.click_usd or Decimal('0')) + click_for_this
-                sale.click_amount = float(sale.click_usd)  # USD da saqlaymiz
+                sale.click_amount = sale.click_usd  # USD da saqlaymiz
                 remaining_click -= click_for_this
                 payment_for_this_sale -= click_for_this
 
@@ -6960,7 +6960,7 @@ def api_debt_payment():
             terminal_for_this = min(remaining_terminal, payment_for_this_sale)
             if terminal_for_this > 0:
                 sale.terminal_usd = (sale.terminal_usd or Decimal('0')) + terminal_for_this
-                sale.terminal_amount = float(sale.terminal_usd)  # USD da saqlaymiz
+                sale.terminal_amount = sale.terminal_usd  # USD da saqlaymiz
                 remaining_terminal -= terminal_for_this
                 payment_for_this_sale -= terminal_for_this
 
@@ -6969,7 +6969,7 @@ def api_debt_payment():
 
             # Qarzni kamaytirish
             sale.debt_usd = sale.debt_usd - total_paid
-            sale.debt_amount = float(sale.debt_usd)  # USD da saqlaymiz
+            sale.debt_amount = sale.debt_usd  # USD da saqlaymiz
 
             # Payment statusni yangilash
             if sale.debt_usd == 0:
