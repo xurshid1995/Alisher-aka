@@ -75,6 +75,14 @@
     transition: all 0.2s; white-space: nowrap;
 }
 .dbt-btn-history:hover { background: #1a6eff; color: white; border-color: #1a6eff; }
+.dbt-btn-balance {
+    display: flex; align-items: center; gap: 6px;
+    padding: 9px 16px; background: white; color: #16a34a;
+    border: 1.5px solid #e0e2f0; border-radius: 10px;
+    font-size: 13px; font-weight: 600; text-decoration: none;
+    transition: all 0.2s; white-space: nowrap;
+}
+.dbt-btn-balance:hover { background: #16a34a; color: white; border-color: #16a34a; }
 
 /* Card */
 .dbt-card {
@@ -351,7 +359,7 @@
     .dbt-stat-number { font-size: 18px; }
     .dbt-search-box { flex: 0 0 100%; }
     .dbt-header-actions { width: 100%; }
-    .dbt-btn-telegram, .dbt-btn-history { flex: 1 1 0; justify-content: center; }
+    .dbt-btn-telegram, .dbt-btn-history, .dbt-btn-balance { flex: 1 1 0; justify-content: center; }
 }
 </style>
 {% endblock %}
@@ -368,6 +376,9 @@
             </button>
             <a href="/paid-debts-history" class="dbt-btn-history">
                 <i class="fas fa-history"></i> {{ t('debt_payment_history_link') }}
+            </a>
+            <a href="/customers" class="dbt-btn-balance">
+                <i class="fas fa-wallet"></i> {{ t('customer_balance_link') }}
             </a>
         </div>
     </div>
