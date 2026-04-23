@@ -5774,8 +5774,11 @@
         const debtBtn = document.getElementById('debtQolganBtn');
         const balanceVal = balanceInput ? parseFloat(balanceInput.value) || 0 : 0;
         
-        if (balanceVal > 0) {
-            // Balans ishlatilmoqda → qarz maydonini bloklash
+        // Qisman balans ishlatilsa (0 < balans < mavjud balans) → qarz disable
+        const isPartialBalance = balanceVal > 0 && balanceVal < currentCustomerBalance;
+        
+        if (isPartialBalance) {
+            // Qisman balans → qarz maydonini bloklash
             if (debtUSD) { debtUSD.disabled = true; debtUSD.value = ''; debtUSD.style.background = '#f1f1f1'; debtUSD.style.cursor = 'not-allowed'; }
             if (debtUZS) { debtUZS.disabled = true; debtUZS.value = ''; debtUZS.style.background = '#f1f1f1'; debtUZS.style.cursor = 'not-allowed'; }
             if (debtBtn) { debtBtn.disabled = true; debtBtn.style.background = '#aaa'; debtBtn.style.cursor = 'not-allowed'; }
@@ -5783,7 +5786,7 @@
             const dueDateSection = document.getElementById('paymentDueDateSection');
             if (dueDateSection) dueDateSection.style.display = 'none';
         } else {
-            // Balans ishlatilmayapti → qarz maydonini ochish
+            // To'liq balans yoki balans ishlatilmayapti → qarz maydonini ochish
             if (debtUSD) { debtUSD.disabled = false; debtUSD.style.background = ''; debtUSD.style.cursor = ''; }
             if (debtUZS) { debtUZS.disabled = false; debtUZS.style.background = ''; debtUZS.style.cursor = ''; }
             if (debtBtn) { debtBtn.disabled = false; debtBtn.style.background = '#1a6eff'; debtBtn.style.cursor = 'pointer'; }
