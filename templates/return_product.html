@@ -1198,7 +1198,16 @@
                 // Tarixni yangilash
                 await loadReturnHistory();
             } else if (data.error === 'no_debt') {
-                showMessage(`⚠️ ${data.message}`, 'error');
+                // Modal ochiq — xabarni modal ichida ko'rsat
+                const modal = document.getElementById('returnProductModal');
+                const existingAlert = document.getElementById('noDebtAlert');
+                if (existingAlert) existingAlert.remove();
+                if (modal) {
+                    const innerDiv = modal.querySelector('div');
+                    innerDiv.insertAdjacentHTML('afterbegin', `<div id="noDebtAlert" style="background:#fef3c7;border:2px solid #f59e0b;color:#92400e;padding:12px 16px;border-radius:8px;margin-bottom:16px;font-weight:600;font-size:14px;">⚠️ ${data.message}</div>`);
+                } else {
+                    showMessage(`⚠️ ${data.message}`, 'error');
+                }
             } else {
                 showMessage(`❌ Xatolik: ${data.error}`, 'error');
             }
