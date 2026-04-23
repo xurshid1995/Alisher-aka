@@ -3442,7 +3442,7 @@ def api_customer_timeline(customer_id):
                 'terminal_usd': float(sale.terminal_usd or 0),
                 'debt_usd': float(sale.debt_usd or 0),
                 'currency_rate': float(sale.currency_rate or 0),
-                'seller': sale.seller.full_name if sale.seller else 'Noma\'lum',
+                'seller': f"{sale.seller.first_name} {sale.seller.last_name}".strip() if sale.seller else 'Noma\'lum',
                 'notes': sale.notes or '',
                 'items': items_list,
                 'items_count': len(items_list)
