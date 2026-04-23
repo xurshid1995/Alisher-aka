@@ -3924,6 +3924,83 @@ def api_return_product():
                     logger.warning("⚠️ Savdoda mijoz yo'q, balans o'rniga naqd qaytarish amalga oshiriladi")
                     refund_type = 'cash'  # Fallback to cash
 
+            elif refund_type == 'debt':
+                # Mijoz qarzidan sondir
+                customer = Customer.query.get(sale.customer_id) if sale.customer_id else None
+                if not customer:
+                    return jsonify({'success': False, 'error': 'no_customer',
+                                    'message': 'Savdoda mijoz biriktirilmagan. Naqd qaytarish tanlang.'}), 400
+
+                remaining_to_deduct = total_returned_usd
+
+                # 1. Avval o'sha savdoning o'z qarzidan ayir
+                if sale.debt_usd and sale.debt_usd > 0:
+                    old_debt = Decimal(str(sale.debt_usd))
+                    deduct = min(remaining_to_deduct, old_debt)
+                    sale.debt_usd = old_debt - deduct
+                    if sale.debt_usd <= 0:
+                        sale.debt_usd = Decimal('0')
+                        sale.payment_status = 'paid'
+                    remaining_to_deduct -= deduct
+                    logger.info(f"💳 Savdo #{sale_id} qarzidan ${deduct} sondirildi (qoldi: ${sale.debt_usd})")
+
+                # 2. Agar hali qolsa — boshqa qarzli savdolardan (eng eskisidan)
+                if remaining_to_deduct > 0:
+                    other_debt_sales = Sale.query.filter(
+                        Sale.customer_id == sale.customer_id,
+                        Sale.id != sale_id,
+                        Sale.debt_usd > 0
+                    ).order_by(Sale.sale_date.asc()).all()
+
+                    if not other_debt_sales and remaining_to_deduct == total_returned_usd:
+                        # Umuman qarz yo'q
+                        return jsonify({
+                            'success': False,
+                            'error': 'no_debt',
+                            'message': f'Bu mijozda hech qanday qarz savdosi yo\'q. '
+                                       f'Iltimos balansga o\'tkazing yoki naqd qaytaring.'
+                        }), 400
+
+                    for ds in other_debt_sales:
+                        if remaining_to_deduct <= 0:
+                            break
+                        old_d = Decimal(str(ds.debt_usd))
+                        d2 = min(Decimal(str(remaining_to_deduct)), old_d)
+                        ds.debt_usd = old_d - d2
+                        if ds.debt_usd <= 0:
+                            ds.debt_usd = Decimal('0')
+                            ds.payment_status = 'paid'
+                        remaining_to_deduct -= float(d2)
+                        logger.info(f"💳 Savdo #{ds.id} qarzidan ${d2} sondirildi (qoldi: ${ds.debt_usd})")
+
+                # 3. Agar baribir qolsa (barcha qarzlar yopildi) — balansga
+                if remaining_to_deduct > 0.001:
+                    customer.balance = Decimal(str(customer.balance or 0)) + Decimal(str(remaining_to_deduct))
+                    logger.info(f"🏦 Ortiqcha ${remaining_to_deduct:.2f} balansga qo'shildi")
+
+                refund_operation = OperationHistory(
+                    operation_type='payment_refund',
+                    table_name='sales',
+                    record_id=sale_id,
+                    user_id=session.get('user_id'),
+                    username=session.get('username'),
+                    description=f"Qaytarilgan summa qarzdan sondirildi: ${float(total_returned_usd):.2f} (Savdo #{sale_id})",
+                    old_data={},
+                    new_data={
+                        'sale_id': sale_id,
+                        'payment_type': 'debt',
+                        'refund_amount_usd': float(total_returned_usd),
+                    },
+                    ip_address=request.remote_addr,
+                    location_id=location_id,
+                    location_type=location_type,
+                    location_name=location_name,
+                    amount=float(total_returned_usd * sale.currency_rate)
+                )
+                db.session.add(refund_operation)
+
+
+
             if refund_type == 'cash':
                 # Smart Logic: avval qarz, keyin naqd, click, terminal
                 remaining_refund = total_returned_usd

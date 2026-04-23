@@ -1088,6 +1088,9 @@
                                 ${sale.customer_id ? `
                                 <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 10px 18px; border-radius: 8px; border: 2px solid #3b82f6; background: #eff6ff; font-weight: 600; color: #1e40af; font-size: 14px;">
                                     <input type="radio" name="refundType_${sale.id}" value="balance" style="accent-color: #3b82f6; width:16px; height:16px;" onchange="enableReturnBtn(${productId})"> 🏦 Mijoz balansiga
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 10px 18px; border-radius: 8px; border: 2px solid #dc2626; background: #fef2f2; font-weight: 600; color: #991b1b; font-size: 14px;">
+                                    <input type="radio" name="refundType_${sale.id}" value="debt" style="accent-color: #dc2626; width:16px; height:16px;" onchange="enableReturnBtn(${productId})"> 💳 Qarzdan sondir
                                 </label>` : ''}
                             </div>
                         </div>
@@ -1181,6 +1184,8 @@
             if (data.success) {
                 const msg = refundType === 'balance'
                     ? '✅ Mahsulot qaytarildi! Pul mijoz balansiga qo\'shildi.'
+                    : refundType === 'debt'
+                    ? '✅ Mahsulot qaytarildi! Qarz kamaytirildi.'
                     : '✅ Mahsulot muvaffaqiyatli qaytarildi! Naxt pul qaytarildi.';
                 showMessage(msg, 'success');
                 closeReturnModal();
@@ -1192,6 +1197,8 @@
                 
                 // Tarixni yangilash
                 await loadReturnHistory();
+            } else if (data.error === 'no_debt') {
+                showMessage(`⚠️ ${data.message}`, 'error');
             } else {
                 showMessage(`❌ Xatolik: ${data.error}`, 'error');
             }
@@ -1484,6 +1491,8 @@
             if (data.success) {
                 const msg = refundType === 'balance'
                     ? '✅ Mahsulotlar qaytarildi! Pul mijoz balansiga qo\'shildi.'
+                    : refundType === 'debt'
+                    ? '✅ Mahsulotlar qaytarildi! Qarz kamaytirildi.'
                     : '✅ Mahsulotlar muvaffaqiyatli qaytarildi! Naxt pul qaytarildi.';
                 showMessage(msg, 'success');
                 // Formani tozalash
@@ -1493,17 +1502,15 @@
                     currentSale = null;
                     returnItems = [];
                 }, 2000);
+            } else if (data.error === 'no_debt') {
+                showMessage(`⚠️ ${data.message}`, 'error');
             } else {
                 showMessage('❌ Xatolik: ' + data.error, 'error');
             }
-        } catch (error) {
-            console.error('Xatolik:', error);
-            showMessage('❌ Server bilan bog\'lanishda xatolik!', 'error');
         }
     }
 
     function getPaymentStatusText(status) {
-        const statuses = {
             'paid': '✅ To\'langan',
             'partial': '⚠️ Qisman to\'langan',
             'pending': '⏳ Kutilmoqda',
