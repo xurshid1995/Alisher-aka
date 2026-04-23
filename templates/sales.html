@@ -5828,9 +5828,16 @@
         const balanceInputEl = document.getElementById('paymentBalanceUSD');
         const balanceUsedAmt = balanceInputEl ? parseFloat(balanceInputEl.value) || 0 : 0;
         
-        console.log('💵 Hozirgi to\'lovlar (faqat USD):', { cashUSD, clickUSD, terminalUSD, debtUSD, balanceUsedAmt });
+        // O'zini (bosayotgan maydoni) currentTotal dan chiqarib tashlash - aks holda oscillatsiya bo'ladi
+        const selfValue = fieldId === 'paymentCashUSD' ? cashUSD
+                        : fieldId === 'paymentClickUSD' ? clickUSD
+                        : fieldId === 'paymentTerminalUSD' ? terminalUSD
+                        : fieldId === 'paymentDebtUSD' ? debtUSD
+                        : 0;
         
-        const currentTotal = cashUSD + clickUSD + terminalUSD + debtUSD + balanceUsedAmt;
+        console.log('💵 Hozirgi to\'lovlar (faqat USD):', { cashUSD, clickUSD, terminalUSD, debtUSD, balanceUsedAmt, selfValue });
+        
+        const currentTotal = cashUSD + clickUSD + terminalUSD + debtUSD + balanceUsedAmt - selfValue;
         const remaining = totalUSD - currentTotal;
         
         console.log('📊 Hozirgi jami:', currentTotal);
