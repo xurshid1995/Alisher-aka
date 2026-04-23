@@ -5840,6 +5840,7 @@
         const fieldElement = document.getElementById(fieldId);
         if (!fieldElement) {
             console.error('❌ Field element topilmadi:', fieldId);
+            isAddingRemaining = false;
             return;
         }
         
@@ -5848,6 +5849,7 @@
         
         if (remaining === 0) {
             console.log('✅ To\'lov to\'liq to\'langan, o\'zgartirish shart emas');
+            isAddingRemaining = false;
             return;
         } else if (remaining > 0) {
             // Kam to'langan: qolgan summani o'rnatish (replace)
