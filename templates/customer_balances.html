@@ -333,15 +333,9 @@
         <input type="text" class="cb-search" id="cb-search"
                placeholder="{{ t('cb_search_placeholder') }}"
                oninput="filterTable()">
-        <button class="cb-sort-btn active" id="sort-debt" onclick="sortBy('debt')">
-            <i class="fas fa-sort-amount-down"></i> {{ t('cb_sort_debt') }}
-        </button>
-        <button class="cb-sort-btn" id="sort-name" onclick="sortBy('name')">
-            <i class="fas fa-sort-alpha-down"></i> {{ t('cb_sort_name') }}
-        </button>
-        <button class="cb-sort-btn" id="sort-payment" onclick="sortBy('payment')">
-            <i class="fas fa-clock"></i> {{ t('cb_sort_payment') }}
-        </button>
+        <button class="cb-sort-btn active" id="filter-all" onclick="setFilter('all')">Barchasi</button>
+        <button class="cb-sort-btn" id="filter-debt" onclick="setFilter('debt')">💳 Qarzli mijozlar</button>
+        <button class="cb-sort-btn" id="filter-balance" onclick="setFilter('balance')">💰 Balansi bor mijozlar</button>
     </div>
 
     <!-- Table -->
@@ -386,7 +380,6 @@ const CB_LANG = {
 };
 
 let allCustomers = [];
-let currentSort = 'debt';
 let exchangeRate = 12500;
 
 // ── YUKLA ──────────────────────────────────────
@@ -485,38 +478,33 @@ function renderTable(list) {
     document.getElementById('cb-tbody').innerHTML = rows;
 }
 
+// ── Joriy filter ──────────────────────────────
+let currentFilter = 'all';
+
 // ── QIDIRISH ───────────────────────────────────
 function filterTable() {
+    applyFilterAndSearch();
+}
+
+// ── FILTER ─────────────────────────────────────
+function setFilter(type) {
+    currentFilter = type;
+    document.querySelectorAll('.cb-sort-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('filter-' + type).classList.add('active');
+    applyFilterAndSearch();
+}
+
+function applyFilterAndSearch() {
     const q = document.getElementById('cb-search').value.toLowerCase();
-    const filtered = allCustomers.filter(c =>
+    let filtered = allCustomers.filter(c =>
         (c.name || '').toLowerCase().includes(q) ||
         (c.phone || '').toLowerCase().includes(q)
     );
-    renderTable(applySort(filtered));
-}
-
-// ── TARTIBLASH ─────────────────────────────────
-function sortBy(type) {
-    currentSort = type;
-    document.querySelectorAll('.cb-sort-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById('sort-' + type).classList.add('active');
-    const q = document.getElementById('cb-search').value.toLowerCase();
-    const filtered = allCustomers.filter(c =>
-        (c.name||'').toLowerCase().includes(q) || (c.phone||'').toLowerCase().includes(q)
-    );
-    renderTable(applySort(filtered));
-}
-
-function applySort(list) {
-    const sorted = [...list];
-    if (currentSort === 'debt')    sorted.sort((a,b) => (b.debt_usd||0) - (a.debt_usd||0));
-    if (currentSort === 'name')    sorted.sort((a,b) => (a.name||'').localeCompare(b.name||''));
-    if (currentSort === 'payment') sorted.sort((a,b) => {
-        if (!a.last_payment_date) return 1;
-        if (!b.last_payment_date) return -1;
-        return new Date(b.last_payment_date) - new Date(a.last_payment_date);
-    });
-    return sorted;
+    if (currentFilter === 'debt')    filtered = filtered.filter(c => (c.debt_usd || 0) > 0);
+    if (currentFilter === 'balance') filtered = filtered.filter(c => (c.balance || 0) > 0);
+    // Default tartib: qarz bo'yicha kamayish
+    filtered.sort((a, b) => (b.debt_usd || 0) - (a.debt_usd || 0));
+    renderTable(filtered);
 }
 
 document.addEventListener('DOMContentLoaded', loadBalances);
