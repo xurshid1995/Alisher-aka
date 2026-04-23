@@ -3394,6 +3394,91 @@ def debt_payment_history():
         icon='📜')
 
 
+@app.route('/customer/<int:customer_id>/timeline')
+def customer_timeline(customer_id):
+    """Mijoz barcha amallari ketma-ketligi sahifasi"""
+    try:
+        customer = Customer.query.get_or_404(customer_id)
+        return render_template(
+            'customer_timeline.html',
+            customer=customer,
+            page_title=f'{customer.name} - Amallar tarixi',
+            icon='📋')
+    except Exception as e:
+        app.logger.error(f"Error loading customer timeline: {str(e)}")
+        return "Mijoz ma'lumotlari yuklanmadi", 500
+
+
+@app.route('/api/customer/<int:customer_id>/timeline')
+def api_customer_timeline(customer_id):
+    """Mijoz barcha amallarini ketma-ketlikda qaytaradi (savdolar + to'lovlar)"""
+    try:
+        customer = Customer.query.get_or_404(customer_id)
+        events = []
+
+        # Savdolarni olish
+        sales = Sale.query.filter_by(customer_id=customer_id).order_by(Sale.sale_date.desc()).all()
+        for sale in sales:
+            items_list = []
+            for item in sale.items:
+                items_list.append({
+                    'product_name': item.product_name_snapshot or (item.product.name if item.product else 'Noma\'lum'),
+                    'quantity': item.quantity,
+                    'unit_price': float(item.unit_price or 0),
+                    'total': float((item.unit_price or 0) * item.quantity)
+                })
+            events.append({
+                'type': 'sale',
+                'id': sale.id,
+                'date': sale.sale_date.strftime('%Y-%m-%d %H:%M:%S') if sale.sale_date else None,
+                'total_amount': float(sale.total_amount or 0),
+                'payment_status': sale.payment_status,
+                'cash_usd': float(sale.cash_usd or 0),
+                'click_usd': float(sale.click_usd or 0),
+                'terminal_usd': float(sale.terminal_usd or 0),
+                'debt_usd': float(sale.debt_usd or 0),
+                'currency_rate': float(sale.currency_rate or 0),
+                'seller': sale.seller.full_name if sale.seller else 'Noma\'lum',
+                'notes': sale.notes or '',
+                'items': items_list,
+                'items_count': len(items_list)
+            })
+
+        # Qarz to'lovlarini olish
+        payments = DebtPayment.query.filter_by(customer_id=customer_id).order_by(DebtPayment.payment_date.desc()).all()
+        for p in payments:
+            events.append({
+                'type': 'payment',
+                'id': p.id,
+                'date': p.payment_date.strftime('%Y-%m-%d %H:%M:%S') if p.payment_date else None,
+                'total_usd': float(p.total_usd or 0),
+                'cash_usd': float(p.cash_usd or 0),
+                'click_usd': float(p.click_usd or 0),
+                'terminal_usd': float(p.terminal_usd or 0),
+                'currency_rate': float(p.currency_rate or 0),
+                'received_by': p.received_by or '',
+                'notes': p.notes or '',
+                'sale_id': p.sale_id
+            })
+
+        # Sanaga ko'ra tartiblash (yangirog'i birinchi)
+        events.sort(key=lambda x: x['date'] or '', reverse=True)
+
+        return jsonify({
+            'success': True,
+            'customer': {
+                'id': customer.id,
+                'name': customer.name,
+                'phone': customer.phone or '',
+                'balance': float(customer.balance or 0)
+            },
+            'events': events
+        })
+    except Exception as e:
+        app.logger.error(f"Error in customer timeline API: {str(e)}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
 @app.route('/customer/<int:customer_id>')
 def customer_detail(customer_id):
     """Mijoz tafsilotlari sahifasi"""

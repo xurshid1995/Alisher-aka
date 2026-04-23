@@ -1,0 +1,299 @@
+{% extends "base_with_sidebar.html" %}
+{% block title %}{{ customer.name }} - Amallar tarixi{% endblock %}
+
+{% block extra_css %}
+<style>
+.tl-page { padding: 24px 28px 40px; background: #f5f6fa; min-height: 100vh; }
+
+/* Header */
+.tl-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+.tl-title { font-size: 20px; font-weight: 700; color: #1e293b; margin: 0; display: flex; align-items: center; gap: 8px; }
+.tl-back-btn { background: #64748b; color: white; padding: 8px 18px; border-radius: 8px; text-decoration: none; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
+.tl-back-btn:hover { background: #475569; color: white; text-decoration: none; }
+
+/* Customer info card */
+.tl-customer-card { background: white; border-radius: 12px; padding: 16px 20px; margin-bottom: 20px; display: flex; align-items: center; gap: 16px; box-shadow: 0 1px 6px rgba(0,0,0,0.07); flex-wrap: wrap; }
+.tl-avatar { width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, #1a6eff, #0d47d9); display: flex; align-items: center; justify-content: center; font-size: 20px; color: white; font-weight: 700; flex-shrink: 0; }
+.tl-cname { font-size: 17px; font-weight: 700; color: #1e293b; }
+.tl-cphone { font-size: 13px; color: #64748b; margin-top: 2px; }
+.tl-cbadges { display: flex; gap: 8px; flex-wrap: wrap; margin-left: auto; }
+.tl-badge { padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+.tl-badge-debt { background: #fee2e2; color: #991b1b; }
+.tl-badge-balance { background: #d1fae5; color: #065f46; }
+
+/* Stats */
+.tl-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 20px; }
+.tl-stat { background: white; border-radius: 10px; padding: 14px 16px; box-shadow: 0 1px 6px rgba(0,0,0,0.06); text-align: center; }
+.tl-stat-value { font-size: 18px; font-weight: 700; color: #1e293b; }
+.tl-stat-label { font-size: 12px; color: #64748b; margin-top: 3px; }
+
+/* Filter */
+.tl-filters { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
+.tl-filter-btn { padding: 7px 16px; border: 1px solid #e2e8f0; border-radius: 20px; background: white; color: #475569; font-size: 13px; cursor: pointer; font-weight: 500; transition: all 0.15s; }
+.tl-filter-btn.active { background: #1a6eff; color: white; border-color: #1a6eff; }
+.tl-filter-btn:hover:not(.active) { background: #f1f5f9; }
+
+/* Timeline */
+.tl-container { position: relative; padding-left: 40px; }
+.tl-container::before { content: ''; position: absolute; left: 16px; top: 0; bottom: 0; width: 2px; background: #e2e8f0; }
+
+.tl-item { position: relative; margin-bottom: 16px; }
+.tl-dot { position: absolute; left: -32px; top: 18px; width: 14px; height: 14px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 0 2px currentColor; }
+.tl-dot-sale { color: #1a6eff; background: #1a6eff; }
+.tl-dot-payment { color: #16a34a; background: #16a34a; }
+
+.tl-card { background: white; border-radius: 10px; padding: 14px 16px; box-shadow: 0 1px 5px rgba(0,0,0,0.07); border-left: 3px solid #e2e8f0; }
+.tl-card-sale { border-left-color: #1a6eff; }
+.tl-card-payment { border-left-color: #16a34a; }
+
+.tl-card-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.tl-type-badge { font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 10px; }
+.tl-type-sale { background: #dbeafe; color: #1d4ed8; }
+.tl-type-payment { background: #dcfce7; color: #15803d; }
+.tl-date { font-size: 12px; color: #94a3b8; }
+.tl-amount { font-size: 16px; font-weight: 700; }
+.tl-amount-sale { color: #1e293b; }
+.tl-amount-payment { color: #16a34a; }
+
+.tl-details { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.tl-detail-chip { font-size: 11px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 2px 8px; color: #475569; }
+
+.tl-items-list { margin-top: 10px; border-top: 1px solid #f1f5f9; padding-top: 8px; }
+.tl-items-toggle { font-size: 12px; color: #1a6eff; cursor: pointer; font-weight: 500; background: none; border: none; padding: 0; }
+.tl-items-body { display: none; margin-top: 6px; }
+.tl-items-body.open { display: block; }
+.tl-item-row { display: flex; justify-content: space-between; font-size: 12px; color: #475569; padding: 3px 0; border-bottom: 1px solid #f8fafc; }
+
+.tl-status-paid { background: #dcfce7; color: #15803d; padding: 2px 8px; border-radius: 8px; font-size: 11px; font-weight: 600; }
+.tl-status-debt { background: #fee2e2; color: #991b1b; padding: 2px 8px; border-radius: 8px; font-size: 11px; font-weight: 600; }
+.tl-status-partial { background: #fef3c7; color: #92400e; padding: 2px 8px; border-radius: 8px; font-size: 11px; font-weight: 600; }
+
+.tl-empty { text-align: center; padding: 40px; color: #94a3b8; font-size: 15px; }
+.tl-loading { text-align: center; padding: 40px; color: #94a3b8; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="tl-page">
+    <!-- Header -->
+    <div class="tl-header">
+        <h1 class="tl-title">📋 {{ customer.name }} — Amallar tarixi</h1>
+        <a href="/customer-balances" class="tl-back-btn">← Orqaga</a>
+    </div>
+
+    <!-- Customer info -->
+    <div class="tl-customer-card">
+        <div class="tl-avatar" id="avatarInitial">?</div>
+        <div>
+            <div class="tl-cname">{{ customer.name }}</div>
+            <div class="tl-cphone">📞 {{ customer.phone or '—' }}</div>
+        </div>
+        <div class="tl-cbadges" id="customerBadges"></div>
+    </div>
+
+    <!-- Stats -->
+    <div class="tl-stats" id="statsRow">
+        <div class="tl-stat"><div class="tl-stat-value" id="statSales">—</div><div class="tl-stat-label">Jami savdolar</div></div>
+        <div class="tl-stat"><div class="tl-stat-value" id="statTotalBought">—</div><div class="tl-stat-label">Jami xarid (USD)</div></div>
+        <div class="tl-stat"><div class="tl-stat-value" id="statPayments">—</div><div class="tl-stat-label">To'lovlar soni</div></div>
+        <div class="tl-stat"><div class="tl-stat-value" id="statTotalPaid">—</div><div class="tl-stat-label">Jami to'langan</div></div>
+        <div class="tl-stat"><div class="tl-stat-value tl-amount-sale" id="statDebt">—</div><div class="tl-stat-label">Hozirgi qarz</div></div>
+        <div class="tl-stat"><div class="tl-stat-value" style="color:#065f46" id="statBalance">—</div><div class="tl-stat-label">Balans</div></div>
+    </div>
+
+    <!-- Filters -->
+    <div class="tl-filters">
+        <button class="tl-filter-btn active" onclick="setFilter('all')">Barchasi</button>
+        <button class="tl-filter-btn" onclick="setFilter('sale')">🛒 Savdolar</button>
+        <button class="tl-filter-btn" onclick="setFilter('payment')">💳 To'lovlar</button>
+    </div>
+
+    <!-- Timeline -->
+    <div id="timelineContainer"><div class="tl-loading">⏳ Yuklanmoqda...</div></div>
+</div>
+
+<script>
+const CUSTOMER_ID = {{ customer.id }};
+let allEvents = [];
+let currentFilter = 'all';
+
+async function loadTimeline() {
+    try {
+        const res = await fetch(`/api/customer/${CUSTOMER_ID}/timeline`);
+        const data = await res.json();
+        if (!data.success) { document.getElementById('timelineContainer').innerHTML = '<div class="tl-empty">❌ Ma\'lumot yuklanmadi</div>'; return; }
+
+        allEvents = data.events;
+        const c = data.customer;
+
+        // Avatar
+        document.getElementById('avatarInitial').textContent = (c.name || '?')[0].toUpperCase();
+
+        // Badges
+        const badgesEl = document.getElementById('customerBadges');
+        let badges = '';
+        const totalDebt = allEvents.filter(e => e.type === 'sale').reduce((s, e) => s + (e.debt_usd || 0), 0)
+                        - allEvents.filter(e => e.type === 'payment').reduce((s, e) => s + (e.total_usd || 0), 0);
+        const debtVal = allEvents.filter(e => e.type === 'sale').reduce((s,e) => {
+            // debt = sale.debt_usd
+            return s;
+        }, 0);
+        if (c.balance > 0) badges += `<span class="tl-badge tl-badge-balance">💰 Balans: $${c.balance.toFixed(2)}</span>`;
+
+        // Stats
+        const sales = allEvents.filter(e => e.type === 'sale');
+        const payments = allEvents.filter(e => e.type === 'payment');
+        const totalBought = sales.reduce((s, e) => s + e.total_amount, 0);
+        const totalPaid = payments.reduce((s, e) => s + e.total_usd, 0);
+        const currentDebt = sales.reduce((s,e) => s + (e.debt_usd||0), 0) - totalPaid;
+
+        document.getElementById('statSales').textContent = sales.length + ' ta';
+        document.getElementById('statTotalBought').textContent = '$' + totalBought.toFixed(2);
+        document.getElementById('statPayments').textContent = payments.length + ' ta';
+        document.getElementById('statTotalPaid').textContent = '$' + totalPaid.toFixed(2);
+        document.getElementById('statDebt').textContent = currentDebt > 0 ? '$' + currentDebt.toFixed(2) : '$0.00';
+        document.getElementById('statDebt').style.color = currentDebt > 0 ? '#dc2626' : '#16a34a';
+        document.getElementById('statBalance').textContent = '$' + c.balance.toFixed(2);
+
+        renderTimeline();
+    } catch(e) {
+        document.getElementById('timelineContainer').innerHTML = '<div class="tl-empty">❌ Xatolik: ' + e.message + '</div>';
+    }
+}
+
+function setFilter(type) {
+    currentFilter = type;
+    document.querySelectorAll('.tl-filter-btn').forEach(b => b.classList.remove('active'));
+    event.target.classList.add('active');
+    renderTimeline();
+}
+
+function renderTimeline() {
+    const filtered = currentFilter === 'all' ? allEvents : allEvents.filter(e => e.type === currentFilter);
+    if (filtered.length === 0) {
+        document.getElementById('timelineContainer').innerHTML = '<div class="tl-empty">📭 Amallar topilmadi</div>';
+        return;
+    }
+
+    // Guruhlashtirish: kun bo'yicha
+    const groups = {};
+    filtered.forEach(e => {
+        const day = (e.date || '').substring(0, 10);
+        if (!groups[day]) groups[day] = [];
+        groups[day].push(e);
+    });
+
+    let html = '';
+    Object.keys(groups).sort((a,b) => b.localeCompare(a)).forEach(day => {
+        html += `<div style="font-size:12px;font-weight:700;color:#94a3b8;margin-bottom:8px;margin-top:4px;letter-spacing:0.5px;">${formatDay(day)}</div>`;
+        html += '<div class="tl-container">';
+        groups[day].forEach(e => {
+            html += e.type === 'sale' ? renderSale(e) : renderPayment(e);
+        });
+        html += '</div>';
+    });
+
+    document.getElementById('timelineContainer').innerHTML = html;
+}
+
+function formatDay(dateStr) {
+    if (!dateStr) return '—';
+    const d = new Date(dateStr);
+    const today = new Date(); today.setHours(0,0,0,0);
+    const yesterday = new Date(today); yesterday.setDate(today.getDate()-1);
+    const dd = new Date(dateStr); dd.setHours(0,0,0,0);
+    if (dd.getTime() === today.getTime()) return 'Bugun — ' + dateStr;
+    if (dd.getTime() === yesterday.getTime()) return 'Kecha — ' + dateStr;
+    return dateStr;
+}
+
+function timeOnly(dateStr) {
+    return (dateStr || '').substring(11, 16);
+}
+
+function statusBadge(status) {
+    if (status === 'paid') return '<span class="tl-status-paid">✅ To\'langan</span>';
+    if (status === 'debt') return '<span class="tl-status-debt">💳 Qarz</span>';
+    if (status === 'partial') return '<span class="tl-status-partial">⚠️ Qisman</span>';
+    return '<span class="tl-status-partial">' + status + '</span>';
+}
+
+function renderSale(e) {
+    const chips = [];
+    if (e.cash_usd > 0) chips.push(`💵 Naqd: $${e.cash_usd.toFixed(2)}`);
+    if (e.click_usd > 0) chips.push(`📱 Click: $${e.click_usd.toFixed(2)}`);
+    if (e.terminal_usd > 0) chips.push(`💳 Terminal: $${e.terminal_usd.toFixed(2)}`);
+    if (e.debt_usd > 0) chips.push(`📝 Qarz: $${e.debt_usd.toFixed(2)}`);
+    if (e.currency_rate > 0) chips.push(`📈 Kurs: ${Math.round(e.currency_rate).toLocaleString()} so'm`);
+    if (e.seller) chips.push(`👤 ${e.seller}`);
+
+    const chipsHtml = chips.map(c => `<span class="tl-detail-chip">${c}</span>`).join('');
+
+    let itemsHtml = '';
+    if (e.items && e.items.length > 0) {
+        const rows = e.items.map(i => `<div class="tl-item-row"><span>${i.product_name} × ${i.quantity}</span><span>$${i.total.toFixed(2)}</span></div>`).join('');
+        itemsHtml = `<div class="tl-items-list">
+            <button class="tl-items-toggle" onclick="toggleItems(this)">▶ ${e.items_count} ta mahsulot ko'rish</button>
+            <div class="tl-items-body">${rows}</div>
+        </div>`;
+    }
+
+    const notesHtml = e.notes ? `<div style="font-size:12px;color:#94a3b8;margin-top:6px;">💬 ${e.notes}</div>` : '';
+
+    return `<div class="tl-item">
+        <div class="tl-dot tl-dot-sale"></div>
+        <div class="tl-card tl-card-sale">
+            <div class="tl-card-header">
+                <div style="display:flex;align-items:center;gap:8px;">
+                    <span class="tl-type-badge tl-type-sale">🛒 Savdo #${e.id}</span>
+                    ${statusBadge(e.payment_status)}
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;">
+                    <span class="tl-amount tl-amount-sale">$${e.total_amount.toFixed(2)}</span>
+                    <span class="tl-date">${timeOnly(e.date)}</span>
+                </div>
+            </div>
+            <div class="tl-details">${chipsHtml}</div>
+            ${itemsHtml}
+            ${notesHtml}
+        </div>
+    </div>`;
+}
+
+function renderPayment(e) {
+    const chips = [];
+    if (e.cash_usd > 0) chips.push(`💵 Naqd: $${e.cash_usd.toFixed(2)}`);
+    if (e.click_usd > 0) chips.push(`📱 Click: $${e.click_usd.toFixed(2)}`);
+    if (e.terminal_usd > 0) chips.push(`💳 Terminal: $${e.terminal_usd.toFixed(2)}`);
+    if (e.currency_rate > 0) chips.push(`📈 Kurs: ${Math.round(e.currency_rate).toLocaleString()} so'm`);
+    if (e.received_by) chips.push(`👤 ${e.received_by}`);
+    if (e.sale_id) chips.push(`🔗 Savdo #${e.sale_id}`);
+
+    const chipsHtml = chips.map(c => `<span class="tl-detail-chip">${c}</span>`).join('');
+    const notesHtml = e.notes ? `<div style="font-size:12px;color:#94a3b8;margin-top:6px;">💬 ${e.notes}</div>` : '';
+
+    return `<div class="tl-item">
+        <div class="tl-dot tl-dot-payment"></div>
+        <div class="tl-card tl-card-payment">
+            <div class="tl-card-header">
+                <span class="tl-type-badge tl-type-payment">💳 To'lov #${e.id}</span>
+                <div style="display:flex;align-items:center;gap:8px;">
+                    <span class="tl-amount tl-amount-payment">+$${e.total_usd.toFixed(2)}</span>
+                    <span class="tl-date">${timeOnly(e.date)}</span>
+                </div>
+            </div>
+            <div class="tl-details">${chipsHtml}</div>
+            ${notesHtml}
+        </div>
+    </div>`;
+}
+
+function toggleItems(btn) {
+    const body = btn.nextElementSibling;
+    const open = body.classList.toggle('open');
+    btn.textContent = (open ? '▼ ' : '▶ ') + btn.textContent.substring(2);
+}
+
+document.addEventListener('DOMContentLoaded', loadTimeline);
+</script>
+{% endblock %}
