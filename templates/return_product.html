@@ -1507,10 +1507,14 @@
             } else {
                 showMessage('❌ Xatolik: ' + data.error, 'error');
             }
+        } catch (error) {
+            console.error('Xatolik:', error);
+            showMessage('❌ Server bilan bog\'lanishda xatolik!', 'error');
         }
     }
 
     function getPaymentStatusText(status) {
+        const statuses = {
             'paid': '✅ To\'langan',
             'partial': '⚠️ Qisman to\'langan',
             'pending': '⏳ Kutilmoqda',
