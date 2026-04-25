@@ -397,7 +397,7 @@
                 <div class="form-group">
                     <label for="password">{{ t('eu_new_password') }}</label>
                     <div class="password-input-container" style="position: relative;">
-                        <input type="password" id="password" name="password" autocomplete="new-password" placeholder="{{ t('eu_password_placeholder') }}" style="padding-right: 40px; background-color: white !important; border: 1px solid #ddd;">
+                        <input type="password" id="password" name="password" autocomplete="new-password" value="••••••••" data-sentinel="true" placeholder="{{ t('eu_password_placeholder') }}" style="padding-right: 40px; background-color: white !important; border: 1px solid #ddd;" onfocus="if(this.dataset.sentinel==='true'){this.value='';this.dataset.sentinel='false';}" onblur="if(this.value===''){this.value='••••••••';this.dataset.sentinel='true';}">
                         <button type="button" class="password-toggle" onclick="togglePasswordVisibility('password')" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 18px; color: #666;">👁️</button>
                     </div>
                     <div class="error-message" id="passwordError"></div>
@@ -938,9 +938,10 @@
             is_active: document.getElementById('is_active').checked
         };
 
-        // Parol o'zgartirilsa qo'shish
-        const newPassword = document.getElementById('password').value.trim();
-        if (newPassword) {
+        // Parol o'zgartirilsa qo'shish (sentinel bo'lsa o'zgartirmaslik)
+        const pwdField = document.getElementById('password');
+        const newPassword = pwdField.value.trim();
+        if (newPassword && pwdField.dataset.sentinel !== 'true') {
             formData.password = newPassword;
         }
 
