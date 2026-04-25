@@ -13797,8 +13797,8 @@ def api_forgot_password():
         user.reset_code_expires_at = expires_at
         db.session.commit()
 
-        # Telegram orqali kod yuborish
-        bot_token = os.getenv('TELEGRAM_BOT_TOKEN')
+        # Telegram orqali kod yuborish (@Paroltiklash_bot)
+        bot_token = os.getenv('TELEGRAM_RESET_BOT_TOKEN') or os.getenv('TELEGRAM_BOT_TOKEN')
         if bot_token:
             import requests as _req
             msg = (
