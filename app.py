@@ -13815,15 +13815,18 @@ def api_verify_reset_code():
 
         clean_input = ''.join(filter(str.isdigit, phone_input))
 
-        # DBdan userni topish
+        # DBdan userni topish — reset_code si bor userni afzal ko'r
         user = None
         all_users = User.query.filter_by(is_active=True).all()
         for u in all_users:
             if u.phone:
                 clean_db = ''.join(filter(str.isdigit, u.phone))
                 if len(clean_input) >= 9 and len(clean_db) >= 9 and clean_db[-9:] == clean_input[-9:]:
-                    user = u
-                    break
+                    if u.reset_code:
+                        user = u
+                        break
+                    elif user is None:
+                        user = u  # fallback: telefon mos kelsa ham
 
         if not user or not user.reset_code:
             return jsonify({'success': False, 'message': 'Kod topilmadi yoki muddati o\'tgan'}), 400
