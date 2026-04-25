@@ -397,7 +397,7 @@
                 <div class="form-group">
                     <label for="password">{{ t('eu_new_password') }}</label>
                     <div class="password-input-container" style="position: relative;">
-                        <input type="password" id="password" name="password" placeholder="{{ t('eu_password_placeholder') }}" style="padding-right: 40px; background-color: white !important; border: 1px solid #ddd;">
+                        <input type="password" id="password" name="password" autocomplete="new-password" placeholder="{{ t('eu_password_placeholder') }}" style="padding-right: 40px; background-color: white !important; border: 1px solid #ddd;">
                         <button type="button" class="password-toggle" onclick="togglePasswordVisibility('password')" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 18px; color: #666;">👁️</button>
                     </div>
                     <div class="error-message" id="passwordError"></div>
