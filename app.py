@@ -1110,6 +1110,8 @@ class User(db.Model):
     password = db.Column(db.String(255), nullable=False)
     phone = db.Column(db.String(20))
     telegram_chat_id = db.Column(db.BigInteger, nullable=True)  # Parol tiklash uchun Telegram chat ID
+    reset_code = db.Column(db.String(6), nullable=True)
+    reset_code_expires_at = db.Column(db.DateTime, nullable=True)
     # admin, sotuvchi, kassir, ombor_xodimi
     role = db.Column(db.String(50), nullable=False, default='sotuvchi')
     store_id = db.Column(db.Integer, db.ForeignKey('stores.id'), nullable=True)
@@ -13744,7 +13746,6 @@ def api_login():
 def api_forgot_password():
     """1-qadam: Telefon raqam orqali OTP yuborish"""
     try:
-        _cleanup_reset_codes()
         data = request.get_json()
         phone_input = (data.get('phone') or '').strip()
         if not phone_input:
@@ -13771,18 +13772,14 @@ def api_forgot_password():
                 'message': f'Telegram bog\'lanmagan. Avval @Sergeli143_bot ga /link_account yozing.'
             }), 400
 
-        # 6 raqamli OTP yaratish
+        # 6 raqamli OTP yaratish va DBga saqlash
         import random as _random
         code = str(_random.randint(100000, 999999))
         expires_at = datetime.now() + timedelta(minutes=5)
 
-        with _reset_codes_lock:
-            _password_reset_codes[clean_input[-9:]] = {
-                'code': code,
-                'user_id': user.id,
-                'username': user.username,
-                'expires_at': expires_at
-            }
+        user.reset_code = code
+        user.reset_code_expires_at = expires_at
+        db.session.commit()
 
         # Telegram orqali kod yuborish
         bot_token = os.getenv('TELEGRAM_BOT_TOKEN')
@@ -13812,43 +13809,51 @@ def api_forgot_password():
 def api_verify_reset_code():
     """2-qadam: OTP kodni tekshirish va token qaytarish"""
     try:
-        _cleanup_reset_codes()
         data = request.get_json()
         phone_input = (data.get('phone') or '').strip()
         code_input = (data.get('code') or '').strip()
 
         clean_input = ''.join(filter(str.isdigit, phone_input))
-        key = clean_input[-9:] if len(clean_input) >= 9 else clean_input
 
-        with _reset_codes_lock:
-            entry = _password_reset_codes.get(key)
+        # DBdan userni topish
+        user = None
+        all_users = User.query.filter_by(is_active=True).all()
+        for u in all_users:
+            if u.phone:
+                clean_db = ''.join(filter(str.isdigit, u.phone))
+                if len(clean_input) >= 9 and len(clean_db) >= 9 and clean_db[-9:] == clean_input[-9:]:
+                    user = u
+                    break
 
-        if not entry:
+        if not user or not user.reset_code:
             return jsonify({'success': False, 'message': 'Kod topilmadi yoki muddati o\'tgan'}), 400
 
-        if datetime.now() > entry['expires_at']:
-            with _reset_codes_lock:
-                _password_reset_codes.pop(key, None)
+        if user.reset_code_expires_at and datetime.now() > user.reset_code_expires_at:
+            user.reset_code = None
+            user.reset_code_expires_at = None
+            db.session.commit()
             return jsonify({'success': False, 'message': 'Kod muddati o\'tgan, qayta so\'rang'}), 400
 
-        if entry['code'] != code_input:
+        if user.reset_code != code_input:
             return jsonify({'success': False, 'message': 'Kod noto\'g\'ri'}), 400
 
-        # Kod to'g'ri — bir martalik token yaratish
+        # Kod to'g'ri — bir martalik token yaratish va DBga saqlash
         token = secrets.token_urlsafe(32)
         expires_at = datetime.now() + timedelta(minutes=10)
         with _reset_codes_lock:
             _reset_tokens[token] = {
-                'user_id': entry['user_id'],
-                'username': entry['username'],
+                'user_id': user.id,
+                'username': user.username,
                 'expires_at': expires_at
             }
-            _password_reset_codes.pop(key, None)
+        user.reset_code = None
+        user.reset_code_expires_at = None
+        db.session.commit()
 
         return jsonify({
             'success': True,
             'token': token,
-            'username': entry['username']
+            'username': user.username
         })
 
     except Exception as e:
