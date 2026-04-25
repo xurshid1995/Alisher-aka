@@ -88,9 +88,9 @@
     <div class="tl-header">
         <div class="tl-customer-card" style="margin:0;box-shadow:none;background:transparent;padding:0;">
             <div class="tl-avatar" id="avatarInitial">?</div>
-            <div>
+            <div style="display: flex; align-items: center; gap: 10px;">
                 <div class="tl-cname">{{ customer.name }}</div>
-                <div class="tl-cphone">📞 {{ customer.phone or '—' }}</div>
+                <div class="tl-cphone" style="margin:0;">📞 {{ customer.phone or '—' }}</div>
             </div>
             <div class="tl-cbadges" id="customerBadges"></div>
         </div>
