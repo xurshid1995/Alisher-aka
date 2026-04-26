@@ -5638,6 +5638,7 @@ def api_store_stock(store_id):
                         'barcode': stock.product.barcode,
                         'unit_type': stock.product.unit_type,
                         'cost_price': float(stock.product.cost_price),
+                        'min_stock': min_stock,
                         'sell_price': float(stock.product.sell_price),
                         'last_batch_cost': float(stock.product.last_batch_cost) if stock.product.last_batch_cost else None,
                         'last_batch_date': stock.product.last_batch_date.isoformat() if stock.product.last_batch_date else None
@@ -6039,6 +6040,7 @@ def api_warehouse_stock(warehouse_id):
                         'unit_type': stock.product.unit_type,
                         'cost_price': float(stock.product.cost_price),
                         'sell_price': float(stock.product.sell_price),
+                        'min_stock': min_stock,
                         'last_batch_cost': float(stock.product.last_batch_cost) if stock.product.last_batch_cost else None,
                         'last_batch_date': stock.product.last_batch_date.isoformat() if stock.product.last_batch_date else None
                     }
