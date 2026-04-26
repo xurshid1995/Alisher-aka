@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hosting Widget Demo - Test sahifa</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 800px;
+            width: 100%;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 32px;
+        }
+        .subtitle {
+            color: #888;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+        .info-box {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            border-left: 4px solid #667eea;
+        }
+        .info-box h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+        .info-box p {
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 8px;
+        }
+        .info-box code {
+            background: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            color: #e83e8c;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+        }
+        .feature-list {
+            list-style: none;
+            margin: 20px 0;
+        }
+        .feature-list li {
+            padding: 10px 0;
+            padding-left: 30px;
+            position: relative;
+            color: #555;
+        }
+        .feature-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #28a745;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        .alert {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+        }
+        .alert strong {
+            color: #856404;
+            display: block;
+            margin-bottom: 8px;
+        }
+        .alert p {
+            color: #856404;
+            margin: 0;
+            font-size: 14px;
+        }
+        .code-block {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        .code-block .comment {
+            color: #6a9955;
+        }
+        .code-block .tag {
+            color: #569cd6;
+        }
+        .code-block .attr {
+            color: #9cdcfe;
+        }
+        .code-block .string {
+            color: #ce9178;
+        }
+        .instructions {
+            background: #e7f3ff;
+            border-left: 4px solid #0088cc;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 25px;
+        }
+        .instructions h3 {
+            color: #0088cc;
+            margin-bottom: 15px;
+        }
+        .instructions ol {
+            margin-left: 20px;
+            color: #555;
+        }
+        .instructions ol li {
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+        @media (max-width: 768px) {
+            .container {
+                padding: 25px;
+            }
+            h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🖥️ Hosting Widget Demo</h1>
+        <p class="subtitle">Bu sahifa widget ishlashini test qilish uchun yaratilgan</p>
+
+        <div class="alert">
+            <strong>⚠️ MUHIM:</strong>
+            <p>Widgetning ko'rinishi uchun mijozning <code>status_token</code> aktiv bo'lishi va server ishlab turishi kerak!</p>
+        </div>
+
+        <div class="info-box">
+            <h3>📋 Widget nima qiladi?</h3>
+            <ul class="feature-list">
+                <li>Mijozning hozirgi balansini real-time ko'rsatadi</li>
+                <li>Server holatini monitoring qiladi (Faol/O'chiq/Bloklangan)</li>
+                <li>Qolgan kunlar sonini hisoblaydi</li>
+                <li>Oylik to'lov miqdorini ko'rsatadi</li>
+                <li>Telegram bot orqali to'lov qilish imkonini beradi</li>
+                <li>Support bilan bog'lanish uchun QR code</li>
+                <li>3 tilda: O'zbek lotin, O'zbek kirill, Rus</li>
+                <li>Mobil qurilmalarda drag & drop qilish mumkin</li>
+            </ul>
+        </div>
+
+        <div class="info-box">
+            <h3>🎨 Widget ranglari (avtomatik):</h3>
+            <ul class="feature-list">
+                <li><strong style="color: #28a745;">🟢 Yashil</strong> - 7+ kun qolgan (Balans yaxshi)</li>
+                <li><strong style="color: #ffc107;">🟡 Sariq</strong> - 3-7 kun qolgan (Ogohlantirish)</li>
+                <li><strong style="color: #dc3545;">🔴 Qizil</strong> - 0-3 kun qolgan (Xavfli)</li>
+                <li><strong style="color: #721c24;">⛔ To'q qizil</strong> - Balans tugagan</li>
+            </ul>
+        </div>
+
+        <div class="info-box">
+            <h3>💻 Widget kodini qanday olish kerak?</h3>
+            <p><strong>Admin panel orqali:</strong></p>
+            <ol style="margin-left: 20px; margin-top: 10px; color: #555;">
+                <li>Brauzerda <code>/hosting</code> sahifasiga kiring</li>
+                <li>Kerakli mijozni ro'yxatdan tanlang</li>
+                <li>"✏️ Tahrirlash" tugmasini bosing</li>
+                <li>Modal oynada "Widget kodi" bo'limi paydo bo'ladi</li>
+                <li>"📋 Nusxalash" tugmasi bilan kodini nusxalang</li>
+            </ol>
+        </div>
+
+        <div class="instructions">
+            <h3>🚀 Widget o'rnatish bo'yicha qo'llanma</h3>
+            <ol>
+                <li><strong>HTML saytiga qo'shish:</strong> <code>&lt;/body&gt;</code> tegidan oldin widget kodini joylashtiring</li>
+                <li><strong>WordPress saytiga:</strong> Theme Editor → footer.php faylida <code>&lt;/body&gt;</code> dan oldin qo'shing</li>
+                <li><strong>React/Vue/Angular:</strong> index.html faylida yoki dinamik ravishda script yuklang</li>
+                <li><strong>Pozitsiya:</strong> <code>data-position="bottom-right"</code> (bottom-left, top-right, top-left)</li>
+                <li><strong>Til:</strong> <code>data-lang="uz_latin"</code> (uz_cyrillic, ru)</li>
+            </ol>
+        </div>
+
+        <div class="info-box">
+            <h3>📝 Kod misoli:</h3>
+            <div class="code-block">
+<span class="comment">&lt;!-- O'ng pastda (default) --&gt;</span>
+<span class="tag">&lt;script</span> <span class="attr">src</span>=<span class="string">"https://your-domain.com/static/js/hosting-widget.js"</span>
+        <span class="attr">data-token</span>=<span class="string">"MIJOZ_TOKENI"</span><span class="tag">&gt;&lt;/script&gt;</span>
+
+<span class="comment">&lt;!-- Chap pastda, rus tilida --&gt;</span>
+<span class="tag">&lt;script</span> <span class="attr">src</span>=<span class="string">"https://your-domain.com/static/js/hosting-widget.js"</span>
+        <span class="attr">data-token</span>=<span class="string">"MIJOZ_TOKENI"</span>
+        <span class="attr">data-position</span>=<span class="string">"bottom-left"</span>
+        <span class="attr">data-lang</span>=<span class="string">"ru"</span><span class="tag">&gt;&lt;/script&gt;</span>
+            </div>
+        </div>
+
+        <div class="info-box">
+            <h3>🔧 Texnik tafsilotlar:</h3>
+            <p><strong>Backend API:</strong> <code>GET /api/hosting/widget/&lt;token&gt;</code></p>
+            <p><strong>Update interval:</strong> Har 5 daqiqada avtomatik yangilanadi</p>
+            <p><strong>CORS:</strong> Access-Control-Allow-Origin: * (Har qanday domendan ishlaydi)</p>
+            <p><strong>Cache:</strong> Brauzer localStorage'da pozitsiya saqlanadi (mobil)</p>
+            <p><strong>Browser support:</strong> IE11+, Chrome, Firefox, Safari, Edge</p>
+        </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- WIDGET KODI - TEST UCHUN -->
+    <!-- Real token o'rniga o'z tokeningizni qo'ying -->
+    <!-- ============================================ -->
+    
+    <!-- DEMO: Bu joyda haqiqiy token kerak -->
+    <!-- <script src="https://your-domain.com/static/js/hosting-widget.js" data-token="HAQIQIY_TOKEN"></script> -->
+    
+    <script>
+        // Demo rejimda ogohlantirish
+        console.log('%c🖥️ Hosting Widget Demo sahifa', 'font-size: 20px; color: #667eea; font-weight: bold;');
+        console.log('%cWidget test qilish uchun:', 'font-size: 14px; color: #555;');
+        console.log('1️⃣ Admin paneldan mijozning status_token ni oling');
+        console.log('2️⃣ HTML kodida data-token="TOKEN" ga tokenni qo\'ying');
+        console.log('3️⃣ Sahifani yangilang (Ctrl+F5)');
+        console.log('');
+        console.log('%cMisol:', 'font-size: 14px; color: #28a745; font-weight: bold;');
+        console.log('<script src="https://your-domain.com/static/js/hosting-widget.js" data-token="abc123def456"><' + '/script>');
+    </script>
+</body>
+</html>
