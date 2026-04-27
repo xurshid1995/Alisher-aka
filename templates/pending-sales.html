@@ -1878,8 +1878,10 @@ function generatePaymentDetailsHTML(sale) {
         { name: '📝 ' + PSLANG.debt_payment, amount: details.debt || 0, isDebt: true }
     ];
     
-    // Faqat 0 dan katta to'lovlarni ko'rsatish
+    // Jami hisoblash uchun barcha 0 dan katta to'lovlar (qarz ham)
     const activePayments = payments.filter(p => p.amount > 0);
+    // Kartochkalarda faqat qarz bo'lmagan to'lovlarni ko'rsatish
+    const displayPayments = activePayments.filter(p => !p.isDebt);
     
     // Agar hech qanday payment_details bo'lmasa, payment_method orqali ko'rsatish
     if (activePayments.length === 0) {
@@ -1893,8 +1895,8 @@ function generatePaymentDetailsHTML(sale) {
     
     const fmtUsd = v => parseFloat(parseFloat(v).toFixed(5)).toString().replace(/\.?0+$/, '');
 
-    // To'lov turlarini USD + UZS bilan ko'rsatish (sales-history uslubi)
-    const paymentsHTML = activePayments
+    // To'lov turlarini USD + UZS bilan ko'rsatish (qarz kartochkasiz)
+    const paymentsHTML = displayPayments
         .map(p => `
             <div style="display: inline-block; background: #f8f9fa; padding: 8px 14px; margin: 4px ${p.isDebt ? '40px' : '8px'} 4px 0; border-radius: 6px; border-left: 4px solid #007bff;">
                 <div style="font-weight: 600; color: #495057; margin-bottom: 2px;">${p.name}</div>
