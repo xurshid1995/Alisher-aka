@@ -282,6 +282,21 @@
     }
     .cb-btn-edit:hover { background: #f59e0b; color: white; border-color: #f59e0b; }
 
+    .cb-btn-add {
+        padding: 5px 10px;
+        background: #f0fdf4;
+        color: #16a34a;
+        border: 1px solid #bbf7d0;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.18s;
+        white-space: nowrap;
+        line-height: 1;
+    }
+    .cb-btn-add:hover { background: #16a34a; color: white; border-color: #16a34a; }
+
     /* Balance Edit Modal */
     .cb-modal-overlay {
         display: none;
@@ -453,6 +468,21 @@
 
 </div>
 
+<!-- Balans qo'shish modali -->
+<div class="cb-modal-overlay" id="addBalanceModal">
+    <div class="cb-modal-box">
+        <div class="cb-modal-title"><i class="fas fa-plus-circle" style="color:#16a34a;"></i> Balans qo'shish</div>
+        <div class="cb-modal-subtitle" id="addBalanceSubtitle"></div>
+        <div style="font-size:12px;color:#64748b;margin-bottom:4px;">Joriy balans: <span id="addBalanceCurrent" style="font-weight:700;color:#16a34a;"></span></div>
+        <label style="font-size:12px;font-weight:600;color:#64748b;display:block;margin-bottom:6px;">Qo'shiladigan summa ($)</label>
+        <input type="number" class="cb-modal-input" id="addBalanceInput" min="0.01" step="0.01" placeholder="0.00">
+        <div class="cb-modal-actions">
+            <button class="cb-modal-cancel" onclick="closeAddBalance()">Bekor qilish</button>
+            <button class="cb-modal-save" id="addBalanceSaveBtn" style="background:#16a34a;" onclick="saveAddBalance()"><i class="fas fa-plus"></i> Qo'shish</button>
+        </div>
+    </div>
+</div>
+
 <!-- Balance tahrirlash modali -->
 <div class="cb-modal-overlay" id="editBalanceModal">
     <div class="cb-modal-box">
@@ -572,8 +602,11 @@ function renderTable(list) {
                 <a href="/customer/${c.id}/timeline" class="cb-btn-detail">
                     <i class="fas fa-eye"></i> ${CB_LANG.detail}
                 </a>
+                <button class="cb-btn-add" onclick="openAddBalance(${c.id}, '${c.name.replace(/'/g, "\\'").replace(/"/g, '&quot;')}', ${parseFloat(c.balance||0)})" title="Balans qo'shish">
+                    <i class="fas fa-plus"></i>
+                </button>
                 <button class="cb-btn-edit" onclick="openEditBalance(${c.id}, '${c.name.replace(/'/g, "\\'").replace(/"/g, '&quot;')}', ${parseFloat(c.balance||0)})">
-                    <i class="fas fa-edit"></i> Balans
+                    <i class="fas fa-edit"></i>
                 </button>
             </td>
         </tr>`;
@@ -666,6 +699,59 @@ async function saveBalance() {
 // Modal tashqarisiga bosish
 document.getElementById('editBalanceModal').addEventListener('click', function(e) {
     if (e.target === this) closeEditBalance();
+});
+
+// ── BALANS QO'SHISH ──────────────────────────────
+let addingCustomerId = null;
+
+function openAddBalance(id, name, currentBalance) {
+    addingCustomerId = id;
+    document.getElementById('addBalanceSubtitle').textContent = name;
+    document.getElementById('addBalanceCurrent').textContent = '$' + parseFloat(currentBalance).toFixed(2);
+    document.getElementById('addBalanceInput').value = '';
+    document.getElementById('addBalanceModal').classList.add('open');
+    document.getElementById('addBalanceInput').focus();
+}
+
+function closeAddBalance() {
+    addingCustomerId = null;
+    document.getElementById('addBalanceModal').classList.remove('open');
+}
+
+async function saveAddBalance() {
+    const val = parseFloat(document.getElementById('addBalanceInput').value);
+    if (isNaN(val) || val <= 0) {
+        alert('Iltimos, 0 dan katta summa kiriting');
+        return;
+    }
+    const btn = document.getElementById('addBalanceSaveBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Qo\'shilmoqda...';
+    try {
+        const res = await fetch(`/api/customer/${addingCustomerId}/add-balance`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ amount: val })
+        });
+        const data = await res.json();
+        if (data.success) {
+            const cust = allCustomers.find(c => c.id === addingCustomerId);
+            if (cust) cust.balance = data.new_balance;
+            closeAddBalance();
+            applyFilterAndSearch();
+        } else {
+            alert('Xatolik: ' + data.error);
+        }
+    } catch(e) {
+        alert('Server bilan bog\'lanishda xatolik');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-plus"></i> Qo\'shish';
+    }
+}
+
+document.getElementById('addBalanceModal').addEventListener('click', function(e) {
+    if (e.target === this) closeAddBalance();
 });
 </script>
 {% endblock %}
