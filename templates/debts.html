@@ -970,11 +970,13 @@
 
         const html = debts.map((debt, index) => {
             const remainingDebt = debt.remaining_debt || 0;
+            const remainingDebtUZS = debt.remaining_debt_uzs > 0 ? Math.round(debt.remaining_debt_uzs) : Math.round(remainingDebt * exchangeRate);
             const status = remainingDebt > 0 ? 'debt' : 'paid';
             const statusText = remainingDebt > 0 ? DLANG.status_debtor : DLANG.status_paid;
             const lastPayment = debt.last_payment_date || '-';
             const lastPaymentAmount = debt.last_payment_amount || 0;
             const lastPaymentRate = debt.last_payment_rate || exchangeRate;
+            const lastPaymentUZS = debt.last_payment_uzs > 0 ? Math.round(debt.last_payment_uzs) : Math.round(lastPaymentAmount * lastPaymentRate);
             const dueDateHtml = formatDueDateCell(debt.sale_due_dates || [], debt.customer_id);
 
             return `
@@ -984,11 +986,11 @@
                     <td>${debt.customer_phone || '-'}</td>
                     <td>
                         <strong style="color: ${remainingDebt > 0 ? '#dc3545' : '#28a745'}">$${remainingDebt.toFixed(2)}</strong>
-                        <br><small style="color: #666;">${(remainingDebt * exchangeRate).toLocaleString('uz-UZ')} ${DLANG.sum_currency}</small>
+                        <br><small style="color: #666;">${remainingDebtUZS.toLocaleString('uz-UZ')} ${DLANG.sum_currency}</small>
                     </td>
                     <td>
                         <strong style="color: #28a745">$${lastPaymentAmount.toFixed(2)}</strong>
-                        <br><small style="color: #666;">${(lastPaymentAmount * lastPaymentRate).toLocaleString('uz-UZ')} ${DLANG.sum_currency}</small>
+                        <br><small style="color: #666;">${lastPaymentUZS.toLocaleString('uz-UZ')} ${DLANG.sum_currency}</small>
                     </td>
                     <td>${lastPayment}</td>
                     <td><span class="status-badge ${status}">${statusText}</span></td>
@@ -1036,11 +1038,13 @@
 
         const html = filtered.map((debt, index) => {
             const remainingDebt = debt.remaining_debt || 0;
+            const remainingDebtUZS = debt.remaining_debt_uzs > 0 ? Math.round(debt.remaining_debt_uzs) : Math.round(remainingDebt * exchangeRate);
             const status = remainingDebt > 0 ? 'debt' : 'paid';
             const statusText = remainingDebt > 0 ? DLANG.status_debtor : DLANG.status_paid;
             const lastPayment = debt.last_payment_date || '-';
             const lastPaymentAmount = debt.last_payment_amount || 0;
             const lastPaymentRate = debt.last_payment_rate || exchangeRate;
+            const lastPaymentUZS = debt.last_payment_uzs > 0 ? Math.round(debt.last_payment_uzs) : Math.round(lastPaymentAmount * lastPaymentRate);
             const dueDateHtml = formatDueDateCell(debt.sale_due_dates || [], debt.customer_id);
 
             return `
@@ -1050,11 +1054,11 @@
                     <td>${debt.customer_phone || '-'}</td>
                     <td>
                         <strong style="color: ${remainingDebt > 0 ? '#dc3545' : '#28a745'}">$${remainingDebt.toFixed(2)}</strong>
-                        <br><small style="color: #666;">${(remainingDebt * exchangeRate).toLocaleString('uz-UZ')} ${DLANG.sum_currency}</small>
+                        <br><small style="color: #666;">${remainingDebtUZS.toLocaleString('uz-UZ')} ${DLANG.sum_currency}</small>
                     </td>
                     <td>
                         <strong style="color: #28a745">$${lastPaymentAmount.toFixed(2)}</strong>
-                        <br><small style="color: #666;">${(lastPaymentAmount * lastPaymentRate).toLocaleString('uz-UZ')} ${DLANG.sum_currency}</small>
+                        <br><small style="color: #666;">${lastPaymentUZS.toLocaleString('uz-UZ')} ${DLANG.sum_currency}</small>
                     </td>
                     <td>${lastPayment}</td>
                     <td><span class="status-badge ${status}">${statusText}</span></td>

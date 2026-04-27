@@ -978,6 +978,7 @@ class Customer(db.Model):
     store_id = db.Column(db.Integer, db.ForeignKey('stores.id'), nullable=True)
     telegram_chat_id = db.Column(db.BigInteger, nullable=True)
     last_debt_payment_usd = db.Column(db.Numeric(10, 2), default=0)
+    last_debt_payment_uzs = db.Column(db.Numeric(15, 2), default=0)  # UZS da aniq to'lov summasi
     last_debt_payment_date = db.Column(db.DateTime, nullable=True)
     last_debt_payment_rate = db.Column(db.Numeric(10, 2), default=13000)
     balance = db.Column(db.DECIMAL(precision=15, scale=4), nullable=False, default=0)  # Mijoz balansi (ortiqcha to'lov)
@@ -6749,15 +6750,17 @@ def api_debts():
                     COALESCE(SUM(s.debt_usd), 0) as total_debt,
                     0 as paid_amount,
                     COALESCE(SUM(s.debt_usd), 0) as remaining_debt,
+                    COALESCE(SUM(s.debt_amount), 0) as remaining_debt_uzs,
                     c.last_debt_payment_date as last_payment_date,
                     COALESCE(c.last_debt_payment_usd, 0) as last_payment_amount,
                     COALESCE(c.last_debt_payment_rate, 13000) as last_payment_rate,
+                    COALESCE(c.last_debt_payment_uzs, 0) as last_payment_uzs,
                     MIN(s.payment_due_date) as nearest_due_date,
                     MAX(s.sale_date) as last_sale_date
                 FROM customers c
                 LEFT JOIN sales s ON c.id = s.customer_id AND s.debt_usd > 0
                 WHERE c.store_id = :location_id
-                GROUP BY c.id, c.name, c.phone, c.address, c.last_debt_payment_date, c.last_debt_payment_usd, c.last_debt_payment_rate
+                GROUP BY c.id, c.name, c.phone, c.address, c.last_debt_payment_date, c.last_debt_payment_usd, c.last_debt_payment_rate, c.last_debt_payment_uzs
                 HAVING COALESCE(SUM(s.debt_usd), 0) > 0
                 ORDER BY GREATEST(COALESCE(MAX(s.sale_date), '1970-01-01'), COALESCE(c.last_debt_payment_date, '1970-01-01')) DESC
             """)
@@ -6789,15 +6792,17 @@ def api_debts():
                         COALESCE(SUM(s.debt_usd), 0) as total_debt,
                         0 as paid_amount,
                         COALESCE(SUM(s.debt_usd), 0) as remaining_debt,
+                        COALESCE(SUM(s.debt_amount), 0) as remaining_debt_uzs,
                         c.last_debt_payment_date as last_payment_date,
                         COALESCE(c.last_debt_payment_usd, 0) as last_payment_amount,
                         COALESCE(c.last_debt_payment_rate, 13000) as last_payment_rate,
+                        COALESCE(c.last_debt_payment_uzs, 0) as last_payment_uzs,
                         MIN(s.payment_due_date) as nearest_due_date,
                         MAX(s.sale_date) as last_sale_date
                     FROM customers c
                     LEFT JOIN sales s ON c.id = s.customer_id AND s.debt_usd > 0
                     WHERE c.store_id IN :store_ids
-                    GROUP BY c.id, c.name, c.phone, c.address, c.last_debt_payment_date, c.last_debt_payment_usd, c.last_debt_payment_rate
+                    GROUP BY c.id, c.name, c.phone, c.address, c.last_debt_payment_date, c.last_debt_payment_usd, c.last_debt_payment_rate, c.last_debt_payment_uzs
                     HAVING COALESCE(SUM(s.debt_usd), 0) > 0
                     ORDER BY GREATEST(COALESCE(MAX(s.sale_date), '1970-01-01'), COALESCE(c.last_debt_payment_date, '1970-01-01')) DESC
                 """).bindparams(bindparam('store_ids', expanding=True))
@@ -6813,14 +6818,16 @@ def api_debts():
                         COALESCE(SUM(s.debt_usd), 0) as total_debt,
                         0 as paid_amount,
                         COALESCE(SUM(s.debt_usd), 0) as remaining_debt,
+                        COALESCE(SUM(s.debt_amount), 0) as remaining_debt_uzs,
                         c.last_debt_payment_date as last_payment_date,
                         COALESCE(c.last_debt_payment_usd, 0) as last_payment_amount,
                         COALESCE(c.last_debt_payment_rate, 13000) as last_payment_rate,
+                        COALESCE(c.last_debt_payment_uzs, 0) as last_payment_uzs,
                         MIN(s.payment_due_date) as nearest_due_date,
                         MAX(s.sale_date) as last_sale_date
                     FROM customers c
                     LEFT JOIN sales s ON c.id = s.customer_id AND s.debt_usd > 0
-                GROUP BY c.id, c.name, c.phone, c.address, c.last_debt_payment_date, c.last_debt_payment_usd, c.last_debt_payment_rate
+                GROUP BY c.id, c.name, c.phone, c.address, c.last_debt_payment_date, c.last_debt_payment_usd, c.last_debt_payment_rate, c.last_debt_payment_uzs
                 HAVING COALESCE(SUM(s.debt_usd), 0) > 0
                 ORDER BY GREATEST(COALESCE(MAX(s.sale_date), '1970-01-01'), COALESCE(c.last_debt_payment_date, '1970-01-01')) DESC
             """)
@@ -6837,9 +6844,11 @@ def api_debts():
                 'total_debt': float(row.total_debt),
                 'paid_amount': float(row.paid_amount),
                 'remaining_debt': float(row.remaining_debt),
+                'remaining_debt_uzs': float(row.remaining_debt_uzs) if row.remaining_debt_uzs else 0,
                 'last_payment_date': row.last_payment_date.strftime('%Y-%m-%d %H:%M') if row.last_payment_date else None,
                 'last_payment_amount': float(row.last_payment_amount) if row.last_payment_amount else 0,
                 'last_payment_rate': float(row.last_payment_rate) if row.last_payment_rate else 13000,
+                'last_payment_uzs': float(row.last_payment_uzs) if row.last_payment_uzs else 0,
                 'nearest_due_date': row.nearest_due_date.strftime('%Y-%m-%d') if row.nearest_due_date else None
             })
 
@@ -7269,6 +7278,7 @@ def api_debt_payment():
             }), 404
 
         remaining_payment = payment_usd
+        total_uzs_paid = Decimal('0')  # Jami UZS to'lov (aniq hisoblash uchun)
         updated_sales = []
         sale_payment_records = []  # Har bir savdo uchun to'lov ma'lumotlari
 
@@ -7341,6 +7351,7 @@ def api_debt_payment():
             # sale.updated_by = session.get('user_name', 'Unknown')  # Database'da hali yo'q
 
             remaining_payment -= total_paid
+            total_uzs_paid += total_paid * sale_rate  # Har bir savdo o'z kursi bilan
             updated_sales.append(sale.id)
             sale_payment_records.append({
                 'sale_id': sale.id,
@@ -7367,11 +7378,13 @@ def api_debt_payment():
             # Agar barcha qarzlar to'langan bo'lsa, oxirgi to'lov ma'lumotlarini tozalash
             if total_remaining_debt == 0:
                 customer.last_debt_payment_usd = 0
+                customer.last_debt_payment_uzs = 0
                 customer.last_debt_payment_date = None
                 customer.last_debt_payment_rate = 0
             else:
                 # Agar hali qarz qolgan bo'lsa, oxirgi to'lov ma'lumotlarini yangilash
                 customer.last_debt_payment_usd = payment_usd - remaining_payment
+                customer.last_debt_payment_uzs = total_uzs_paid  # Aniq UZS (har savdo o'z kursi bilan)
                 customer.last_debt_payment_date = db.func.current_timestamp()
                 customer.last_debt_payment_rate = get_current_currency_rate()
 
