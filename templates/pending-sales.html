@@ -1883,12 +1883,18 @@ function generatePaymentDetailsHTML(sale) {
     // Kartochkalarda faqat qarz bo'lmagan to'lovlarni ko'rsatish
     const displayPayments = activePayments.filter(p => !p.isDebt);
     
-    // Agar hech qanday payment_details bo'lmasa, payment_method orqali ko'rsatish
+    // Agar hech qanday payment_details bo'lmasa, total_amount dan Jami to'lov kartochkasini ko'rsatish
     if (activePayments.length === 0) {
+        const fmtUsdFallback = v => parseFloat(parseFloat(v).toFixed(5)).toString().replace(/\.?0+$/, '');
+        const fallbackTotal = parseFloat(sale.total_amount || 0);
+        const fallbackUZS = Math.round(fallbackTotal * rate);
         return `
-            <div class="total-row">
-                <span class="total-label">${PSLANG.payment_type}:</span>
-                <span class="total-value">${getPaymentMethodText(sale.payment_method)}</span>
+            <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 4px;">
+                <div style="display: inline-block; background: #007bff; padding: 8px 14px; margin: 4px 8px 4px 0; border-radius: 6px; border-left: 4px solid #0056b3;">
+                    <div style="font-weight: 600; color: #ffffff; margin-bottom: 2px;">${PSLANG.total_payment || 'Jami to\'lov'}</div>
+                    <div style="font-size: 15px; font-weight: 700; color: #ffffff;">$${fmtUsdFallback(fallbackTotal)}</div>
+                    <div style="font-size: 12px; color: #ffffff;">${fallbackUZS.toLocaleString('uz-UZ')} so'm</div>
+                </div>
             </div>
         `;
     }
