@@ -985,11 +985,11 @@
                     <td>${debt.customer_name}</td>
                     <td>${debt.customer_phone || '-'}</td>
                     <td>
-                        <strong style="color: ${remainingDebt > 0 ? '#dc3545' : '#28a745'}">$${remainingDebt.toFixed(2)}</strong>
+                        <strong style="color: ${remainingDebt > 0 ? '#dc3545' : '#28a745'}">$${remainingDebt.toFixed(5)}</strong>
                         <br><small style="color: #666;">${remainingDebtUZS.toLocaleString('uz-UZ')} ${DLANG.sum_currency}</small>
                     </td>
                     <td>
-                        <strong style="color: #28a745">$${lastPaymentAmount.toFixed(2)}</strong>
+                        <strong style="color: #28a745">$${lastPaymentAmount.toFixed(5)}</strong>
                         <br><small style="color: #666;">${lastPaymentUZS.toLocaleString('uz-UZ')} ${DLANG.sum_currency}</small>
                     </td>
                     <td>${lastPayment}</td>
@@ -1053,11 +1053,11 @@
                     <td>${debt.customer_name}</td>
                     <td>${debt.customer_phone || '-'}</td>
                     <td>
-                        <strong style="color: ${remainingDebt > 0 ? '#dc3545' : '#28a745'}">$${remainingDebt.toFixed(2)}</strong>
+                        <strong style="color: ${remainingDebt > 0 ? '#dc3545' : '#28a745'}">$${remainingDebt.toFixed(5)}</strong>
                         <br><small style="color: #666;">${remainingDebtUZS.toLocaleString('uz-UZ')} ${DLANG.sum_currency}</small>
                     </td>
                     <td>
-                        <strong style="color: #28a745">$${lastPaymentAmount.toFixed(2)}</strong>
+                        <strong style="color: #28a745">$${lastPaymentAmount.toFixed(5)}</strong>
                         <br><small style="color: #666;">${lastPaymentUZS.toLocaleString('uz-UZ')} ${DLANG.sum_currency}</small>
                     </td>
                     <td>${lastPayment}</td>
