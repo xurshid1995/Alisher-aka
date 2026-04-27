@@ -3993,13 +3993,13 @@
                                style="width: 60px; text-align: center; border: 1px solid #ced4da; border-radius: 4px; padding: 4px; font-size: 15px; font-weight: 500;">
                     </td>
                     <td style="padding: 8px 5px; text-align: right; font-size: 15px; color: #333; width: 90px;">
-                        <div style="margin-bottom: 2px; font-weight: 600; color: #333; font-size: 15px;">$${item.priceUSD.toFixed(2)}</div>
+                        <div style="margin-bottom: 2px; font-weight: 600; color: #333; font-size: 15px;">$${item.priceUSD.toFixed(3)}</div>
                         <div>
                             <span style="background: #5b9bd5; color: white; padding: 2px 4px; border-radius: 2px; font-weight: 500; font-size: 14px;">${formatPrice(item.priceUZS)}</span>
                         </div>
                     </td>
                     <td style="padding: 8px 5px; text-align: right; font-size: 15px; color: #333; width: 94px;">
-                        <div style="margin-bottom: 2px; font-weight: 600; color: #333; font-size: 15px;">$${subtotalUSD.toFixed(2)}</div>
+                        <div style="margin-bottom: 2px; font-weight: 600; color: #333; font-size: 15px;">$${subtotalUSD.toFixed(3)}</div>
                         <div>
                             <span style="background: #5b9bd5; color: white; padding: 2px 4px; border-radius: 2px; font-weight: 500; font-size: 14px;">${formatPrice(subtotalUZS)}</span>
                         </div>
@@ -4023,7 +4023,7 @@
                         ${cart.length}
                     </div>
                     <div>
-                        Jami: <span style="color: #e53935; font-size: 15px; font-weight: 700;">$${totalUSD.toFixed(2)}</span>
+                        Jami: <span style="color: #e53935; font-size: 15px; font-weight: 700;">$${totalUSD.toFixed(3)}</span>
                         <span style="margin-left: 10px; color: #455a64; font-size: 14px;">${formatPrice(totalUZS)} so'm</span>
                     </div>
                 </div>
@@ -4041,7 +4041,7 @@
         const item = cart[index];
         
         // Tasdiqlash so'rovi
-        const confirmMessage = `"${item.name}" ${SLANG.remove_confirm}\n\n${SLANG.quantity_label}: ${item.quantity} ${SLANG.unit_pcs}\n${SLANG.price_label}: $${item.priceUSD.toFixed(2)}`;
+        const confirmMessage = `"${item.name}" ${SLANG.remove_confirm}\n\n${SLANG.quantity_label}: ${item.quantity} ${SLANG.unit_pcs}\n${SLANG.price_label}: $${item.priceUSD.toFixed(3)}`;
         if (!confirm(confirmMessage)) {
             console.log('❌ Foydalanuvchi o\'chirishni bekor qildi');
             return;
@@ -4965,7 +4965,7 @@
                     
                     // Korzinani ko'rsatish uchun
                     cart.forEach((item, index) => {
-                        console.log(`   ${index + 1}. ${item.name} x${item.quantity} = $${(item.priceUSD * item.quantity).toFixed(2)}`);
+                        console.log(`   ${index + 1}. ${item.name} x${item.quantity} = $${(item.priceUSD * item.quantity).toFixed(3)}`);
                     });
                 } else {
                     console.warn('⚠️ Savdoda mahsulotlar topilmadi');
@@ -5608,7 +5608,7 @@
             confirmBtn.style.cursor = 'pointer';
         }
         
-        if (paymentModalTotalUSD) paymentModalTotalUSD.textContent = `$${totalUSD.toFixed(2)}`;
+        if (paymentModalTotalUSD) paymentModalTotalUSD.textContent = `$${totalUSD.toFixed(3)}`;
         if (paymentModalTotalUZS) paymentModalTotalUZS.textContent = `${Math.round(totalUZS).toLocaleString('uz-UZ')} so'm`;
         
         // Mijoz balansi - boshlang'ich to'ldirish
@@ -5619,11 +5619,11 @@
         const balanceTotalEl = document.getElementById('paymentBalanceTotal');
         if (currentCustomerBalance > 0 && balanceSection && balanceAvailableEl && balanceInput) {
             balanceSection.style.display = 'block';
-            if (balanceTotalEl) balanceTotalEl.textContent = `$${currentCustomerBalance.toFixed(2)}`;
+            if (balanceTotalEl) balanceTotalEl.textContent = `$${currentCustomerBalance.toFixed(3)}`;
             const balanceToUse = Math.min(currentCustomerBalance, totalUSD);
-            balanceAvailableEl.textContent = `$${balanceToUse.toFixed(2)}`;
-            balanceInput.value = balanceToUse.toFixed(2);
-            balanceInput.max = currentCustomerBalance.toFixed(2);
+            balanceAvailableEl.textContent = `$${balanceToUse.toFixed(3)}`;
+            balanceInput.value = balanceToUse.toFixed(3);
+            balanceInput.max = currentCustomerBalance.toFixed(3);
             // Cash ni kamaytirish (balans qoplagandan qolganini naqd qilish)
             const remainAfterBalance = Math.max(0, totalUSD - balanceToUse);
             if (paymentCashUSD) paymentCashUSD.value = remainAfterBalance.toFixed(4);
@@ -5718,7 +5718,7 @@
                     if (terminalUSD) terminalUSD.value = '';
                 } else {
                     const uzsValue = parseFloat(this.value) || 0;
-                    if (terminalUSD) terminalUSD.value = (uzsValue / exchangeRate).toFixed(2);
+                    if (terminalUSD) terminalUSD.value = (uzsValue / exchangeRate).toFixed(3);
                 }
             });
         }
@@ -5742,7 +5742,7 @@
                     if (debtUSD) debtUSD.value = '';
                 } else {
                     const uzsValue = parseFloat(this.value) || 0;
-                    if (debtUSD) debtUSD.value = (uzsValue / exchangeRate).toFixed(2);
+                    if (debtUSD) debtUSD.value = (uzsValue / exchangeRate).toFixed(3);
                 }
                 // Qarz tozalansa muddat seksiyasini yashirish, yozilsa ko'rsatish
                 showHideDueDateSection();
@@ -5786,7 +5786,7 @@
         const balanceInput = document.getElementById('paymentBalanceUSD');
         if (!balanceInput) return;
         const maxBalance = Math.min(currentCustomerBalance, parseFloat(balanceInput.max) || currentCustomerBalance);
-        balanceInput.value = maxBalance.toFixed(2);
+        balanceInput.value = maxBalance.toFixed(3);
         updateDebtFieldState();
     }
     
@@ -5916,15 +5916,15 @@
         } else if (remaining > 0) {
             // Kam to'langan: qolgan summani o'rnatish (replace)
             newUSDValue = remaining;
-            console.log(`➕ Kam to'langan: ${fieldId} ga qolgan summa o'rnatildi: ${remaining.toFixed(2)}`);
+            console.log(`➕ Kam to'langan: ${fieldId} ga qolgan summa o'rnatildi: ${remaining.toFixed(3)}`);
         } else {
             // Ortiq to'langan: o'sha maydondan ortiqcha summani ayirish
             newUSDValue = Math.max(0, currentFieldValue + remaining); // remaining manfiy, shuning uchun ayiriladi
-            console.log(`➖ Ortiq to'langan: ${fieldId} dan ortiqcha summa ayirildi: ${currentFieldValue.toFixed(2)} + (${remaining.toFixed(2)}) = ${newUSDValue.toFixed(2)}`);
+            console.log(`➖ Ortiq to'langan: ${fieldId} dan ortiqcha summa ayirildi: ${currentFieldValue.toFixed(3)} + (${remaining.toFixed(3)}) = ${newUSDValue.toFixed(3)}`);
         }
         
         // USD maydonini yangilash
-        fieldElement.value = newUSDValue.toFixed(2);
+        fieldElement.value = newUSDValue.toFixed(3);
         
         // UZS maydonini ham yangilash
         const uzsFieldId = fieldId.replace('USD', 'UZS');
@@ -5934,7 +5934,7 @@
         if (uzsFieldElement) {
             const newUZSValue = Math.round(newUSDValue * exchangeRate);
             uzsFieldElement.value = newUZSValue;
-            console.log(`✅ ${fieldId}: $${newUSDValue.toFixed(2)} (${newUZSValue.toLocaleString()} so'm)`);
+            console.log(`✅ ${fieldId}: $${newUSDValue.toFixed(3)} (${newUZSValue.toLocaleString()} so'm)`);
         } else {
             console.error('❌ UZS maydoni topilmadi:', uzsFieldId);
         }
@@ -6092,9 +6092,9 @@
             // 🔍 CART VA TO'LOV VALIDATSIYASI (Sale 126 muammosini oldini olish)
             console.log('🔍 VALIDATION CHECK:');
             console.log('  ├─ Cart items:', cart.length);
-            console.log('  ├─ Cart total USD:', totalUSD.toFixed(2));
-            console.log('  ├─ Payment total USD:', totalPayment.toFixed(2));
-            console.log('  └─ Difference:', Math.abs(totalPayment - totalUSD).toFixed(2), 'USD');
+            console.log('  ├─ Cart total USD:', totalUSD.toFixed(3));
+            console.log('  ├─ Payment total USD:', totalPayment.toFixed(3));
+            console.log('  └─ Difference:', Math.abs(totalPayment - totalUSD).toFixed(3), 'USD');
             
             // Cart bo'shligini tekshirish
             if (cart.length === 0) {
@@ -6115,7 +6115,7 @@
             
             // To'lov va cart jami tekshiruvi - aniq moslik
             if (Math.abs(totalPayment - totalUSD) > 0.01) {
-                const errorMsg = `⚠️ ${SLANG.payment_mismatch}\n\n🛒 ${SLANG.cart_total}: $${totalUSD.toFixed(2)}\n💰 ${SLANG.payment_total}: $${totalPayment.toFixed(2)}\n❗ ${SLANG.difference}: $${Math.abs(totalPayment - totalUSD).toFixed(2)}\n\n${SLANG.fix_payment}`;
+                const errorMsg = `⚠️ ${SLANG.payment_mismatch}\n\n🛒 ${SLANG.cart_total}: $${totalUSD.toFixed(3)}\n💰 ${SLANG.payment_total}: $${totalPayment.toFixed(3)}\n❗ ${SLANG.difference}: $${Math.abs(totalPayment - totalUSD).toFixed(3)}\n\n${SLANG.fix_payment}`;
                 
                 alert(errorMsg);
                 
@@ -6388,9 +6388,9 @@
                     if (currency === 'uzs') {
                         paymentDetails.push(`<strong>${label}:</strong> ${amountUZS}`);
                     } else if (currency === 'both') {
-                        paymentDetails.push(`<strong>${label}:</strong> $${amountUSD.toFixed(2)} : ${amountUZS}`);
+                        paymentDetails.push(`<strong>${label}:</strong> $${amountUSD.toFixed(3)} : ${amountUZS}`);
                     } else {
-                        paymentDetails.push(`<strong>${label}:</strong> $${amountUSD.toFixed(2)}`);
+                        paymentDetails.push(`<strong>${label}:</strong> $${amountUSD.toFixed(3)}`);
                     }
                 }
                 
@@ -6885,11 +6885,11 @@
                                 
                                 let priceDisplay;
                                 if (currency === 'both') {
-                                    priceDisplay = '$' + priceUSD.toFixed(2) + '<br><span class="uzs-value">' + priceUZS.toLocaleString('uz-UZ') + '</span>';
+                                    priceDisplay = '$' + priceUSD.toFixed(3) + '<br><span class="uzs-value">' + priceUZS.toLocaleString('uz-UZ') + '</span>';
                                 } else if (currency === 'uzs') {
                                     priceDisplay = priceUZS.toLocaleString('uz-UZ');
                                 } else {
-                                    priceDisplay = '$' + priceUSD.toFixed(2);
+                                    priceDisplay = '$' + priceUSD.toFixed(3);
                                 }
                                 
                                 return `
@@ -6908,13 +6908,13 @@
                         <span>Jami summa:</span>
                         <span>${(() => {
                             if (currency === 'both') {
-                                const totalUSD = parseFloat(sale.total_amount).toFixed(2);
+                                const totalUSD = parseFloat(sale.total_amount).toFixed(3);
                                 const totalUZS = Math.round(parseFloat(sale.total_amount) * exchangeRate).toLocaleString('uz-UZ');
                                 return '$' + totalUSD + '<br><span class="uzs-value">' + totalUZS + '</span>';
                             } else if (currency === 'uzs') {
                                 return Math.round(parseFloat(sale.total_amount) * exchangeRate).toLocaleString('uz-UZ');
                             } else {
-                                return '$' + parseFloat(sale.total_amount).toFixed(2);
+                                return '$' + parseFloat(sale.total_amount).toFixed(3);
                             }
                         })()}</span>
                     </div>
