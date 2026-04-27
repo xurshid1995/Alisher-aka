@@ -7266,6 +7266,7 @@ def api_debt_payment():
 
         remaining_payment = payment_usd
         updated_sales = []
+        sale_payment_records = []  # Har bir savdo uchun to'lov ma'lumotlari
 
         # To'lov turlarini ketma-ket taqsimlash: 1) naqd, 2) click, 3) terminal
         remaining_cash = cash_usd
@@ -7286,12 +7287,15 @@ def api_debt_payment():
             # Ushbu savdoga qancha to'lov qilish mumkin
             payment_for_this_sale = min(remaining_payment, current_debt)
 
+            # Savdo kursi — _amount ustunlarni UZS da saqlash uchun
+            sale_rate = sale.currency_rate or Decimal('12000')
+
             # Har bir to'lov turidan qancha ishlatish mumkin
             # 1. Naqd puldan
             cash_for_this = min(remaining_cash, payment_for_this_sale)
             if cash_for_this > 0:
                 sale.cash_usd = (sale.cash_usd or Decimal('0')) + cash_for_this
-                sale.cash_amount = sale.cash_usd  # USD da saqlaymiz
+                sale.cash_amount = sale.cash_usd * sale_rate  # UZS da saqlaymiz
                 remaining_cash -= cash_for_this
                 payment_for_this_sale -= cash_for_this
 
@@ -7299,7 +7303,7 @@ def api_debt_payment():
             click_for_this = min(remaining_click, payment_for_this_sale)
             if click_for_this > 0:
                 sale.click_usd = (sale.click_usd or Decimal('0')) + click_for_this
-                sale.click_amount = sale.click_usd  # USD da saqlaymiz
+                sale.click_amount = sale.click_usd * sale_rate  # UZS da saqlaymiz
                 remaining_click -= click_for_this
                 payment_for_this_sale -= click_for_this
 
@@ -7307,7 +7311,7 @@ def api_debt_payment():
             terminal_for_this = min(remaining_terminal, payment_for_this_sale)
             if terminal_for_this > 0:
                 sale.terminal_usd = (sale.terminal_usd or Decimal('0')) + terminal_for_this
-                sale.terminal_amount = sale.terminal_usd  # USD da saqlaymiz
+                sale.terminal_amount = sale.terminal_usd * sale_rate  # UZS da saqlaymiz
                 remaining_terminal -= terminal_for_this
                 payment_for_this_sale -= terminal_for_this
 
@@ -7316,7 +7320,7 @@ def api_debt_payment():
 
             # Qarzni kamaytirish
             sale.debt_usd = sale.debt_usd - total_paid
-            sale.debt_amount = sale.debt_usd  # USD da saqlaymiz
+            sale.debt_amount = sale.debt_usd * sale_rate  # UZS da saqlaymiz
 
             # Payment statusni yangilash
             if sale.debt_usd == 0:
@@ -7334,6 +7338,13 @@ def api_debt_payment():
 
             remaining_payment -= total_paid
             updated_sales.append(sale.id)
+            sale_payment_records.append({
+                'sale_id': sale.id,
+                'cash_usd': cash_for_this,
+                'click_usd': click_for_this,
+                'terminal_usd': terminal_for_this,
+                'total_usd': total_paid
+            })
 
         # Mijozning oxirgi to'lov ma'lumotlarini yangilash
         customer = Customer.query.get(customer_id)
@@ -7366,21 +7377,46 @@ def api_debt_payment():
                 customer.balance = old_balance + remaining_payment
                 logger.info(f"💳 Mijoz #{customer_id} balansiga ${remaining_payment} qo'shildi (yangi balans: ${customer.balance})")
 
-        # Qarz to'lovi tarixiga yozuv qo'shish
+        # Qarz to'lovi tarixiga har bir yangilangan savdo uchun alohida yozuv qo'shish
         actual_paid = payment_usd - remaining_payment
-        debt_payment = DebtPayment(
-            customer_id=customer_id,
-            sale_id=updated_sales[0] if updated_sales else None,  # Birinchi to'langan savdo
-            payment_date=get_tashkent_time(),
-            cash_usd=cash_usd,
-            click_usd=click_usd,
-            terminal_usd=terminal_usd,
-            total_usd=actual_paid,
-            currency_rate=get_current_currency_rate(),
-            received_by=session.get('user_name', 'Unknown'),
-            notes=f"{len(updated_sales)} ta savdoning qarziga to'lov qilindi" + (f", ${remaining_payment} balansga o'tkazildi" if remaining_payment > 0 else "")
-        )
-        db.session.add(debt_payment)
+        current_rate_dp = get_current_currency_rate()
+        payment_time_dp = get_tashkent_time()
+        notes_dp = (f"{len(updated_sales)} ta savdoning qarziga to'lov qilindi" +
+                    (f", ${remaining_payment} balansga o'tkazildi" if remaining_payment > 0 else ""))
+
+        debt_payment = None
+        for record in sale_payment_records:
+            dp = DebtPayment(
+                customer_id=customer_id,
+                sale_id=record['sale_id'],
+                payment_date=payment_time_dp,
+                cash_usd=record['cash_usd'],
+                click_usd=record['click_usd'],
+                terminal_usd=record['terminal_usd'],
+                total_usd=record['total_usd'],
+                currency_rate=current_rate_dp,
+                received_by=session.get('user_name', 'Unknown'),
+                notes=notes_dp
+            )
+            db.session.add(dp)
+            if debt_payment is None:
+                debt_payment = dp  # OperationHistory uchun birinchi yozuv
+
+        # Agar hech qanday savdo yangilanmagan bo'lsa (to'liq ortiqcha to'lov)
+        if debt_payment is None:
+            debt_payment = DebtPayment(
+                customer_id=customer_id,
+                sale_id=None,
+                payment_date=payment_time_dp,
+                cash_usd=cash_usd,
+                click_usd=click_usd,
+                terminal_usd=terminal_usd,
+                total_usd=actual_paid,
+                currency_rate=current_rate_dp,
+                received_by=session.get('user_name', 'Unknown'),
+                notes=notes_dp
+            )
+            db.session.add(debt_payment)
 
         db.session.commit()
 
@@ -11448,6 +11484,20 @@ def create_sale():
         print(f"   Terminal USD: {terminal_usd}, UZS: {terminal_uzs}")
         print(f"   Debt USD: {debt_usd}, UZS: {debt_uzs}")
         print(f"   Jami: {cash_usd + click_usd + terminal_usd + debt_usd} USD")
+
+        # Server tomonida to'lov summasini mahsulotlar jami bilan solishtirish
+        items_total_check = sum(
+            float(item.get('unit_price') or item.get('price_usd') or item.get('price', 0)) *
+            float(item.get('quantity', 0))
+            for item in items
+        )
+        payment_total_check = cash_usd + click_usd + terminal_usd + debt_usd
+        if items_total_check > 0 and abs(payment_total_check - items_total_check) > 0.05:
+            logger.warning(f"⚠️ To'lov farqi: to'lov=${payment_total_check:.4f}, mahsulot=${items_total_check:.4f}")
+            return jsonify({
+                'success': False,
+                'error': f"To'lov summasi (${payment_total_check:.2f}) mahsulotlar narxiga (${items_total_check:.2f}) mos emas"
+            }), 400
 
         # Payment status ni qarz bo'yicha avtomatik aniqlash
         if debt_usd > 0:
