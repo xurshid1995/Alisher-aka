@@ -11542,18 +11542,19 @@ def create_sale():
         else:
             print(f"📅 ⚠️ Muddat saqlanMADI: payment_due_date_str={payment_due_date_str}, debt_usd={debt_usd}")
 
-        # Barcha qiymatlarni USD da saqlaymiz
-        # cash_amount, click_amount, terminal_amount, debt_amount - hammasi USD!
-        cash_amount = cash_usd
-        click_amount = click_usd
-        terminal_amount = terminal_usd
-        debt_amount = debt_usd
+        # _amount ustunlarida UZS qiymatlarini saqlaymiz
+        # Agar frontend UZS yuborgan bo'lsa - o'sha ishlatiladi
+        # Agar UZS kelmagan bo'lsa - USD * kurs bilan hisoblanadi
+        cash_amount = cash_uzs if cash_uzs > 0 else round(cash_usd * current_rate)
+        click_amount = click_uzs if click_uzs > 0 else round(click_usd * current_rate)
+        terminal_amount = terminal_uzs if terminal_uzs > 0 else round(terminal_usd * current_rate)
+        debt_amount = debt_uzs if debt_uzs > 0 else round(debt_usd * current_rate)
 
-        print("💵 USD summalar (DB'ga saqlanadi):")
-        print(f"   Cash: ${cash_amount}")
-        print(f"   Click: ${click_amount}")
-        print(f"   Terminal: ${terminal_amount}")
-        print(f"   Debt: ${debt_amount}")
+        print("💵 To'lov summalari (DB'ga saqlanadi):")
+        print(f"   Cash: ${cash_usd} USD = {cash_amount} UZS")
+        print(f"   Click: ${click_usd} USD = {click_amount} UZS")
+        print(f"   Terminal: ${terminal_usd} USD = {terminal_amount} UZS")
+        print(f"   Debt: ${debt_usd} USD = {debt_amount} UZS")
 
         # Savdo uchun asosiy joylashuvni aniqlash
         # Multi-location bo'lsa - eng ko'p ishlatiladigan
