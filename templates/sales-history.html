@@ -1702,7 +1702,7 @@ function displaySalesData(data) {
                 <td class="col-quantity">${firstItem.quantity}</td>
                 <td class="col-price">${formatPrice(firstItem.unit_price || 0, sale.currency_rate)}</td>
                 <td class="col-subtotal">${formatPrice(firstItem.total_price || 0, sale.currency_rate)}</td>
-                <td rowspan="${items.length}" class="group-cell group-total col-total">${formatPrice(totalAmount, sale.currency_rate)}</td>
+                <td rowspan="${items.length}" class="group-cell group-total col-total">${(() => { const totalUZS = parseFloat(sale.cash_amount||0) + parseFloat(sale.click_amount||0) + parseFloat(sale.terminal_amount||0) + parseFloat(sale.debt_amount||0); return `$${totalAmount.toFixed(4)}<br><small style="color: #007bff; font-size: 13px;">${Math.round(totalUZS).toLocaleString('uz-UZ')}</small>`; })()}</td>
                 ${userRole === 'sotuvchi' ? '' : `<td rowspan="${items.length}" class="group-cell group-profit col-profit ${profitClass}">${formatPrice(totalProfit, sale.currency_rate)}</td>`}
                 <td rowspan="${items.length}" class="group-cell group-actions col-actions">
                     <button class="btn-action btn-view" onclick="viewSaleDetails(${sale.id})" title="Ko'rish">
@@ -2154,7 +2154,7 @@ function showSaleDetailsModal(sale) {
                             </thead>
                             <tbody>
                                 ${sale.items.map(item => {
-                                    const exchangeRate = 12700;
+                                    const exchangeRate = parseFloat(sale.currency_rate || 12000);
                                     const unitPriceUSD = parseFloat(item.unit_price || 0);
                                     const totalPriceUSD = parseFloat(item.total_price || 0);
                                     const unitPriceUZS = Math.round(unitPriceUSD * exchangeRate);
@@ -2186,11 +2186,11 @@ function showSaleDetailsModal(sale) {
                                         </td>
                                     </tr>
                                     ${sale.returned_products.map(item => {
-                                        const exchangeRate = 12700;
+                                        const itemExchangeRate = parseFloat(sale.currency_rate || 12000);
                                         const unitPriceUSD = parseFloat(item.unit_price || 0);
                                         const totalPriceUSD = parseFloat(item.total_price || 0);
-                                        const unitPriceUZS = Math.round(unitPriceUSD * exchangeRate);
-                                        const totalPriceUZS = Math.round(totalPriceUSD * exchangeRate);
+                                        const unitPriceUZS = Math.round(unitPriceUSD * itemExchangeRate);
+                                        const totalPriceUZS = Math.round(totalPriceUSD * itemExchangeRate);
                                         
                                         return `
                                         <tr style="background: #ffebee; color: #c62828;">
@@ -2261,11 +2261,11 @@ function generatePaymentDetailsHTML(sale) {
     
     console.log('💰 USD qiymatlar:', { cashUSD, clickUSD, terminalUSD, debtUSD });
     
-    // UZS qiymatlarni doim hisoblash (database'da USD saqlanadi)
-    const cashUZS = cashUSD * rate;
-    const clickUZS = clickUSD * rate;
-    const terminalUZS = terminalUSD * rate;
-    const debtUZS = debtUSD * rate;
+    // UZS qiymatlari — ma'lumotlar bazasidan to'g'ridan-to'g'ri (USD*rate EMAS)
+    const cashUZS = parseFloat(sale.cash_amount || 0);
+    const clickUZS = parseFloat(sale.click_amount || 0);
+    const terminalUZS = parseFloat(sale.terminal_amount || 0);
+    const debtUZS = parseFloat(sale.debt_amount || 0);
     
     const payments = [
         { name: '💵 ' + SHLANG.cash_payment, usd: cashUSD, uzs: cashUZS, isDebt: false },
@@ -2462,7 +2462,7 @@ function printSaleReceipt(currency = 'uzs') {
 }
 
 // To'lov turlarini formatlash funksiyasi
-function formatPaymentDetails(paymentDetails, currency = 'uzs', exchangeRate = 12700) {
+function formatPaymentDetails(paymentDetails, currency = 'uzs', exchangeRate = 12000) {
     
     // Agar string bo'lsa, / belgisini <br> ga o'zgartirish
     if (typeof paymentDetails === 'string') {
@@ -2527,7 +2527,7 @@ function formatPhoneForPrint(phone) {
 
 // Mini X90 printer uchun chek yaratish - sales.html bilan bir xil format
 function generatePrintableReceipt(sale, currency = 'uzs') {
-    const exchangeRate = sale.currency_rate || 12700;
+    const exchangeRate = sale.currency_rate || 12000;
     const receiptWindow = window.open('', '_blank', 'width=400,height=600');
     
     const receiptHTML = `
@@ -2790,12 +2790,7 @@ function generatePrintableReceipt(sale, currency = 'uzs') {
             <div class="totals">
                 <div style="display: flex; justify-content: space-between;">
                     <span>${SHLANG.total_sum}:</span>
-                    <span>${currency === 'both' 
-                        ? '$' + parseFloat(sale.total_amount).toFixed(2) + '<br><span class="uzs-value">' + Math.round(parseFloat(sale.total_amount) * exchangeRate).toLocaleString('uz-UZ') + '</span>'
-                        : currency === 'uzs' 
-                            ? Math.round(parseFloat(sale.total_amount) * exchangeRate).toLocaleString('uz-UZ')
-                            : '$' + parseFloat(sale.total_amount).toFixed(2)
-                    }</span>
+                    <span>${(() => { const totalUZS = parseFloat(sale.cash_amount||0) + parseFloat(sale.click_amount||0) + parseFloat(sale.terminal_amount||0) + parseFloat(sale.debt_amount||0); return currency === 'both' ? '$' + parseFloat(sale.total_amount).toFixed(2) + '<br><span class="uzs-value">' + Math.round(totalUZS).toLocaleString('uz-UZ') + '</span>' : currency === 'uzs' ? Math.round(totalUZS).toLocaleString('uz-UZ') : '$' + parseFloat(sale.total_amount).toFixed(2); })()}</span>
                 </div>
             </div>
             
