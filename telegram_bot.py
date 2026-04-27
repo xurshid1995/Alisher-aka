@@ -451,7 +451,9 @@ class DebtTelegramBot:
         cash_usd: float = 0,
         click_usd: float = 0,
         terminal_usd: float = 0,
-        debt_usd: float = 0
+        debt_usd: float = 0,
+        balance_uzs: float = 0,
+        balance_usd: float = 0
     ) -> bool:
         """
         Savdo yakunlanganda mijozga xabar yuborish (sync versiya - Flask uchun)
@@ -506,6 +508,8 @@ class DebtTelegramBot:
                     message += f"   📱 Click: ${click_usd:,.2f}\n"
                 if terminal_usd > 0:
                     message += f"   💳 Terminal: ${terminal_usd:,.2f}\n"
+                if balance_usd > 0:
+                    message += f"   🏦 Balans: ${balance_usd:,.2f}\n"
 
             # Qarz ma'lumoti
             if debt_usd > 0:
@@ -587,6 +591,7 @@ class DebtTelegramBot:
                         'click_uzs': click_uzs,
                         'terminal_uzs': terminal_uzs,
                         'debt_uzs': debt_uzs,
+                        'balance_uzs': balance_uzs,
                         'total_amount': total_amount_uzs,
                         'paid_amount': paid_uzs,
                         'cash': cash_uzs,
@@ -611,6 +616,7 @@ class DebtTelegramBot:
                         'click_usd': click_usd,
                         'terminal_usd': terminal_usd,
                         'debt_usd': debt_usd,
+                        'balance_usd': balance_usd,
                         'total_amount': total_amount_usd,
                         'paid_amount': paid_usd,
                         'cash': cash_usd,
