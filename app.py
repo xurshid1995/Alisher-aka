@@ -14181,7 +14181,11 @@ def api_sales_chart():
                     COALESCE(SUM(s.click_usd), 0) as click_total,
                     COALESCE(SUM(s.terminal_usd), 0) as terminal_total,
                     COALESCE(SUM(s.debt_usd), 0) as debt_total,
-                    COALESCE(SUM(si_agg.total_uzs), 0) as period_total_uzs
+                    COALESCE(SUM(si_agg.total_uzs), 0) as period_total_uzs,
+                    COALESCE(SUM(s.cash_amount), 0) as cash_uzs_total,
+                    COALESCE(SUM(s.click_amount), 0) as click_uzs_total,
+                    COALESCE(SUM(s.terminal_amount), 0) as terminal_uzs_total,
+                    COALESCE(SUM(s.debt_amount), 0) as debt_uzs_total
                 FROM sales s
                 LEFT JOIN (
                     SELECT sale_id, SUM(total_price_uzs) as total_uzs
@@ -14201,7 +14205,11 @@ def api_sales_chart():
                     COALESCE(SUM(s.click_usd), 0) as click_total,
                     COALESCE(SUM(s.terminal_usd), 0) as terminal_total,
                     COALESCE(SUM(s.debt_usd), 0) as debt_total,
-                    COALESCE(SUM(si_agg.total_uzs), 0) as period_total_uzs
+                    COALESCE(SUM(si_agg.total_uzs), 0) as period_total_uzs,
+                    COALESCE(SUM(s.cash_amount), 0) as cash_uzs_total,
+                    COALESCE(SUM(s.click_amount), 0) as click_uzs_total,
+                    COALESCE(SUM(s.terminal_amount), 0) as terminal_uzs_total,
+                    COALESCE(SUM(s.debt_amount), 0) as debt_uzs_total
                 FROM sales s
                 LEFT JOIN (
                     SELECT sale_id, SUM(total_price_uzs) as total_uzs
@@ -14325,12 +14333,16 @@ def api_sales_chart():
                 amounts_uzs.append(float(row[8]) if len(row) > 8 and row[8]
                                    else 0.0)  # UZS summa (saqlangan)
 
-        # To'lov turlarini hisoblash
+        # To'lov turlarini hisoblash (USD va UZS)
         payment_totals = {
             'cash': sum(float(row[4]) if len(row) > 4 and row[4] else 0.0 for row in results),
             'click': sum(float(row[5]) if len(row) > 5 and row[5] else 0.0 for row in results),
             'terminal': sum(float(row[6]) if len(row) > 6 and row[6] else 0.0 for row in results),
-            'debt': sum(float(row[7]) if len(row) > 7 and row[7] else 0.0 for row in results)
+            'debt': sum(float(row[7]) if len(row) > 7 and row[7] else 0.0 for row in results),
+            'cash_uzs': sum(float(row[9]) if len(row) > 9 and row[9] else 0.0 for row in results),
+            'click_uzs': sum(float(row[10]) if len(row) > 10 and row[10] else 0.0 for row in results),
+            'terminal_uzs': sum(float(row[11]) if len(row) > 11 and row[11] else 0.0 for row in results),
+            'debt_uzs': sum(float(row[12]) if len(row) > 12 and row[12] else 0.0 for row in results),
         }
 
         return jsonify({

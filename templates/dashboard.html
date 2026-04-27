@@ -964,19 +964,19 @@ function updateStatistics(data) {
         console.log('💰 To\'lov turlari yangilanmoqda:', data.payment_totals);
         const payments = [];
         if (data.payment_totals.cash > 0) {
-            const cashUZS = Math.round(data.payment_totals.cash * exchangeRate);
+            const cashUZS = data.payment_totals.cash_uzs > 0 ? Math.round(data.payment_totals.cash_uzs) : Math.round(data.payment_totals.cash * exchangeRate);
             payments.push(`<span style="display: inline-block; background: #f8f9fa; padding: 4px 10px; margin-right: 8px; border-radius: 4px; border-left: 3px solid #28a745; font-size: 14px;">💵 ${DLANG.cash}: <strong>${formatUSD(data.payment_totals.cash)}</strong><br><span style="font-size: 11px; color: #666;">${formatUZS(cashUZS)}</span></span>`);
         }
         if (data.payment_totals.click > 0) {
-            const clickUZS = Math.round(data.payment_totals.click * exchangeRate);
+            const clickUZS = data.payment_totals.click_uzs > 0 ? Math.round(data.payment_totals.click_uzs) : Math.round(data.payment_totals.click * exchangeRate);
             payments.push(`<span style="display: inline-block; background: #f8f9fa; padding: 4px 10px; margin-right: 8px; border-radius: 4px; border-left: 3px solid #007bff; font-size: 14px;">📱 ${DLANG.click}: <strong>${formatUSD(data.payment_totals.click)}</strong><br><span style="font-size: 11px; color: #666;">${formatUZS(clickUZS)}</span></span>`);
         }
         if (data.payment_totals.terminal > 0) {
-            const termUZS = Math.round(data.payment_totals.terminal * exchangeRate);
+            const termUZS = data.payment_totals.terminal_uzs > 0 ? Math.round(data.payment_totals.terminal_uzs) : Math.round(data.payment_totals.terminal * exchangeRate);
             payments.push(`<span style="display: inline-block; background: #f8f9fa; padding: 4px 10px; margin-right: 8px; border-radius: 4px; border-left: 3px solid #17a2b8; font-size: 14px;">💳 ${DLANG.terminal}: <strong>${formatUSD(data.payment_totals.terminal)}</strong><br><span style="font-size: 11px; color: #666;">${formatUZS(termUZS)}</span></span>`);
         }
         if (data.payment_totals.debt > 0) {
-            const debtUZS = Math.round(data.payment_totals.debt * exchangeRate);
+            const debtUZS = data.payment_totals.debt_uzs > 0 ? Math.round(data.payment_totals.debt_uzs) : Math.round(data.payment_totals.debt * exchangeRate);
             payments.push(`<span style="display: inline-block; background: #f8f9fa; padding: 4px 10px; margin-right: 8px; border-radius: 4px; border-left: 3px solid #dc3545; font-size: 14px;">📝 ${DLANG.debt}: <strong>${formatUSD(data.payment_totals.debt)}</strong><br><span style="font-size: 11px; color: #666;">${formatUZS(debtUZS)}</span></span>`);
         }
         
