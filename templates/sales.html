@@ -723,12 +723,12 @@
 {% block content %}
 <!-- Offline banner -->
 <div id="offlineBanner" style="display:none; position:sticky; top:0; z-index:10000; background:#dc3545; color:white; text-align:center; padding:10px 20px; font-size:14px; font-weight:600; box-shadow:0 2px 8px rgba(0,0,0,0.3);">
-    ?? Internet aloqasi yo'q � savdo vaqtincha to'xtatildi. Iltimos, internetga ulaning.
+    ⚠️ Internet aloqasi yo'q — savdo vaqtincha to'xtatildi. Iltimos, internetga ulaning.
 </div>
 <div class="sales-container">
     <!-- Page Header (yuqorida) -->
     <div class="page-header" style="margin-bottom: 15px;">
-        <h1>?? {{ t('page_sales') }}</h1>
+        <h1>🛒 {{ t('page_sales') }}</h1>
         <!-- Offline buyruqlar badge -->
         <div id="stockQueueBadge" style="display:none; align-items:center; gap:6px; background:#fff3cd; border:1px solid #ffc107; border-radius:20px; padding:4px 12px; font-size:13px; color:#856404; cursor:default;">
             <span style="animation: spin 1.5s linear infinite; display:inline-block;">?</span>
@@ -774,7 +774,7 @@
                 </div>
                 <div style="position: relative;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-                        <label style="font-size: 14px; font-weight: 500; color: #495057;">?? {{ t('label_customer_short') }}<span class="customer-optional-text"> {{ t('label_customer_optional_suffix') }}</span></label>
+                        <label style="font-size: 14px; font-weight: 500; color: #495057;">👤 {{ t('label_customer_short') }}<span class="customer-optional-text"> {{ t('label_customer_optional_suffix') }}</span></label>
                         <button id="addCustomerBtn" class="add-customer-btn" onclick="openAddCustomerModal()" style="padding: 3px 8px; background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; border: none; border-radius: 8px; font-size: 11px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; gap: 3px; box-shadow: 0 2px 8px rgba(59, 130, 246,0.3);">
                             <span style="color: white; font-size: 14px; font-weight: 700; line-height: 1;">+</span> {{ t('btn_new') }}
                         </button>
@@ -838,7 +838,7 @@
         <div class="sales-layout-box" style="background: white; border-radius: 16px; padding: 22px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); box-sizing: border-box;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                 <div id="cartCustomerInfo">
-                    <h3 style="margin: 0; color: #333;">?? {{ t('label_shopping_cart') }}</h3>
+                    <h3 style="margin: 0; color: #333;">🛒 {{ t('label_shopping_cart') }}</h3>
                 </div>
                 <div id="cartTotalHeader" style="text-align: right;"></div>
             </div>
@@ -905,7 +905,7 @@
             </div>
             <!-- Narx validatsiya xabari -->
             <div id="priceWarning" style="display: none; padding: 10px; background: #fff3cd; border: 1px solid #ffc107; border-radius: 6px; margin-bottom: 15px; color: #856404;">
-                <strong>?? Ogohlantirish:</strong> <span id="priceWarningText">Narx juda past, bu narxda sotib bo'lmaydi!</span>
+                <strong>⚠️ Ogohlantirish:</strong> <span id="priceWarningText">Narx juda past, bu narxda sotib bo'lmaydi!</span>
             </div>
             <div style="display: flex; gap: 10px;">
                 <button onclick="closeModal()" style="flex: 1; padding: 10px; background: #6c757d; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">{{ t('btn_cancel') }}</button>
@@ -942,7 +942,7 @@
         <!-- Mijoz balansi info banneri (faqat balans > 0 bo'lsa ko'rinadi) -->
         <div id="paymentBalanceSection" style="display:none; margin-bottom: 12px; padding: 10px 14px; background: #d1fae5; border: 1px solid #34d399; border-radius: 8px;">
             <div style="display: flex; align-items: center; gap: 10px;">
-                <span style="font-size: 22px;">??</span>
+                <span style="font-size: 22px;">💰</span>
                 <div style="flex: 1;">
                     <div style="font-weight: 700; color: #065f46; font-size: 14px;">Mijoz balansi mavjud: <span id="paymentBalanceTotal">$0.00</span></div>
                     <div style="font-size: 13px; color: #047857;">Balansdan foydalanish: <strong id="paymentBalanceAvailable">$0.00</strong></div>
@@ -1870,7 +1870,7 @@
         locations.forEach(location => {
             const option = document.createElement('option');
             option.value = `${location.type}_${location.id}`;
-            const locationType = location.type === 'warehouse' ? '?? ' + SLANG.warehouse_label : '?? ' + SLANG.store_label;
+            const locationType = location.type === 'warehouse' ? '🏭 ' + SLANG.warehouse_label : '🏪 ' + SLANG.store_label;
             option.textContent = `${locationType}: ${location.name}`;
             
             // Agar user'ning default store'i bo'lsa va bu location mos kelsa, avtomatik tanlash
