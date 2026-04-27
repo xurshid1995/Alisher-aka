@@ -14181,8 +14181,13 @@ def api_sales_chart():
                     COALESCE(SUM(s.click_usd), 0) as click_total,
                     COALESCE(SUM(s.terminal_usd), 0) as terminal_total,
                     COALESCE(SUM(s.debt_usd), 0) as debt_total,
-                    COALESCE((SELECT SUM(si.total_price_uzs) FROM sale_items si WHERE si.sale_id = s.id), 0) as period_total_uzs
+                    COALESCE(SUM(si_agg.total_uzs), 0) as period_total_uzs
                 FROM sales s
+                LEFT JOIN (
+                    SELECT sale_id, SUM(total_price_uzs) as total_uzs
+                    FROM sale_items
+                    GROUP BY sale_id
+                ) si_agg ON si_agg.sale_id = s.id
                 WHERE (s.cash_usd > 0 OR s.click_usd > 0 OR s.terminal_usd > 0 OR s.debt_usd > 0)
             """
         else:
@@ -14196,8 +14201,13 @@ def api_sales_chart():
                     COALESCE(SUM(s.click_usd), 0) as click_total,
                     COALESCE(SUM(s.terminal_usd), 0) as terminal_total,
                     COALESCE(SUM(s.debt_usd), 0) as debt_total,
-                    COALESCE((SELECT SUM(si.total_price_uzs) FROM sale_items si WHERE si.sale_id = s.id), 0) as period_total_uzs
+                    COALESCE(SUM(si_agg.total_uzs), 0) as period_total_uzs
                 FROM sales s
+                LEFT JOIN (
+                    SELECT sale_id, SUM(total_price_uzs) as total_uzs
+                    FROM sale_items
+                    GROUP BY sale_id
+                ) si_agg ON si_agg.sale_id = s.id
                 WHERE (s.cash_usd > 0 OR s.click_usd > 0 OR s.terminal_usd > 0 OR s.debt_usd > 0)
             """
 
