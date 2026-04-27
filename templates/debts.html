@@ -947,12 +947,12 @@
             }
             
             const label = diffDays < 0 ? `${Math.abs(diffDays)} ${DBLANG.days_ago}` : diffDays === 0 ? DBLANG.today : `${diffDays} ${DBLANG.days_left}`;
-            html += `<div style="color:${color}; white-space:nowrap;">${icon} $${sale.debt_usd.toFixed(0)} — ${formatted} <small>(${label})</small></div>`;
+            html += `<div style="color:${color}; white-space:nowrap;">${icon} $${sale.debt_usd.toFixed(5)} — ${formatted} <small>(${label})</small></div>`;
         });
         
         if (withoutDueDates.length > 0) {
             const noDateTotal = withoutDueDates.reduce((s, x) => s + x.debt_usd, 0);
-            html += `<div style="color:#999;">⚪ $${noDateTotal.toFixed(0)} — ${DBLANG.no_term}</div>`;
+            html += `<div style="color:#999;">⚪ $${noDateTotal.toFixed(5)} — ${DBLANG.no_term}</div>`;
         }
         
         html += '</div>';
@@ -1106,7 +1106,7 @@
         let html = '';
         editDueDateSales.forEach((sale, idx) => {
             const saleDate = sale.sale_date || '—';
-            const debtUsd = sale.debt_usd.toFixed(2);
+            const debtUsd = sale.debt_usd.toFixed(5);
             
             // Muddat holatini aniqlash
             let statusHtml = '';
@@ -1234,7 +1234,7 @@
             }
         }
         
-        if (!confirm(`${customerName}ga qarz eslatmasi Telegram orqali yuborilsinmi?\n\nQarz: $${debtAmount.toFixed(2)}${statusInfo}`)) {
+        if (!confirm(`${customerName}ga qarz eslatmasi Telegram orqali yuborilsinmi?\n\nQarz: $${debtAmount.toFixed(5)}${statusInfo}`)) {
             return;
         }
 
@@ -1253,7 +1253,7 @@
             const result = await response.json();
 
             if (result.success) {
-                alert(`✅ Telegram xabari muvaffaqiyatli yuborildi!\n\n👤 Mijoz: ${customerName}\n💰 Qarz: $${debtAmount.toFixed(2)}`);
+                alert(`✅ Telegram xabari muvaffaqiyatli yuborildi!\n\n👤 Mijoz: ${customerName}\n💰 Qarz: $${debtAmount.toFixed(5)}`);
             } else {
                 alert(`❌ Telegram yuborishda xatolik:\n${result.error}`);
             }
@@ -1337,7 +1337,7 @@
         reminderDebtAmount = debtAmount;
 
         document.getElementById('reminderCustomerName').textContent = '👤 ' + customerName;
-        document.getElementById('reminderDebtAmount').textContent = `Qarz: $${debtAmount.toFixed(2)}`;
+        document.getElementById('reminderDebtAmount').textContent = `Qarz: $${debtAmount.toFixed(5)}`;
 
         // Qarz to'lash muddatini ko'rsatish
         const dueDateInfo = document.getElementById('reminderDueDateInfo');
