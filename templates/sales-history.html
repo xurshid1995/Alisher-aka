@@ -1325,6 +1325,11 @@ function formatPrice(usdAmount, saleRate = null) {
     const uzsFormatted = convertToUZS(usdAmount, saleRate);
     return `${formatUSD(usdAmount)}<br><small style="color: #007bff; font-size: 13px;">${parseInt(uzsFormatted).toLocaleString('uz-UZ')}</small>`;
 }
+// Mahsulot narxini ko'rsatish: saqlangan UZS mavjud bo'lsa undan, aks holda USD*rate
+function formatItemPrice(usdAmount, storedUzs, saleRate = null) {
+    const uzs = (storedUzs && storedUzs > 0) ? Math.round(storedUzs) : Math.round(convertToUZS(usdAmount, saleRate));
+    return `${formatUSD(usdAmount)}<br><small style="color: #007bff; font-size: 13px;">${uzs.toLocaleString('uz-UZ')}</small>`;
+}
 // Global o'zgaruvchi - joriy savdo ma'lumotlari
 let currentSaleData = null;
 
@@ -1700,8 +1705,8 @@ function displaySalesData(data) {
                 </td>
                 <td class="product-cell col-product">${firstItem.product_name || 'Noma\'lum'}</td>
                 <td class="col-quantity">${firstItem.quantity}</td>
-                <td class="col-price">${formatPrice(firstItem.unit_price || 0, sale.currency_rate)}</td>
-                <td class="col-subtotal">${formatPrice(firstItem.total_price || 0, sale.currency_rate)}</td>
+                <td class="col-price">${formatItemPrice(firstItem.unit_price || 0, firstItem.unit_price_uzs, sale.currency_rate)}</td>
+                <td class="col-subtotal">${formatItemPrice(firstItem.total_price || 0, firstItem.total_price_uzs, sale.currency_rate)}</td>
                 <td rowspan="${items.length}" class="group-cell group-total col-total">${(() => { const totalUZS = parseFloat(sale.cash_amount||0) + parseFloat(sale.click_amount||0) + parseFloat(sale.terminal_amount||0) + parseFloat(sale.debt_amount||0); return `$${totalAmount.toFixed(4)}<br><small style="color: #007bff; font-size: 13px;">${Math.round(totalUZS).toLocaleString('uz-UZ')}</small>`; })()}</td>
                 ${userRole === 'sotuvchi' ? '' : `<td rowspan="${items.length}" class="group-cell group-profit col-profit ${profitClass}">${formatPrice(totalProfit, sale.currency_rate)}</td>`}
                 <td rowspan="${items.length}" class="group-cell group-actions col-actions">
@@ -1730,8 +1735,8 @@ function displaySalesData(data) {
                 <tr class="${rowClasses.join(' ')}">
                     <td class="product-cell col-product">${item.product_name || 'Noma\'lum'}</td>
                     <td class="col-quantity">${item.quantity}</td>
-                    <td class="col-price">${formatPrice(item.unit_price || 0, sale.currency_rate)}</td>
-                    <td class="col-subtotal">${formatPrice(item.total_price || 0, sale.currency_rate)}</td>
+                    <td class="col-price">${formatItemPrice(item.unit_price || 0, item.unit_price_uzs, sale.currency_rate)}</td>
+                    <td class="col-subtotal">${formatItemPrice(item.total_price || 0, item.total_price_uzs, sale.currency_rate)}</td>
                 </tr>
             `;
         }
@@ -2157,8 +2162,9 @@ function showSaleDetailsModal(sale) {
                                     const exchangeRate = parseFloat(sale.currency_rate || 12000);
                                     const unitPriceUSD = parseFloat(item.unit_price || 0);
                                     const totalPriceUSD = parseFloat(item.total_price || 0);
-                                    const unitPriceUZS = Math.round(unitPriceUSD * exchangeRate);
-                                    const totalPriceUZS = Math.round(totalPriceUSD * exchangeRate);
+                                    // Saqlangan UZS mavjud bo'lsa undan foydalanish, aks holda hisoblash
+                                    const unitPriceUZS = (item.unit_price_uzs && item.unit_price_uzs > 0) ? Math.round(item.unit_price_uzs) : Math.round(unitPriceUSD * exchangeRate);
+                                    const totalPriceUZS = (item.total_price_uzs && item.total_price_uzs > 0) ? Math.round(item.total_price_uzs) : Math.round(totalPriceUSD * exchangeRate);
                                     
                                     // Agar miqdor 0 yoki manfiy bo'lsa, qaytarilgan mahsulot
                                     const isReturned = item.quantity <= 0;
@@ -2189,8 +2195,8 @@ function showSaleDetailsModal(sale) {
                                         const itemExchangeRate = parseFloat(sale.currency_rate || 12000);
                                         const unitPriceUSD = parseFloat(item.unit_price || 0);
                                         const totalPriceUSD = parseFloat(item.total_price || 0);
-                                        const unitPriceUZS = Math.round(unitPriceUSD * itemExchangeRate);
-                                        const totalPriceUZS = Math.round(totalPriceUSD * itemExchangeRate);
+                                        const unitPriceUZS = (item.unit_price_uzs && item.unit_price_uzs > 0) ? Math.round(item.unit_price_uzs) : Math.round(unitPriceUSD * itemExchangeRate);
+                                        const totalPriceUZS = (item.total_price_uzs && item.total_price_uzs > 0) ? Math.round(item.total_price_uzs) : Math.round(totalPriceUSD * itemExchangeRate);
                                         
                                         return `
                                         <tr style="background: #ffebee; color: #c62828;">

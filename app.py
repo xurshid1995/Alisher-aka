@@ -1345,6 +1345,8 @@ class SaleItem(db.Model):
     quantity = db.Column(db.DECIMAL(precision=10, scale=2), nullable=False)
     unit_price = db.Column(db.DECIMAL(precision=10, scale=4), nullable=False)
     total_price = db.Column(db.DECIMAL(precision=12, scale=4), nullable=False)
+    unit_price_uzs = db.Column(db.DECIMAL(precision=15, scale=2), default=0)  # UZS narx
+    total_price_uzs = db.Column(db.DECIMAL(precision=15, scale=2), default=0)  # UZS jami
     cost_price = db.Column(db.DECIMAL(precision=10, scale=4), nullable=False)
     profit = db.Column(db.DECIMAL(precision=12, scale=4), nullable=False)
     source_type = db.Column(db.String(20))  # 'store' yoki 'warehouse'
@@ -1377,6 +1379,8 @@ class SaleItem(db.Model):
             'quantity': float(self.quantity) if self.quantity is not None else 0,
             'unit_price': float(self.unit_price) if self.unit_price is not None else 0.0,
             'total_price': float(self.total_price) if self.total_price is not None else 0.0,
+            'unit_price_uzs': float(self.unit_price_uzs) if self.unit_price_uzs is not None else 0.0,
+            'total_price_uzs': float(self.total_price_uzs) if self.total_price_uzs is not None else 0.0,
             'cost_price': float(self.cost_price) if self.cost_price is not None else 0.0,
             'profit': float(self.profit) if self.profit is not None else 0.0,
             'source_type': self.source_type,
@@ -11788,6 +11792,10 @@ def create_sale():
             # Foyda USD da hisoblash
             profit_usd = total_amount_usd - total_cost_price_usd  # USD da
 
+            # UZS narxlarini saqlash (frontend dan keladi)
+            unit_price_uzs = Decimal(str(item.get('price_uzs', 0) or 0))
+            total_price_uzs = unit_price_uzs * quantity
+
             # Location ma'lumotini yaratish
             if item_location_type == 'warehouse':
                 warehouse_obj = Warehouse.query.get(item_location_id)
@@ -11803,6 +11811,8 @@ def create_sale():
                 quantity=quantity,
                 unit_price=Decimal(str(unit_price_usd)),  # USD da saqlanadi
                 total_price=Decimal(str(unit_price_usd)) * quantity,  # USD da
+                unit_price_uzs=unit_price_uzs,  # UZS da saqlash
+                total_price_uzs=total_price_uzs,  # UZS da saqlash
                 cost_price=Decimal(str(unit_cost_price_usd)),  # USD da
                 profit=profit_usd,  # USD da (allaqachon Decimal)
                 source_type=item_location_type,
@@ -12166,12 +12176,18 @@ def update_sale(sale_id):
                 # Foyda USD da hisoblash
                 profit_usd = (unit_price_usd - cost_price_usd) * quantity
 
+                # UZS narxlarini saqlash (frontend dan keladi)
+                item_price_uzs = Decimal(str(item_data.get('price_uzs', 0) or 0))
+                item_total_price_uzs = item_price_uzs * quantity
+
                 sale_item = SaleItem(
                     sale_id=sale.id,
                     product_id=product.id,
                     quantity=quantity,
                     unit_price=unit_price_usd,  # USD da
                     total_price=quantity * unit_price_usd,  # USD da
+                    unit_price_uzs=item_price_uzs,  # UZS da
+                    total_price_uzs=item_total_price_uzs,  # UZS da
                     cost_price=cost_price_usd,  # USD da
                     profit=profit_usd,  # USD da
                     source_type=location_type,
@@ -12551,12 +12567,18 @@ def create_pending_sale(data):
             # Foyda USD da hisoblash
             profit_usd = total_price_usd - (Decimal(str(quantity)) * Decimal(str(cost_price_usd)))
 
+            # UZS narxlarini saqlash (frontend dan keladi)
+            pending_unit_price_uzs = Decimal(str(item.get('price_uzs', 0) or 0))
+            pending_total_price_uzs = pending_unit_price_uzs * Decimal(str(quantity))
+
             sale_item = SaleItem(
                 sale_id=new_sale.id,
                 product_id=product_id,
                 quantity=quantity,
                 unit_price=unit_price_usd,  # USD da
                 total_price=total_price_usd,  # USD da
+                unit_price_uzs=pending_unit_price_uzs,  # UZS da
+                total_price_uzs=pending_total_price_uzs,  # UZS da
                 cost_price=Decimal(str(cost_price_usd)),  # USD da
                 profit=profit_usd,  # USD da
                 source_type=item_location_type,
@@ -13029,12 +13051,17 @@ def api_update_pending_sale(sale_id):
             total_price = Decimal(str(quantity * unit_price))
             profit = total_price - (Decimal(str(quantity)) * cost_price)
 
+            pending_upd_unit_uzs = Decimal(str(item.get('price_uzs', 0) or 0))
+            pending_upd_total_uzs = pending_upd_unit_uzs * quantity
+
             sale_item = SaleItem(
                 sale_id=sale_id,
                 product_id=product_id,
                 quantity=quantity,
                 unit_price=unit_price,
                 total_price=total_price,
+                unit_price_uzs=pending_upd_unit_uzs,
+                total_price_uzs=pending_upd_total_uzs,
                 cost_price=cost_price,
                 profit=profit,
                 source_id=item.get('location_id'),
