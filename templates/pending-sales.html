@@ -938,10 +938,15 @@ function highlightSearchTerms(text, searchTerm) {
     return text.replace(regex, '<mark style="background-color: #ffeb3b; padding: 2px 4px; border-radius: 2px;">$1</mark>');
 }
 
-// Narxni formatlash (USD va som) - savdo kursidan foydalanish
-function formatPrice(usdAmount, saleRate = null) {
-    const uzsFormatted = convertToUZS(usdAmount, saleRate);
-    return `${formatUSD(usdAmount)}<br><small style="color: #007bff; font-size: 13px;">${parseInt(uzsFormatted).toLocaleString('uz-UZ')}</small>`;
+// Narxni formatlash (USD va som) - saqlangan UZS qiymatidan foydalanish (agar mavjud bo'lsa)
+function formatPrice(usdAmount, saleRate = null, storedUzs = null) {
+    let uzsValue;
+    if (storedUzs !== null && storedUzs !== undefined && parseFloat(storedUzs) > 0) {
+        uzsValue = Math.round(parseFloat(storedUzs));
+    } else {
+        uzsValue = parseInt(convertToUZS(usdAmount, saleRate));
+    }
+    return `${formatUSD(usdAmount)}<br><small style="color: #007bff; font-size: 13px;">${uzsValue.toLocaleString('uz-UZ')}</small>`;
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -1314,8 +1319,8 @@ function displaySalesData(data) {
                 </td>
                 <td class="product-cell col-product">${firstItem.product_name || 'Noma\'lum'}</td>
                 <td class="col-quantity">${firstItem.quantity}</td>
-                <td class="col-price">${formatPrice(firstItem.unit_price || 0, sale.currency_rate)}</td>
-                <td class="col-subtotal">${formatPrice(firstItem.total_price || 0, sale.currency_rate)}</td>
+                <td class="col-price">${formatPrice(firstItem.unit_price || 0, sale.currency_rate, firstItem.unit_price_uzs)}</td>
+                <td class="col-subtotal">${formatPrice(firstItem.total_price || 0, sale.currency_rate, firstItem.total_price_uzs)}</td>
                 <td rowspan="${items.length}" class="group-cell group-total col-total">${formatPrice(totalAmount, sale.currency_rate)}</td>
                 ${userRole === 'sotuvchi' ? '' : `<td rowspan="${items.length}" class="group-cell group-profit col-profit ${profitClass}">${formatPrice(totalProfit, sale.currency_rate)}</td>`}
                 <td rowspan="${items.length}" class="group-cell group-actions col-actions">
@@ -1344,8 +1349,8 @@ function displaySalesData(data) {
                 <tr class="${rowClasses.join(' ')}">
                     <td class="product-cell col-product">${item.product_name || 'Noma\'lum'}</td>
                     <td class="col-quantity">${item.quantity}</td>
-                    <td class="col-price">${formatPrice(item.unit_price || 0, sale.currency_rate)}</td>
-                    <td class="col-subtotal">${formatPrice(item.total_price || 0, sale.currency_rate)}</td>
+                    <td class="col-price">${formatPrice(item.unit_price || 0, sale.currency_rate, item.unit_price_uzs)}</td>
+                    <td class="col-subtotal">${formatPrice(item.total_price || 0, sale.currency_rate, item.total_price_uzs)}</td>
                 </tr>
             `;
         }
