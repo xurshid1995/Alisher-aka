@@ -739,7 +739,7 @@ class StoreStock(db.Model):
             'product_name': self.product.name if self.product else 'Noma\'lum',
             'quantity': float(self.quantity) if self.quantity else 0,
             'min_stock': self.min_stock,
-            'status': 'low' if self.quantity <= self.min_stock else 'normal',
+            'status': 'low' if (self.product and self.product.min_stock > 0 and self.quantity <= self.product.min_stock) else 'normal',
             'last_updated': self.last_updated.strftime('%Y-%m-%d %H:%M')
         }
 
@@ -5621,12 +5621,12 @@ def api_store_stock(store_id):
 
             # Determine status
             item_status = 'normal'
-            min_stock = stock.min_stock or 10
+            min_stock = stock.product.min_stock
 
             if stock.quantity == 0:
                 item_status = 'critical'
                 critical_stock_count += 1
-            elif stock.quantity <= min_stock:
+            elif min_stock > 0 and stock.quantity <= min_stock:
                 item_status = 'low'
 
             # Skip if status filter doesn't match
@@ -5732,11 +5732,11 @@ def api_store_stock_export(store_id):
 
         for stock in stocks:
             unit_profit = stock.product.sell_price - stock.product.cost_price
-            min_stock = stock.min_stock or 10
+            min_stock = stock.product.min_stock
 
             if stock.quantity == 0:
                 item_status = 'critical'
-            elif stock.quantity <= min_stock:
+            elif min_stock > 0 and stock.quantity <= min_stock:
                 item_status = 'low'
             else:
                 item_status = 'normal'
@@ -6022,12 +6022,12 @@ def api_warehouse_stock(warehouse_id):
 
             # Determine status
             item_status = 'normal'
-            min_stock = getattr(stock.product, 'min_stock', None) or 10
+            min_stock = stock.product.min_stock
 
             if stock.quantity == 0:
                 item_status = 'critical'
                 critical_stock_count += 1
-            elif stock.quantity <= min_stock:
+            elif min_stock > 0 and stock.quantity <= min_stock:
                 item_status = 'low'
 
             # Skip if status filter doesn't match

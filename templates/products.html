@@ -765,8 +765,9 @@
             
             filteredProducts.forEach(product => {
                 const totalStock = getTotalStock(product, locationFilter);
-                const stockClass = getStockClass(totalStock);
-                const stockText = getStockText(totalStock);
+                const minStock = product.min_stock || 0;
+                const stockClass = getStockClass(totalStock, minStock);
+                const stockText = getStockText(totalStock, minStock);
                 const locations = getProductLocations(product);
                 
                 // O'lchov birligini aniqlash
@@ -878,22 +879,23 @@
     }
 
     // Stock klassi aniqlash
-    function getStockClass(stock) {
+    function getStockClass(stock, minStock) {
         if (stock === 0) return 'stock-out';
-        if (stock < 10) return 'stock-medium';
+        if (minStock > 0 && stock <= minStock) return 'stock-medium';
         return 'stock-high';
     }
 
     // Stock matni aniqlash
-    function getStockText(stock) {
+    function getStockText(stock, minStock) {
         if (stock === 0) return PLANG.stockOut;
-        if (stock < 10) return PLANG.stockLow;
+        if (minStock > 0 && stock <= minStock) return PLANG.stockLow;
         return PLANG.stockOk;
     }
 
     // "Barcha joylar" rejimida aqlli stock klassi
     function getSmartStockClass(product) {
         if (!product.stocks || product.stocks.length === 0) return 'stock-out';
+        const minStock = product.min_stock || 0;
         
         let hasHigh = false;
         let hasMedium = false;
@@ -902,7 +904,7 @@
         product.stocks.forEach(stock => {
             const qty = stock.quantity || 0;
             if (qty > 0) hasAny = true;
-            if (qty >= 10) hasHigh = true;
+            if (minStock > 0 ? qty > minStock : qty > 0) hasHigh = true;
             else if (qty > 0) hasMedium = true;
         });
         
@@ -914,6 +916,7 @@
     // "Barcha joylar" rejimida aqlli stock matni
     function getSmartStockText(product) {
         if (!product.stocks || product.stocks.length === 0) return PLANG.stockOut;
+        const minStock = product.min_stock || 0;
         
         let hasHigh = false;
         let hasMedium = false;
@@ -922,7 +925,7 @@
         product.stocks.forEach(stock => {
             const qty = stock.quantity || 0;
             if (qty > 0) hasAny = true;
-            if (qty >= 10) hasHigh = true;
+            if (minStock > 0 ? qty > minStock : qty > 0) hasHigh = true;
             else if (qty > 0) hasMedium = true;
         });
         
@@ -1003,10 +1006,14 @@
                 const totalStock = getTotalStock(product, currentLocation);
                 
                 switch (statusFilter) {
-                    case 'high':
-                        return totalStock >= 10;
-                    case 'medium': 
-                        return totalStock > 0 && totalStock < 10;
+                    case 'high': {
+                        const minS = product.min_stock || 0;
+                        return minS > 0 ? totalStock > minS : totalStock > 0;
+                    }
+                    case 'medium': {
+                        const minS = product.min_stock || 0;
+                        return totalStock > 0 && minS > 0 && totalStock <= minS;
+                    }
                     case 'out':
                         return totalStock === 0;
                     default:
