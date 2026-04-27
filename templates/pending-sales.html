@@ -1870,11 +1870,12 @@ function getPaymentMethodText(method) {
 // To'lov tafsilotlarini HTML ga aylantirish
 function generatePaymentDetailsHTML(sale) {
     const details = sale.payment_details || {};
+    const rate = sale.currency_rate || 12000;
     const payments = [
-        { name: '💵 ' + PSLANG.cash_payment, amount: details.cash || 0 },
-        { name: '📱 ' + PSLANG.click_payment, amount: details.click || 0 },
-        { name: '💳 ' + PSLANG.terminal_payment, amount: details.terminal || 0 },
-        { name: '📝 ' + PSLANG.debt_payment, amount: details.debt || 0 }
+        { name: '💵 ' + PSLANG.cash_payment, amount: details.cash || 0, isDebt: false },
+        { name: '📱 ' + PSLANG.click_payment, amount: details.click || 0, isDebt: false },
+        { name: '💳 ' + PSLANG.terminal_payment, amount: details.terminal || 0, isDebt: false },
+        { name: '📝 ' + PSLANG.debt_payment, amount: details.debt || 0, isDebt: true }
     ];
     
     // Faqat 0 dan katta to'lovlarni ko'rsatish
@@ -1890,15 +1891,33 @@ function generatePaymentDetailsHTML(sale) {
         `;
     }
     
-    // To'lov turlarini bir qatorda ko'rsatish
+    const fmtUsd = v => parseFloat(parseFloat(v).toFixed(5)).toString().replace(/\.?0+$/, '');
+
+    // To'lov turlarini USD + UZS bilan ko'rsatish (sales-history uslubi)
     const paymentsHTML = activePayments
-        .map(p => `<span style="display: inline-block; background: #f8f9fa; padding: 5px 12px; margin-right: 10px; border-radius: 4px; border-left: 3px solid #007bff;">${p.name}: <strong>$${parseFloat(p.amount).toFixed(2)}</strong></span>`)
+        .map(p => `
+            <div style="display: inline-block; background: #f8f9fa; padding: 8px 14px; margin: 4px ${p.isDebt ? '40px' : '8px'} 4px 0; border-radius: 6px; border-left: 4px solid #007bff;">
+                <div style="font-weight: 600; color: #495057; margin-bottom: 2px;">${p.name}</div>
+                <div style="font-size: 15px; font-weight: 700; color: #28a745;">$${fmtUsd(p.amount)}</div>
+                <div style="font-size: 12px; color: #6c757d;">${Math.round(parseFloat(p.amount) * rate).toLocaleString('uz-UZ')} so'm</div>
+            </div>
+        `)
         .join('');
+
+    const totalUSD = activePayments.reduce((sum, p) => sum + parseFloat(p.amount), 0);
+    const totalUZS = Math.round(totalUSD * rate);
+
+    const totalHTML = `
+        <div style="display: inline-block; background: #007bff; padding: 8px 14px; margin: 4px 8px 4px 0; border-radius: 6px; border-left: 4px solid #0056b3;">
+            <div style="font-weight: 600; color: #ffffff; margin-bottom: 2px;">${PSLANG.total_payment || 'Jami to\'lov'}</div>
+            <div style="font-size: 15px; font-weight: 700; color: #ffffff;">$${fmtUsd(totalUSD)}</div>
+            <div style="font-size: 12px; color: #ffffff;">${totalUZS.toLocaleString('uz-UZ')} so'm</div>
+        </div>
+    `;
     
     return `
-        <div class="total-row">
-            <span class="total-label" style="display: inline-block; margin-right: 15px; vertical-align: middle;">${PSLANG.payments}:</span>
-            <span style="display: inline-block; vertical-align: middle;">${paymentsHTML}</span>
+        <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 4px;">
+            ${paymentsHTML}${totalHTML}
         </div>
     `;
 }
