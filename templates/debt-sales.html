@@ -2167,14 +2167,16 @@ function generatePaymentDetailsHTML(sale) {
     const clickUSD = parseFloat(sale.click_usd || 0);
     const terminalUSD = parseFloat(sale.terminal_usd || 0);
     const debtUSD = parseFloat(sale.debt_usd || 0);
+    const balanceUSD = parseFloat(sale.balance_usd || 0);
     
-    console.log('💰 USD qiymatlar:', { cashUSD, clickUSD, terminalUSD, debtUSD });
+    console.log('💰 USD qiymatlar:', { cashUSD, clickUSD, terminalUSD, debtUSD, balanceUSD });
     
     // UZS qiymatlarni doim hisoblash (database'da USD saqlanadi)
     const cashUZS = cashUSD * rate;
     const clickUZS = clickUSD * rate;
     const terminalUZS = terminalUSD * rate;
     const debtUZS = debtUSD * rate;
+    const balanceUZS = balanceUSD * rate;
     
     console.log('💵 UZS qiymatlar:', { cashUZS, clickUZS, terminalUZS, debtUZS });
     
@@ -2182,7 +2184,8 @@ function generatePaymentDetailsHTML(sale) {
         { name: '💵 ' + DSLANG.cash_payment, usd: cashUSD, uzs: cashUZS, isDebt: false },
         { name: '📱 ' + DSLANG.click_payment, usd: clickUSD, uzs: clickUZS, isDebt: false },
         { name: '💳 ' + DSLANG.terminal_payment, usd: terminalUSD, uzs: terminalUZS, isDebt: false },
-        { name: '📝 ' + DSLANG.debt_payment, usd: debtUSD, uzs: debtUZS, isDebt: true }
+        { name: '📝 ' + DSLANG.debt_payment, usd: debtUSD, uzs: debtUZS, isDebt: true },
+        { name: '🏦 Balans', usd: balanceUSD, uzs: balanceUZS, isDebt: false }
     ];
     
     // Faqat 0 dan katta to'lovlarni ko'rsatish

@@ -1802,19 +1802,22 @@ function generatePaymentDetailsHTML(sale) {
     const clickUSD = parseFloat(sale.click_usd || 0);
     const terminalUSD = parseFloat(sale.terminal_usd || 0);
     const debtUSD = parseFloat(sale.debt_usd || 0);
+    const balanceUSD = parseFloat(sale.balance_usd || 0);
     
-    console.log('💰 USD qiymatlar:', { cashUSD, clickUSD, terminalUSD, debtUSD });
+    console.log('💰 USD qiymatlar:', { cashUSD, clickUSD, terminalUSD, debtUSD, balanceUSD });
     
     const cashUZS = cashUSD * rate;
     const clickUZS = clickUSD * rate;
     const terminalUZS = terminalUSD * rate;
     const debtUZS = debtUSD * rate;
+    const balanceUZS = balanceUSD * rate;
     
     const payments = [
         { name: '💵 Naqd pul', usd: cashUSD, uzs: cashUZS, isDebt: false },
         { name: '📱 Click', usd: clickUSD, uzs: clickUZS, isDebt: false },
         { name: '💳 Terminal', usd: terminalUSD, uzs: terminalUZS, isDebt: false },
-        { name: '📝 Qarz', usd: debtUSD, uzs: debtUZS, isDebt: true }
+        { name: '📝 Qarz', usd: debtUSD, uzs: debtUZS, isDebt: true },
+        { name: '🏦 Balans', usd: balanceUSD, uzs: balanceUZS, isDebt: false }
     ];
     
     const activePayments = payments.filter(p => p.usd > 0);

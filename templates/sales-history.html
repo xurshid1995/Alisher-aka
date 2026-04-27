@@ -2272,20 +2272,24 @@ function generatePaymentDetailsHTML(sale) {
     const clickUSD = parseFloat(sale.click_usd || 0);
     const terminalUSD = parseFloat(sale.terminal_usd || 0);
     const debtUSD = parseFloat(sale.debt_usd || 0);
+    const balanceUSD = parseFloat(sale.balance_usd || 0);
     
-    console.log('💰 USD qiymatlar:', { cashUSD, clickUSD, terminalUSD, debtUSD });
+    console.log('💰 USD qiymatlar:', { cashUSD, clickUSD, terminalUSD, debtUSD, balanceUSD });
     
     // UZS qiymatlari — ma'lumotlar bazasidan to'g'ridan-to'g'ri (USD*rate EMAS)
     const cashUZS = parseFloat(sale.cash_amount || 0);
     const clickUZS = parseFloat(sale.click_amount || 0);
     const terminalUZS = parseFloat(sale.terminal_amount || 0);
     const debtUZS = parseFloat(sale.debt_amount || 0);
+    const rate = parseFloat(sale.currency_rate || 12000);
+    const balanceUZS = balanceUSD * rate;
     
     const payments = [
         { name: '💵 ' + SHLANG.cash_payment, usd: cashUSD, uzs: cashUZS, isDebt: false },
         { name: '📱 ' + SHLANG.click_payment, usd: clickUSD, uzs: clickUZS, isDebt: false },
         { name: '💳 ' + SHLANG.terminal_payment, usd: terminalUSD, uzs: terminalUZS, isDebt: false },
-        { name: '📝 ' + SHLANG.debt_payment, usd: debtUSD, uzs: debtUZS, isDebt: true }
+        { name: '📝 ' + SHLANG.debt_payment, usd: debtUSD, uzs: debtUZS, isDebt: true },
+        { name: '🏦 Balans', usd: balanceUSD, uzs: balanceUZS, isDebt: false }
     ];
     
     const activePayments = payments.filter(p => p.usd > 0);
