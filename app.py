@@ -527,9 +527,9 @@ class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), nullable=False)
     barcode = db.Column(db.String(255), unique=True, nullable=True, index=True)  # Barcode raqami
-    cost_price = db.Column(db.DECIMAL(precision=10, scale=4),
+    cost_price = db.Column(db.DECIMAL(precision=10, scale=5),
                            nullable=False)  # Ortacha tan narxi
-    sell_price = db.Column(db.DECIMAL(precision=10, scale=4),
+    sell_price = db.Column(db.DECIMAL(precision=10, scale=5),
                            nullable=False)  # Sotish narxi
     min_stock = db.Column(db.Integer, default=0,
                           nullable=False)  # Minimal qoldiq
