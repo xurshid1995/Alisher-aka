@@ -3395,7 +3395,16 @@ def api_update_customer_balance(customer_id):
         old_balance = float(customer.balance or 0)
         customer.balance = new_balance
         db.session.commit()
-        logger.info(f"Mijoz #{customer_id} balansi tahrirlandi: ${old_balance} → ${float(new_balance)}")
+        logger.info(f"Mijoz #{customer_id} balansi tahrirlandi: ${old_balance} \u2192 ${float(new_balance)}")
+        log_operation(
+            operation_type='edit',
+            table_name='customers',
+            record_id=customer_id,
+            description=f"Mijoz balansi tahrirlandi: {customer.name} | ${old_balance:.2f} \u2192 ${float(new_balance):.2f}",
+            old_data={'balance': old_balance, 'customer_name': customer.name},
+            new_data={'balance': float(new_balance), 'customer_name': customer.name},
+            amount=float(new_balance)
+        )
         return jsonify({'success': True, 'new_balance': float(new_balance)})
     except Exception as e:
         db.session.rollback()
@@ -3427,6 +3436,15 @@ def api_add_customer_balance(customer_id):
         customer.balance = old_balance + amount
         db.session.commit()
         logger.info(f"Mijoz #{customer_id} balansiga ${amount} qo'shildi (yangi: ${float(customer.balance)})")
+        log_operation(
+            operation_type='payment',
+            table_name='customers',
+            record_id=customer_id,
+            description=f"Mijoz balansiga qo'shildi: {customer.name} | +${float(amount):.2f} (yangi balans: ${float(customer.balance):.2f})",
+            old_data={'balance': float(old_balance), 'customer_name': customer.name},
+            new_data={'balance': float(customer.balance), 'added': float(amount), 'customer_name': customer.name},
+            amount=float(amount)
+        )
         return jsonify({'success': True, 'new_balance': float(customer.balance)})
     except Exception as e:
         db.session.rollback()
