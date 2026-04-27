@@ -3372,6 +3372,37 @@ def api_customer_balances():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
+@app.route('/api/customer/<int:customer_id>/update-balance', methods=['POST'])
+@role_required('admin', 'kassir')
+def api_update_customer_balance(customer_id):
+    """Mijoz balansini tahrirlash"""
+    try:
+        data = request.get_json()
+        new_balance = data.get('balance')
+        if new_balance is None:
+            return jsonify({'success': False, 'error': 'balance kiritilmadi'}), 400
+        try:
+            new_balance = Decimal(str(new_balance))
+        except Exception:
+            return jsonify({'success': False, 'error': 'Noto\'g\'ri balans qiymati'}), 400
+        if new_balance < 0:
+            return jsonify({'success': False, 'error': 'Balans 0 dan kichik bo\'lishi mumkin emas'}), 400
+
+        customer = Customer.query.get(customer_id)
+        if not customer:
+            return jsonify({'success': False, 'error': 'Mijoz topilmadi'}), 404
+
+        old_balance = float(customer.balance or 0)
+        customer.balance = new_balance
+        db.session.commit()
+        logger.info(f"Mijoz #{customer_id} balansi tahrirlandi: ${old_balance} → ${float(new_balance)}")
+        return jsonify({'success': True, 'new_balance': float(new_balance)})
+    except Exception as e:
+        db.session.rollback()
+        logger.error(f"update-balance xatosi: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
 @app.route('/paid-debts-history')
 @role_required('admin', 'kassir', 'sotuvchi')
 def paid_debts_history():
