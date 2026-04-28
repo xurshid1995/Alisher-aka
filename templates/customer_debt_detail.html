@@ -480,6 +480,8 @@
         const num = parseFloat(val) || 0;
         input.dataset.fullValue = String(num);
         input.value = parseFloat(num.toFixed(5));
+        // input listener data-full-value ni qayta yozmasligi uchun lock
+        input.dataset.fvLocked = '1';
     }
     // USD input'dan to'liq qiymat olish (data-full-value ustunlik qiladi)
     function fvGet(input) {
@@ -645,8 +647,8 @@
 
         const remainingDebt = debtData.remaining_debt || 0;
 
-        // Ortiqcha to'lov ogohlantirilishi
-        if (totalPayment > remainingDebt) {
+        // Ortiqcha to'lov ogohlantirilishi (floating-point xatoligi uchun 0.00001 epsilon)
+        if (totalPayment > remainingDebt + 0.00001) {
             const fmt = n => parseFloat(n.toFixed(5)).toString().replace(/\.?0+$/, '');
             const excess = fmt(totalPayment - remainingDebt);
             const confirmMsg = `⚠️ Diqqat!\n\nQarz: $${fmt(remainingDebt)}\nTo'lov: $${fmt(totalPayment)}\nOrtiqcha: $${excess}\n\nOrtiqcha $${excess} mijoz balansiga o'tkaziladi.\n\nDavom etasizmi?`;
@@ -700,9 +702,10 @@
         
         // Cash USD -> UZS
         document.getElementById('paymentCashUSD').addEventListener('input', function() {
-            // Foydalanuvchi o'zi yozsa, data-full-value ni yangilaymiz
-            this.dataset.fullValue = this.value;
-            const usd = parseFloat(this.value);
+            // fvSet orqali o'rnatilgan bo'lsa, data-full-value ni QAYTA YOZMAYMIZ
+            if (this.dataset.fvLocked) { delete this.dataset.fvLocked; }
+            else { this.dataset.fullValue = this.value; }
+            const usd = parseFloat(this.dataset.fullValue || this.value);
             if (!isNaN(usd) && this.value !== '') {
                 document.getElementById('paymentCashUZS').value = Math.round(usd * currentRate);
             } else {
@@ -724,8 +727,9 @@
         
         // Click USD -> UZS
         document.getElementById('paymentClickUSD').addEventListener('input', function() {
-            this.dataset.fullValue = this.value;
-            const usd = parseFloat(this.value);
+            if (this.dataset.fvLocked) { delete this.dataset.fvLocked; }
+            else { this.dataset.fullValue = this.value; }
+            const usd = parseFloat(this.dataset.fullValue || this.value);
             if (!isNaN(usd) && this.value !== '') {
                 document.getElementById('paymentClickUZS').value = Math.round(usd * currentRate);
             } else {
@@ -747,8 +751,9 @@
         
         // Terminal USD -> UZS
         document.getElementById('paymentTerminalUSD').addEventListener('input', function() {
-            this.dataset.fullValue = this.value;
-            const usd = parseFloat(this.value);
+            if (this.dataset.fvLocked) { delete this.dataset.fvLocked; }
+            else { this.dataset.fullValue = this.value; }
+            const usd = parseFloat(this.dataset.fullValue || this.value);
             if (!isNaN(usd) && this.value !== '') {
                 document.getElementById('paymentTerminalUZS').value = Math.round(usd * currentRate);
             } else {
