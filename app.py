@@ -7276,7 +7276,7 @@ def api_debt_details(customer_id):
 
 
 @app.route('/api/debts/update-due-date', methods=['POST'])
-@role_required('admin', 'kassir')
+@role_required('admin', 'kassir', 'sotuvchi')
 def api_update_due_date():
     """Mijozning qarzli savdolari uchun payment_due_date yangilash (har bir savdo alohida)"""
     try:
