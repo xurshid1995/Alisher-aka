@@ -79,14 +79,14 @@ optgroup option { font-weight: normal; color: #1e293b; }
 .ap-btn-primary:hover { background: #1d4ed8; }
 .ap-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
 .ap-btn-success {
-    width: 100%; padding: 10px;
+    flex: 1; padding: 10px;
     background: #059669; color: white; border: none;
     border-radius: 10px; font-size: 14px; font-weight: 600;
     cursor: pointer; transition: background 0.2s;
 }
 .ap-btn-success:hover { background: #047857; }
 .ap-btn-danger {
-    width: 100%; padding: 8px; margin-top: 8px;
+    flex: 1; padding: 8px;
     background: #ef4444; color: white; border: none;
     border-radius: 10px; font-size: 13px; font-weight: 600;
     cursor: pointer; transition: background 0.2s;
@@ -158,7 +158,10 @@ optgroup option { font-weight: normal; color: #1e293b; }
 .ap-empty p { margin: 4px 0; font-size: 13px; }
 
 /* Final actions */
-.ap-final-actions { padding-top: 12px; border-top: 1px solid #f1f5f9; margin-top: 12px; }
+.ap-final-actions {
+    padding-top: 12px; border-top: 1px solid #f1f5f9; margin-top: 12px;
+    display: flex; gap: 8px;
+}
 
 /* Price comparison */
 .price-comparison {
