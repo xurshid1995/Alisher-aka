@@ -74,7 +74,7 @@ body {
 
 /* Hover: sidebar content ustiga chiqib kengayadi, content qisqarmaydi */
 .sidebar:hover {
-    width: 250px;
+    width: 300px;
     z-index: 950;
 }
 
