@@ -1555,7 +1555,7 @@ footer {
         top: 0 !important;
         height: 100vh !important;
         max-height: 100vh !important;
-        width: 280px !important;
+        width: 300px !important;
         transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease !important;
         z-index: 1250 !important;
         background: #0f172a !important;
@@ -1571,7 +1571,7 @@ footer {
     
     /* Hover effekti mobilda o'chiriladi */
     .sidebar:hover {
-        width: 280px !important;
+        width: 300px !important;
         left: -100% !important;
     }
     
@@ -1582,7 +1582,7 @@ footer {
     
     .sidebar.active:hover {
         left: 0 !important;
-        width: 280px !important;
+        width: 300px !important;
     }
     
     .sidebar-overlay {
@@ -2322,8 +2322,8 @@ table:not(.cart-table) {
     
     /* Mobile sidebar ultra compact */
     .sidebar {
-        width: 220px !important;
-        left: -220px !important;
+        width: 300px !important;
+        left: -300px !important;
     }
 
     .sidebar.active {
