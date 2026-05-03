@@ -228,19 +228,18 @@ body {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    background: rgba(255, 255, 255, 0.08);
-    padding: 0.5rem 1rem;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: none;
+    padding: 0.5rem 0;
+    border-radius: 0;
+    cursor: default;
+    border: none;
     box-shadow: none;
 }
 
 .currency-display:hover {
-    background: rgba(255, 255, 255, 0.15);
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    background: none;
+    transform: none;
+    box-shadow: none;
 }
 
 .currency-rate {
