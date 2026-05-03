@@ -1,8 +1,8 @@
-{%% extends "base_with_sidebar.html" %%}
+{% extends "base_with_sidebar.html" %}
 
-{%% block title %%}{{ t('currency_management') }} - {{ t('app_title') }}{%% endblock %%}
+{% block title %}{{ t('currency_management') }} - {{ t('app_title') }}{% endblock %}
 
-{%% block extra_css %%}
+{% block extra_css %}
 <style>
     .cr-page {
         padding: 28px 28px 40px;
@@ -70,9 +70,9 @@
     @media (max-width: 768px) { .cr-page { padding: 14px; } .cr-stats { grid-template-columns: 1fr 1fr; gap: 12px; } .cr-form-row { flex-direction: column; } }
     @media (max-width: 480px) { .cr-stats { grid-template-columns: 1fr; } }
 </style>
-{%% endblock %%}
+{% endblock %}
 
-{%% block content %%}
+{% block content %}
 <div class="cr-page">
 
     <div class="cr-header">
