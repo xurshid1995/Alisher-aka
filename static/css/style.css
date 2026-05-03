@@ -1643,6 +1643,9 @@ footer {
         min-height: 50px;
         transition: all 0.3s ease;
         color: rgba(255,255,255,0.75);
+        white-space: normal !important;
+        overflow: visible !important;
+        flex-wrap: nowrap;
     }
     
     .sidebar-menu li a:hover {
