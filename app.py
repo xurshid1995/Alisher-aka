@@ -16309,13 +16309,13 @@ except Exception as e:
 @app.route('/api/ai-chat', methods=['POST'])
 @role_required('admin', 'kassir', 'sotuvchi')
 def ai_chat():
-    """Google Gemini AI bilan savdo maslahatchi suhbati"""
+    """Groq AI bilan savdo maslahatchi suhbati"""
     import os
     import requests as http_requests
 
-    api_key = os.environ.get('GEMINI_API_KEY', '')
+    api_key = os.environ.get('GROQ_API_KEY', '')
     if not api_key:
-        return jsonify({'success': False, 'error': 'GEMINI_API_KEY topilmadi'}), 500
+        return jsonify({'success': False, 'error': 'GROQ_API_KEY topilmadi'}), 500
 
     data = request.get_json(silent=True) or {}
     user_message = (data.get('message') or '').strip()
@@ -16366,7 +16366,7 @@ OXIRGI 7 KUNNING ENG KO'P SOTILGAN MAHSULOTLARI:
 {chr(10).join(f"- {r.name}: {int(r.qty)} dona" for r in top_items) or "- Ma'lumot yo'q"}
 
 OMBOR HOLATI:
-- Kam qolgan mahsulotlar (≤10): {len(low_stock)} ta
+- Kam qolgan mahsulotlar (<=10): {len(low_stock)} ta
 {chr(10).join(f"  * {p.name}: {p.quantity} dona" for p in low_stock) if low_stock else "  * Hammasi yetarli"}
 - Tugagan mahsulotlar: {out_of_stock} ta
 
@@ -16389,27 +16389,32 @@ Qoidalar:
 - Agar savol biznesga aloqador bo'lmasa, muloyimlik bilan yo'naltir"""
 
     try:
-        url = (
-            f"https://generativelanguage.googleapis.com/v1beta/models/"
-            f"gemini-2.0-flash:generateContent?key={api_key}"
-        )
+        url = "https://api.groq.com/openai/v1/chat/completions"
         payload = {
-            "system_instruction": {"parts": [{"text": system_prompt}]},
-            "contents": [{"parts": [{"text": user_message}]}],
-            "generationConfig": {"maxOutputTokens": 512, "temperature": 0.7}
+            "model": "llama-3.3-70b-versatile",
+            "messages": [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_message}
+            ],
+            "max_tokens": 512,
+            "temperature": 0.7
         }
-        resp = http_requests.post(url, json=payload, timeout=30)
+        headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json"
+        }
+        resp = http_requests.post(url, json=payload, headers=headers, timeout=30)
         resp_data = resp.json()
         if resp.status_code != 200:
             err_msg = resp_data.get('error', {}).get('message', str(resp_data))
-            logger.error(f"Gemini API xatosi {resp.status_code}: {err_msg}")
+            logger.error(f"Groq API xatosi {resp.status_code}: {err_msg}")
             if resp.status_code == 429:
                 return jsonify({'success': False, 'error': "AI so'rovlar limiti to'lib qoldi. Biroz kutib qayta urinib ko'ring."}), 429
             return jsonify({'success': False, 'error': "AI bilan bog'lanishda xatolik. Qayta urinib ko'ring."}), 500
-        reply = resp_data['candidates'][0]['content']['parts'][0]['text']
+        reply = resp_data['choices'][0]['message']['content']
         return jsonify({'success': True, 'reply': reply})
     except Exception as e:
-        logger.error(f"Gemini API xatosi: {e}")
+        logger.error(f"Groq API xatosi: {e}")
         return jsonify({'success': False, 'error': "AI bilan bog'lanishda xatolik yuz berdi. Qayta urinib ko'ring."}), 500
 
 
