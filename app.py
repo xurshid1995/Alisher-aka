@@ -34,34 +34,33 @@ import re
 def normalize_search(text):
     """
     Qidiruv matnini normalizatsiya qilish:
-    - harf/raqam chegarasida ajratish: "e8h7" → "e8 h7", "zimmerE8" → "zimmer e8"
+    - faqat 2+ harfli guruh oldida/keyin raqam bo'lsa ajratish: "zimmerE8" → "zimmer E8"
+      (yakkа harfli tokenlar yaratilmaydi: "50*30m" → "50*30m", "e8h7" → "e8h7")
     - pastki chiziqni bo'sh joy bilan almashtirish: "pro_h7" → "pro h7"
-    - kichik harfga o'tkazish va ortiqcha bo'shliqlarni tozalash
     """
-    text = re.sub(r'([a-zA-Z])(\d)', r'\1 \2', text)
-    text = re.sub(r'(\d)([a-zA-Z])', r'\1 \2', text)
     text = text.replace('_', ' ')
+    text = re.sub(r'([a-zA-Z]{2,})(\d)', r'\1 \2', text)
+    text = re.sub(r'(\d)([a-zA-Z]{2,})', r'\1 \2', text)
     return re.sub(r'\s+', ' ', text).lower().strip()
 
 def fuzzy_score(query, name):
     """
-    So'z darajasida moslik tekshiruvi + umumiy fuzzy ball.
-    Hech bir query so'zi mahsulot so'zlariga 70%+ yaqin kelmasa → 0 qaytaradi.
-    Bu tasodifiy matn (dghshjiks) natija ko'rsatmasligini ta'minlaydi.
+    So'z darajasida moslik (ratio >= 60%) + umumiy fuzzy ball.
+    - q_words va n_words: faqat uzunligi 2+ (bir harfli artifact tokenlar chiqarib tashlanadi)
+    - partial_ratio emas, ratio ishlatiladi (substring false match oldini oladi)
+    - Hech bir so'z mos kelmasa → 0 (tasodifiy matnlar ko'rsatilmaydi)
     """
     q = normalize_search(query)
     n = normalize_search(name)
-    q_words = q.split()
-    n_words = n.split()
+    q_words = [w for w in q.split() if len(w) >= 2]
+    n_words = [w for w in n.split() if len(w) >= 2]
     if not q_words or not n_words:
         return 0
-    # Har bir query so'zi uchun eng yaqin mahsulot so'zi bilan solishtirish
     word_hits = sum(
         1 for qw in q_words
-        if max((rfuzz.partial_ratio(qw, nw) for nw in n_words), default=0) >= 70
+        if max((rfuzz.ratio(qw, nw) for nw in n_words), default=0) >= 60
     )
     coverage = word_hits / len(q_words)
-    # Hech bir so'z yaqin kelmasa - bu mahsulot tegishli emas
     if coverage == 0:
         return 0
     s1 = rfuzz.partial_ratio(q, n)
