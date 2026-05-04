@@ -45,21 +45,25 @@ def normalize_search(text):
 
 def fuzzy_score(query, name):
     """
-    So'z qamrovi (60%) + fuzzy o'xshashlik (40%) = max 100.
-    - coverage: query so'zlarining qanchasi mahsulot nomida bor (partial)
-    - fuzzy: partial_ratio + token_set_ratio + partial_token_set_ratio max
-    Ko'p so'z mos kelganda aniq natija yuqorida ko'rinadi.
+    So'z darajasida moslik tekshiruvi + umumiy fuzzy ball.
+    Hech bir query so'zi mahsulot so'zlariga 70%+ yaqin kelmasa → 0 qaytaradi.
+    Bu tasodifiy matn (dghshjiks) natija ko'rsatmasligini ta'minlaydi.
     """
     q = normalize_search(query)
     n = normalize_search(name)
     q_words = q.split()
     n_words = n.split()
-    # Har bir query so'zi uchun partial moslik: "h" → "pro-h" ✓, "e" → "e8" ✓
-    if q_words:
-        hits = sum(1 for qw in q_words if any(qw in nw or nw in qw for nw in n_words))
-        coverage = hits / len(q_words)
-    else:
-        coverage = 0
+    if not q_words or not n_words:
+        return 0
+    # Har bir query so'zi uchun eng yaqin mahsulot so'zi bilan solishtirish
+    word_hits = sum(
+        1 for qw in q_words
+        if max((rfuzz.partial_ratio(qw, nw) for nw in n_words), default=0) >= 70
+    )
+    coverage = word_hits / len(q_words)
+    # Hech bir so'z yaqin kelmasa - bu mahsulot tegishli emas
+    if coverage == 0:
+        return 0
     s1 = rfuzz.partial_ratio(q, n)
     s2 = rfuzz.token_set_ratio(q, n)
     s3 = rfuzz.partial_token_set_ratio(q, n)
