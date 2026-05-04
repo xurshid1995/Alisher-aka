@@ -2272,48 +2272,6 @@
 
         modal.style.display = 'block';
         scannerActive = true;
-        statusDiv.innerHTML = '📷 Kameraga ruxsat so\'ralmoqda...';
-
-        // Avval eksplitsit ruxsat so'rash (browser dialog ko'rsatadi)
-        let permStream = null;
-        try {
-            permStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-        } catch(permErr) {
-            const errStr = String(permErr.message || permErr);
-            let msg = '';
-            if (errStr.includes('NotAllowed') || errStr.includes('Permission') || errStr.includes('denied')) {
-                msg = 'Kameraga ruxsat berilmadi!\n\nBrauzer manzil qatoridagi kamera ikonasi → "Har doim ruxsat berish" ni tanlang va sahifani yangilang.';
-            } else if (errStr.includes('NotFound')) {
-                msg = 'Kamera topilmadi! Qurilmangizda kamera borligini tekshiring.';
-            } else {
-                msg = 'Kamera ochilmadi: ' + errStr;
-            }
-            // Styled modal ko'rsatish
-            const permModal = document.getElementById('cameraPermissionModal');
-            const permSteps = document.getElementById('cameraPermSteps');
-            if (permSteps) {
-                const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
-                const isChrome = /Chrome/.test(navigator.userAgent) && !/Edg/.test(navigator.userAgent);
-                const isSamsung = /SamsungBrowser/.test(navigator.userAgent);
-                if (isIOS) {
-                    permSteps.innerHTML = '1. <b>iPhone Sozlamalar</b> → <b>Safari</b> → <b>Kamera</b><br>2. <b>sergeli0606.uz</b> → <b>Ruxsat</b><br>3. Sahifani yangilang';
-                } else if (isSamsung) {
-                    permSteps.innerHTML = '1. Brauzer <b>⋮ menyu</b> → <b>Sozlamalar</b> → <b>Sayt sozlamalari</b> → <b>Kamera</b><br>2. <b>sergeli0606.uz</b> → <b>Ruxsat</b><br>3. Sahifani yangilang';
-                } else if (isChrome) {
-                    permSteps.innerHTML = '1. Manzil qatoridagi 🔒 belgisini bosing<br>2. <b>Kamera</b> → <b>Har doim ruxsat berish</b><br>3. Sahifani yangilang tugmasini bosing';
-                } else {
-                    permSteps.innerHTML = 'Brauzer manzil qatoridagi kamera belgisini bosib, <b>Ruxsat berish</b> ni tanlang va sahifani yangilang';
-                }
-            }
-            if (permModal) permModal.style.display = 'flex';
-            stopBarcodeScanner();
-            return;
-        }
-        // Ruxsat olindi — permStream ni to'xtatamiz, html5QrCode o'zi ochadi
-        if (permStream) {
-            permStream.getTracks().forEach(t => t.stop());
-        }
-
         statusDiv.innerHTML = SLANG.camera_opening;
 
         html5QrCode = new Html5Qrcode("barcodeScanner");
@@ -2359,16 +2317,28 @@
             statusDiv.innerHTML = SLANG.barcode_frame_hint;
         } catch (err) {
             console.error('Kamera xatosi:', err);
-            let msg = '';
             const errStr = String(err.message || err);
-            if (errStr.includes('NotAllowed') || errStr.includes('Permission')) {
-                msg = 'Kameraga ruxsat berilmadi!\n\nBrauzer manzil qatoridagi kamera ikonasi → "Har doim ruxsat berish" ni tanlang va sahifani yangilang.';
-            } else if (errStr.includes('NotFound')) {
-                msg = 'Kamera topilmadi!\n\nQurilmangizda kamera borligini tekshiring.';
+            const permModal = document.getElementById('cameraPermissionModal');
+            const permSteps = document.getElementById('cameraPermSteps');
+            if (errStr.includes('NotAllowed') || errStr.includes('Permission') || errStr.includes('denied')) {
+                if (permSteps) {
+                    const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
+                    const isChrome = /Chrome/.test(navigator.userAgent) && !/Edg/.test(navigator.userAgent);
+                    const isSamsung = /SamsungBrowser/.test(navigator.userAgent);
+                    if (isIOS) {
+                        permSteps.innerHTML = '1. <b>iPhone Sozlamalar</b> → <b>Safari</b> → <b>Kamera</b><br>2. <b>sergeli0606.uz</b> → <b>Ruxsat</b><br>3. Sahifani yangilang';
+                    } else if (isSamsung) {
+                        permSteps.innerHTML = '1. Brauzer <b>⋮ menyu</b> → <b>Sozlamalar</b> → <b>Sayt sozlamalari</b> → <b>Kamera</b><br>2. <b>sergeli0606.uz</b> → <b>Ruxsat</b><br>3. Sahifani yangilang';
+                    } else if (isChrome) {
+                        permSteps.innerHTML = '1. Manzil qatoridagi 🔒 belgisini bosing<br>2. <b>Kamera</b> → <b>Har doim ruxsat berish</b><br>3. Sahifani yangilang tugmasini bosing';
+                    } else {
+                        permSteps.innerHTML = 'Brauzer manzil qatoridagi kamera belgisini bosib, <b>Ruxsat berish</b> ni tanlang va sahifani yangilang';
+                    }
+                }
+                if (permModal) permModal.style.display = 'flex';
             } else {
-                msg = 'Kamera ochilmadi: ' + errStr;
+                alert('Kamera ochilmadi: ' + errStr);
             }
-            alert(msg);
             stopBarcodeScanner();
         }
     }
