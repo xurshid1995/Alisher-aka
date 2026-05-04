@@ -45,10 +45,11 @@ def normalize_search(text):
 
 def fuzzy_score(query, name):
     """
-    So'z darajasida moslik: substring YOKI ratio >= 60%.
-    - substring: "h7" in "pro-h7" → True (qisqa token uzun tokenda bor)
-    - ratio:     "zmr" ≈ "zimmer" → 67% (harflar tushib qolgan)
-    Ikkalasi birlashganda ham qisqa tokenlar, ham xato yozilganlar topiladi.
+    So'z darajasida moslik (substring OR ratio>=60%) + fuzzy ball + raqam bonusi.
+    - coverage: query tokenlarining qanchasi nomda mos keladi
+    - digit_bonus: query va nom umumiy raqamlari (+10 har biri)
+      "zmre8h7" → digits={8,7}; E8 PRO-H7 → {8,7} → +20; E9 PRO-H7 → {9,7} → +10
+    Shu bonus E8 vs E9 farqini aniq ajratadi.
     """
     q = normalize_search(query)
     n = normalize_search(name)
@@ -58,20 +59,25 @@ def fuzzy_score(query, name):
         return 0
 
     def word_match(qw, n_words):
-        # "h7" → "pro-h7": substring tekshiruvi
         if any(qw in nw for nw in n_words):
             return True
-        # "zmr" → "zimmer": fuzzy ratio tekshiruvi
         return max((rfuzz.ratio(qw, nw) for nw in n_words), default=0) >= 60
 
     word_hits = sum(1 for qw in q_words if word_match(qw, n_words))
     coverage = word_hits / len(q_words)
     if coverage == 0:
         return 0
+
     s1 = rfuzz.partial_ratio(q, n)
     s2 = rfuzz.token_set_ratio(q, n)
     s3 = rfuzz.partial_token_set_ratio(q, n)
-    return coverage * 60 + max(s1, s2, s3) * 0.4
+
+    # Umumiy raqam tokenlar bonusi: "8","7" mos → +20; faqat "7" mos → +10
+    q_digits = set(re.findall(r'\d+', query))
+    n_digits = set(re.findall(r'\d+', name))
+    digit_bonus = len(q_digits & n_digits) * 10
+
+    return coverage * 60 + max(s1, s2, s3) * 0.4 + digit_bonus
 from flask_wtf.csrf import CSRFProtect
 
 # Windows console uchun UTF-8 qo'llab-quvvatlash
