@@ -16305,6 +16305,111 @@ except Exception as e:
     logger.warning(f"⚠️ Monitoring tizimi ishga tushmadi: {e}")
 
 
+# ─── AI Chat endpoint ───────────────────────────────────────────────────────
+@app.route('/api/ai-chat', methods=['POST'])
+@login_required
+def ai_chat():
+    """Google Gemini AI bilan savdo maslahatchi suhbati"""
+    import os
+    try:
+        import google.generativeai as genai
+    except ImportError:
+        return jsonify({'success': False, 'error': "google-generativeai o'rnatilmagan"}), 500
+
+    api_key = os.environ.get('GEMINI_API_KEY', '')
+    if not api_key:
+        return jsonify({'success': False, 'error': 'GEMINI_API_KEY topilmadi'}), 500
+
+    data = request.get_json(silent=True) or {}
+    user_message = (data.get('message') or '').strip()
+    if not user_message:
+        return jsonify({'success': False, 'error': 'Xabar bo\'sh'}), 400
+
+    # Biznes ma'lumotlarini yig'ish
+    try:
+        today = get_tashkent_time().date()
+        # Bugungi savdolar
+        today_sales = Sale.query.filter(
+            db.func.date(Sale.sale_date) == today
+        ).all()
+
+        total_revenue_uzs = sum(
+            float(s.total_amount or 0) for s in today_sales
+        )
+        total_revenue_usd = sum(
+            float(s.cash_usd or 0) + float(s.click_usd or 0) +
+            float(s.terminal_usd or 0) + float(s.debt_usd or 0)
+            for s in today_sales
+        )
+        total_profit_uzs = sum(float(s.total_profit or 0) for s in today_sales)
+
+        # Eng ko'p sotilgan mahsulotlar (oxirgi 7 kun)
+        from datetime import timedelta
+        week_ago = today - timedelta(days=7)
+        top_items = db.session.query(
+            Product.name,
+            db.func.sum(SaleItem.quantity).label('qty')
+        ).join(SaleItem, SaleItem.product_id == Product.id)\
+         .join(Sale, Sale.id == SaleItem.sale_id)\
+         .filter(db.func.date(Sale.sale_date) >= week_ago)\
+         .group_by(Product.name)\
+         .order_by(db.desc('qty'))\
+         .limit(5).all()
+
+        # Kam qolgan mahsulotlar (qty <= 10)
+        low_stock = Product.query.filter(Product.quantity <= 10, Product.quantity > 0).limit(8).all()
+        out_of_stock = Product.query.filter(Product.quantity <= 0).count()
+
+        # Qarzlar
+        debt_sales = Sale.query.filter(Sale.payment_status == 'debt').count()
+        total_debt_uzs = db.session.query(db.func.sum(Sale.debt_amount))\
+            .filter(Sale.payment_status == 'debt').scalar() or 0
+
+        context_text = f"""BUGUNGI SAVDO HISOBOTI ({today}):
+- Savdolar soni: {len(today_sales)} ta
+- Daromad (UZS): {total_revenue_uzs:,.0f} so'm
+- Daromad (USD): ${total_revenue_usd:,.2f}
+- Foyda (UZS): {total_profit_uzs:,.0f} so'm
+
+OXIRGI 7 KUNNING ENG KO'P SOTILGAN MAHSULOTLARI:
+{chr(10).join(f'- {r.name}: {int(r.qty)} dona' for r in top_items) or '- Ma\'lumot yo\'q'}
+
+OMBOR HOLATI:
+- Kam qolgan mahsulotlar (≤10): {len(low_stock)} ta
+{chr(10).join(f'  * {p.name}: {p.quantity} dona' for p in low_stock) if low_stock else '  * Hammasi yetarli'}
+- Tugagan mahsulotlar: {out_of_stock} ta
+
+QARZLAR:
+- Qarzli savdolar: {debt_sales} ta
+- Umumiy qarz (UZS): {float(total_debt_uzs):,.0f} so'm"""
+    except Exception as e:
+        logger.warning(f"AI chat context yig'ishda xato: {e}")
+        context_text = "Biznes ma'lumotlari hozircha mavjud emas."
+
+    system_prompt = f"""Sen Xurshid kompaniyasining savdo maslahatchi AI yordamchisisisan.
+Quyidagi real biznes ma'lumotlari asosida savollarga javob ber:
+
+{context_text}
+
+Qoidalar:
+- Faqat O'zbek tilida javob ber
+- Qisqa, aniq va foydali javoblar ber
+- Raqamlarni tahlil qil va amaliy maslahat ber
+- Agar savol biznesga aloqador bo'lmasa, muloyimlik bilan yo'naltir"""
+
+    try:
+        genai.configure(api_key=api_key)
+        model = genai.GenerativeModel(
+            model_name='gemini-2.0-flash',
+            system_instruction=system_prompt
+        )
+        response = model.generate_content(user_message)
+        return jsonify({'success': True, 'reply': response.text})
+    except Exception as e:
+        logger.error(f"Gemini API xatosi: {e}")
+        return jsonify({'success': False, 'error': f'AI xatosi: {str(e)}'}), 500
+
+
 if __name__ == '__main__':
     # Telegram bot scheduler ni ishga tushirish
     try:
