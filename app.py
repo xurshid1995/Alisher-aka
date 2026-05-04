@@ -16349,8 +16349,23 @@ def ai_chat():
          .order_by(db.desc('qty'))\
          .limit(5).all()
 
-        low_stock = Product.query.filter(Product.quantity <= 10, Product.quantity > 0).limit(8).all()
-        out_of_stock = Product.query.filter(Product.quantity <= 0).count()
+        # Kam qolgan mahsulotlar (warehouse + store stock yig'indisi <= 10)
+        low_stock_rows = db.session.query(
+            Product.name,
+            db.func.coalesce(db.func.sum(WarehouseStock.quantity), 0).label('wqty'),
+            db.func.coalesce(db.func.sum(StoreStock.quantity), 0).label('sqty')
+        ).outerjoin(WarehouseStock, WarehouseStock.product_id == Product.id)\
+         .outerjoin(StoreStock, StoreStock.product_id == Product.id)\
+         .group_by(Product.id, Product.name)\
+         .having(
+             db.func.coalesce(db.func.sum(WarehouseStock.quantity), 0) +
+             db.func.coalesce(db.func.sum(StoreStock.quantity), 0) <= 10
+         ).limit(8).all()
+
+        out_of_stock = sum(
+            1 for r in low_stock_rows
+            if float(r.wqty or 0) + float(r.sqty or 0) <= 0
+        )
 
         debt_sales = Sale.query.filter(Sale.payment_status == 'debt').count()
         total_debt_uzs = db.session.query(db.func.sum(Sale.debt_amount))\
@@ -16366,8 +16381,8 @@ OXIRGI 7 KUNNING ENG KO'P SOTILGAN MAHSULOTLARI:
 {chr(10).join(f"- {r.name}: {int(r.qty)} dona" for r in top_items) or "- Ma'lumot yo'q"}
 
 OMBOR HOLATI:
-- Kam qolgan mahsulotlar (<=10): {len(low_stock)} ta
-{chr(10).join(f"  * {p.name}: {p.quantity} dona" for p in low_stock) if low_stock else "  * Hammasi yetarli"}
+- Kam qolgan mahsulotlar (<=10): {len(low_stock_rows)} ta
+{chr(10).join(f"  * {r.name}: {float(r.wqty or 0)+float(r.sqty or 0):.0f} dona" for r in low_stock_rows) if low_stock_rows else "  * Hammasi yetarli"}
 - Tugagan mahsulotlar: {out_of_stock} ta
 
 QARZLAR:
