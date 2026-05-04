@@ -16492,6 +16492,37 @@ SO'RALGAN KUN: {asked_date.strftime('%Y-%m-%d')} ({weekdays[asked_date.weekday()
             else:
                 asked_date_section = f"\nSO'RALGAN KUN: {asked_date.strftime('%Y-%m-%d')} - bu kunda savdo topilmadi."
 
+        # --- TOP 5 eng yaxshi kunlar (Python tomonidan hisoblab qo'yilgan) ---
+        def _fmt_best(rows, label):
+            lines = []
+            for rank, r in enumerate(rows, 1):
+                try:
+                    d = r.sdate if isinstance(r.sdate, _dt.date) else _dt.date.fromisoformat(str(r.sdate))
+                    lines.append(
+                        f"{rank}. {d.strftime('%Y-%m-%d')} ({weekdays[d.weekday()]}): "
+                        f"savdo: {int(r.cnt or 0)} ta | "
+                        f"jami USD: ${float(r.total_usd or 0):,.2f} | "
+                        f"jami UZS: {float(r.total_uzs or 0):,.0f} so'm | "
+                        f"foyda USD: ${float(r.profit_usd or 0):,.2f} | "
+                        f"foyda UZS: {float(r.profit_uzs or 0):,.0f} so'm"
+                    )
+                except Exception:
+                    pass
+            return '\n'.join(lines) if lines else "- Ma'lumot yo'q"
+
+        _day_base = db.session.query(
+            db.func.date(Sale.sale_date).label('sdate'),
+            db.func.count(Sale.id).label('cnt'),
+            db.func.sum(Sale.cash_usd + Sale.click_usd + Sale.terminal_usd + Sale.debt_usd).label('total_usd'),
+            db.func.sum(Sale.cash_amount + Sale.click_amount + Sale.terminal_amount + Sale.debt_amount).label('total_uzs'),
+            db.func.sum(Sale.total_profit).label('profit_usd'),
+            db.func.sum(Sale.total_profit * Sale.currency_rate).label('profit_uzs'),
+        ).group_by(db.func.date(Sale.sale_date))
+
+        top5_by_usd = _day_base.order_by(db.desc('total_usd')).limit(5).all()
+        top5_by_profit = _day_base.order_by(db.desc('profit_usd')).limit(5).all()
+        top5_by_count = _day_base.order_by(db.desc('cnt')).limit(5).all()
+
         context_text = f"""BUGUNGI SAVDO HISOBOTI ({today}, {weekdays[today.weekday()]}):
 - Savdolar soni: {len(today_sales)} ta
 - Jami savdo (USD): ${total_revenue_usd:,.2f}
@@ -16499,10 +16530,20 @@ SO'RALGAN KUN: {asked_date.strftime('%Y-%m-%d')} ({weekdays[asked_date.weekday()
 - Jami foyda (USD): ${total_profit_usd:,.2f}
 - Jami foyda (UZS): {total_profit_uzs:,.0f} so'm
 {asked_date_section}
-OYLIK STATISTIKA (BARCHA OYLAR):
+=== REKORDLAR (BARCHA VAQT) ===
+ENG KO'P SAVDO SUMMASI (USD) BO'LGAN TOP 5 KUN:
+{_fmt_best(top5_by_usd, 'usd')}
+
+ENG KO'P FOYDA (USD) BO'LGAN TOP 5 KUN:
+{_fmt_best(top5_by_profit, 'profit')}
+
+ENG KO'P SAVDOLAR SONI BO'LGAN TOP 5 KUN:
+{_fmt_best(top5_by_count, 'count')}
+
+=== OYLIK STATISTIKA ===
 {chr(10).join(monthly_lines) if monthly_lines else "- Ma'lumot yo'q"}
 
-BARCHA KUNLIK STATISTIKA (TARIX):
+=== KUNLIK TARIX (BARCHA KUNLAR) ===
 {chr(10).join(daily_stats) if daily_stats else "- Ma'lumot yo'q"}
 
 OXIRGI 7 KUNNING ENG KO'P SOTILGAN MAHSULOTLARI:
