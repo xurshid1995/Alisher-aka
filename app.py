@@ -16349,39 +16349,36 @@ def ai_chat():
         )
 
         from datetime import timedelta
+        import datetime as _dt2
 
-        # Oxirgi 7 kunlik kunlik statistika
+        # Barcha kunlik statistika (bazadan SQL bilan)
+        all_days_rows = db.session.query(
+            db.func.date(Sale.sale_date).label('sdate'),
+            db.func.count(Sale.id).label('cnt'),
+            db.func.sum(Sale.cash_usd + Sale.click_usd + Sale.terminal_usd + Sale.debt_usd).label('total_usd'),
+            db.func.sum(Sale.cash_amount + Sale.click_amount + Sale.terminal_amount + Sale.debt_amount).label('total_uzs'),
+            db.func.sum(Sale.total_profit).label('profit_usd'),
+            db.func.sum(Sale.total_profit * Sale.currency_rate).label('profit_uzs'),
+        ).group_by(db.func.date(Sale.sale_date))\
+         .order_by(db.func.date(Sale.sale_date)).all()
+
+        _wdays = ['Dushanba','Seshanba','Chorshanba','Payshanba','Juma','Shanba','Yakshanba']
         daily_stats = []
-        for i in range(1, 8):
-            day = today - timedelta(days=i)
-            day_sales = Sale.query.filter(db.func.date(Sale.sale_date) == day).all()
-            if day_sales:
-                day_uzs = sum(
-                    float(s.cash_amount or 0) + float(s.click_amount or 0) +
-                    float(s.terminal_amount or 0) + float(s.debt_amount or 0)
-                    for s in day_sales
-                )
-                day_usd = sum(
-                    float(s.cash_usd or 0) + float(s.click_usd or 0) +
-                    float(s.terminal_usd or 0) + float(s.debt_usd or 0)
-                    for s in day_sales
-                )
-                day_profit_uzs = sum(
-                    float(s.total_profit or 0) * float(s.currency_rate or 1)
-                    for s in day_sales
-                )
-                day_profit_usd = sum(
-                    float(s.total_profit or 0)
-                    for s in day_sales
-                )
+        for r in all_days_rows:
+            try:
+                d = r.sdate if isinstance(r.sdate, _dt2.date) else _dt2.date.fromisoformat(str(r.sdate))
+                if d == today:
+                    continue  # bugunni alohida ko'rsatamiz
                 daily_stats.append(
-                    f"- {day.strftime('%Y-%m-%d')} ({['Dushanba','Seshanba','Chorshanba','Payshanba','Juma','Shanba','Yakshanba'][day.weekday()]}): "
-                    f"savdo: {len(day_sales)} ta | "
-                    f"jami USD: ${day_usd:,.2f} | "
-                    f"jami UZS: {day_uzs:,.0f} so'm | "
-                    f"foyda USD: ${day_profit_usd:,.2f} | "
-                    f"foyda UZS: {day_profit_uzs:,.0f} so'm"
+                    f"- {d.strftime('%Y-%m-%d')} ({_wdays[d.weekday()]}): "
+                    f"savdo: {int(r.cnt or 0)} ta | "
+                    f"jami USD: ${float(r.total_usd or 0):,.2f} | "
+                    f"jami UZS: {float(r.total_uzs or 0):,.0f} so'm | "
+                    f"foyda USD: ${float(r.profit_usd or 0):,.2f} | "
+                    f"foyda UZS: {float(r.profit_uzs or 0):,.0f} so'm"
                 )
+            except Exception:
+                pass
 
         week_ago = today - timedelta(days=7)
         top_items = db.session.query(
@@ -16505,7 +16502,7 @@ SO'RALGAN KUN: {asked_date.strftime('%Y-%m-%d')} ({weekdays[asked_date.weekday()
 OYLIK STATISTIKA (BARCHA OYLAR):
 {chr(10).join(monthly_lines) if monthly_lines else "- Ma'lumot yo'q"}
 
-OXIRGI 7 KUN STATISTIKASI:
+BARCHA KUNLIK STATISTIKA (TARIX):
 {chr(10).join(daily_stats) if daily_stats else "- Ma'lumot yo'q"}
 
 OXIRGI 7 KUNNING ENG KO'P SOTILGAN MAHSULOTLARI:
