@@ -10518,7 +10518,25 @@ def upload_user_photo(user_id):
         return jsonify({'error': str(e)}), 500
 
 
-@app.route('/api/users/<int:user_id>', methods=['DELETE'])
+@app.route('/api/users/<int:user_id>/photo', methods=['DELETE'])
+@role_required('admin', 'kassir')
+def delete_user_photo(user_id):
+    """Foydalanuvchi rasmini o'chirish"""
+    try:
+        user = User.query.get_or_404(user_id)
+        allowed_ext = {'jpg', 'jpeg', 'png', 'gif', 'webp'}
+        for ext in allowed_ext:
+            path = os.path.join(app.config['UPLOAD_FOLDER'], f"{user_id}.{ext}")
+            if os.path.exists(path):
+                os.remove(path)
+        user.photo = None
+        db.session.commit()
+        if session.get('user_id') == user_id:
+            session['user_photo'] = None
+        return jsonify({'success': True}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
 @role_required('admin')
 def delete_user(user_id):
     try:

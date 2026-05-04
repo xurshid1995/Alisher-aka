@@ -412,6 +412,9 @@
                     <label class="photo-upload-btn" onclick="openPhotoModal()">
                         <i class="fas fa-upload"></i> Rasm o'zgartirish
                     </label>
+                    <button type="button" id="deletePhotoBtn" onclick="deletePhoto()" style="display:none;margin-left:8px;padding:6px 14px;background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">
+                        <i class="fas fa-trash"></i> Rasmni o'chirish
+                    </button>
                     <p style="margin-top:6px; font-size:11px; color:#94a3b8;">JPG, PNG, WEBP &middot; Maks 5MB</p>
                 </div>
             </div>
@@ -774,9 +777,11 @@
                 this.onerror = null;
                 this.src = svgFallback;
                 this.style.cursor = 'default';
+                document.getElementById('deletePhotoBtn').style.display = 'none';
             };
             photoEl.src = user.photo + '?v=' + Date.now();
             photoEl.style.cursor = 'zoom-in';
+            document.getElementById('deletePhotoBtn').style.display = 'inline-flex';
         }
         
         // MUHIM: Huquqlarni to'ldirish checkboxlar yaratilgandan keyin amalga oshiriladi
@@ -1240,6 +1245,7 @@
         el.src = dataUrl;
         el.style.cursor = 'zoom-in';
         canvas.toBlob(blob => { window._photoBlob = blob; }, 'image/jpeg', 0.92);
+        document.getElementById('deletePhotoBtn').style.display = 'inline-flex';
         _closeCropModal();
     }
 
@@ -1252,6 +1258,26 @@
         document.getElementById('cropModal').classList.remove('active');
         document.getElementById('cameraInput').value = '';
         document.getElementById('galleryInput').value = '';
+    }
+
+    async function deletePhoto() {
+        if (!confirm("Rasmni o'chirishni tasdiqlaysizmi?")) return;
+        try {
+            const resp = await fetch(`/api/users/${userId}/photo`, { method: 'DELETE' });
+            const data = await resp.json();
+            if (data.success) {
+                const svgFallback = "data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2250%22 fill=%22%23e2e8f0%22/%3E%3Ccircle cx=%2250%22 cy=%2238%22 r=%2218%22 fill=%22%23a0aec0%22/%3E%3Cellipse cx=%2250%22 cy=%2285%22 rx=%2230%22 ry=%2222%22 fill=%22%23a0aec0%22/%3E%3C/svg%3E";
+                const el = document.getElementById('photoPreview');
+                el.src = svgFallback;
+                el.style.cursor = 'default';
+                document.getElementById('deletePhotoBtn').style.display = 'none';
+                window._photoBlob = null;
+            } else {
+                alert("Xatolik: " + (data.error || "Rasm o'chirilamadi"));
+            }
+        } catch(e) {
+            alert("Xatolik yuz berdi");
+        }
     }
 
     // Orqaga qaytish
