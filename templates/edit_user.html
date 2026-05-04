@@ -749,6 +749,12 @@
         // Rasmni ko'rsatish
         if (user.photo) {
             const photoEl = document.getElementById('photoPreview');
+            const svgFallback = "data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2250%22 fill=%22%23e2e8f0%22/%3E%3Ccircle cx=%2250%22 cy=%2238%22 r=%2218%22 fill=%22%23a0aec0%22/%3E%3Cellipse cx=%2250%22 cy=%2285%22 rx=%2230%22 ry=%2222%22 fill=%22%23a0aec0%22/%3E%3C/svg%3E";
+            photoEl.onerror = function() {
+                this.onerror = null;
+                this.src = svgFallback;
+                this.style.cursor = 'default';
+            };
             photoEl.src = user.photo + '?v=' + Date.now();
             photoEl.style.cursor = 'zoom-in';
         }
