@@ -16343,6 +16343,10 @@ def ai_chat():
             float(s.total_profit or 0) * float(s.currency_rate or 1)
             for s in today_sales
         )
+        total_profit_usd = sum(
+            float(s.total_profit or 0)
+            for s in today_sales
+        )
 
         from datetime import timedelta
 
@@ -16362,13 +16366,21 @@ def ai_chat():
                     float(s.terminal_usd or 0) + float(s.debt_usd or 0)
                     for s in day_sales
                 )
-                day_profit = sum(
+                day_profit_uzs = sum(
                     float(s.total_profit or 0) * float(s.currency_rate or 1)
+                    for s in day_sales
+                )
+                day_profit_usd = sum(
+                    float(s.total_profit or 0)
                     for s in day_sales
                 )
                 daily_stats.append(
                     f"- {day.strftime('%Y-%m-%d')} ({['Dushanba','Seshanba','Chorshanba','Payshanba','Juma','Shanba','Yakshanba'][day.weekday()]}): "
-                    f"{len(day_sales)} savdo, {day_uzs:,.0f} so'm, ${day_usd:,.2f}, foyda: {day_profit:,.0f} so'm"
+                    f"savdo: {len(day_sales)} ta | "
+                    f"jami USD: ${day_usd:,.2f} | "
+                    f"jami UZS: {day_uzs:,.0f} so'm | "
+                    f"foyda USD: ${day_profit_usd:,.2f} | "
+                    f"foyda UZS: {day_profit_uzs:,.0f} so'm"
                 )
 
         week_ago = today - timedelta(days=7)
@@ -16406,9 +16418,10 @@ def ai_chat():
 
         context_text = f"""BUGUNGI SAVDO HISOBOTI ({today}, {['Dushanba','Seshanba','Chorshanba','Payshanba','Juma','Shanba','Yakshanba'][today.weekday()]}):
 - Savdolar soni: {len(today_sales)} ta
-- Daromad (UZS): {total_revenue_uzs:,.0f} so'm
-- Daromad (USD): ${total_revenue_usd:,.2f}
-- Foyda (UZS): {total_profit_uzs:,.0f} so'm
+- Jami savdo (USD): ${total_revenue_usd:,.2f}
+- Jami savdo (UZS): {total_revenue_uzs:,.0f} so'm
+- Jami foyda (USD): ${total_profit_usd:,.2f}
+- Jami foyda (UZS): {total_profit_uzs:,.0f} so'm
 
 OXIRGI 7 KUN STATISTIKASI:
 {chr(10).join(daily_stats) if daily_stats else "- Ma'lumot yo'q"}
