@@ -843,11 +843,6 @@
                 <div id="cartTotalHeader" style="text-align: right;"></div>
             </div>
             <div id="cartContainer">
-                <!-- Korzina qidiruvi -->
-                <div style="margin-bottom: 10px;">
-                    <input type="text" id="cartSearch" placeholder="Korzinada mahsulot qidirish..." autocomplete="off" oninput="filterCartItems(this)"
-                           style="width: 100%; padding: 8px 12px; border: 1px solid #ced4da; border-radius: 10px; font-size: 14px; background: #f8f9fa; box-sizing: border-box;">
-                </div>
                 <div class="table-wrapper">
                     <table class="cart-table">
                         <thead>
@@ -3827,7 +3822,7 @@
             totalUZS += subtotalUZS;
             
             html += `
-                <tr data-name="${item.name.toLowerCase()}" style="border-bottom: 1px solid #f0f0f0;">
+                <tr style="border-bottom: 1px solid #f0f0f0;">
                     <td style="padding: 4px 5px; font-size: 16px; color: #333; word-wrap: break-word; width: 312px; max-width: 312px; overflow: hidden;">${item.name}</td>
                     <td style="padding: 4px 5px; text-align: center; font-size: 16px; color: #333; width: 84px;">
                         <input type="number" 
@@ -3863,13 +3858,6 @@
         });
         
         cartItemsDiv.innerHTML = html;
-        
-        // Korzina filtrini qayta qo'llash
-        const cartSearchEl = tabContent ? tabContent.querySelector('#cartSearch') : document.getElementById('cartSearch');
-        if (cartSearchEl && cartSearchEl.value.trim()) {
-            filterCartItemsByText(cartItemsDiv, cartSearchEl.value.trim().toLowerCase());
-        }
-        
         cartTotalDiv.innerHTML = '';
         
         // Jami summani sarlavhada ko'rsatish
@@ -3886,23 +3874,6 @@
                 </div>
             </div>
         `;
-    }
-    
-    // Korzina qidiruv filter funksiyasi
-    function filterCartItemsByText(container, query) {
-        const rows = container.querySelectorAll('tr[data-name]');
-        rows.forEach(function(row) {
-            const name = row.getAttribute('data-name') || '';
-            row.style.display = name.includes(query) ? '' : 'none';
-        });
-    }
-    
-    function filterCartItems(input) {
-        const query = input.value.trim().toLowerCase();
-        const tabContent = input.closest('.sales-tab-content');
-        const cartItemsDiv = tabContent ? tabContent.querySelector('#cartItems') : document.getElementById('cartItems');
-        if (!cartItemsDiv) return;
-        filterCartItemsByText(cartItemsDiv, query);
     }
     
     // Savatdan o'chirish
