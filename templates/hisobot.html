@@ -303,12 +303,11 @@ async function loadAll() {
                 const color = pmColors[method] || '#aaa';
                 const label = pmLabels[method] || method;
                 const pct = locTotal > 0 ? Math.round(amt / locTotal * 100) : 0;
-                return `<div style="padding:4px 0 4px 30px;">
-                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
-                        <span style="font-size:12px;color:#555;">${label}</span>
-                        <span style="font-weight:600;color:${color};font-size:12px;">${fmtUsd(amt)} <span style="color:#bbb;font-weight:400;">${pct}%</span></span>
-                    </div>
-                    <div class="hr-bar-wrap" style="margin:0;"><div class="hr-bar" style="width:${pct}%;background:${color};"></div></div>
+                return `<div style="display:flex;align-items:center;gap:8px;padding:3px 0 3px 30px;">
+                    <span style="min-width:90px;font-size:12px;color:#555;">${label}</span>
+                    <div class="hr-bar-wrap" style="margin:0;flex:1;"><div class="hr-bar" style="width:${pct}%;background:${color};"></div></div>
+                    <span style="font-weight:600;color:${color};font-size:12px;min-width:70px;text-align:right;">${fmtUsd(amt)}</span>
+                    <span style="color:#bbb;font-size:11px;min-width:28px;text-align:right;">${pct}%</span>
                 </div>`;
             }).join('');
             return `<div style="padding:10px 0; border-bottom:1px solid #f0f2f5;">
