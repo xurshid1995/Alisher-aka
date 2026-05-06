@@ -3898,9 +3898,9 @@
         `;
     }
     
-    // Korzinada fuzzy qidiruv ball hisoblash (Python fuzzy_score analogiyasi)
+    // Korzinada fuzzy qidiruv ball hisoblash
     function cartFuzzyScore(query, name) {
-        // Normalize: lowercase, harflar/raqamlar/probel qoldirish
+        // Normalize: lowercase, tire/nuqtalarni probel bilan almashtirish
         function norm(s) {
             return s.toLowerCase().replace(/[-_.]/g, ' ').replace(/\s+/g, ' ').trim();
         }
@@ -3911,33 +3911,35 @@
         // 1. To'liq substring mos kelsa - maksimal ball
         if (n.includes(q)) return 100;
 
-        // 2. So'z darajasida moslik
+        // 2. Qisman so'z moslik: "diam" → "diamond", "led" → "Led 100W"
         const qWords = q.split(/\s+/).filter(w => w.length >= 1);
         const nWords = n.split(/\s+/).filter(w => w.length >= 1);
-        if (!qWords.length) return 0;
 
         const wordHits = qWords.filter(qw =>
             nWords.some(nw => nw.includes(qw) || qw.includes(nw))
         ).length;
-        const coverage = wordHits / qWords.length;
-        if (coverage === 0) return 0;
+        const coverage = qWords.length > 0 ? wordHits / qWords.length : 0;
 
-        // 3. Raqam bonusi (mos keladigan raqam tokenlar uchun +10)
+        // 3. Belgilar ketma-ketligi (fuzzy: "zmr" → "zimmer", "dmd" → "diamond")
+        const qChars = q.replace(/\s/g, '');
+        let ni = 0, seqMatches = 0;
+        for (let qi = 0; qi < qChars.length; qi++) {
+            while (ni < n.length && n[ni] !== qChars[qi]) ni++;
+            if (ni < n.length) { seqMatches++; ni++; }
+        }
+        const seqRatio = qChars.length > 0 ? seqMatches / qChars.length : 0;
+
+        // coverage ham 0, sequence ham past bo'lsa - mos emas
+        if (coverage === 0 && seqRatio < 0.75) return 0;
+
+        // 4. Raqam bonusi: mos raqam tokenlari uchun +10
         const qDigits = new Set((query.match(/\d+/g) || []));
         const nDigits = new Set((name.match(/\d+/g) || []));
         let digitBonus = 0;
         qDigits.forEach(d => { if (nDigits.has(d)) digitBonus += 10; });
 
-        // 4. Belgilar ketma-ketligi (qisqa yozuv uchun: "zmr" → "zimmer")
-        const qChars = q.replace(/\s/g, '');
-        let ni = 0, matches = 0;
-        for (let qi = 0; qi < qChars.length; qi++) {
-            while (ni < n.length && n[ni] !== qChars[qi]) ni++;
-            if (ni < n.length) { matches++; ni++; }
-        }
-        const seqScore = qChars.length > 0 ? (matches / qChars.length) * 80 : 0;
-
-        return coverage * 60 + seqScore * 0.4 + digitBonus;
+        // Yakuniy ball: so'z moslik + ketma-ketlik + raqam bonusi
+        return coverage * 60 + seqRatio * 50 + digitBonus;
     }
 
     // Korzinada qidirish filtri
