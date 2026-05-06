@@ -10939,10 +10939,10 @@ def api_sales_history():
             query = Sale.query.filter(Sale.payment_status == payment_status)
             logger.info(f"📋 Filter: status={payment_status}")
         else:
-            # Default: barcha tasdiqlangan savdolar (pending emas)
-            # Bu qarz savdolarni ham o'z ichiga oladi
-            query = Sale.query.filter(Sale.payment_status.in_(['completed', 'partial']))
-            logger.info("📋 Filter: completed + partial (default)")
+            # Default: barcha tasdiqlangan savdolar (cancelled emas)
+            # 'paid' (to'liq to'langan) + 'partial' (nasiya) + 'completed' (eski)
+            query = Sale.query.filter(Sale.payment_status.in_(['paid', 'completed', 'partial']))
+            logger.info("📋 Filter: paid + completed + partial (default)")
 
         # Sotuvchi uchun joylashuv filterlash
         if current_user.role == 'sotuvchi':
