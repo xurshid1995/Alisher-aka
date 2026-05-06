@@ -90,7 +90,7 @@
         </div>
 
         <div class="hr-section">
-            <div class="hr-section-title">⚠️ Qarzli mijozlar (top 10)</div>
+            <div class="hr-section-title">⚠️ Qarzli mijozlar (<span id="debtListCount">0</span> ta)</div>
             <div id="debtList">
                 <div class="hr-loading">Yuklanmoqda...</div>
             </div>
@@ -343,7 +343,8 @@ async function loadDebts() {
             debtDiv.innerHTML = '<div class="hr-loading">✅ Qarz yo\'q</div>';
             return;
         }
-        const sorted = [...debts].sort((a, b) => parseFloat(b.total_debt) - parseFloat(a.total_debt)).slice(0, 10);
+        const sorted = [...debts].sort((a, b) => parseFloat(b.total_debt) - parseFloat(a.total_debt));
+        document.getElementById('debtListCount').textContent = sorted.length;
         const max = parseFloat(sorted[0]?.total_debt || 1);
         debtDiv.innerHTML = sorted.map((d, i) => {
             const pct = Math.round(parseFloat(d.total_debt) / max * 100);
