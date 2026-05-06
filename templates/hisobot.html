@@ -48,7 +48,7 @@
         <div class="hr-card">
             <div class="hr-card-icon" style="background:#fff0f0;">💳</div>
             <div>
-                <div class="hr-card-label">Qarzlar (USD)</div>
+                <div class="hr-card-label">Nasiya (davr)</div>
                 <div class="hr-card-val" style="color:#e53e3e;" id="totalDebt">—</div>
                 <div class="hr-card-sub" id="totalDebtCount">—</div>
             </div>
@@ -358,11 +358,13 @@ async function loadAll() {
         prodDiv.innerHTML = '<div class="hr-loading">Ma\'lumot yo\'q</div>';
     }
 
-    // --- Qarzli mijozlar ---
+    // --- Nasiya karta: tanlangan davrdagi nasiya (chart.payment_totals.debt) ---
+    const periodDebt = parseFloat((chart.payment_totals || {}).debt || 0);
+    document.getElementById('totalDebt').textContent = fmtUsd(periodDebt);
+
+    // --- Qarzli mijozlar (jami yig'ilgan qarz balansi) ---
     const debts = debtD.debts || [];
-    const totalDebt = debts.reduce((s, x) => s + parseFloat(x.total_debt || 0), 0);
-    document.getElementById('totalDebt').textContent = fmtUsd(totalDebt);
-    document.getElementById('totalDebtCount').textContent = `${debts.length} ta mijoz`;
+    document.getElementById('totalDebtCount').textContent = `${debts.length} ta mijoz (jami)`;
 
     const debtDiv = document.getElementById('debtList');
     document.getElementById('debtListCount').textContent = debts.length;
