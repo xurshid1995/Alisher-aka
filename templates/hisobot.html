@@ -368,7 +368,7 @@ async function loadAll() {
     document.getElementById('totalDebtCount').textContent = `${debtCustCount} ta mijoz`;  
 
     const debtDiv = document.getElementById('debtList');
-    document.getElementById('debtListCount').textContent = debts.length;
+    document.getElementById('debtListCount').textContent = debtCustCount;
     if (debts.length === 0) {
         debtDiv.innerHTML = '<div class="hr-loading">✅ Qarz yo\'q</div>';
     } else {
