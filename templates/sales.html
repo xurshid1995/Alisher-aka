@@ -3823,8 +3823,8 @@
             
             html += `
                 <tr style="border-bottom: 1px solid #f0f0f0;">
-                    <td style="padding: 8px 5px; font-size: 16px; color: #333; word-wrap: break-word; width: 312px; max-width: 312px; overflow: hidden;">${item.name}</td>
-                    <td style="padding: 8px 5px; text-align: center; font-size: 16px; color: #333; width: 84px;">
+                    <td style="padding: 4px 5px; font-size: 16px; color: #333; word-wrap: break-word; width: 312px; max-width: 312px; overflow: hidden;">${item.name}</td>
+                    <td style="padding: 4px 5px; text-align: center; font-size: 16px; color: #333; width: 84px;">
                         <input type="number" 
                                value="${item.quantity}" 
                                min="1" 
@@ -3835,19 +3835,19 @@
                                onchange="updateCartQuantity(${index}, this.value)" 
                                style="width: 60px; text-align: center; border: 1px solid #ced4da; border-radius: 4px; padding: 4px; font-size: 15px; font-weight: 500;">
                     </td>
-                    <td style="padding: 8px 5px; text-align: right; font-size: 15px; color: #333; width: 90px;">
+                    <td style="padding: 4px 5px; text-align: right; font-size: 15px; color: #333; width: 90px;">
                         <div style="line-height: 1.1;">
                             <div style="font-weight: 600; color: #333; font-size: 15px;">$${fmtUSD5(item.priceUSD)}</div>
                             <span style="background: #5b9bd5; color: white; padding: 1px 4px; border-radius: 2px; font-weight: 500; font-size: 12px;">${formatPrice(item.priceUZS)}</span>
                         </div>
                     </td>
-                    <td style="padding: 8px 5px; text-align: right; font-size: 15px; color: #333; width: 94px;">
+                    <td style="padding: 4px 5px; text-align: right; font-size: 15px; color: #333; width: 94px;">
                         <div style="line-height: 1.1;">
                             <div style="font-weight: 600; color: #333; font-size: 15px;">$${fmtUSD5(subtotalUSD)}</div>
                             <span style="background: #5b9bd5; color: white; padding: 1px 4px; border-radius: 2px; font-weight: 500; font-size: 12px;">${formatPrice(subtotalUZS)}</span>
                         </div>
                     </td>
-                    <td style="padding: 8px 5px; text-align: center; width: 60px;">
+                    <td style="padding: 4px 5px; text-align: center; width: 60px;">
                         <div style="display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 2px;">
                             <button onclick="editCartItem(${index})" style="background: transparent; color: #555; border: none; padding: 4px 6px; cursor: pointer; font-size: 14px;">✏️</button>
                             <button onclick="removeFromCart(${index})" style="background: transparent; color: #e53e3e; border: none; padding: 4px 6px; cursor: pointer; font-size: 14px; font-weight: bold;">✕</button>
