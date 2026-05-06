@@ -649,7 +649,7 @@
 
         // Ortiqcha to'lov ogohlantirilishi (floating-point xatoligi uchun 0.00001 epsilon)
         if (totalPayment > remainingDebt + 0.00001) {
-            const fmt = n => parseFloat(n.toFixed(5)).toString().replace(/\.?0+$/, '');
+            const fmt = n => parseFloat(n.toFixed(5)).toString();
             const excess = fmt(totalPayment - remainingDebt);
             const confirmMsg = `⚠️ Diqqat!\n\nQarz: $${fmt(remainingDebt)}\nTo'lov: $${fmt(totalPayment)}\nOrtiqcha: $${excess}\n\nOrtiqcha $${excess} mijoz balansiga o'tkaziladi.\n\nDavom etasizmi?`;
             if (!confirm(confirmMsg)) return;
@@ -680,7 +680,7 @@
 
             if (response.ok && result.success) {
                 if (result.balance_added && result.balance_added > 0) {
-                    const fmt = n => parseFloat(n.toFixed(5)).toString().replace(/\.?0+$/, '');
+                    const fmt = n => parseFloat(n.toFixed(5)).toString();
                     alert(`✅ To'lov amalga oshirildi!\n\n💳 Ortiqcha $${fmt(result.balance_added)} mijoz balansiga o'tkazildi.\nYangi balans: $${fmt(result.new_balance)}`);
                 } else {
                     alert('✅ ' + CDDLANG.payment_success);

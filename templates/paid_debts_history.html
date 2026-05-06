@@ -495,28 +495,31 @@
             // To'lov turlarini ko'rsatish
             const paymentTypes = [];
             if (debt.cash_usd > 0) {
-                const v = parseFloat(debt.cash_usd.toFixed(5)).toString().replace(/\.?0+$/, '');
+                const v = parseFloat(debt.cash_usd.toFixed(5)).toString();
                 paymentTypes.push(`<span class="payment-badge payment-cash">💵 ${PDHLANG.cash}: ${v}</span>`);
             }
             if (debt.click_usd > 0) {
-                const v2 = parseFloat(debt.click_usd.toFixed(5)).toString().replace(/\.?0+$/, '');
+                const v2 = parseFloat(debt.click_usd.toFixed(5)).toString();
                 paymentTypes.push(`<span class="payment-badge payment-click">📱 ${PDHLANG.click}: ${v2}</span>`);
             }
             if (debt.terminal_usd > 0) {
-                const v3 = parseFloat(debt.terminal_usd.toFixed(5)).toString().replace(/\.?0+$/, '');
+                const v3 = parseFloat(debt.terminal_usd.toFixed(5)).toString();
                 paymentTypes.push(`<span class="payment-badge payment-terminal">💳 ${PDHLANG.terminal}: ${v3}</span>`);
             }
             
             const totalAmount = (debt.cash_usd || 0) + (debt.click_usd || 0) + (debt.terminal_usd || 0);
             // To'lov paytidagi kursni ishlatish (joriy kurs emas)
-            const paymentRate = (debt.currency_rate && debt.currency_rate > 0) ? debt.currency_rate : exchangeRate;
+            // Agar saqlangan kurs 50,000 dan katta bo'lsa (noto'g'ri ma'lumot), joriy kursni ishlatamiz
+            let paymentRate = (debt.currency_rate && debt.currency_rate > 0 && debt.currency_rate < 50000)
+                ? debt.currency_rate
+                : exchangeRate;
             const totalUZS = Math.round(totalAmount * paymentRate);
             
             row.innerHTML = `
                 <td style="text-align:center;color:#94a3b8;font-size:12px;">${index + 1}</td>
                 <td style="color:#475569;font-size:12px;">${debt.payment_date}</td>
                 <td><strong style="color:#1e293b;">${debt.customer_name}</strong></td>
-                <td><span class="pdh-amount">${parseFloat(totalAmount.toFixed(5)).toString().replace(/\.?0+$/, '')} USD</span></td>
+                <td><span class="pdh-amount">${parseFloat(totalAmount.toFixed(5)).toString()} USD</span></td>
                 <td><span class="pdh-amount-uzs">${totalUZS.toLocaleString('ru-RU')} UZS</span></td>
                 <td>${paymentTypes.join(' ')}</td>
                 <td><span class="pdh-receiver">👨‍💼 ${debt.received_by}</span></td>
