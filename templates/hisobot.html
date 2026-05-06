@@ -62,19 +62,11 @@
         </div>
     </div>
 
-    <!-- To'lov usullari -->
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:24px;">
+    <!-- Joylashuv × To'lov usullari kombinatsiya -->
+    <div style="margin-bottom:24px;">
         <div class="hr-section">
-            <div class="hr-section-title">💳 To'lov usullari</div>
-            <div id="paymentMethods" style="padding:8px 0;">
-                <div class="hr-loading">Yuklanmoqda...</div>
-            </div>
-        </div>
-
-        <!-- Do'konlar bo'yicha -->
-        <div class="hr-section">
-            <div class="hr-section-title">🏪 Joylashuvlar bo'yicha</div>
-            <div id="locationStats" style="padding:8px 0;">
+            <div class="hr-section-title">🏪💳 Joylashuv bo'yicha to'lov usullari</div>
+            <div id="locPaymentCombo" style="padding:4px 0;">
                 <div class="hr-loading">Yuklanmoqda...</div>
             </div>
         </div>
@@ -295,46 +287,40 @@ async function loadAll() {
         if (profitUzsEl) profitUzsEl.textContent = fmtUzs(profit);
     }
 
-    // --- To'lov usullari (payment_totals dan) ---
-    const pmDiv = document.getElementById('paymentMethods');
-    const pt = chart.payment_totals || {};
-    const pmNames = { cash: '💵 Naqd', click: '📱 Click', terminal: '💳 Terminal', debt: '📋 Nasiya' };
-    const pmEntries = Object.entries(pmNames)
-        .map(([k, label]) => [k, label, parseFloat(pt[k] || 0)])
-        .filter(([,, v]) => v > 0)
-        .sort((a, b) => b[2] - a[2]);
+    // --- Joylashuv × To'lov usullari kombinatsiya ---
+    const comboDiv = document.getElementById('locPaymentCombo');
+    const lpb = stats.location_payment_breakdown || [];
+    const pmLabels = { cash: '💵 Naqd', click: '📱 Click', terminal: '💳 Terminal', debt: '📋 Nasiya' };
+    const pmColors = { cash: '#22c55e', click: '#3b82f6', terminal: '#8b5cf6', debt: '#ef4444' };
 
-    if (pmEntries.length > 0) {
-        const pmTotal = pmEntries.reduce((s, [,, v]) => s + v, 0);
-        pmDiv.innerHTML = pmEntries.map(([, label, v]) => {
-            const pct = pmTotal > 0 ? Math.round(v / pmTotal * 100) : 0;
-            return `<div class="hr-row">
-                <span style="min-width:90px;">${label}</span>
-                <div class="hr-bar-wrap"><div class="hr-bar" style="width:${pct}%;"></div></div>
-                <span style="font-weight:600; color:#1a6eff; min-width:80px; text-align:right;">${fmtUsd(v)}</span>
-                <span style="color:#aaa; font-size:11px; min-width:30px; text-align:right;">${pct}%</span>
+    if (lpb.length > 0) {
+        const maxTotal = lpb[0].total;
+        comboDiv.innerHTML = lpb.map((loc, i) => {
+            const totalPct = maxTotal > 0 ? Math.round(loc.total / maxTotal * 100) : 0;
+            // To'lov usullari miqdori bo'yicha tartiblash
+            const pmSorted = Object.entries(loc.payments || {})
+                .sort((a, b) => b[1] - a[1]);
+            const pmChips = pmSorted.map(([method, amt]) => {
+                const color = pmColors[method] || '#aaa';
+                const label = pmLabels[method] || method;
+                return `<span style="display:inline-flex;align-items:center;gap:4px;background:${color}15;color:${color};border:1px solid ${color}40;border-radius:6px;padding:2px 8px;font-size:11px;font-weight:600;margin-right:4px;">${label} <span style="color:#333;">${fmtUsd(amt)}</span></span>`;
+            }).join('');
+            return `<div style="padding:10px 0; border-bottom:1px solid #f7f8fa;">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+                    <div class="hr-rank">${i+1}</div>
+                    <span style="font-weight:600;font-size:13px;flex:1;">${loc.name}</span>
+                    <span style="font-weight:700;color:#1a6eff;font-size:14px;">${fmtUsd(loc.total)}</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:6px;padding-left:30px;">
+                    <div style="flex:1;height:5px;background:#f0f2f5;border-radius:3px;overflow:hidden;margin-right:8px;">
+                        <div style="height:100%;width:${totalPct}%;background:linear-gradient(90deg,#1a6eff,#60a5fa);border-radius:3px;"></div>
+                    </div>
+                    <div>${pmChips}</div>
+                </div>
             </div>`;
         }).join('');
     } else {
-        pmDiv.innerHTML = '<div class="hr-loading">Ma\'lumot yo\'q</div>';
-    }
-
-    // --- Joylashuvlar (store_performance dan) ---
-    const locDiv = document.getElementById('locationStats');
-    const locs = (stats.store_performance || []).filter(l => parseFloat(l.revenue || 0) > 0);
-    if (locs.length > 0) {
-        const maxRev = Math.max(...locs.map(l => parseFloat(l.revenue || 0)));
-        locDiv.innerHTML = locs.map((l, i) => {
-            const pct = maxRev > 0 ? Math.round(parseFloat(l.revenue) / maxRev * 100) : 0;
-            return `<div class="hr-row">
-                <div class="hr-rank">${i+1}</div>
-                <span style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${l.name || 'Noma\'lum'}</span>
-                <div class="hr-bar-wrap"><div class="hr-bar" style="width:${pct}%;"></div></div>
-                <span style="font-weight:600; color:#22c55e; min-width:80px; text-align:right;">${fmtUsd(l.revenue)}</span>
-            </div>`;
-        }).join('');
-    } else {
-        locDiv.innerHTML = '<div class="hr-loading">Ma\'lumot yo\'q</div>';
+        comboDiv.innerHTML = '<div class="hr-loading">Ma\'lumot yo\'q</div>';
     }
 
     // --- Top 10 mahsulot ---

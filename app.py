@@ -11266,6 +11266,43 @@ def api_sales_history():
         # Revenue bo'yicha tartiblash
         store_performance.sort(key=lambda x: x['revenue'], reverse=True)
 
+        # Joylashuv × To'lov usuli kombinatsiya breakdown
+        Store_alias2 = aliased(Store)
+        Warehouse_alias2 = aliased(Warehouse)
+        loc_pm_dict = {}
+
+        store_loc_pm = db.session.query(
+            Store_alias2.name,
+            Sale.payment_method,
+            func.sum(Sale.total_amount).label('amount')
+        ).join(
+            Store_alias2, db.and_(Sale.location_id == Store_alias2.id, Sale.location_type == 'store')
+        ).filter(
+            Sale.id.in_(select(sale_ids_subquery.c.id))
+        ).group_by(Store_alias2.name, Sale.payment_method).all()
+
+        wh_loc_pm = db.session.query(
+            Warehouse_alias2.name,
+            Sale.payment_method,
+            func.sum(Sale.total_amount).label('amount')
+        ).join(
+            Warehouse_alias2, db.and_(Sale.location_id == Warehouse_alias2.id, Sale.location_type == 'warehouse')
+        ).filter(
+            Sale.id.in_(select(sale_ids_subquery.c.id))
+        ).group_by(Warehouse_alias2.name, Sale.payment_method).all()
+
+        for name, method, amount in list(store_loc_pm) + list(wh_loc_pm):
+            loc_name = name or 'Noma\'lum'
+            if loc_name not in loc_pm_dict:
+                loc_pm_dict[loc_name] = {}
+            loc_pm_dict[loc_name][method or 'cash'] = float(amount or 0)
+
+        location_payment_breakdown = [
+            {'name': k, 'payments': v, 'total': sum(v.values())}
+            for k, v in loc_pm_dict.items()
+        ]
+        location_payment_breakdown.sort(key=lambda x: x['total'], reverse=True)
+
         # Davrdagi qarzli mijozlar ro'yxati (faqat tanlangan davrda debt_usd > 0 bo'lgan)
         Customer_alias = aliased(Customer)
         debt_customers_query = db.session.query(
@@ -11331,6 +11368,7 @@ def api_sales_history():
                     'payment_methods': payment_methods,
                     'top_products': top_products,
                     'store_performance': store_performance,
+                    'location_payment_breakdown': location_payment_breakdown,
                     'debt_customers_count': debt_customers_count,
                     'debt_customers': debt_customers
                 },
