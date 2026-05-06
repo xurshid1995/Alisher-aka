@@ -11266,6 +11266,28 @@ def api_sales_history():
         # Revenue bo'yicha tartiblash
         store_performance.sort(key=lambda x: x['revenue'], reverse=True)
 
+        # Davrdagi qarzli mijozlar ro'yxati (faqat tanlangan davrda debt_usd > 0 bo'lgan)
+        Customer_alias = aliased(Customer)
+        debt_customers_query = db.session.query(
+            Customer_alias.name,
+            func.sum(Sale.debt_usd).label('period_debt')
+        ).join(
+            Customer_alias, Sale.customer_id == Customer_alias.id
+        ).filter(
+            Sale.id.in_(select(sale_ids_subquery.c.id)),
+            Sale.debt_usd > 0
+        ).group_by(
+            Customer_alias.name
+        ).order_by(
+            func.sum(Sale.debt_usd).desc()
+        )
+        debt_customers = []
+        for name, period_debt in debt_customers_query.all():
+            debt_customers.append({
+                'customer_name': name or 'Noma\'lum',
+                'total_debt': float(period_debt or 0)
+            })
+
         # Sales list conversion with error handling
         sales_list = []
         for sale in sales:
@@ -11309,7 +11331,8 @@ def api_sales_history():
                     'payment_methods': payment_methods,
                     'top_products': top_products,
                     'store_performance': store_performance,
-                    'debt_customers_count': debt_customers_count
+                    'debt_customers_count': debt_customers_count,
+                    'debt_customers': debt_customers
                 },
                 'filters': {
                     'start_date': start_date,

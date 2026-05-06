@@ -269,16 +269,14 @@ function fmtNum(v) {
 }
 
 async function loadAll() {
-    // Parallel: history (stats+top products+locations) + chart (profit+payments) + debts
-    const [histRes, chartRes, debtRes] = await Promise.all([
+    // Parallel: history (stats+top products+locations+debt_customers) + chart (profit+payments)
+    const [histRes, chartRes] = await Promise.all([
         fetch(`/api/sales-history?start_date=${currentDateFrom}&end_date=${currentDateTo}&per_page=1`),
-        fetch(`/api/sales-chart?date_from=${currentDateFrom}&date_to=${currentDateTo}&period=custom`),
-        fetch('/api/debts')
+        fetch(`/api/sales-chart?date_from=${currentDateFrom}&date_to=${currentDateTo}&period=custom`)
     ]);
 
     const hist = await histRes.json();
     const chart = await chartRes.json();
-    const debtD = await debtRes.json();
 
     const stats = (hist.data && hist.data.statistics) || {};
 
@@ -362,19 +360,18 @@ async function loadAll() {
     const periodDebt = parseFloat((chart.payment_totals || {}).debt || 0);
     document.getElementById('totalDebt').textContent = fmtUsd(periodDebt);
 
-    // --- Qarzli mijozlar (jami yig'ilgan qarz balansi) ---
-    const debts = debtD.debts || [];
-    const debtCustCount = stats.debt_customers_count || 0;
-    document.getElementById('totalDebtCount').textContent = `${debtCustCount} ta mijoz`;  
+    // --- Qarzli mijozlar (tanlangan davrdagi nasiya qilgan mijozlar) ---
+    const debts = stats.debt_customers || [];
+    const debtCustCount = debts.length;
+    document.getElementById('totalDebtCount').textContent = `${debtCustCount} ta mijoz`;
 
     const debtDiv = document.getElementById('debtList');
     document.getElementById('debtListCount').textContent = debtCustCount;
     if (debts.length === 0) {
         debtDiv.innerHTML = '<div class="hr-loading">✅ Qarz yo\'q</div>';
     } else {
-        const sorted = [...debts].sort((a, b) => parseFloat(b.total_debt) - parseFloat(a.total_debt));
-        const maxDebt = parseFloat(sorted[0]?.total_debt || 1);
-        debtDiv.innerHTML = sorted.map((d, i) => {
+        const maxDebt = parseFloat(debts[0]?.total_debt || 1);
+        debtDiv.innerHTML = debts.map((d, i) => {
             const pct = Math.round(parseFloat(d.total_debt) / maxDebt * 100);
             return `<div class="hr-row">
                 <div class="hr-rank">${i+1}</div>
