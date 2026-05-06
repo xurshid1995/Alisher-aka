@@ -307,7 +307,8 @@ async function loadAll() {
     if (lpb.length > 0) {
         const maxTotal = lpb[0].total;
         comboDiv.innerHTML = lpb.map((loc, i) => {
-            const pmSorted = Object.entries(loc.payments || {}).sort((a, b) => b[1] - a[1]);
+            const pmOrder = ['cash', 'click', 'terminal', 'debt'];
+            const pmSorted = pmOrder.map(k => [k, loc.payments?.[k] || 0]).filter(([, v]) => v > 0);
             const locTotal = pmSorted.reduce((s, [, v]) => s + v, 0);
             const locProfit = parseFloat(loc.profit || 0);
             const maxBar = Math.max(locTotal, locProfit, 0.01);
