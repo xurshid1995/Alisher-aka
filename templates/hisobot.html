@@ -364,7 +364,8 @@ async function loadAll() {
 
     // --- Qarzli mijozlar (jami yig'ilgan qarz balansi) ---
     const debts = debtD.debts || [];
-    document.getElementById('totalDebtCount').textContent = `${debts.length} ta mijoz (jami)`;
+    const debtCustCount = stats.debt_customers_count || 0;
+    document.getElementById('totalDebtCount').textContent = `${debtCustCount} ta mijoz`;  
 
     const debtDiv = document.getElementById('debtList');
     document.getElementById('debtListCount').textContent = debts.length;

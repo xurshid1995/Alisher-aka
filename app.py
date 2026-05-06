@@ -11094,6 +11094,12 @@ def api_sales_history():
         total_revenue = float(stats_aggregate_result.total_revenue or 0)
         total_profit = float(stats_aggregate_result.total_profit or 0)
 
+        # Davrdagi qarzli mijozlar soni (debt_usd > 0 bo'lgan unique customerlar)
+        debt_customers_count = stats_filtered_query.filter(
+            Sale.debt_usd > 0,
+            Sale.customer_id != None
+        ).with_entities(func.count(func.distinct(Sale.customer_id))).scalar() or 0
+
         logger.info(f"📊 Jami savdolar: {total_sales_count}")
         logger.info(f"💰 Jami daromad: ${total_revenue:.2f}")
         logger.info(f"💵 Jami foyda: ${total_profit:.2f}")
@@ -11302,7 +11308,8 @@ def api_sales_history():
                     'profit_margin': round(profit_margin, 2),
                     'payment_methods': payment_methods,
                     'top_products': top_products,
-                    'store_performance': store_performance
+                    'store_performance': store_performance,
+                    'debt_customers_count': debt_customers_count
                 },
                 'filters': {
                     'start_date': start_date,
