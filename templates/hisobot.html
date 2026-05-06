@@ -379,8 +379,8 @@ async function loadAll() {
                 <span style="font-size:12px;color:#1a6eff;font-weight:600;">💰 Jami tushum</span>
                 <span style="font-size:15px;font-weight:800;color:#1a6eff;">${fmtUsd(totalRevenue)}</span>
             </div>
-            <div style="display:flex;height:14px;border-radius:99px;overflow:hidden;background:#e5e7eb;gap:1px;">
-                ${pmEntries.map(e => `<div style="width:${totalRevenue>0?(e.val/totalRevenue*100).toFixed(1):0}%;background:${pmGradients[e.key]||e.color};height:100%;" title="${e.label}: ${fmtUsd(e.val)}"></div>`).join('')}
+            <div style="height:14px;border-radius:99px;overflow:hidden;background:#e5e7eb;">
+                <div style="width:100%;height:100%;background:linear-gradient(90deg,#1a6eff,#60a5fa,#a5c4ff);border-radius:99px;"></div>
             </div>
             <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
                 ${pmEntries.map(e => `<span style="display:flex;align-items:center;gap:3px;font-size:10px;color:#555;"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${e.color};"></span>${e.label.split(' ').slice(1).join(' ')}</span>`).join('')}
