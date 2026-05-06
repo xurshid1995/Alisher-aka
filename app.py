@@ -7291,7 +7291,7 @@ def api_paid_debts():
 @app.route('/api/debt-payments')
 @role_required('admin', 'kassir', 'sotuvchi')
 def api_debt_payment_history():
-    """Qarz to'lovlar tarixi - allowed_locations bo'yicha filtrlangan"""
+    """Qarz to'lovlar tarixi - to'lovlar tranzaksiya bo'yicha guruhlangan"""
     try:
         # Joriy foydalanuvchini olish
         current_user = get_current_user()
@@ -7314,41 +7314,65 @@ def api_debt_payment_history():
                 if warehouse_ids:
                     allowed_location_ids.extend(warehouse_ids)
 
-        # Debt payments jadvalidan ma'lumotlarni olish
-        query = DebtPayment.query
+        # Raw SQL bilan tranzaksiya bo'yicha guruhlash
+        # Bir to'lov bir necha savdoga bo'linsa ham, bitta qator sifatida ko'rinadi
+        # Grupplash kaliti: customer_id + payment_date + received_by (bir xil request ichida yaratilgan)
+        location_filter = ""
+        params = {}
 
-        # Agar location_id berilgan bo'lsa, sale orqali filtrlash
         if location_id:
-            # Location'ga ruxsat tekshirish
             if allowed_location_ids is not None and location_id not in allowed_location_ids:
                 return jsonify({'success': True, 'payments': []})
+            location_filter = """
+                AND (s.location_id = :location_id OR dp.sale_id IS NULL)
+            """
+            params['location_id'] = location_id
+        elif allowed_location_ids is not None:
+            if not allowed_location_ids:
+                return jsonify({'success': True, 'payments': []})
+            location_filter = """
+                AND (s.location_id = ANY(:allowed_ids) OR dp.sale_id IS NULL)
+            """
+            params['allowed_ids'] = allowed_location_ids
 
-            # Faqat berilgan location'dagi savdolar uchun to'lovlar
-            query = query.join(Sale, DebtPayment.sale_id == Sale.id, isouter=True).filter(
-                db.or_(
-                    Sale.location_id == location_id,
-                    DebtPayment.sale_id.is_(None)  # sale_id NULL bo'lgan to'lovlar ham ko'rinadi
-                )
-            )
-        else:
-            # Allowed locations bo'yicha filtrlash
-            if allowed_location_ids is not None:
-                if not allowed_location_ids:
-                    return jsonify({'success': True, 'payments': []})
+        sql = text(f"""
+            SELECT
+                dp.customer_id,
+                c.name AS customer_name,
+                dp.payment_date,
+                dp.received_by,
+                SUM(dp.cash_usd) AS cash_usd,
+                SUM(dp.click_usd) AS click_usd,
+                SUM(dp.terminal_usd) AS terminal_usd,
+                SUM(dp.total_usd) AS total_usd,
+                MAX(dp.currency_rate) AS currency_rate,
+                MAX(dp.notes) AS notes
+            FROM debt_payments dp
+            JOIN customers c ON dp.customer_id = c.id
+            LEFT JOIN sales s ON dp.sale_id = s.id
+            WHERE 1=1
+            {location_filter}
+            GROUP BY dp.customer_id, c.name, dp.payment_date, dp.received_by
+            ORDER BY dp.payment_date DESC
+            LIMIT 1000
+        """)
 
-                # Faqat ruxsat etilgan locationlardagi to'lovlar
-                query = query.join(Sale, DebtPayment.sale_id == Sale.id, isouter=True).filter(
-                    db.or_(
-                        Sale.location_id.in_(allowed_location_ids),
-                        DebtPayment.sale_id.is_(None)
-                    )
-                )
-
-        debt_payments = query.order_by(DebtPayment.payment_date.desc()).limit(200).all()
+        result = db.session.execute(sql, params)
 
         payments = []
-        for payment in debt_payments:
-            payments.append(payment.to_dict())
+        for row in result:
+            payments.append({
+                'customer_id': row.customer_id,
+                'customer_name': row.customer_name or 'Unknown',
+                'payment_date': row.payment_date.strftime('%Y-%m-%d %H:%M') if row.payment_date else None,
+                'received_by': row.received_by or '',
+                'cash_usd': float(row.cash_usd or 0),
+                'click_usd': float(row.click_usd or 0),
+                'terminal_usd': float(row.terminal_usd or 0),
+                'total_usd': float(row.total_usd or 0),
+                'currency_rate': float(row.currency_rate) if row.currency_rate else 0,
+                'notes': row.notes or ''
+            })
 
         return jsonify({
             'success': True,
