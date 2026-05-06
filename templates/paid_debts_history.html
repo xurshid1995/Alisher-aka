@@ -508,7 +508,9 @@
             }
             
             const totalAmount = (debt.cash_usd || 0) + (debt.click_usd || 0) + (debt.terminal_usd || 0);
-            const totalUZS = Math.round(totalAmount * exchangeRate);
+            // To'lov paytidagi kursni ishlatish (joriy kurs emas)
+            const paymentRate = (debt.currency_rate && debt.currency_rate > 0) ? debt.currency_rate : exchangeRate;
+            const totalUZS = Math.round(totalAmount * paymentRate);
             
             row.innerHTML = `
                 <td style="text-align:center;color:#94a3b8;font-size:12px;">${index + 1}</td>
