@@ -15040,6 +15040,15 @@ def dashboard():
     return render_template('dashboard.html', current_user=current_user)
 
 
+@app.route('/hisobot')
+def hisobot():
+    """Hisobot sahifasi"""
+    if 'user_id' not in session:
+        return redirect('/login')
+    current_user = get_current_user()
+    return render_template('hisobot.html', current_user=current_user)
+
+
 # =======================================================
 # STOCK CHECK SESSION API ENDPOINTS
 # =======================================================

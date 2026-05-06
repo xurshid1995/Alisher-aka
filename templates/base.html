@@ -114,6 +114,12 @@
             {% endif %}
             {% if session.role != 'sotuvchi' %}
             <li>
+                <a href="/hisobot" {% if request.endpoint == 'hisobot' %}class="active"{% endif %}>
+                    <span class="icon">📊</span>
+                    <span>{{ t('reports') }}</span>
+                </a>
+            </li>
+            <li>
                 <a href="/add_product" {% if request.endpoint in ('add_product', 'add_product_session') %}class="active"{% endif %}>
                     <span class="icon">➕</span>
                     <span>{{ t('add_product') }}</span>

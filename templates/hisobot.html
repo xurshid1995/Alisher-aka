@@ -1,0 +1,415 @@
+{% extends "base.html" %}
+
+{% block title %}📊 Hisobot{% endblock %}
+
+{% block content %}
+<div style="padding: 20px; max-width: 1200px; margin: 0 auto;">
+
+    <!-- Sarlavha + Sana filtri -->
+    <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:24px;">
+        <h2 style="margin:0; font-size:22px; font-weight:700; color:#1a1a2e;">📊 Hisobot</h2>
+        <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+            <button onclick="setPeriod('today')" id="btn-today" class="hr-btn hr-btn-active">Bugun</button>
+            <button onclick="setPeriod('week')" id="btn-week" class="hr-btn">Bu hafta</button>
+            <button onclick="setPeriod('month')" id="btn-month" class="hr-btn">Bu oy</button>
+            <input type="date" id="dateFrom" class="hr-date" onchange="setPeriod('custom')">
+            <span style="color:#999;">—</span>
+            <input type="date" id="dateTo" class="hr-date" onchange="setPeriod('custom')">
+        </div>
+    </div>
+
+    <!-- Karta qatori 1: Asosiy raqamlar -->
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px,1fr)); gap:16px; margin-bottom:24px;">
+        <div class="hr-card">
+            <div class="hr-card-icon" style="background:#e8f4ff;">📦</div>
+            <div>
+                <div class="hr-card-label">Jami savdolar</div>
+                <div class="hr-card-val" id="totalSales">—</div>
+            </div>
+        </div>
+        <div class="hr-card">
+            <div class="hr-card-icon" style="background:#e8fff0;">💵</div>
+            <div>
+                <div class="hr-card-label">Jami tushum (USD)</div>
+                <div class="hr-card-val green" id="totalRevenue">—</div>
+                <div class="hr-card-sub" id="totalRevenueUzs">—</div>
+            </div>
+        </div>
+        {% if session.role != 'sotuvchi' %}
+        <div class="hr-card">
+            <div class="hr-card-icon" style="background:#fff8e8;">📈</div>
+            <div>
+                <div class="hr-card-label">Jami foyda (USD)</div>
+                <div class="hr-card-val" style="color:#f59e0b;" id="totalProfit">—</div>
+                <div class="hr-card-sub" id="totalProfitUzs">—</div>
+            </div>
+        </div>
+        {% endif %}
+        <div class="hr-card">
+            <div class="hr-card-icon" style="background:#fff0f0;">💳</div>
+            <div>
+                <div class="hr-card-label">Qarzlar (USD)</div>
+                <div class="hr-card-val" style="color:#e53e3e;" id="totalDebt">—</div>
+                <div class="hr-card-sub" id="totalDebtCount">—</div>
+            </div>
+        </div>
+        <div class="hr-card">
+            <div class="hr-card-icon" style="background:#f0e8ff;">🛒</div>
+            <div>
+                <div class="hr-card-label">O'rtacha savdo</div>
+                <div class="hr-card-val" id="avgSale">—</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- To'lov usullari -->
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:24px;">
+        <div class="hr-section">
+            <div class="hr-section-title">💳 To'lov usullari</div>
+            <div id="paymentMethods" style="padding:8px 0;">
+                <div class="hr-loading">Yuklanmoqda...</div>
+            </div>
+        </div>
+
+        <!-- Do'konlar bo'yicha -->
+        <div class="hr-section">
+            <div class="hr-section-title">🏪 Joylashuvlar bo'yicha</div>
+            <div id="locationStats" style="padding:8px 0;">
+                <div class="hr-loading">Yuklanmoqda...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top mahsulotlar + Qarzli mijozlar -->
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:24px;">
+        <div class="hr-section">
+            <div class="hr-section-title">🏆 Top 10 mahsulot (savdo soni)</div>
+            <div id="topProducts">
+                <div class="hr-loading">Yuklanmoqda...</div>
+            </div>
+        </div>
+
+        <div class="hr-section">
+            <div class="hr-section-title">⚠️ Qarzli mijozlar (top 10)</div>
+            <div id="debtList">
+                <div class="hr-loading">Yuklanmoqda...</div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<style>
+.hr-btn {
+    padding: 7px 14px;
+    border: 1px solid #dde1e7;
+    background: #fff;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    color: #555;
+    transition: all 0.2s;
+}
+.hr-btn:hover { border-color: #1a6eff; color: #1a6eff; }
+.hr-btn-active { background: #1a6eff; color: #fff !important; border-color: #1a6eff !important; }
+.hr-date {
+    padding: 6px 10px;
+    border: 1px solid #dde1e7;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #333;
+    outline: none;
+}
+.hr-card {
+    background: #fff;
+    border: 1px solid #eef0f4;
+    border-radius: 12px;
+    padding: 16px 18px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+}
+.hr-card-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+}
+.hr-card-label { font-size: 12px; color: #888; margin-bottom: 4px; }
+.hr-card-val { font-size: 20px; font-weight: 700; color: #1a1a2e; }
+.hr-card-val.green { color: #22c55e; }
+.hr-card-sub { font-size: 12px; color: #aaa; margin-top: 2px; }
+.hr-section {
+    background: #fff;
+    border: 1px solid #eef0f4;
+    border-radius: 12px;
+    padding: 18px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+}
+.hr-section-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #f0f2f5;
+}
+.hr-loading { color: #bbb; font-size: 13px; text-align: center; padding: 20px; }
+.hr-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #f7f8fa;
+    font-size: 13px;
+}
+.hr-row:last-child { border-bottom: none; }
+.hr-rank {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    background: #f0f2f5;
+    color: #666;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 8px;
+    flex-shrink: 0;
+}
+.hr-bar-wrap {
+    flex: 1;
+    height: 6px;
+    background: #f0f2f5;
+    border-radius: 3px;
+    margin: 0 10px;
+    overflow: hidden;
+}
+.hr-bar { height: 100%; border-radius: 3px; background: #1a6eff; }
+@media (max-width: 700px) {
+    div[style*="grid-template-columns:1fr 1fr"] {
+        grid-template-columns: 1fr !important;
+    }
+}
+</style>
+
+<script>
+let currentPeriod = 'today';
+let currentDateFrom = '';
+let currentDateTo = '';
+let exchangeRate = 12100;
+
+// Valyuta kursini olish
+async function loadExchangeRate() {
+    try {
+        const res = await fetch('/api/settings');
+        const data = await res.json();
+        if (data.exchange_rate) exchangeRate = parseFloat(data.exchange_rate);
+    } catch(e) {}
+}
+
+function setPeriod(period) {
+    currentPeriod = period;
+    document.querySelectorAll('.hr-btn').forEach(b => b.classList.remove('hr-btn-active'));
+
+    const today = new Date();
+    const fmt = d => d.toISOString().split('T')[0];
+
+    if (period === 'today') {
+        currentDateFrom = fmt(today);
+        currentDateTo = fmt(today);
+        document.getElementById('btn-today').classList.add('hr-btn-active');
+    } else if (period === 'week') {
+        const mon = new Date(today);
+        mon.setDate(today.getDate() - today.getDay() + 1);
+        currentDateFrom = fmt(mon);
+        currentDateTo = fmt(today);
+        document.getElementById('btn-week').classList.add('hr-btn-active');
+    } else if (period === 'month') {
+        currentDateFrom = fmt(new Date(today.getFullYear(), today.getMonth(), 1));
+        currentDateTo = fmt(today);
+        document.getElementById('btn-month').classList.add('hr-btn-active');
+    } else if (period === 'custom') {
+        currentDateFrom = document.getElementById('dateFrom').value;
+        currentDateTo = document.getElementById('dateTo').value;
+        if (!currentDateFrom || !currentDateTo) return;
+    }
+
+    if (period !== 'custom') {
+        document.getElementById('dateFrom').value = currentDateFrom;
+        document.getElementById('dateTo').value = currentDateTo;
+    }
+
+    loadAll();
+}
+
+function fmtUsd(v) {
+    return '$' + parseFloat(v || 0).toLocaleString('uz-UZ', {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+function fmtUzs(v) {
+    return (parseFloat(v || 0) * exchangeRate).toLocaleString('uz-UZ', {maximumFractionDigits:0}) + ' so\'m';
+}
+function fmtNum(v) {
+    return parseInt(v || 0).toLocaleString('uz-UZ');
+}
+
+async function loadSalesStats() {
+    try {
+        const res = await fetch(`/api/sales-statistics?date_from=${currentDateFrom}&date_to=${currentDateTo}`);
+        const d = await res.json();
+        document.getElementById('totalSales').textContent = fmtNum(d.total_sales);
+        document.getElementById('totalRevenue').textContent = fmtUsd(d.total_revenue);
+        document.getElementById('totalRevenueUzs').textContent = fmtUzs(d.total_revenue);
+        document.getElementById('avgSale').textContent = fmtUsd(d.avg_sale);
+    } catch(e) {
+        document.getElementById('totalSales').textContent = '—';
+    }
+}
+
+async function loadProfitAndPayments() {
+    try {
+        const res = await fetch(`/api/sales-chart?date_from=${currentDateFrom}&date_to=${currentDateTo}&period=custom`);
+        const d = await res.json();
+
+        // Foyda
+        const profitEl = document.getElementById('totalProfit');
+        const profitUzsEl = document.getElementById('totalProfitUzs');
+        if (profitEl) {
+            const profit = parseFloat(d.total_profit || 0);
+            profitEl.textContent = fmtUsd(profit);
+            if (profitUzsEl) profitUzsEl.textContent = fmtUzs(profit);
+        }
+
+        // To'lov usullari
+        const pmDiv = document.getElementById('paymentMethods');
+        if (d.payment_methods && Object.keys(d.payment_methods).length > 0) {
+            const total = Object.values(d.payment_methods).reduce((a, b) => a + parseFloat(b || 0), 0);
+            const names = { cash: '💵 Naqd', card: '💳 Karta', transfer: '🏦 O\'tkazma', debt: '📋 Nasiya', dollar: '💵 Dollar' };
+            pmDiv.innerHTML = Object.entries(d.payment_methods)
+                .filter(([, v]) => parseFloat(v) > 0)
+                .sort((a, b) => parseFloat(b[1]) - parseFloat(a[1]))
+                .map(([k, v]) => {
+                    const pct = total > 0 ? Math.round(parseFloat(v) / total * 100) : 0;
+                    return `<div class="hr-row">
+                        <span style="min-width:90px;">${names[k] || k}</span>
+                        <div class="hr-bar-wrap"><div class="hr-bar" style="width:${pct}%;"></div></div>
+                        <span style="font-weight:600; color:#1a6eff; min-width:80px; text-align:right;">${fmtUsd(v)}</span>
+                        <span style="color:#aaa; font-size:11px; min-width:30px; text-align:right;">${pct}%</span>
+                    </div>`;
+                }).join('');
+        } else {
+            pmDiv.innerHTML = '<div class="hr-loading">Ma\'lumot yo\'q</div>';
+        }
+
+        // Joylashuvlar
+        const locDiv = document.getElementById('locationStats');
+        if (d.locations && d.locations.length > 0) {
+            const maxVal = Math.max(...d.locations.map(l => parseFloat(l.revenue || 0)));
+            locDiv.innerHTML = d.locations.slice(0, 8).map((l, i) => {
+                const pct = maxVal > 0 ? Math.round(parseFloat(l.revenue || 0) / maxVal * 100) : 0;
+                return `<div class="hr-row">
+                    <div class="hr-rank">${i+1}</div>
+                    <span style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${l.name || 'Noma\'lum'}</span>
+                    <div class="hr-bar-wrap"><div class="hr-bar" style="width:${pct}%;"></div></div>
+                    <span style="font-weight:600; color:#22c55e; min-width:80px; text-align:right;">${fmtUsd(l.revenue)}</span>
+                </div>`;
+            }).join('');
+        } else {
+            locDiv.innerHTML = '<div class="hr-loading">Ma\'lumot yo\'q</div>';
+        }
+    } catch(e) {
+        document.getElementById('paymentMethods').innerHTML = '<div class="hr-loading">Xatolik</div>';
+        document.getElementById('locationStats').innerHTML = '<div class="hr-loading">Xatolik</div>';
+    }
+}
+
+async function loadDebts() {
+    try {
+        const res = await fetch('/api/debts');
+        const d = await res.json();
+        const debts = d.debts || [];
+        const totalDebt = debts.reduce((s, x) => s + parseFloat(x.total_debt || 0), 0);
+        document.getElementById('totalDebt').textContent = fmtUsd(totalDebt);
+        document.getElementById('totalDebtCount').textContent = `${debts.length} ta mijoz`;
+
+        const debtDiv = document.getElementById('debtList');
+        if (debts.length === 0) {
+            debtDiv.innerHTML = '<div class="hr-loading">✅ Qarz yo\'q</div>';
+            return;
+        }
+        const sorted = [...debts].sort((a, b) => parseFloat(b.total_debt) - parseFloat(a.total_debt)).slice(0, 10);
+        const max = parseFloat(sorted[0]?.total_debt || 1);
+        debtDiv.innerHTML = sorted.map((d, i) => {
+            const pct = Math.round(parseFloat(d.total_debt) / max * 100);
+            return `<div class="hr-row">
+                <div class="hr-rank">${i+1}</div>
+                <span style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${d.customer_name}">${d.customer_name}</span>
+                <div class="hr-bar-wrap"><div class="hr-bar" style="width:${pct}%; background:#e53e3e;"></div></div>
+                <span style="font-weight:600; color:#e53e3e; min-width:80px; text-align:right;">${fmtUsd(d.total_debt)}</span>
+            </div>`;
+        }).join('');
+    } catch(e) {
+        document.getElementById('totalDebt').textContent = '—';
+        document.getElementById('debtList').innerHTML = '<div class="hr-loading">Xatolik</div>';
+    }
+}
+
+async function loadTopProducts() {
+    try {
+        const res = await fetch(`/api/sales-history?date_from=${currentDateFrom}&date_to=${currentDateTo}&per_page=200`);
+        const d = await res.json();
+        const sales = d.sales || [];
+
+        // Mahsulotlar bo'yicha yig'ish
+        const products = {};
+        sales.forEach(sale => {
+            (sale.items || []).forEach(item => {
+                const name = item.product_name || item.name || 'Noma\'lum';
+                if (!products[name]) products[name] = { qty: 0, revenue: 0 };
+                products[name].qty += parseFloat(item.quantity || 0);
+                products[name].revenue += parseFloat(item.unit_price || 0) * parseFloat(item.quantity || 0);
+            });
+        });
+
+        const sorted = Object.entries(products)
+            .sort((a, b) => b[1].qty - a[1].qty)
+            .slice(0, 10);
+
+        const prodDiv = document.getElementById('topProducts');
+        if (sorted.length === 0) {
+            prodDiv.innerHTML = '<div class="hr-loading">Ma\'lumot yo\'q</div>';
+            return;
+        }
+        const maxQty = sorted[0][1].qty;
+        prodDiv.innerHTML = sorted.map(([name, v], i) => {
+            const pct = maxQty > 0 ? Math.round(v.qty / maxQty * 100) : 0;
+            return `<div class="hr-row">
+                <div class="hr-rank">${i+1}</div>
+                <span style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${name}">${name}</span>
+                <div class="hr-bar-wrap"><div class="hr-bar" style="width:${pct}%; background:#8b5cf6;"></div></div>
+                <span style="font-weight:600; color:#8b5cf6; min-width:55px; text-align:right;">${parseFloat(v.qty).toLocaleString('uz-UZ', {maximumFractionDigits:1})} dona</span>
+            </div>`;
+        }).join('');
+    } catch(e) {
+        document.getElementById('topProducts').innerHTML = '<div class="hr-loading">Xatolik</div>';
+    }
+}
+
+async function loadAll() {
+    await loadSalesStats();
+    await Promise.all([loadProfitAndPayments(), loadDebts(), loadTopProducts()]);
+}
+
+// Boshlash
+(async () => {
+    await loadExchangeRate();
+    setPeriod('today');
+})();
+</script>
+{% endblock %}
