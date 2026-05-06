@@ -11276,7 +11276,8 @@ def api_sales_history():
             func.sum(Sale.cash_usd).label('cash'),
             func.sum(Sale.click_usd).label('click'),
             func.sum(Sale.terminal_usd).label('terminal'),
-            func.sum(Sale.debt_usd).label('debt')
+            func.sum(Sale.debt_usd).label('debt'),
+            func.sum(Sale.total_profit).label('profit')
         ).join(
             Store_alias2, db.and_(Sale.location_id == Store_alias2.id, Sale.location_type == 'store')
         ).filter(
@@ -11288,14 +11289,15 @@ def api_sales_history():
             func.sum(Sale.cash_usd).label('cash'),
             func.sum(Sale.click_usd).label('click'),
             func.sum(Sale.terminal_usd).label('terminal'),
-            func.sum(Sale.debt_usd).label('debt')
+            func.sum(Sale.debt_usd).label('debt'),
+            func.sum(Sale.total_profit).label('profit')
         ).join(
             Warehouse_alias2, db.and_(Sale.location_id == Warehouse_alias2.id, Sale.location_type == 'warehouse')
         ).filter(
             Sale.id.in_(select(sale_ids_subquery.c.id))
         ).group_by(Warehouse_alias2.name).all()
 
-        for name, cash, click, terminal, debt in list(store_loc_pm) + list(wh_loc_pm):
+        for name, cash, click, terminal, debt, profit in list(store_loc_pm) + list(wh_loc_pm):
             loc_name = name or 'Noma\'lum'
             payments = {}
             if float(cash or 0) > 0:
@@ -11306,10 +11308,10 @@ def api_sales_history():
                 payments['terminal'] = float(terminal)
             if float(debt or 0) > 0:
                 payments['debt'] = float(debt)
-            loc_pm_dict[loc_name] = payments
+            loc_pm_dict[loc_name] = {'payments': payments, 'profit': float(profit or 0)}
 
         location_payment_breakdown = [
-            {'name': k, 'payments': v, 'total': sum(v.values())}
+            {'name': k, 'payments': v['payments'], 'total': sum(v['payments'].values()), 'profit': v['profit']}
             for k, v in loc_pm_dict.items()
         ]
         location_payment_breakdown.sort(key=lambda x: x['total'], reverse=True)
