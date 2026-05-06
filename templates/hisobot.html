@@ -334,31 +334,46 @@ async function loadAll() {
     // --- Joylashuv umumiy bar (o'ng panel) ---
     const summaryDiv = document.getElementById('locSummaryBar');
     if (lpb.length > 0) {
-        const maxT = lpb[0].total;
-        summaryDiv.innerHTML = `<div style="font-size:12px;font-weight:600;color:#888;margin-bottom:8px;">Jami tushum bo'yicha taqqoslash</div>` +
-        lpb.map((loc, i) => {
-            const pct = maxT > 0 ? Math.round(loc.total / maxT * 100) : 0;
-            const pmSorted = Object.entries(loc.payments || {}).sort((a,b) => b[1]-a[1]);
-            const locT = pmSorted.reduce((s,[,v]) => s+v, 0);
-            // stacked segments
-            const segments = pmSorted.map(([method, amt]) => {
-                const color = pmColors[method] || '#aaa';
-                const segPct = locT > 0 ? (amt / locT * 100).toFixed(1) : 0;
-                return `<div style="width:${segPct}%;background:${color};height:100%;" title="${pmLabels[method]||method}: ${fmtUsd(amt)}"></div>`;
-            }).join('');
-            return `<div style="margin-bottom:10px;">
-                <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;">
-                    <div class="hr-rank" style="width:18px;height:18px;font-size:10px;">${i+1}</div>
-                    <span style="flex:1;font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${loc.name}">${loc.name}</span>
-                    <span style="font-size:12px;font-weight:700;color:#1a6eff;">${fmtUsd(loc.total)}</span>
-                </div>
-                <div style="display:flex;height:10px;border-radius:6px;overflow:hidden;background:#f0f2f5;">
-                    <div style="display:flex;width:${pct}%;">${segments}</div>
-                </div>
+        const pt = chart.payment_totals || {};
+        const totalCash = parseFloat(pt.cash || 0);
+        const totalClick = parseFloat(pt.click || 0);
+        const totalTerminal = parseFloat(pt.terminal || 0);
+        const totalDebt = parseFloat(pt.debt || 0);
+        const totalProfit = (chart.profits || []).reduce((a, b) => a + parseFloat(b || 0), 0);
+        const totalRevenue = totalCash + totalClick + totalTerminal + totalDebt;
+
+        const pmEntries = [
+            { key: 'cash', label: '💵 Naqd', color: '#22c55e', val: totalCash },
+            { key: 'click', label: '📱 Click', color: '#3b82f6', val: totalClick },
+            { key: 'terminal', label: '💳 Terminal', color: '#8b5cf6', val: totalTerminal },
+            { key: 'debt', label: '📋 Nasiya', color: '#ef4444', val: totalDebt },
+        ].filter(e => e.val > 0);
+
+        const maxVal = Math.max(...pmEntries.map(e => e.val), totalProfit, 0.01);
+
+        summaryDiv.innerHTML = `
+        <div style="font-size:12px;font-weight:600;color:#888;margin-bottom:12px;">Umumiy ko'rsatkichlar</div>
+        <div style="margin-bottom:14px;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+                <span style="font-size:12px;color:#555;">💰 Jami tushum</span>
+                <span style="font-size:13px;font-weight:700;color:#1a6eff;">${fmtUsd(totalRevenue)}</span>
+            </div>
+            <div style="display:flex;height:10px;border-radius:6px;overflow:hidden;background:#f0f2f5;">
+                ${pmEntries.map(e => `<div style="width:${totalRevenue>0?(e.val/totalRevenue*100).toFixed(1):0}%;background:${e.color};height:100%;" title="${e.label}: ${fmtUsd(e.val)}"></div>`).join('')}
+            </div>
+        </div>
+        ${pmEntries.map(e => {
+            const barW = (e.val / maxVal * 100).toFixed(1);
+            return `<div style="display:flex;align-items:center;gap:8px;padding:4px 0;">
+                <span style="min-width:100px;font-size:12px;color:#555;">${e.label}</span>
+                <div class="hr-bar-wrap" style="margin:0;flex:1;"><div class="hr-bar" style="width:${barW}%;background:${e.color};"></div></div>
+                <span style="font-weight:600;color:${e.color};font-size:12px;min-width:70px;text-align:right;">${fmtUsd(e.val)}</span>
             </div>`;
-        }).join('') +
-        `<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">
-            ${Object.entries(pmColors).map(([k,c]) => `<span style="display:flex;align-items:center;gap:4px;font-size:11px;color:#555;"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${c};"></span>${pmLabels[k]}</span>`).join('')}
+        }).join('')}
+        <div style="display:flex;align-items:center;gap:8px;padding:4px 0;margin-top:4px;border-top:1px solid #f0f2f5;">
+            <span style="min-width:100px;font-size:12px;color:#555;">📈 Jami foyda</span>
+            <div class="hr-bar-wrap" style="margin:0;flex:1;"><div class="hr-bar" style="width:${(totalProfit/maxVal*100).toFixed(1)}%;background:#f59e0b;"></div></div>
+            <span style="font-weight:600;color:#f59e0b;font-size:12px;min-width:70px;text-align:right;">${fmtUsd(totalProfit)}</span>
         </div>`;
     } else {
         summaryDiv.innerHTML = '<div class="hr-loading">Ma\'lumot yo\'q</div>';
