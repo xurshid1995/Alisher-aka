@@ -11273,29 +11273,40 @@ def api_sales_history():
 
         store_loc_pm = db.session.query(
             Store_alias2.name,
-            Sale.payment_method,
-            func.sum(Sale.total_amount).label('amount')
+            func.sum(Sale.cash_usd).label('cash'),
+            func.sum(Sale.click_usd).label('click'),
+            func.sum(Sale.terminal_usd).label('terminal'),
+            func.sum(Sale.debt_usd).label('debt')
         ).join(
             Store_alias2, db.and_(Sale.location_id == Store_alias2.id, Sale.location_type == 'store')
         ).filter(
             Sale.id.in_(select(sale_ids_subquery.c.id))
-        ).group_by(Store_alias2.name, Sale.payment_method).all()
+        ).group_by(Store_alias2.name).all()
 
         wh_loc_pm = db.session.query(
             Warehouse_alias2.name,
-            Sale.payment_method,
-            func.sum(Sale.total_amount).label('amount')
+            func.sum(Sale.cash_usd).label('cash'),
+            func.sum(Sale.click_usd).label('click'),
+            func.sum(Sale.terminal_usd).label('terminal'),
+            func.sum(Sale.debt_usd).label('debt')
         ).join(
             Warehouse_alias2, db.and_(Sale.location_id == Warehouse_alias2.id, Sale.location_type == 'warehouse')
         ).filter(
             Sale.id.in_(select(sale_ids_subquery.c.id))
-        ).group_by(Warehouse_alias2.name, Sale.payment_method).all()
+        ).group_by(Warehouse_alias2.name).all()
 
-        for name, method, amount in list(store_loc_pm) + list(wh_loc_pm):
+        for name, cash, click, terminal, debt in list(store_loc_pm) + list(wh_loc_pm):
             loc_name = name or 'Noma\'lum'
-            if loc_name not in loc_pm_dict:
-                loc_pm_dict[loc_name] = {}
-            loc_pm_dict[loc_name][method or 'cash'] = float(amount or 0)
+            payments = {}
+            if float(cash or 0) > 0:
+                payments['cash'] = float(cash)
+            if float(click or 0) > 0:
+                payments['click'] = float(click)
+            if float(terminal or 0) > 0:
+                payments['terminal'] = float(terminal)
+            if float(debt or 0) > 0:
+                payments['debt'] = float(debt)
+            loc_pm_dict[loc_name] = payments
 
         location_payment_breakdown = [
             {'name': k, 'payments': v, 'total': sum(v.values())}
