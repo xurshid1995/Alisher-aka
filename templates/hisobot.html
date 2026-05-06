@@ -363,38 +363,24 @@ async function loadDebts() {
 
 async function loadTopProducts() {
     try {
-        const res = await fetch(`/api/sales-history?date_from=${currentDateFrom}&date_to=${currentDateTo}&per_page=200`);
+        const res = await fetch(`/api/sales-history?start_date=${currentDateFrom}&end_date=${currentDateTo}&per_page=1`);
         const d = await res.json();
-        const sales = d.sales || [];
-
-        // Mahsulotlar bo'yicha yig'ish
-        const products = {};
-        sales.forEach(sale => {
-            (sale.items || []).forEach(item => {
-                const name = item.product_name || item.name || 'Noma\'lum';
-                if (!products[name]) products[name] = { qty: 0, revenue: 0 };
-                products[name].qty += parseFloat(item.quantity || 0);
-                products[name].revenue += parseFloat(item.unit_price || 0) * parseFloat(item.quantity || 0);
-            });
-        });
-
-        const sorted = Object.entries(products)
-            .sort((a, b) => b[1].qty - a[1].qty)
-            .slice(0, 10);
+        const products = (d.data && d.data.statistics && d.data.statistics.top_products) || [];
 
         const prodDiv = document.getElementById('topProducts');
-        if (sorted.length === 0) {
+        if (products.length === 0) {
             prodDiv.innerHTML = '<div class="hr-loading">Ma\'lumot yo\'q</div>';
             return;
         }
-        const maxQty = sorted[0][1].qty;
-        prodDiv.innerHTML = sorted.map(([name, v], i) => {
-            const pct = maxQty > 0 ? Math.round(v.qty / maxQty * 100) : 0;
+        const maxQty = parseFloat(products[0].quantity || 1);
+        prodDiv.innerHTML = products.map((p, i) => {
+            const qty = parseFloat(p.quantity || 0);
+            const pct = maxQty > 0 ? Math.round(qty / maxQty * 100) : 0;
             return `<div class="hr-row">
                 <div class="hr-rank">${i+1}</div>
-                <span style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${name}">${name}</span>
+                <span style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${p.name}">${p.name}</span>
                 <div class="hr-bar-wrap"><div class="hr-bar" style="width:${pct}%; background:#8b5cf6;"></div></div>
-                <span style="font-weight:600; color:#8b5cf6; min-width:55px; text-align:right;">${parseFloat(v.qty).toLocaleString('uz-UZ', {maximumFractionDigits:1})} dona</span>
+                <span style="font-weight:600; color:#8b5cf6; min-width:55px; text-align:right;">${qty.toLocaleString('uz-UZ', {maximumFractionDigits:1})} dona</span>
             </div>`;
         }).join('');
     } catch(e) {

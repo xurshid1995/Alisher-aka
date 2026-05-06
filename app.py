@@ -11197,7 +11197,7 @@ def api_sales_history():
             Product_alias.name
         ).order_by(
             func.sum(SaleItem.quantity).desc()
-        ).limit(5)
+        ).limit(10)
 
         for name, quantity, revenue in top_products_query.all():
             top_products.append({
