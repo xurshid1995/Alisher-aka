@@ -11400,6 +11400,7 @@ def api_sales_history():
         location_payment_breakdown.sort(key=lambda x: x['total'], reverse=True)
 
         # Har bir joylashuv uchun xarajatlarni qo'shish
+        total_expense_all = 0
         try:
             exp_q = db.session.query(
                 Expense.location_type,
@@ -11435,9 +11436,18 @@ def api_sales_history():
 
             for item in location_payment_breakdown:
                 item['expense'] = exp_by_loc.get((item['location_type'], item['name']), 0)
+
+            # Barcha xarajatlar jami (joylashuvdan qat'iy nazar)
+            all_exp_q = db.session.query(func.coalesce(func.sum(Expense.amount_usd), 0))
+            if start_date and start_date.strip():
+                all_exp_q = all_exp_q.filter(Expense.expense_date >= start_date)
+            if end_date and end_date.strip():
+                all_exp_q = all_exp_q.filter(Expense.expense_date <= end_date + ' 23:59:59')
+            total_expense_all = float(all_exp_q.scalar() or 0)
         except Exception:
             for item in location_payment_breakdown:
                 item['expense'] = 0
+            total_expense_all = 0
 
         # Davrdagi qarzli mijozlar ro'yxati (faqat tanlangan davrda debt_usd > 0 bo'lgan)
         Customer_alias = aliased(Customer)
@@ -11506,6 +11516,7 @@ def api_sales_history():
                     'top_products': top_products,
                     'store_performance': store_performance,
                     'location_payment_breakdown': location_payment_breakdown,
+                    'total_expense': round(total_expense_all, 2),
                     'debt_customers_count': debt_customers_count,
                     'debt_customers': debt_customers
                 },
