@@ -16638,7 +16638,27 @@ def xarajatlar():
     """Xarajatlar sahifasi"""
     stores = [s.to_dict() for s in Store.query.order_by(Store.name).all()]
     warehouses = [w.to_dict() for w in Warehouse.query.order_by(Warehouse.name).all()]
-    return render_template('xarajatlar.html', stores=stores, warehouses=warehouses)
+    # Kategoriyalar va dam olish kunlari - Settings jadvalidan
+    cat_setting = Settings.query.filter_by(key='expense_categories').first()
+    if cat_setting and cat_setting.value:
+        import json as _json
+        try:
+            expense_categories = _json.loads(cat_setting.value)
+        except Exception:
+            expense_categories = ['Ijara', 'Maosh', 'Kommunal', 'Transport', 'Boshqa']
+    else:
+        expense_categories = ['Ijara', 'Maosh', 'Kommunal', 'Transport', 'Boshqa']
+    rest_setting = Settings.query.filter_by(key='expense_rest_days').first()
+    if rest_setting and rest_setting.value:
+        try:
+            expense_rest_days = _json.loads(rest_setting.value)
+        except Exception:
+            expense_rest_days = []
+    else:
+        expense_rest_days = []
+    return render_template('xarajatlar.html', stores=stores, warehouses=warehouses,
+                           expense_categories=expense_categories,
+                           expense_rest_days=expense_rest_days)
 
 
 @app.route('/api/expenses', methods=['GET'])

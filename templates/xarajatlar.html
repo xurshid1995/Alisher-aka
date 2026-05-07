@@ -563,11 +563,18 @@ const WEEK_DAYS = [
     {num:0, name:'Du'}, {num:1, name:'Se'}, {num:2, name:'Ch'},
     {num:3, name:'Pa'}, {num:4, name:'Ju'}, {num:5, name:'Sh'}, {num:6, name:'Ya'}
 ];
-function getRestDays() {
-    const s = localStorage.getItem('expense_rest_days');
-    return s ? JSON.parse(s) : [];
+// Server'dan yuklangan boshlang'ich qiymatlar
+let _restDays = {{ expense_rest_days | tojson }};
+
+function getRestDays() { return _restDays; }
+function saveRestDays(days) {
+    _restDays = days;
+    fetch('/api/settings', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({expense_rest_days: JSON.stringify(days)})
+    }).catch(e => console.error(e));
 }
-function saveRestDays(days) { localStorage.setItem('expense_rest_days', JSON.stringify(days)); }
 
 function renderRestDaysCheckboxes() {
     const restDays = getRestDays();
@@ -584,7 +591,7 @@ function renderRestDaysCheckboxes() {
     }).join('');
 }
 function toggleRestDay(num) {
-    let days = getRestDays();
+    let days = getRestDays().slice();
     if (days.includes(num)) days = days.filter(d => d !== num);
     else days.push(num);
     saveRestDays(days);
@@ -596,13 +603,17 @@ const CAT_PALETTE = ['#7c3aed','#0369a1','#b45309','#065f46','#374151',
     '#be185d','#0891b2','#15803d','#6d28d9','#c2410c','#0f766e','#92400e'];
 const CAT_EMOJIS = {'Ijara':'🏠','Maosh':'👷','Kommunal':'💡','Transport':'🚚','Boshqa':'📦'};
 
-function getAllCats() {
-    const stored = localStorage.getItem('expense_all_cats');
-    if (stored) return JSON.parse(stored);
-    return ['Ijara','Maosh','Kommunal','Transport','Boshqa'];
+// Server'dan yuklangan boshlang'ich qiymatlar
+let allCategories = {{ expense_categories | tojson }};
+
+function saveAllCats(cats) {
+    allCategories = cats;
+    fetch('/api/settings', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({expense_categories: JSON.stringify(cats)})
+    }).catch(e => console.error(e));
 }
-function saveAllCats(cats) { localStorage.setItem('expense_all_cats', JSON.stringify(cats)); }
-let allCategories = getAllCats();
 
 function getCatEmoji(name) { return CAT_EMOJIS[name] || '🏷'; }
 
@@ -653,7 +664,7 @@ function saveNewCategory() {
         return;
     }
     allCategories.push(name);
-    saveAllCats(allCategories);
+    saveAllCats(allCategories.slice());
     renderCatButtons();
     renderCategorySelect();
     closeAddCatModal();
@@ -705,7 +716,7 @@ function saveEditCat(i) {
     }
     allCategories[i] = newName;
     if (CAT_EMOJIS[oldName]) { CAT_EMOJIS[newName] = CAT_EMOJIS[oldName]; delete CAT_EMOJIS[oldName]; }
-    saveAllCats(allCategories);
+    saveAllCats(allCategories.slice());
     if (currentCategory === oldName) currentCategory = newName;
     renderCatButtons();
     renderCategorySelect();
@@ -716,7 +727,7 @@ function deleteCat(i) {
     const name = allCategories[i];
     if (!confirm('"' + name + '" kategoriyasini o\'chirishni tasdiqlaysizmi?')) return;
     allCategories.splice(i, 1);
-    saveAllCats(allCategories);
+    saveAllCats(allCategories.slice());
     if (currentCategory === name) { currentCategory = 'all'; loadExpenses(); }
     renderCatButtons();
     renderCategorySelect();
