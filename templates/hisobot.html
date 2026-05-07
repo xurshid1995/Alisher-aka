@@ -313,7 +313,8 @@ async function loadAll() {
             const pmSorted = pmOrder.map(k => [k, loc.payments?.[k] || 0]).filter(([, v]) => v > 0);
             const locTotal = pmSorted.reduce((s, [, v]) => s + v, 0);
             const locProfit = parseFloat(loc.profit || 0);
-            const maxBar = Math.max(locTotal, locProfit, 0.01);
+            const locExpense = parseFloat(loc.expense || 0);
+            const maxBar = Math.max(locTotal, locProfit, locExpense, 0.01);
             const pmRows = pmSorted.map(([method, amt]) => {
                 const color = pmColors[method] || '#aaa';
                 const grad = pmGradients[method] || color;
@@ -330,13 +331,22 @@ async function loadAll() {
             }).join('');
             const profitPct = locTotal > 0 ? Math.round(locProfit / locTotal * 100) : 0;
             const profitRow = `<div style="display:flex;align-items:center;gap:8px;padding:4px 0 4px 30px;border-top:1px dashed #bbf7d0;margin-top:3px;">
-                <span style="min-width:88px;font-size:11.5px;color:#166534;font-weight:500;">📈 Foyda</span>
+                <span style="min-width:88px;font-size:11.5px;color:#166534;font-weight:500;">&#x1F4C8; Foyda</span>
                 <div style="flex:1;height:7px;background:#f0fdf4;border-radius:99px;overflow:hidden;">
                     <div style="width:${profitPct}%;height:100%;background:linear-gradient(90deg,#16a34a,#4ade80);border-radius:99px;"></div>
                 </div>
                 <span style="font-weight:700;color:#16a34a;font-size:12px;min-width:68px;text-align:right;">${fmtUsd(locProfit)}</span>
                 <span style="background:#16a34a18;color:#16a34a;font-size:10px;font-weight:700;min-width:32px;text-align:center;padding:1px 4px;border-radius:99px;">${profitPct}%</span>
             </div>`;
+            const expensePct = locTotal > 0 ? Math.round(locExpense / locTotal * 100) : 0;
+            const expenseRow = locExpense > 0 ? `<div style="display:flex;align-items:center;gap:8px;padding:4px 0 4px 30px;border-top:1px dashed #fecaca;margin-top:2px;">
+                <span style="min-width:88px;font-size:11.5px;color:#b91c1c;font-weight:500;">&#x1F4B8; Xarajat</span>
+                <div style="flex:1;height:7px;background:#fff1f2;border-radius:99px;overflow:hidden;">
+                    <div style="width:${expensePct}%;height:100%;background:linear-gradient(90deg,#b91c1c,#f87171);border-radius:99px;"></div>
+                </div>
+                <span style="font-weight:700;color:#b91c1c;font-size:12px;min-width:68px;text-align:right;">${fmtUsd(locExpense)}</span>
+                <span style="background:#fee2e218;color:#b91c1c;font-size:10px;font-weight:700;min-width:32px;text-align:center;padding:1px 4px;border-radius:99px;">${expensePct}%</span>
+            </div>` : '';
             const locTypeLabel = loc.location_type === 'warehouse'
                 ? '<span style="font-size:10px;font-weight:700;background:#16a34a;color:#fff;padding:1px 6px;border-radius:99px;margin-right:5px;">&#x1F3ED; Ombor</span>'
                 : '<span style="font-size:10px;font-weight:700;background:#1d4ed8;color:#fff;padding:1px 6px;border-radius:99px;margin-right:5px;">&#x1F3EA; Do\'kon</span>';
@@ -351,6 +361,7 @@ async function loadAll() {
                 </div>
                 ${pmRows}
                 ${profitRow}
+                ${expenseRow}
             </div>`;
         }).join('');
     } else {
@@ -366,6 +377,7 @@ async function loadAll() {
         const totalTerminal = parseFloat(pt.terminal || 0);
         const totalDebt = parseFloat(pt.debt || 0);
         const totalProfit = (chart.profits || []).reduce((a, b) => a + parseFloat(b || 0), 0);
+        const totalExpense = (stats.location_payment_breakdown || []).reduce((s, loc) => s + parseFloat(loc.expense || 0), 0);
         const totalRevenue = totalCash + totalClick + totalTerminal + totalDebt;
 
         const pmEntries = [
@@ -375,7 +387,7 @@ async function loadAll() {
             { key: 'debt', label: '📋 Nasiya', color: '#ef4444', val: totalDebt },
         ].filter(e => e.val > 0);
 
-        const maxVal = Math.max(...pmEntries.map(e => e.val), totalProfit, 0.01);
+        const maxVal = Math.max(...pmEntries.map(e => e.val), totalProfit, totalExpense, 0.01);
 
         const profitMargin = totalRevenue > 0 ? (totalProfit/totalRevenue*100).toFixed(1) : 0;
         summaryDiv.innerHTML = `
@@ -402,13 +414,21 @@ async function loadAll() {
             </div>`;
         }).join('')}
         <div style="display:flex;align-items:center;gap:8px;padding:5px 0;margin-top:6px;border-top:2px dashed #bbf7d0;">
-            <span style="min-width:95px;font-size:11.5px;color:#166534;font-weight:600;">📈 Jami foyda</span>
+            <span style="min-width:95px;font-size:11.5px;color:#166534;font-weight:600;">&#x1F4C8; Jami foyda</span>
             <div style="flex:1;height:8px;background:#f0fdf4;border-radius:99px;overflow:hidden;">
                 <div style="width:${(totalProfit/maxVal*100).toFixed(1)}%;height:100%;background:linear-gradient(90deg,#16a34a,#4ade80);border-radius:99px;"></div>
             </div>
             <span style="font-weight:800;color:#16a34a;font-size:12px;min-width:68px;text-align:right;">${fmtUsd(totalProfit)}</span>
             <span style="background:#dcfce7;color:#166534;font-size:10px;font-weight:700;min-width:28px;text-align:center;padding:1px 4px;border-radius:99px;">${profitMargin}%</span>
-        </div>`;
+        </div>
+        ${totalExpense > 0 ? `<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-top:2px dashed #fecaca;margin-top:4px;">
+            <span style="min-width:95px;font-size:11.5px;color:#b91c1c;font-weight:600;">&#x1F4B8; Jami xarajat</span>
+            <div style="flex:1;height:8px;background:#fff1f2;border-radius:99px;overflow:hidden;">
+                <div style="width:${(totalExpense/maxVal*100).toFixed(1)}%;height:100%;background:linear-gradient(90deg,#b91c1c,#f87171);border-radius:99px;"></div>
+            </div>
+            <span style="font-weight:800;color:#b91c1c;font-size:12px;min-width:68px;text-align:right;">${fmtUsd(totalExpense)}</span>
+            <span style="background:#fee2e2;color:#b91c1c;font-size:10px;font-weight:700;min-width:28px;text-align:center;padding:1px 4px;border-radius:99px;">${totalRevenue > 0 ? (totalExpense/totalRevenue*100).toFixed(0) : 0}%</span>
+        </div>` : ''}`;
     } else {
         summaryDiv.innerHTML = '<div class="hr-loading">Ma\'lumot yo\'q</div>';
     }

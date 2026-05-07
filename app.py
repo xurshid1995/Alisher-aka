@@ -11399,6 +11399,33 @@ def api_sales_history():
         ]
         location_payment_breakdown.sort(key=lambda x: x['total'], reverse=True)
 
+        # Har bir joylashuv uchun xarajatlarni qo'shish
+        try:
+            exp_q = db.session.query(
+                Expense.location_type,
+                Expense.location_id,
+                func.coalesce(func.sum(Expense.amount_usd), 0).label('total_usd')
+            ).filter(Expense.location_type.isnot(None), Expense.location_id.isnot(None))
+            if start_date and start_date.strip():
+                exp_q = exp_q.filter(Expense.expense_date >= start_date)
+            if end_date and end_date.strip():
+                exp_q = exp_q.filter(Expense.expense_date <= end_date + ' 23:59:59')
+            exp_q = exp_q.group_by(Expense.location_type, Expense.location_id)
+            exp_by_loc = {}
+            for loc_type, loc_id, total_usd in exp_q.all():
+                # loc_id'dan nom topish
+                if loc_type == 'store':
+                    obj = Store.query.get(loc_id)
+                else:
+                    obj = Warehouse.query.get(loc_id)
+                if obj:
+                    exp_by_loc[(loc_type, obj.name)] = float(total_usd)
+            for item in location_payment_breakdown:
+                item['expense'] = exp_by_loc.get((item['location_type'], item['name']), 0)
+        except Exception:
+            for item in location_payment_breakdown:
+                item['expense'] = 0
+
         # Davrdagi qarzli mijozlar ro'yxati (faqat tanlangan davrda debt_usd > 0 bo'lgan)
         Customer_alias = aliased(Customer)
         debt_customers_query = db.session.query(
