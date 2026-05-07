@@ -16636,8 +16636,8 @@ except Exception as e:
 @role_required('admin', 'kassir')
 def xarajatlar():
     """Xarajatlar sahifasi"""
-    stores = Store.query.filter_by(is_active=True).order_by(Store.name).all()
-    warehouses = Warehouse.query.filter_by(is_active=True).order_by(Warehouse.name).all()
+    stores = Store.query.order_by(Store.name).all()
+    warehouses = Warehouse.query.order_by(Warehouse.name).all()
     return render_template('xarajatlar.html', stores=stores, warehouses=warehouses)
 
 
