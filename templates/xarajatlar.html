@@ -52,8 +52,11 @@
         </div>
         <div style="display:flex; gap:8px; align-items:center;">
             <button onclick="openSettingsModal()" class="hr-btn" style="padding:7px 12px; font-size:13px; display:flex; align-items:center; gap:5px;" title="Kategoriyalarni boshqarish"><span style="font-size:15px;">⚙️</span> Kategoriya sozlamalari</button>
-            <button onclick="openAddModal()" class="hr-btn" style="background:#1a6eff; color:#fff; border-color:#1a6eff; font-weight:600; display:flex; align-items:center; gap:5px;">
+            <button onclick="openAddModal('daily')" class="hr-btn" style="background:#1a6eff; color:#fff; border-color:#1a6eff; font-weight:600; display:flex; align-items:center; gap:5px;">
                 <span style="font-size:16px; line-height:1;">+</span> Kunlik xarajat
+            </button>
+            <button onclick="openAddModal('monthly')" class="hr-btn" style="background:#059669; color:#fff; border-color:#059669; font-weight:600; display:flex; align-items:center; gap:5px;">
+                <span style="font-size:16px; line-height:1;">+</span> Oylik xarajat
             </button>
         </div>
     </div>
@@ -117,7 +120,7 @@
 <div id="addModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:1000; align-items:center; justify-content:center;">
     <div style="background:#fff; border-radius:14px; padding:26px; width:100%; max-width:480px; margin:20px; box-shadow:0 20px 60px rgba(0,0,0,0.18);">
         <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px;">
-            <h3 style="margin:0; font-size:16px; font-weight:700; color:#1a1a2e;">💸 Yangi xarajat qo'shish</h3>
+            <h3 id="add-modal-title" style="margin:0; font-size:16px; font-weight:700; color:#1a1a2e;">💸 Kunlik xarajat qo'shish</h3>
             <button onclick="closeAddModal()" style="background:none; border:none; font-size:20px; cursor:pointer; color:#aaa; line-height:1;">×</button>
         </div>
 
@@ -401,14 +404,21 @@ function onUzsInput() {
     }
 }
 
-function openAddModal() {
+function openAddModal(type) {
     document.getElementById('inp-title').value = '';
     document.getElementById('inp-usd').value = '';
     document.getElementById('inp-uzs').value = '';
     document.getElementById('inp-category').value = '';
     document.getElementById('inp-loc-type').value = '';
     document.getElementById('inp-loc-id').innerHTML = '<option value="">— Tanlang —</option>';
-    document.getElementById('inp-date').value = fmtDate(new Date());
+    const now = new Date();
+    if (type === 'monthly') {
+        document.getElementById('add-modal-title').textContent = "💸 Oylik xarajat qo'shish";
+        document.getElementById('inp-date').value = fmtDate(new Date(now.getFullYear(), now.getMonth(), 1));
+    } else {
+        document.getElementById('add-modal-title').textContent = "💸 Kunlik xarajat qo'shish";
+        document.getElementById('inp-date').value = fmtDate(now);
+    }
     document.getElementById('inp-desc').value = '';
     document.getElementById('addModal').style.display = 'flex';
     setTimeout(() => document.getElementById('inp-title').focus(), 50);
