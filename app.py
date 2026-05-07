@@ -16715,11 +16715,11 @@ def api_add_expense():
             import calendar
             year, month = map(int, data['expense_month'].split('-'))
             days_in_month = calendar.monthrange(year, month)[1]
-            # Dushanba (weekday=0) dam olish kuni - o'sha kunlarga qo'shilmaydi
+            rest_days = [int(d) for d in data.get('rest_days', [])]  # 0=Dushanba ... 6=Yakshanba
             working_days = [
                 datetime(year, month, day)
                 for day in range(1, days_in_month + 1)
-                if datetime(year, month, day).weekday() != 0  # 0 = Dushanba
+                if datetime(year, month, day).weekday() not in rest_days
             ]
             count = len(working_days)
             if count == 0:
