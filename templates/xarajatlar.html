@@ -48,12 +48,7 @@
         <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
             <span style="font-size:13px; color:#888; margin-right:2px;">Kategoriya:</span>
             <button onclick="setCategory('all')" id="cat-all" class="hr-btn hr-btn-active">Hammasi</button>
-            <button onclick="setCategory('Ijara')" id="cat-Ijara" class="hr-btn">🏠 Ijara</button>
-            <button onclick="setCategory('Maosh')" id="cat-Maosh" class="hr-btn">👷 Maosh</button>
-            <button onclick="setCategory('Kommunal')" id="cat-Kommunal" class="hr-btn">💡 Kommunal</button>
-            <button onclick="setCategory('Transport')" id="cat-Transport" class="hr-btn">🚚 Transport</button>
-            <button onclick="setCategory('Boshqa')" id="cat-Boshqa" class="hr-btn">📦 Boshqa</button>
-            <span id="custom-cat-btns"></span>
+            <span id="all-cat-btns"></span>
         </div>
         <div style="display:flex; gap:8px; align-items:center;">
             <button onclick="openSettingsModal()" class="hr-btn" style="padding:7px 12px; font-size:13px; display:flex; align-items:center; gap:5px;" title="Kategoriyalarni boshqarish"><span style="font-size:15px;">⚙️</span> Kategoriya sozlamalari</button>
@@ -108,7 +103,7 @@
 <div id="settingsModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:1002; align-items:center; justify-content:center;">
     <div style="background:#fff; border-radius:14px; padding:24px; width:100%; max-width:380px; margin:20px; box-shadow:0 20px 60px rgba(0,0,0,0.18);">
         <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
-            <h3 style="margin:0; font-size:15px; font-weight:700; color:#1a1a2e;">⚙️ Maxsus kategoriyalar</h3>
+            <h3 style="margin:0; font-size:15px; font-weight:700; color:#1a1a2e;">⚙️ Kategoriya sozlamalari</h3>
             <button onclick="closeSettingsModal()" style="background:none; border:none; font-size:22px; cursor:pointer; color:#aaa; line-height:1;">×</button>
         </div>
         <div id="settings-cat-list" style="max-height:280px; overflow-y:auto;"></div>
@@ -147,14 +142,8 @@
                 <label style="font-size:12px; font-weight:600; color:#555; display:block; margin-bottom:4px;">Kategoriya</label>
                 <select id="inp-category" style="width:100%; padding:8px 11px; border:1px solid #dde1e7; border-radius:8px; font-size:13px; box-sizing:border-box; outline:none; color:#333;">
                     <option value="">— Tanlang —</option>
-                    <option value="Ijara">🏠 Ijara</option>
-                    <option value="Maosh">👷 Maosh</option>
-                    <option value="Kommunal">💡 Kommunal</option>
-                    <option value="Transport">🚚 Transport</option>
-                    <option value="Boshqa">📦 Boshqa</option>
                 </select>
             </div>
-            <!-- custom cats injected by renderCategorySelect() -->
 
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:11px;">
                 <div>
@@ -474,26 +463,31 @@ document.getElementById('addModal').addEventListener('click', function(e) {
 });
 
 // ============ KATEGORIYA BOSHQARUVI ============
-const DEFAULT_CATS = ['Ijara','Maosh','Kommunal','Transport','Boshqa'];
 const CAT_PALETTE = ['#7c3aed','#0369a1','#b45309','#065f46','#374151',
-    '#be185d','#0891b2','#15803d','#b45309','#6d28d9','#c2410c','#0f766e'];
+    '#be185d','#0891b2','#15803d','#6d28d9','#c2410c','#0f766e','#92400e'];
+const CAT_EMOJIS = {'Ijara':'🏠','Maosh':'👷','Kommunal':'💡','Transport':'🚚','Boshqa':'📦'};
 
-let customCategories = JSON.parse(localStorage.getItem('expense_custom_cats') || '[]');
+function getAllCats() {
+    const stored = localStorage.getItem('expense_all_cats');
+    if (stored) return JSON.parse(stored);
+    return ['Ijara','Maosh','Kommunal','Transport','Boshqa'];
+}
+function saveAllCats(cats) { localStorage.setItem('expense_all_cats', JSON.stringify(cats)); }
+let allCategories = getAllCats();
+
+function getCatEmoji(name) { return CAT_EMOJIS[name] || '🏷'; }
 
 function getCatColor(name) {
-    const defaults = {'Ijara':'#7c3aed','Maosh':'#0369a1','Kommunal':'#b45309','Transport':'#065f46','Boshqa':'#374151'};
-    if (defaults[name]) return defaults[name];
-    const idx = customCategories.indexOf(name);
-    return CAT_PALETTE[(idx + 5) % CAT_PALETTE.length];
+    const idx = allCategories.indexOf(name);
+    return CAT_PALETTE[idx >= 0 ? idx % CAT_PALETTE.length : CAT_PALETTE.length - 1];
 }
 
-function renderCustomCatBtns() {
-    const container = document.getElementById('custom-cat-btns');
-    container.innerHTML = customCategories.map(cat =>
-        `<button onclick="setCategory('${escHtml(cat)}")" id="cat-${escHtml(cat)}" class="hr-btn" style="font-size:12px;">${escHtml(cat)}</button>`
+function renderCatButtons() {
+    const container = document.getElementById('all-cat-btns');
+    container.innerHTML = allCategories.map(cat =>
+        `<button onclick="setCategory('${escHtml(cat)}')" id="cat-${escHtml(cat)}" class="hr-btn" style="font-size:12px;">${getCatEmoji(cat)} ${escHtml(cat)}</button>`
     ).join('');
-    // restore active state
-    if (currentCategory !== 'all' && !DEFAULT_CATS.includes(currentCategory)) {
+    if (currentCategory !== 'all') {
         const el = document.getElementById('cat-' + currentCategory);
         if (el) el.classList.add('hr-btn-active');
     }
@@ -501,15 +495,15 @@ function renderCustomCatBtns() {
 
 function renderCategorySelect() {
     const sel = document.getElementById('inp-category');
-    // remove old custom options
-    Array.from(sel.options).forEach(o => { if (o.dataset.custom) o.remove(); });
-    customCategories.forEach(cat => {
+    const curVal = sel.value;
+    sel.innerHTML = '<option value="">— Tanlang —</option>';
+    allCategories.forEach(cat => {
         const opt = document.createElement('option');
         opt.value = cat;
-        opt.textContent = '🏷 ' + cat;
-        opt.dataset.custom = '1';
+        opt.textContent = getCatEmoji(cat) + ' ' + cat;
         sel.appendChild(opt);
     });
+    sel.value = curVal;
 }
 
 function openAddCatModal() {
@@ -525,13 +519,13 @@ function closeAddCatModal() {
 function saveNewCategory() {
     const name = document.getElementById('new-cat-input').value.trim();
     if (!name) return;
-    if (DEFAULT_CATS.includes(name) || customCategories.includes(name)) {
+    if (allCategories.includes(name)) {
         alert('Bu kategoriya allaqachon mavjud!');
         return;
     }
-    customCategories.push(name);
-    localStorage.setItem('expense_custom_cats', JSON.stringify(customCategories));
-    renderCustomCatBtns();
+    allCategories.push(name);
+    saveAllCats(allCategories);
+    renderCatButtons();
     renderCategorySelect();
     closeAddCatModal();
 }
@@ -547,24 +541,54 @@ function closeSettingsModal() {
 
 function renderSettingsList() {
     const list = document.getElementById('settings-cat-list');
-    if (customCategories.length === 0) {
-        list.innerHTML = '<div style="color:#bbb; font-size:13px; text-align:center; padding:16px;">Maxsus kategoriyalar yo\'q</div>';
+    if (allCategories.length === 0) {
+        list.innerHTML = '<div style="color:#bbb; font-size:13px; text-align:center; padding:16px;">Kategoriyalar yo\'q</div>';
         return;
     }
-    list.innerHTML = customCategories.map((cat, i) =>
-        `<div style="display:flex; align-items:center; justify-content:space-between; padding:8px 0; border-bottom:1px solid #f0f2f5;">
-            <span style="font-size:13px; font-weight:500; color:#1a1a2e;">🏷 ${escHtml(cat)}</span>
-            <button onclick="deleteCustomCat(${i})" style="background:#fff0f0; color:#e53e3e; border:1px solid #fee2e2; border-radius:6px; padding:3px 10px; font-size:12px; cursor:pointer;">O'chirish</button>
+    list.innerHTML = allCategories.map((cat, i) =>
+        `<div id="cat-row-${i}" style="display:flex; align-items:center; gap:8px; padding:8px 0; border-bottom:1px solid #f0f2f5;">
+            <span style="flex:1; font-size:13px; font-weight:500; color:#1a1a2e;">${getCatEmoji(cat)} ${escHtml(cat)}</span>
+            <button onclick="startEditCat(${i})" style="background:#f0f7ff; color:#1a6eff; border:1px solid #c7d9ff; border-radius:6px; padding:3px 9px; font-size:12px; cursor:pointer;">✏️ Tahrirlash</button>
+            <button onclick="deleteCat(${i})" style="background:#fff0f0; color:#e53e3e; border:1px solid #fee2e2; border-radius:6px; padding:3px 9px; font-size:12px; cursor:pointer;">🗑 O'chirish</button>
         </div>`
     ).join('');
 }
 
-function deleteCustomCat(idx) {
-    const name = customCategories[idx];
-    customCategories.splice(idx, 1);
-    localStorage.setItem('expense_custom_cats', JSON.stringify(customCategories));
+function startEditCat(i) {
+    const row = document.getElementById('cat-row-' + i);
+    const cat = allCategories[i];
+    row.innerHTML =
+        `<input type="text" id="edit-inp-${i}" value="${escHtml(cat)}" style="flex:1; padding:6px 10px; border:1px solid #1a6eff; border-radius:8px; font-size:13px; outline:none;" onkeydown="if(event.key==='Enter')saveEditCat(${i}); if(event.key==='Escape')renderSettingsList();">
+        <button onclick="saveEditCat(${i})" style="background:#1a6eff; color:#fff; border:1px solid #1a6eff; border-radius:6px; padding:3px 10px; font-size:12px; cursor:pointer; font-weight:700;">Saqlash</button>
+        <button onclick="renderSettingsList()" style="background:#f5f5f5; color:#555; border:1px solid #dde1e7; border-radius:6px; padding:3px 10px; font-size:12px; cursor:pointer;">Bekor</button>`;
+    document.getElementById('edit-inp-' + i).focus();
+    document.getElementById('edit-inp-' + i).select();
+}
+
+function saveEditCat(i) {
+    const newName = document.getElementById('edit-inp-' + i).value.trim();
+    if (!newName) return;
+    const oldName = allCategories[i];
+    if (newName !== oldName && allCategories.includes(newName)) {
+        alert('Bu nom allaqachon mavjud!');
+        return;
+    }
+    allCategories[i] = newName;
+    if (CAT_EMOJIS[oldName]) { CAT_EMOJIS[newName] = CAT_EMOJIS[oldName]; delete CAT_EMOJIS[oldName]; }
+    saveAllCats(allCategories);
+    if (currentCategory === oldName) currentCategory = newName;
+    renderCatButtons();
+    renderCategorySelect();
+    renderSettingsList();
+}
+
+function deleteCat(i) {
+    const name = allCategories[i];
+    if (!confirm('"' + name + '" kategoriyasini o\'chirishni tasdiqlaysizmi?')) return;
+    allCategories.splice(i, 1);
+    saveAllCats(allCategories);
     if (currentCategory === name) { currentCategory = 'all'; loadExpenses(); }
-    renderCustomCatBtns();
+    renderCatButtons();
     renderCategorySelect();
     renderSettingsList();
 }
@@ -580,7 +604,7 @@ document.getElementById('new-cat-input').addEventListener('keydown', function(e)
 });
 
 // init
-renderCustomCatBtns();
+renderCatButtons();
 renderCategorySelect();
 setPeriod('today');
 </script>
