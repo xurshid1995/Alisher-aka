@@ -11411,6 +11411,13 @@ def api_sales_history():
                 exp_q = exp_q.filter(Expense.expense_date >= start_date)
             if end_date and end_date.strip():
                 exp_q = exp_q.filter(Expense.expense_date <= end_date + ' 23:59:59')
+            if location_filter and location_filter != 'all':
+                if location_filter.startswith('store_'):
+                    _loc_id = int(location_filter.replace('store_', ''))
+                    exp_q = exp_q.filter(Expense.location_type == 'store', Expense.location_id == _loc_id)
+                elif location_filter.startswith('warehouse_'):
+                    _loc_id = int(location_filter.replace('warehouse_', ''))
+                    exp_q = exp_q.filter(Expense.location_type == 'warehouse', Expense.location_id == _loc_id)
             exp_q = exp_q.group_by(Expense.location_type, Expense.location_id)
             exp_by_loc = {}
             for loc_type, loc_id, total_usd in exp_q.all():
@@ -11443,6 +11450,13 @@ def api_sales_history():
                 all_exp_q = all_exp_q.filter(Expense.expense_date >= start_date)
             if end_date and end_date.strip():
                 all_exp_q = all_exp_q.filter(Expense.expense_date <= end_date + ' 23:59:59')
+            if location_filter and location_filter != 'all':
+                if location_filter.startswith('store_'):
+                    _loc_id = int(location_filter.replace('store_', ''))
+                    all_exp_q = all_exp_q.filter(Expense.location_type == 'store', Expense.location_id == _loc_id)
+                elif location_filter.startswith('warehouse_'):
+                    _loc_id = int(location_filter.replace('warehouse_', ''))
+                    all_exp_q = all_exp_q.filter(Expense.location_type == 'warehouse', Expense.location_id == _loc_id)
             total_expense_all = float(all_exp_q.scalar() or 0)
         except Exception:
             for item in location_payment_breakdown:
