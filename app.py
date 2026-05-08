@@ -7226,6 +7226,16 @@ def api_low_stock_alerts():
         return jsonify({'success': True, 'items': []})
 
 
+@app.route('/api/notifications/dismiss', methods=['POST'])
+@role_required('admin', 'kassir', 'sotuvchi', 'ombor_xodimi')
+def dismiss_notifications():
+    """Bildirishnomalarni o'qildi deb belgilash — Flask session ga saqlanadi"""
+    import time
+    session['notif_dismissed_at'] = int(time.time() * 1000)  # ms timestamp
+    session.modified = True
+    return jsonify({'success': True})
+
+
 @app.route('/api/debts/paid')
 @role_required('admin', 'kassir', 'sotuvchi')
 def api_paid_debts():
