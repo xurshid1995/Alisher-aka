@@ -3331,9 +3331,20 @@ def api_batch_products():
             created_count += 1
 
         db.session.commit()
+
+        # saved_products ro'yxatini qaytarish (rasm upload uchun)
+        saved_list = []
+        for p_data in products_data:
+            prod = Product.query.filter_by(
+                name=p_data.get('name'), barcode=p_data.get('barcode')
+            ).order_by(Product.id.desc()).first()
+            if prod:
+                saved_list.append({'id': prod.id, 'name': prod.name})
+
         return jsonify({
             'success': True,
             'created': created_count,
+            'saved_products': saved_list,
             'message': f'{created_count} ta mahsulot muvaffaqiyatli qo\'shildi'
         }), 201
 

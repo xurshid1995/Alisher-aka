@@ -270,17 +270,32 @@ optgroup option { font-weight: normal; color: #1e293b; }
                         </div>
                     </div>
 
-                    <!-- Kategoriya -->
-                    <div class="ap-form-group">
-                        <label class="ap-label" for="category_id">Kategoriya</label>
-                        <div style="display:flex; gap:6px; align-items:center;">
-                            <select id="category_id" name="category_id" class="ap-input" style="flex:1;">
-                                <option value="">— Kategoriyasiz —</option>
-                            </select>
-                            <button type="button" onclick="openAddCategoryModal()"
-                                    style="padding:8px 12px; background:#6366f1; color:white; border:none; border-radius:8px; cursor:pointer; font-size:13px; white-space:nowrap;" title="Yangi kategoriya qo'shish">
-                                <i class="fas fa-plus"></i>
-                            </button>
+                    <!-- Kategoriya va Rasm -->
+                    <div class="ap-row ap-row-2col">
+                        <div class="ap-form-group">
+                            <label class="ap-label" for="category_id">Kategoriya</label>
+                            <div style="display:flex; gap:6px; align-items:center;">
+                                <select id="category_id" name="category_id" class="ap-input" style="flex:1;">
+                                    <option value="">— Kategoriyasiz —</option>
+                                </select>
+                                <button type="button" onclick="openAddCategoryModal()"
+                                        style="padding:8px 12px; background:#6366f1; color:white; border:none; border-radius:8px; cursor:pointer; font-size:13px; white-space:nowrap;" title="Yangi kategoriya qo'shish">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="ap-form-group">
+                            <label class="ap-label">Mahsulot rasmi</label>
+                            <div style="display:flex; gap:8px; align-items:center;">
+                                <label for="product_image" style="display:flex; align-items:center; gap:6px; padding:8px 14px; background:#f1f5f9; border:1.5px dashed #94a3b8; border-radius:8px; cursor:pointer; font-size:13px; color:#475569; flex:1; justify-content:center;">
+                                    <i class="fas fa-camera"></i> Rasm tanlang
+                                    <input type="file" id="product_image" accept="image/*" style="display:none;" onchange="previewProductImage(this)">
+                                </label>
+                                <div id="imagePreviewWrap" style="display:none; position:relative;">
+                                    <img id="imagePreview" src="" alt="" style="width:48px;height:48px;object-fit:cover;border-radius:8px;border:1px solid #e2e8f0;">
+                                    <button type="button" onclick="clearProductImage()" style="position:absolute;top:-6px;right:-6px;width:18px;height:18px;background:#ef4444;color:white;border:none;border-radius:50%;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -1646,6 +1661,8 @@ optgroup option { font-weight: normal; color: #1e293b; }
             const unitType = document.getElementById('unit_type').value;
             const categoryId = document.getElementById('category_id').value || null;
             const categoryName = categoryId ? document.getElementById('category_id').selectedOptions[0].text : null;
+            const imageInput = document.getElementById('product_image');
+            const imageFile = (imageInput && imageInput.files && imageInput.files[0]) ? imageInput.files[0] : null;
             // Tan narx maydonidagi qiymatni olish (bu ortacha narx bo'lishi mumkin)
             const costPriceFromField = parseFloat(document.getElementById('cost_price').value);
             const sellPrice = parseFloat(document.getElementById('sell_price').value);
@@ -1739,7 +1756,8 @@ optgroup option { font-weight: normal; color: #1e293b; }
                 profit: sellPrice - finalCostPrice,
                 total_value: finalCostPrice * quantity,
                 categoryId: categoryId,
-                categoryName: categoryName
+                categoryName: categoryName,
+                _imageFile: imageFile
             };
             
             console.log('📦 Yaratilgan mahsulot:', product);
@@ -1881,6 +1899,22 @@ optgroup option { font-weight: normal; color: #1e293b; }
         }
 
         // Formani tozalash
+        function previewProductImage(input) {
+            const wrap = document.getElementById('imagePreviewWrap');
+            const img = document.getElementById('imagePreview');
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = e => { img.src = e.target.result; wrap.style.display = 'block'; };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function clearProductImage() {
+            document.getElementById('product_image').value = '';
+            document.getElementById('imagePreview').src = '';
+            document.getElementById('imagePreviewWrap').style.display = 'none';
+        }
+
         function clearForm() {
             // Joylashuvni saqlab qolish
             const savedLocation = document.getElementById('location').value;
@@ -1893,6 +1927,9 @@ optgroup option { font-weight: normal; color: #1e293b; }
             document.getElementById('searchResult').style.display = 'none';
             document.getElementById('priceComparison').style.display = 'none';
             document.getElementById('profitDisplay').style.display = 'none';
+            
+            // Rasmni tozalash
+            clearProductImage();
             
             // Global o'zgaruvchilarni tozalash
             selectedProductData = null;
@@ -2085,6 +2122,19 @@ optgroup option { font-weight: normal; color: #1e293b; }
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
+                    // Rasmli mahsulotlar uchun upload
+                    const productsWithImages = tempProducts.filter(p => p._imageFile);
+                    if (data.saved_products && productsWithImages.length > 0) {
+                        productsWithImages.forEach((p, idx) => {
+                            const saved = data.saved_products[idx];
+                            if (saved && saved.id) {
+                                const fd = new FormData();
+                                fd.append('image', p._imageFile);
+                                fetch(`/api/products/${saved.id}/image`, { method: 'POST', body: fd })
+                                    .catch(() => {});
+                            }
+                        });
+                    }
                     alert(APLANG.all_products_saved);
                     deletePendingBatch();
                     tempProducts = [];
