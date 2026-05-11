@@ -230,6 +230,7 @@
     .em-grid .em-group.col-6 { grid-column: span 10; }
     .em-grid .em-group.col-2 { grid-column: span 8; }
     .em-grid .em-group.col-1 { grid-column: span 1; }
+    .em-grid .em-group.em-half-mob { grid-column: span 5; }
 }
 .em-group { display: flex; flex-direction: column; gap: 5px; }
 .em-group.full { grid-column: 1 / -1; }
@@ -485,11 +486,11 @@
                     <label class="em-label">{{ t('sd_th_sell') }}</label>
                     <input type="number" class="em-input" id="em-sellPrice" min="0" step="0.01" required oninput="emUpdateProfit()">
                 </div>
-                <div class="em-group full">
+                <div class="em-group full em-half-mob">
                     <label class="em-label">{{ t('sd_th_unit_profit') }}</label>
                     <div class="em-profit" id="em-profitDisplay">$0.00 (0.0%)</div>
                 </div>
-                <div class="em-group full">
+                <div class="em-group full em-half-mob">
                     <label class="em-label">Kategoriya</label>
                     <select class="em-input" id="em-category">
                         <option value="">— Kategoriyasiz —</option>
