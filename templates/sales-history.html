@@ -1442,9 +1442,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Compact view toggle
     initializeCompactView();
     
-    // Qidiruv maydoniga avtomatik fokus
+    // Qidiruv maydoniga avtomatik fokus (faqat desktop)
     const searchInput = document.getElementById('searchInput');
-    if (searchInput) {
+    if (searchInput && window.innerWidth > 768 && !('ontouchstart' in window)) {
         setTimeout(() => searchInput.focus(), 100);
     }
 });
