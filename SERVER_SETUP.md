@@ -1,8 +1,8 @@
-﻿# Server Setup - 164.92.177.172 (www.sergeli0606.uz)
+﻿# Server Setup - 207.154.225.70 (www.207.154.225.70)
 
 ## 1. Server'ga kirish
 ```bash
-ssh root@164.92.177.172
+ssh root@207.154.225.70
 ```
 
 ## 2. Tizimni yangilash
@@ -72,8 +72,8 @@ SESSION_COOKIE_HTTPONLY=True
 SESSION_COOKIE_SAMESITE=None
 
 # Server
-SERVER_IP=164.92.177.172
-DOMAIN=www.sergeli0606.uz
+SERVER_IP=207.154.225.70
+DOMAIN=www.207.154.225.70
 
 # Gunicorn
 WORKERS=4
@@ -160,7 +160,7 @@ sudo systemctl restart nginx
 ## 11. SSL sertifikatni o'rnatish (Let's Encrypt)
 ```bash
 # Certbot bilan SSL o'rnatish
-sudo certbot --nginx -d sergeli0606.uz -d www.sergeli0606.uz
+sudo certbot --nginx -d 207.154.225.70 -d www.207.154.225.70
 ```
 
 Savollar:
@@ -211,7 +211,7 @@ tail -f /var/www/alisher/logs/error.log
 tail -f /var/www/alisher/logs/access.log
 
 # Brauzerda ochish
-# https://www.sergeli0606.uz
+# https://www.207.154.225.70
 ```
 
 ## Troubleshooting
@@ -299,6 +299,6 @@ cd /var/www/alisher && git pull && sudo systemctl restart alisher.service
 
 ## Support
 
-Server: 164.92.177.172
-Domain: www.sergeli0606.uz
+Server: 207.154.225.70
+Domain: www.207.154.225.70
 Location: DigitalOcean Frankfurt

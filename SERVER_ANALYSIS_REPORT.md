@@ -1,5 +1,5 @@
 ﻿# 🎯 SERVER CAPACITY ANALYSIS REPORT
-## Server: 164.92.177.172
+## Server: 207.154.225.70
 ## Question: 5 ta do'kon + 5 ta sklad boshqara oladimi?
 
 ---
@@ -167,16 +167,16 @@ Issue:    2GB RAM uchun optimallashtirilmagan
 ### 🔴 CRITICAL (Darhol qiling):
 1. ✅ **PostgreSQL Optimization**
    ```bash
-   scp postgresql_optimization_2gb.sql root@164.92.177.172:/tmp/
-   ssh root@164.92.177.172
+   scp postgresql_optimization_2gb.sql root@207.154.225.70:/tmp/
+   ssh root@207.154.225.70
    sudo -u postgres psql -d alisher_db -f /tmp/postgresql_optimization_2gb.sql
    sudo systemctl restart postgresql
    ```
 
 2. ✅ **Monitoring Setup**
    ```bash
-   scp server_monitoring.sh root@164.92.177.172:/root/
-   ssh root@164.92.177.172 "chmod +x /root/server_monitoring.sh"
+   scp server_monitoring.sh root@207.154.225.70:/root/
+   ssh root@207.154.225.70 "chmod +x /root/server_monitoring.sh"
    ```
 
 ### 🟡 RECOMMENDED (1 hafta ichida):
@@ -371,7 +371,7 @@ DB connections >20       → Normal, monitor
 
 **Analysis Date:** 2026-02-06  
 **Analyst:** GitHub Copilot  
-**Server:** 164.92.177.172  
+**Server:** 207.154.225.70  
 **Status:** ✅ **APPROVED FOR 5 STORES + 5 WAREHOUSES**
 
 ---

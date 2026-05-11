@@ -2,7 +2,7 @@
 -- HOSTING TO'LOV TIZIMI TABLOLARI
 -- ============================================
 -- Yaratilgan: 2026-03-02
--- Ishlatish: psql -U postgres -d sayt_db -f migrations/create_hosting_tables.sql
+-- Ishlatish: psql -U postgres -d alisher_db -f migrations/create_hosting_tables.sql
 
 -- 1. Hosting mijozlar
 CREATE TABLE IF NOT EXISTS hosting_clients (

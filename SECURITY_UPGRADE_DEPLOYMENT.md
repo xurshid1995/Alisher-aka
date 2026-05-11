@@ -140,7 +140,7 @@ tail -f logs/error.log | grep "SLOW API\|completed in"
 
 ```bash
 # PostgreSQL'ga kirish
-sudo -u postgres psql sayt_db
+sudo -u postgres psql alisher_db
 
 # api_operations jadvalini ko'rish
 SELECT * FROM api_operations ORDER BY created_at DESC LIMIT 10;
@@ -195,7 +195,7 @@ crontab -e
 **Yechim:**
 ```bash
 # Qo'lda jadval yaratish
-sudo -u postgres psql sayt_db < create_api_operations_table.sql
+sudo -u postgres psql alisher_db < create_api_operations_table.sql
 ```
 
 ### Muammo 2: Decorator import xatosi

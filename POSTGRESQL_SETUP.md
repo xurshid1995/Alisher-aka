@@ -47,7 +47,7 @@ Parolni kiriting va ulanishni tekshiring.
 
 **psql orqali:**
 ```sql
-CREATE DATABASE sayt_db;
+CREATE DATABASE alisher_db;
 \l  -- barcha ma'lumotlar bazalarini ko'rish
 \q  -- chiqish
 ```
@@ -59,7 +59,7 @@ python create_postgres_db.py
 
 ### 6. .env faylini yangilash:
 ```env
-DATABASE_URL=postgresql://postgres:SIZNING_PAROLINGIZ@localhost:5432/sayt_db
+DATABASE_URL=postgresql://postgres:SIZNING_PAROLINGIZ@localhost:5432/alisher_db
 ```
 
 ### 7. Keng tarqalgan muammolar:

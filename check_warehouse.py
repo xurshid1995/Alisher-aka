@@ -5,9 +5,9 @@ import os
 conn = psycopg2.connect(
     host='207.154.225.70',
     port=5432,
-    database='sayt_db',
-    user='postgres',
-    password='postgres'
+    database='alisher_db',
+    user='alisher_user',
+    password='teleport7799'
 )
 cur = conn.cursor()
 

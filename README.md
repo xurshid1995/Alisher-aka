@@ -46,13 +46,13 @@ pip install -r requirements.txt
 # https://www.postgresql.org/download/windows/
 
 # Ma'lumotlar bazasi yaratish
-createdb sayt_db
+createdb alisher_db
 ```
 
 ### 4. Environment variables o'rnatish:
 `.env` faylini tahrirlang:
 ```env
-DATABASE_URL=postgresql://username:password@localhost:5432/sayt_db
+DATABASE_URL=postgresql://username:password@localhost:5432/alisher_db
 SECRET_KEY=your-very-secret-key-here
 FLASK_ENV=development
 FLASK_DEBUG=True

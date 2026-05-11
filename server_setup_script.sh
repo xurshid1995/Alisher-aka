@@ -103,7 +103,7 @@ cat > /etc/nginx/sites-available/alisher <<NGINXEOF
 server {
     listen 80;
     listen [::]:80;
-    server_name sergeli0606.uz www.sergeli0606.uz 207.154.225.70;
+    server_name 207.154.225.70 www.207.154.225.70 207.154.225.70;
 
     client_max_body_size 10M;
 
