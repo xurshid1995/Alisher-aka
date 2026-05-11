@@ -527,8 +527,8 @@
                 if (!res.ok) return;
                 const data = await res.json();
 
-                const groupName = data.telegram_group_name || 'DiamondCarAccesories';
-                const groupLink = data.telegram_group_link || 'https://t.me/DiamondCarAccesories';
+                const groupName = data.telegram_group_name || 'AllonAvto';
+                const groupLink = data.telegram_group_link || 'https://t.me/AllonAvto';
                 const botName   = data.telegram_bot_name  || '@SMShisobot_bot';
                 const botLink   = data.telegram_bot_link  || 'https://t.me/SMShisobot_bot';
 
@@ -953,14 +953,14 @@
             <button onclick="document.getElementById('qrModal').style.display='none'" style="position:absolute; top:10px; right:14px; background:none; border:none; font-size:22px; cursor:pointer; color:#999; line-height:1;">&times;</button>
             <div style="margin-bottom:16px;">
                 <img src="https://img.icons8.com/fluency/120/telegram-app.png" alt="Telegram" style="width:48px; height:48px;">
-                <h3 id="modal-group-name" style="margin:8px 0 4px; color:#333; font-size:18px;">DiamondCarAccesories</h3>
+                <h3 id="modal-group-name" style="margin:8px 0 4px; color:#333; font-size:18px;">AllonAvto</h3>
                 <p style="color:#888; font-size:13px; margin:0;">{{ t('qr_scan_channel') }}</p>
             </div>
             <div style="background:#f8f9fa; border-radius:12px; padding:20px; display:inline-block;">
-                <img id="modal-group-qr" src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://t.me/DiamondCarAccesories&color=000000&bgcolor=f8f9fa" alt="QR Code" style="width:200px; height:200px; display:block;">
+                <img id="modal-group-qr" src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://t.me/AllonAvto&color=000000&bgcolor=f8f9fa" alt="QR Code" style="width:200px; height:200px; display:block;">
             </div>
             <div style="margin-top:16px;">
-                <a id="modal-group-btn" href="https://t.me/DiamondCarAccesories" target="_blank" style="display:inline-block; background:#0088cc; color:white; padding:10px 24px; border-radius:8px; text-decoration:none; font-size:14px; font-weight:500; transition:background 0.2s;" onmouseover="this.style.background='#006da3'" onmouseout="this.style.background='#0088cc'">{{ t('open_telegram') }}</a>
+                <a id="modal-group-btn" href="https://t.me/AllonAvto" target="_blank" style="display:inline-block; background:#0088cc; color:white; padding:10px 24px; border-radius:8px; text-decoration:none; font-size:14px; font-weight:500; transition:background 0.2s;" onmouseover="this.style.background='#006da3'" onmouseout="this.style.background='#0088cc'">{{ t('open_telegram') }}</a>
             </div>
         </div>
     </div>

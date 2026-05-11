@@ -15305,8 +15305,8 @@ def get_settings():
             'auto_currency_update': False,
             'auto_backup': False,
             'default_reminder_time': '10:00',  # Qarz eslatma default vaqti
-            'telegram_group_name': 'DiamondCarAccesories',
-            'telegram_group_link': 'https://t.me/DiamondCarAccesories',
+            'telegram_group_name': 'AllonAvto',
+            'telegram_group_link': 'https://t.me/AllonAvto',
             'telegram_bot_name': '@SMShisobot_bot',
             'telegram_bot_link': 'https://t.me/SMShisobot_bot',
         }

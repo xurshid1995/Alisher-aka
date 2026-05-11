@@ -338,7 +338,7 @@ def generate_sale_receipt_pdf(
             box_size=10,
             border=1,
         )
-        qr.add_data('https://t.me/DIAMONDCARAccesories')
+        qr.add_data('https://t.me/AllonAvto')
         qr.make(fit=True)
 
         # QR code rasmini yaratish
@@ -359,11 +359,11 @@ def generate_sale_receipt_pdf(
 
         # QR code ostida matn
         c.setFont("Helvetica", 6)
-        c.drawCentredString(page_width/2, y, "Telegram: @DIAMONDCARAccesories")
+        c.drawCentredString(page_width/2, y, "Telegram: @AllonAvto")
     except Exception as e:
         # QR code xato bo'lsa, oddiy matn qo'shish
         c.setFont("Helvetica", 6)
-        c.drawCentredString(page_width/2, y, "Telegram: @DIAMONDCARAccesories")
+        c.drawCentredString(page_width/2, y, "Telegram: @AllonAvto")
         y -= 3*mm
 
     # PDF ni saqlash
