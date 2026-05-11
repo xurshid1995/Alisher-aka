@@ -270,6 +270,12 @@
     .ps-stats { grid-template-columns: repeat(2, 1fr); gap: 12px; }
     .ps-stat-card { padding: 14px 12px; }
     .ps-stat-number { font-size: 1.2rem; }
+    .ps-filter-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; }
+    .ps-search-box { grid-column: 1; }
+    #product-count-badge { grid-column: 2; align-self: center; }
+    #category-filter { grid-column: 1; }
+    #status-filter { grid-column: 2; }
+    .ps-excel-btn { grid-column: 1 / -1; }
 }
 @media (max-width: 480px) {
     .ps-page { padding: 10px; }
