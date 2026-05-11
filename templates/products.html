@@ -343,6 +343,12 @@
                 <button id="clearSearch" class="ps-clear-btn" style="display: none;"><i class="fas fa-times"></i></button>
             </div>
             <div class="ps-filter-group">
+                <label>Kategoriya</label>
+                <select id="categorySelect" onchange="filterByCategorySelect(this)" class="ps-input" style="min-width:180px;">
+                    <option value="all">Barchasi</option>
+                </select>
+            </div>
+            <div class="ps-filter-group">
                 <label>{{ t('header_status') }}</label>
                 <select id="statusFilter" class="ps-input">
                     <option value="all">{{ t('status_all') }}</option>
@@ -355,15 +361,6 @@
                 <label>{{ t('header_location') }}</label>
                 <div class="location-buttons" id="locationButtons">
                     <button class="location-button active" data-location="all">{{ t('location_all') }}</button>
-                </div>
-            </div>
-        </div>
-        <!-- Kategoriya filtri -->
-        <div class="ps-filter-row" style="margin-top:10px;">
-            <div class="ps-filter-group" style="width:100%;">
-                <label>Kategoriya</label>
-                <div class="location-buttons" id="categoryButtons">
-                    <button class="location-button active" data-category="all" onclick="filterByCategory(this, 'all')">Barchasi</button>
                 </div>
             </div>
         </div>
@@ -1250,23 +1247,23 @@
             .then(r => r.json())
             .then(data => {
                 if (!data.success) return;
-                const container = document.getElementById('categoryButtons');
+                const sel = document.getElementById('categorySelect');
                 data.categories.forEach(cat => {
-                    const btn = document.createElement('button');
-                    btn.className = 'location-button';
-                    btn.dataset.category = cat.id;
-                    btn.textContent = cat.name;
-                    btn.style.borderColor = cat.color;
-                    btn.onclick = function() { filterByCategory(this, cat.id); };
-                    container.appendChild(btn);
+                    const opt = document.createElement('option');
+                    opt.value = cat.id;
+                    opt.textContent = cat.name;
+                    sel.appendChild(opt);
                 });
             })
             .catch(() => {});
     }
 
+    function filterByCategorySelect(sel) {
+        currentCategory = sel.value;
+        loadProducts(1, currentSearch, currentLocation);
+    }
+
     function filterByCategory(btn, categoryId) {
-        document.querySelectorAll('#categoryButtons .location-button').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
         currentCategory = categoryId;
         loadProducts(1, currentSearch, currentLocation);
     }
