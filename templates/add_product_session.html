@@ -2672,32 +2672,44 @@ optgroup option { font-weight: normal; color: #1e293b; }
                         return;
                     }
                     list.innerHTML = _catSettingsData.map(cat => `
-                        <div style="display:flex;align-items:center;gap:10px;padding:10px 8px;border-bottom:1px solid #f1f5f9;">
+                        <div id="cat-row-${cat.id}" style="display:flex;align-items:center;gap:10px;padding:10px 8px;border-bottom:1px solid #f1f5f9;">
                             <div style="width:14px;height:14px;border-radius:50%;background:${cat.color};flex-shrink:0;"></div>
                             <span style="flex:1;font-size:14px;color:#1e293b;font-weight:500;">${cat.name}</span>
-                            <button type="button" onclick="openEditCategoryForm(${cat.id},'${cat.name.replace(/'/g,"\\'")}','${cat.color}')"
-                                style="padding:5px 12px;background:#eff6ff;color:#3b82f6;border:1px solid #bfdbfe;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;">
-                                ✏️ Tahrirlash
-                            </button>
-                            <button type="button" onclick="deleteCategoryItem(${cat.id},'${cat.name.replace(/'/g,"\\'")}',this)"
-                                style="padding:5px 12px;background:#fff1f2;color:#ef4444;border:1px solid #fecaca;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;">
-                                🗑 O'chirish
-                            </button>
+                            <div id="cat-actions-${cat.id}" style="display:flex;gap:6px;align-items:center;">
+                                <button type="button" onclick="openEditCategoryForm(${cat.id},'${cat.name.replace(/'/g,"\\'")}','${cat.color}')"
+                                    style="padding:5px 12px;background:#eff6ff;color:#3b82f6;border:1px solid #bfdbfe;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;">
+                                    ✏️ Tahrirlash
+                                </button>
+                                <button type="button" onclick="catDeleteConfirm(${cat.id},'${cat.name.replace(/'/g,"\\'")}',this)"
+                                    style="padding:5px 12px;background:#fff1f2;color:#ef4444;border:1px solid #fecaca;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;">
+                                    🗑 O'chirish
+                                </button>
+                            </div>
                         </div>`).join('');
                 })
                 .catch(() => {});
         }
 
-        function deleteCategoryItem(id, name, btn) {
-            if (!confirm(`"${name}" kategoriyasini o'chirmoqchimisiz?\nBu kategoriyaga bog'liq mahsulotlar kategoriyasiz qoladi.`)) return;
+        function catDeleteConfirm(id, name, btn) {
+            const actDiv = document.getElementById('cat-actions-' + id);
+            const safeName = name.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+            actDiv.innerHTML =
+                '<span style="font-size:12px;color:#ef4444;font-weight:600;white-space:nowrap;">O\'chirasizmi?</span>' +
+                '<button type="button" onclick="deleteCategoryItem(' + id + ',this)" ' +
+                    'style="padding:5px 10px;background:#ef4444;color:white;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;">Ha ✓</button>' +
+                '<button type="button" onclick="renderCatSettingsList()" ' +
+                    'style="padding:5px 10px;background:#f1f5f9;color:#475569;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;">Yo\'q</button>';
+        }
+
+        function deleteCategoryItem(id, btn) {
             btn.disabled = true;
             fetch(`/api/categories/${id}`, { method: 'DELETE', headers: {'X-CSRFToken': getCSRFToken()} })
                 .then(r => r.json())
                 .then(data => {
                     if (data.success) { renderCatSettingsList(); loadCategories(); }
-                    else { alert(data.error || 'Xatolik'); btn.disabled = false; }
+                    else { alert(data.error || 'Xatolik'); renderCatSettingsList(); }
                 })
-                .catch(() => { btn.disabled = false; });
+                .catch(() => { renderCatSettingsList(); });
         }
 
         // ── Kategoriya qo'shish / tahrirlash modal ────────────────────
