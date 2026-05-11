@@ -4566,7 +4566,7 @@
             return;
         }
         
-        tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 30px; color: #999;">' + SLANG.searching + '</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 30px; color: #999;">' + SLANG.searching + '</td></tr>';
         
         try {
             // Serverdan qidiruv so'rovi yuborish
@@ -4578,7 +4578,7 @@
             const products = Array.isArray(data) ? data : (data.products || []);
             
             if (products.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 30px; color: #999;">' + SLANG.search_no_results + '</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 30px; color: #999;">' + SLANG.search_no_results + '</td></tr>';
                 console.log(`? "${searchText}" bo'yicha mahsulot topilmadi`);
                 return;
             }
@@ -4639,17 +4639,23 @@
                 const cursorStyle = quantity <= 0 ? 'not-allowed' : 'pointer';
                 const opacity = quantity <= 0 ? '0.8' : '1';
                 
+                const imgHtml = product.image_url
+                    ? `<img src="${product.image_url}" class="spt-img" alt="" loading="lazy" onclick="openSptLightbox(this.src)" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+                       <div class="spt-img-placeholder" style="display:none;">📦</div>`
+                    : `<div class="spt-img-placeholder">📦</div>`;
+
                 row.innerHTML = `
-                    <td style="padding: 12px 8px; font-size: 16px; color: #333;" data-original-text="${htmlSafeProductName}" title="${htmlSafeProductName}">${highlightedName}${fuzzyBadge}</td>
-                    <td style="padding: 12px 8px; text-align: left; font-size: 14px;">
-                        <span style="background: ${quantityBadgeColor}; color: white; padding: 1px 4px; border-radius: 0; font-weight: 500; display: inline-block; font-size: 10px;">${quantity}</span>
+                    <td>${imgHtml}</td>
+                    <td style="padding: 6px 8px; font-size: 16px; color: #333;" data-original-text="${htmlSafeProductName}" title="${htmlSafeProductName}">${highlightedName}${fuzzyBadge}</td>
+                    <td style="padding: 6px 8px; text-align: left; font-size: 14px;">
+                        <span style="background: ${quantityBadgeColor}; color: white; padding: 1px 4px; border-radius: 0; font-weight: 500; display: inline-block; font-size: 12px;">${quantity}</span>
                     </td>
-                    <td style="padding: 12px 8px; text-align: left; font-size: 14px;">
-                        <span style="background: #ffc107; color: white; padding: 1px 4px; border-radius: 0; font-weight: 500; margin-right: 3px; display: inline-block; font-size: 10px;">$${formatPrice(sellingPrice)}</span>
-                        <span style="background: #5cb3ff; color: white; padding: 1px 4px; border-radius: 0; font-weight: 500; display: inline-block; font-size: 10px;">${formatPrice(sellingPrice * exchangeRate)} so'm</span>
+                    <td style="padding: 6px 8px; text-align: left; font-size: 14px;">
+                        <span style="background: #ffc107; color: white; padding: 1px 4px; border-radius: 0; font-weight: 500; margin-right: 3px; display: inline-block; font-size: 12px;">$${formatPrice(sellingPrice)}</span>
+                        <span style="background: #5cb3ff; color: white; padding: 1px 4px; border-radius: 0; font-weight: 500; display: inline-block; font-size: 12px;">${formatPrice(sellingPrice * exchangeRate)} so'm</span>
                     </td>
                     <td style="padding: 2px; text-align: center; font-size: 14px;">
-                        <button class="add-to-cart-btn" data-product-id="${product.id}" data-product-name="${htmlSafeProductName}" data-quantity="${quantity}" data-price="${sellingPrice}" data-cost-price="${costPrice}" ${buttonDisabled} style="background: transparent; color: #333; border: none; padding: 4px 8px; cursor: ${cursorStyle}; font-size: 18px; opacity: ${opacity};">${buttonEmoji}</button>
+                        <button class="add-to-cart-btn" data-product-id="${product.id}" data-product-name="${htmlSafeProductName}" data-quantity="${quantity}" data-price="${sellingPrice}" data-cost-price="${costPrice}" data-unit-type="${product.unit_type || 'dona'}" data-image-url="${product.image_url || ''}" ${buttonDisabled} style="background: transparent; color: #333; border: none; padding: 4px 8px; cursor: ${cursorStyle}; font-size: 18px; opacity: ${opacity};">${buttonEmoji}</button>
                     </td>
                 `;
                 
@@ -4668,7 +4674,7 @@
             updateVisibleProductRows();
         } catch (error) {
             console.error('Qidirishda xatolik:', error);
-            tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 30px; color: #dc3545;">' + SLANG.error_prefix + '</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 30px; color: #dc3545;">' + SLANG.error_prefix + '</td></tr>';
         }
     }
     
@@ -4736,19 +4742,19 @@
     // Tanlangan mahsulotni savatga qo'shish
     function selectProductFromTable(row) {
         const cells = row.getElementsByTagName('td');
-        if (cells.length < 4) return;
+        if (cells.length < 5) return;
         
-        // Mahsulot ma'lumotlarini olish
-        const productName = cells[0].getAttribute('data-original-text') || cells[0].textContent.trim();
+        // Mahsulot ma'lumotlarini olish (cells[0]=rasm, cells[1]=nom)
+        const productName = cells[1].getAttribute('data-original-text') || cells[1].textContent.trim();
         const productId = row.getAttribute('data-product-id');
         const costPrice = parseFloat(row.getAttribute('data-cost-price')) || 0;
         
-        // Miqdorni span ichidan olish (cells[1] = Mavjud)
-        const quantitySpan = cells[1].querySelector('span');
+        // Miqdorni span ichidan olish (cells[2] = Mavjud)
+        const quantitySpan = cells[2].querySelector('span');
         const quantity = quantitySpan ? parseInt(quantitySpan.textContent.trim()) : 0;
         
         // Narxni button'ning data-price attributidan olish (formatlanmagan)
-        const priceButton = cells[3].querySelector('.add-to-cart-btn');
+        const priceButton = cells[4].querySelector('.add-to-cart-btn');
         const price = priceButton ? parseFloat(priceButton.getAttribute('data-price')) || 0 : 0;
         
         console.log('?? Tanlangan mahsulot:', { productId, productName, quantity, price, costPrice });
