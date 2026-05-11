@@ -300,14 +300,8 @@
 
 * { box-sizing: border-box; }
 /* Crop modal */
-#emCropModal { display:none; position:fixed; inset:0; z-index:999999; background:rgba(0,0,0,0.88); align-items:center; justify-content:center; flex-direction:column; }
+#emCropModal { display:none; position:fixed; inset:0; z-index:999999; background:rgba(0,0,0,0.82); align-items:center; justify-content:center; }
 #emCropModal.active { display:flex; }
-#emCropContainer { position:relative; max-width:90vw; max-height:65vh; overflow:hidden; background:#000; border-radius:12px; }
-#emCropContainer img { display:block; max-width:90vw; max-height:65vh; }
-#emCropActions { margin-top:16px; display:flex; gap:12px; }
-#emCropActions button { padding:10px 28px; border:none; border-radius:8px; font-size:15px; font-weight:600; cursor:pointer; }
-#emCropSaveBtn { background:#1a6eff; color:#fff; }
-#emCropCancelBtn { background:rgba(255,255,255,0.15); color:#fff; }
 </style>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.min.css">
 {% endblock %}
@@ -510,13 +504,27 @@
 </div>
 
 <!-- Crop Modal -->
-<div id="emCropModal" onclick="emCropCancel()">
-    <div id="emCropContainer" onclick="event.stopPropagation()">
-        <img id="emCropImage" src="" alt="crop">
-    </div>
-    <div id="emCropActions">
-        <button id="emCropSaveBtn" onclick="emCropSave()"><i class="fas fa-check"></i> Saqlash</button>
-        <button id="emCropCancelBtn" onclick="emCropCancel()">Bekor qilish</button>
+<div id="emCropModal" onclick="if(event.target===this)emCropCancel()">
+    <div onclick="event.stopPropagation()" style="background:#fff;border-radius:16px;padding:16px;width:min(520px,96vw);max-height:95vh;display:flex;flex-direction:column;box-shadow:0 12px 48px #0008;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-shrink:0;">
+            <span style="font-weight:700;font-size:15px;">✂️ Rasmni qirqish</span>
+            <button onclick="emCropCancel()" style="background:none;border:none;font-size:22px;cursor:pointer;color:#94a3b8;line-height:1;">✕</button>
+        </div>
+        <div style="flex:1;overflow:hidden;border-radius:10px;background:#1e293b;min-height:0;">
+            <img id="emCropImage" src="" alt="" style="max-width:100%;display:block;">
+        </div>
+        <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin:12px 0 4px;flex-shrink:0;">
+            <button onclick="_emCropper&&_emCropper.zoom(0.1)" title="Kattalashtirish" style="width:38px;height:38px;border:1px solid #e2e8f0;border-radius:8px;background:#f8fafc;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;">+</button>
+            <button onclick="_emCropper&&_emCropper.zoom(-0.1)" title="Kichraytirish" style="width:38px;height:38px;border:1px solid #e2e8f0;border-radius:8px;background:#f8fafc;cursor:pointer;font-size:22px;display:flex;align-items:center;justify-content:center;">−</button>
+            <button onclick="_emCropper&&_emCropper.rotate(-90)" title="Chapga aylantirish" style="width:38px;height:38px;border:1px solid #e2e8f0;border-radius:8px;background:#f8fafc;cursor:pointer;font-size:16px;">↺</button>
+            <button onclick="_emCropper&&_emCropper.rotate(90)" title="O'ngga aylantirish" style="width:38px;height:38px;border:1px solid #e2e8f0;border-radius:8px;background:#f8fafc;cursor:pointer;font-size:16px;">↻</button>
+            <button onclick="_emCropper&&_emCropper.reset()" title="Qayta boshlash" style="width:38px;height:38px;border:1px solid #e2e8f0;border-radius:8px;background:#f8fafc;cursor:pointer;font-size:13px;">↺↺</button>
+        </div>
+        <p style="font-size:11px;color:#94a3b8;margin:0 0 12px;text-align:center;flex-shrink:0;">Siljiting • Scroll bilan zoom • Kvadrat doim 800×800 bo'lib saqlanadi</p>
+        <div style="display:flex;gap:10px;flex-shrink:0;">
+            <button onclick="emCropCancel()" style="flex:1;padding:10px;border:1px solid #e2e8f0;border-radius:10px;background:#f8fafc;cursor:pointer;font-size:14px;font-weight:600;">Bekor</button>
+            <button onclick="emCropSave()" style="flex:2;padding:10px;border:none;border-radius:10px;background:#1a6eff;color:#fff;cursor:pointer;font-size:14px;font-weight:700;">✓ Tasdiqlash</button>
+        </div>
     </div>
 </div>
 
