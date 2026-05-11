@@ -217,7 +217,7 @@
                 <button id="notifBtn" onclick="toggleNotifPanel()" title="Bildirishnomalar"
                     style="display:flex; align-items:center; justify-content:center; width:36px; height:36px; border:1px solid #e2e8f0; border-radius:8px; background:rgba(255,255,255,0.9); cursor:pointer; position:relative; flex-shrink:0; transition: box-shadow 0.2s;">
                     <img src="{{ url_for('static', filename='images/icons8-notification-fluent-96.png') }}" alt="Bildirishnomalar" style="width:22px; height:22px;">
-                    <span id="notifBadge" style="display:none; position:absolute; top:-4px; right:-4px; background:#e53e3e; color:#fff; font-size:10px; font-weight:700; border-radius:10px; padding:1px 5px; min-width:16px; text-align:center; line-height:16px;"></span>
+                    <span id="notifBadge" style="display:none;"></span>
                 </button>
                 <!-- Bildirishnoma paneli -->
                 <div id="notifPanel" style="display:none; position:absolute; top:calc(100% + 8px); right:0; width:320px; background:#fff; border:1px solid #e2e8f0; border-radius:12px; box-shadow:0 8px 24px rgba(0,0,0,0.12); z-index:9999; overflow:hidden;">
