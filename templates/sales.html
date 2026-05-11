@@ -6921,31 +6921,11 @@
                     <div class="qr-text">Telegram: @DIAMONDCARAccesories</div>
                 </div>
             
-            <!-- Lightbox modal -->
-            <div id="spt-lightbox" onclick="closeSptLightbox()">
-                <span id="spt-lightbox-close" onclick="closeSptLightbox()">&times;</span>
-                <img id="spt-lightbox-img" src="" alt="">
-            </div>
-            <script>
-            function openSptLightbox(src) {
-                document.getElementById('spt-lightbox-img').src = src;
-                document.getElementById('spt-lightbox').classList.add('active');
-                document.body.style.overflow = 'hidden';
-            }
-            function closeSptLightbox() {
-                document.getElementById('spt-lightbox').classList.remove('active');
-                document.getElementById('spt-lightbox-img').src = '';
-                document.body.style.overflow = '';
-            }
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape') closeSptLightbox();
-            });
-            </script>
             </body>
             </html>
         `;
         
-        receiptWindow.document.write(receiptHTML);
+            receiptWindow.document.write(receiptHTML);
         receiptWindow.document.close();
         
         // Window'ga focus qilish va avtomatik print
@@ -6956,6 +6936,27 @@
         }, 500);
     }
     
+</script>
+
+<!-- Lightbox modal -->
+<div id="spt-lightbox" onclick="closeSptLightbox()">
+    <span id="spt-lightbox-close" onclick="closeSptLightbox()">&times;</span>
+    <img id="spt-lightbox-img" src="" alt="">
+</div>
+<script>
+function openSptLightbox(src) {
+    document.getElementById('spt-lightbox-img').src = src;
+    document.getElementById('spt-lightbox').classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+function closeSptLightbox() {
+    document.getElementById('spt-lightbox').classList.remove('active');
+    document.getElementById('spt-lightbox-img').src = '';
+    document.body.style.overflow = '';
+}
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeSptLightbox();
+});
 </script>
 {% endblock %}
 
