@@ -17007,8 +17007,16 @@ except Exception as e:
 @role_required('admin', 'kassir', 'sotuvchi')
 def xarajatlar():
     """Xarajatlar sahifasi"""
-    stores = [s.to_dict() for s in Store.query.order_by(Store.name).all()]
-    warehouses = [w.to_dict() for w in Warehouse.query.order_by(Warehouse.name).all()]
+    current_user = get_current_user()
+    if current_user and current_user.role not in ('admin', 'kassir'):
+        allowed_locations = current_user.allowed_locations or []
+        allowed_store_ids = extract_location_ids(allowed_locations, 'store')
+        allowed_wh_ids = extract_location_ids(allowed_locations, 'warehouse')
+        stores = [s.to_dict() for s in Store.query.filter(Store.id.in_(allowed_store_ids)).order_by(Store.name).all()] if allowed_store_ids else []
+        warehouses = [w.to_dict() for w in Warehouse.query.filter(Warehouse.id.in_(allowed_wh_ids)).order_by(Warehouse.name).all()] if allowed_wh_ids else []
+    else:
+        stores = [s.to_dict() for s in Store.query.order_by(Store.name).all()]
+        warehouses = [w.to_dict() for w in Warehouse.query.order_by(Warehouse.name).all()]
     # Kategoriyalar va dam olish kunlari - Settings jadvalidan
     cat_setting = Settings.query.filter_by(key='expense_categories').first()
     if cat_setting and cat_setting.value:
@@ -17037,6 +17045,7 @@ def xarajatlar():
 def api_get_expenses():
     """Xarajatlar ro'yxati"""
     try:
+        current_user = get_current_user()
         start_date = request.args.get('start_date')
         end_date = request.args.get('end_date')
         category = request.args.get('category')
@@ -17044,6 +17053,22 @@ def api_get_expenses():
         location_id = request.args.get('location_id')
 
         query = Expense.query
+
+        # Sotuvchi faqat o'ziga ruxsat etilgan joylashuvlarni ko'radi
+        if current_user and current_user.role not in ('admin', 'kassir'):
+            allowed_locations = current_user.allowed_locations or []
+            allowed_store_ids = extract_location_ids(allowed_locations, 'store')
+            allowed_wh_ids = extract_location_ids(allowed_locations, 'warehouse')
+            from sqlalchemy import or_, and_
+            filters = []
+            if allowed_store_ids:
+                filters.append(and_(Expense.location_type == 'store', Expense.location_id.in_(allowed_store_ids)))
+            if allowed_wh_ids:
+                filters.append(and_(Expense.location_type == 'warehouse', Expense.location_id.in_(allowed_wh_ids)))
+            if filters:
+                query = query.filter(or_(*filters))
+            else:
+                query = query.filter(Expense.id == -1)  # hech narsa ko'rinmasin
 
         if start_date:
             query = query.filter(Expense.expense_date >= start_date)
@@ -17088,6 +17113,16 @@ def api_add_expense():
 
         if amount_usd <= 0 and amount_uzs <= 0:
             return jsonify({'success': False, 'error': 'Summa kiritilishi shart'}), 400
+
+        # Sotuvchi faqat o'z joylashuviga xarajat qo'sha oladi
+        if current_user and current_user.role not in ('admin', 'kassir'):
+            allowed_locations = current_user.allowed_locations or []
+            req_type = data.get('location_type')
+            req_id = data.get('location_id')
+            if req_type and req_id:
+                allowed_ids = extract_location_ids(allowed_locations, req_type)
+                if allowed_ids is not None and int(req_id) not in allowed_ids:
+                    return jsonify({'success': False, 'error': 'Bu joylashuv uchun ruxsat yo\'q'}), 403
 
         # Title: category dan auto yoki bo'sh string
         auto_title = (data.get('category') or 'Xarajat').strip()
