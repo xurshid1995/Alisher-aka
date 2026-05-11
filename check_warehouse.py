@@ -3,7 +3,7 @@ import os
 
 # Server DB
 conn = psycopg2.connect(
-    host='164.92.177.172',
+    host='207.154.225.70',
     port=5432,
     database='sayt_db',
     user='postgres',
