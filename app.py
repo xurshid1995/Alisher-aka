@@ -15307,8 +15307,8 @@ def get_settings():
             'default_reminder_time': '10:00',  # Qarz eslatma default vaqti
             'telegram_group_name': 'DiamondCarAccesories',
             'telegram_group_link': 'https://t.me/DiamondCarAccesories',
-            'telegram_bot_name': '@Sergeli143_bot',
-            'telegram_bot_link': 'https://t.me/Sergeli143_bot',
+            'telegram_bot_name': '@SMShisobot_bot',
+            'telegram_bot_link': 'https://t.me/SMShisobot_bot',
         }
 
         # Bazadan sozlamalarni olish
@@ -16254,7 +16254,8 @@ def api_check_and_send_reminders():
         logger.error(f"Eslatmalarni tekshirishda xatolik: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
-# Monitoring routes qo'shish
+
+# Monitoring routes qo'shish
 try:
     from monitoring import setup_monitoring_routes
     setup_monitoring_routes(app, db)
