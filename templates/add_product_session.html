@@ -248,24 +248,6 @@ optgroup option { font-weight: normal; color: #1e293b; }
                         </div>
                     </div>
 
-                    <!-- Miqdor va O'lchov birligi -->
-                    <div class="ap-row ap-row-2col">
-                        <div class="ap-form-group">
-                            <label class="ap-label" for="quantity">{{ t('ap_quantity_label') }}</label>
-                            <input type="number" id="quantity" name="quantity" class="ap-input"
-                                   placeholder="0" min="0" step="any"
-                                   oninput="validateQuantityInput(); calculateProfit();">
-                        </div>
-                        <div class="ap-form-group">
-                            <label class="ap-label" for="unit_type">{{ t('ap_unit_type_label') }}</label>
-                            <select id="unit_type" name="unit_type" class="ap-input"
-                                    onchange="updateQuantityStep(); validateQuantityInput();">
-                                <option value="dona" selected>{{ t('ap_unit_dona') }}</option>
-                                <option value="litr">{{ t('ap_unit_litr') }}</option>
-                            </select>
-                        </div>
-                    </div>
-
                     <!-- Kategoriya va Rasm -->
                     <div class="ap-row ap-row-2col">
                         <div class="ap-form-group">
@@ -345,6 +327,24 @@ optgroup option { font-weight: normal; color: #1e293b; }
                                     <button type="button" onclick="clearProductImage()" style="position:absolute;top:-6px;right:-6px;width:18px;height:18px;background:#ef4444;color:white;border:none;border-radius:50%;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- Miqdor va O'lchov birligi -->
+                    <div class="ap-row ap-row-2col">
+                        <div class="ap-form-group">
+                            <label class="ap-label" for="quantity">{{ t('ap_quantity_label') }}</label>
+                            <input type="number" id="quantity" name="quantity" class="ap-input"
+                                   placeholder="0" min="0" step="any"
+                                   oninput="validateQuantityInput(); calculateProfit();">
+                        </div>
+                        <div class="ap-form-group">
+                            <label class="ap-label" for="unit_type">{{ t('ap_unit_type_label') }}</label>
+                            <select id="unit_type" name="unit_type" class="ap-input"
+                                    onchange="updateQuantityStep(); validateQuantityInput();">
+                                <option value="dona" selected>{{ t('ap_unit_dona') }}</option>
+                                <option value="litr">{{ t('ap_unit_litr') }}</option>
+                            </select>
                         </div>
                     </div>
 
