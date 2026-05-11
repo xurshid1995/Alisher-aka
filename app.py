@@ -12376,6 +12376,12 @@ def create_sale():
 
             print("✅ Asl savdo topildi - UPDATE qilinmoqda")
 
+            # Eski SaleItem'larni o'CHIRISHDAN OLDIN saqlash (edit rejimida available_quantity uchun)
+            old_sale_items_map = {
+                item.product_id: item.quantity
+                for item in SaleItem.query.filter_by(sale_id=original_sale_id).all()
+            }
+
             # Eski SaleItem'larni o'chirish
             SaleItem.query.filter_by(sale_id=original_sale_id).delete()
             print("🗑️  Eski mahsulotlar o'chirildi")
@@ -12493,23 +12499,15 @@ def create_sale():
                     f"🔍 Tahrirlash rejimi: is_edit_mode={is_edit_mode}, original_sale_id={original_sale_id}")
 
                 if is_edit_mode and original_sale_id:
-                    # Asl savdoda bu mahsulotning miqdorini topish
-                    original_sale_item = db.session.query(SaleItem).filter_by(
-                        sale_id=original_sale_id,
-                        product_id=product_id
-                    ).first()
-
-                    logger.debug(f" Asl savdo item topildi: {original_sale_item}")
-                    if original_sale_item:
+                    # Eski SaleItem'lar o'chirilgan, saved map dan olamiz
+                    orig_qty = old_sale_items_map.get(int(product_id), Decimal('0'))
+                    if orig_qty:
+                        print(f"🔍 Asl savdo miqdori (map dan): {orig_qty}")
+                        available_quantity += orig_qty
                         print(
-                            f"🔍 Asl savdo miqdori: {original_sale_item.quantity}")
-                        # Asl savdo miqdorini qo'shish (chunki tahrirlashda
-                        # qaytariladi)
-                        available_quantity += original_sale_item.quantity
+                            f"📝 Tahrirlash rejimi: mahsulot {product_id} uchun asl miqdor {orig_qty} qo'shildi")
                         print(
-                            f"📝 Tahrirlash rejimi: mahsulot {product_id} uchun asl miqdor {original_sale_item.quantity} qo'shildi")
-                        print(
-                            f"📊 Mavjud miqdor: {stock.quantity} + {original_sale_item.quantity} = {available_quantity}")
+                            f"📊 Mavjud miqdor: {stock.quantity} + {orig_qty} = {available_quantity}")
                         logger.info(f" Kerakli miqdor: {quantity}")
                         logger.info(f" Farq: {available_quantity - quantity}")
                     else:
@@ -12549,22 +12547,15 @@ def create_sale():
                     f"🔍 Tahrirlash rejimi: is_edit_mode={is_edit_mode}, original_sale_id={original_sale_id}")
 
                 if is_edit_mode and original_sale_id:
-                    # Asl savdoda bu mahsulotning miqdorini topish
-                    original_sale_item = db.session.query(SaleItem).filter_by(
-                        sale_id=original_sale_id,
-                        product_id=product_id
-                    ).first()
-
-                    logger.debug(f" Asl savdo item topildi: {original_sale_item}")
-                    if original_sale_item:
+                    # Eski SaleItem'lar o'chirilgan, saved map dan olamiz
+                    orig_qty = old_sale_items_map.get(int(product_id), Decimal('0'))
+                    if orig_qty:
+                        print(f"🔍 Asl savdo miqdori (map dan): {orig_qty}")
+                        available_quantity += orig_qty
                         print(
-                            f"🔍 Asl savdo miqdori: {original_sale_item.quantity}")
-                        # Asl savdo miqdorini qo'shish
-                        available_quantity += original_sale_item.quantity
+                            f"📝 Warehouse tahrirlash: mahsulot {product_id} uchun asl miqdor {orig_qty} qo'shildi")
                         print(
-                            f"📝 Warehouse tahrirlash: mahsulot {product_id} uchun asl miqdor {original_sale_item.quantity} qo'shildi")
-                        print(
-                            f"📊 Mavjud miqdor: {stock.quantity} + {original_sale_item.quantity} = {available_quantity}")
+                            f"📊 Mavjud miqdor: {stock.quantity} + {orig_qty} = {available_quantity}")
                         logger.info(f" Kerakli miqdor: {quantity}")
                         logger.info(f" Farq: {available_quantity - quantity}")
                     else:
@@ -12869,7 +12860,7 @@ def get_sale(sale_id):
         })
 
     except Exception as e:
-        app.logger.error(f"Error fetching sale: {str(e)}")
+        app.logger.exception("Error fetching sale")
         return jsonify({
             'success': False,
             'error': f'Savdoni olishda xatolik: {str(e)}'
@@ -13028,7 +13019,7 @@ def update_sale(sale_id):
 
     except Exception as e:
         db.session.rollback()
-        app.logger.error(f"Error updating sale: {str(e)}")
+        app.logger.exception("Error updating sale")
         return jsonify({
             'success': False,
             'error': f'Savdoni yangilashda xatolik: {str(e)}'
@@ -13503,6 +13494,7 @@ def _mark_idempotency(key):
 
 # API endpoint - Real-time stock rezerv qilish (korzinaga qo'shilganda)
 @app.route('/api/reserve-stock', methods=['POST'])
+@role_required('admin', 'kassir', 'sotuvchi')
 def api_reserve_stock():
     """Mahsulot korzinaga qo'shilganda real-time stock'dan ayirish"""
     try:
@@ -13553,7 +13545,7 @@ def api_reserve_stock():
             stock = StoreStock.query.filter_by(
                 store_id=location_id,
                 product_id=product_id
-            ).first()
+            ).with_for_update().first()
 
             if not stock:
                 store_obj = Store.query.get(location_id)
@@ -13580,7 +13572,7 @@ def api_reserve_stock():
             stock = WarehouseStock.query.filter_by(
                 warehouse_id=location_id,
                 product_id=product_id
-            ).first()
+            ).with_for_update().first()
 
             if not stock:
                 warehouse_obj = Warehouse.query.get(location_id)
@@ -13621,13 +13613,15 @@ def api_reserve_stock():
         })
 
     except Exception as e:
-        logger.error(f" Stock tekshirishda xatolik: {str(e)}")
+        db.session.rollback()
+        logger.exception("Stock tekshirishda xatolik")
         return jsonify({'success': False, 'error': str(e)}), 500
 
 # API endpoint - Real-time stock qaytarish (korzinadan o'chirilganda)
 
 
 @app.route('/api/return-stock', methods=['POST'])
+@role_required('admin', 'kassir', 'sotuvchi')
 def api_return_stock():
     """Mahsulot korzinadan o'chirilganda real-time stock'ga qaytarish"""
     try:
@@ -13745,7 +13739,7 @@ def api_return_stock():
 
     except Exception as e:
         db.session.rollback()
-        logger.error(f" Stock qaytarishda xatolik: {str(e)}")
+        logger.exception("Stock qaytarishda xatolik")
         return jsonify({'success': False, 'error': str(e)}), 500
 
 # API endpoint - Pending savdolar yaratish
