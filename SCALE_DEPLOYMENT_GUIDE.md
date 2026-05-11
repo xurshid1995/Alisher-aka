@@ -1,4 +1,4 @@
-# 5 TA DO'KON + 5 TA SKLAD UCHUN SERVER SOZLASH
+﻿# 5 TA DO'KON + 5 TA SKLAD UCHUN SERVER SOZLASH
 ## Server: 164.92.177.172
 
 ## 📋 CURRENT STATUS
@@ -27,10 +27,10 @@
 ssh root@164.92.177.172
 
 # Fayl yuklash (mahalliy kompyuterdan)
-scp d:\hisobot\Xurshid\postgresql_optimization_2gb.sql root@164.92.177.172:/tmp/
+scp d:\hisobot\Alisher aka\postgresql_optimization_2gb.sql root@207.154.225.70:/tmp/
 
 # Serverda qo'llash
-sudo -u postgres psql -d xurshid_db -f /tmp/postgresql_optimization_2gb.sql
+sudo -u postgres psql -d alisher_db -f /tmp/postgresql_optimization_2gb.sql
 
 # PostgreSQL restart
 sudo systemctl restart postgresql
@@ -44,7 +44,7 @@ sudo -u postgres psql -c "SHOW effective_cache_size;"
 
 ```bash
 # Script yuklash
-scp d:\hisobot\Xurshid\server_monitoring.sh root@164.92.177.172:/root/
+scp "d:\hisobot\Alisher aka\server_monitoring.sh" root@207.154.225.70:/root/
 
 # Ruxsat berish
 ssh root@164.92.177.172 "chmod +x /root/server_monitoring.sh"
@@ -71,10 +71,10 @@ sudo nano /etc/postgresql/16/main/postgresql.conf
 sudo systemctl restart postgresql
 
 # Extension yaratish
-sudo -u postgres psql -d xurshid_db -c "CREATE EXTENSION IF NOT EXISTS pg_stat_statements;"
+sudo -u postgres psql -d alisher_db -c "CREATE EXTENSION IF NOT EXISTS pg_stat_statements;"
 
 # Tekshirish
-sudo -u postgres psql -d xurshid_db -c "SELECT * FROM pg_stat_statements LIMIT 1;"
+sudo -u postgres psql -d alisher_db -c "SELECT * FROM pg_stat_statements LIMIT 1;"
 ```
 
 ### 4️⃣ Backup Strategiyasi
@@ -88,15 +88,15 @@ DATE=$(date +%Y%m%d_%H%M%S)
 mkdir -p $BACKUP_DIR
 
 # Database backup
-sudo -u postgres pg_dump xurshid_db > $BACKUP_DIR/xurshid_db_$DATE.sql
+sudo -u postgres pg_dump alisher_db > $BACKUP_DIR/alisher_db_$DATE.sql
 
 # Compress
-gzip $BACKUP_DIR/xurshid_db_$DATE.sql
+gzip $BACKUP_DIR/alisher_db_$DATE.sql
 
 # Eski backuplarni o'chirish (7 kundan eski)
 find $BACKUP_DIR -name "*.sql.gz" -mtime +7 -delete
 
-echo "Backup completed: xurshid_db_$DATE.sql.gz"
+echo "Backup completed: alisher_db_$DATE.sql.gz"
 EOF
 
 # Ruxsat berish
@@ -162,14 +162,14 @@ echo "0 2 * * * /root/backup_database.sh >> /var/log/backup.log 2>&1" | crontab 
 **Solution:**
 ```bash
 # Slow queries topish
-sudo -u postgres psql -d xurshid_db << 'EOF'
+sudo -u postgres psql -d alisher_db << 'EOF'
 SELECT query, calls, mean_exec_time, max_exec_time
 FROM pg_stat_statements 
 ORDER BY mean_exec_time DESC LIMIT 10;
 EOF
 
 # Missing indexes topish
-sudo -u postgres psql -d xurshid_db << 'EOF'
+sudo -u postgres psql -d alisher_db << 'EOF'
 SELECT schemaname, tablename, attname, n_distinct, correlation
 FROM pg_stats 
 WHERE schemaname = 'public' 
@@ -187,7 +187,7 @@ EOF
 workers = 2  # 3 o'rniga
 
 # Service restart
-sudo systemctl restart xurshid_app
+sudo systemctl restart alisher_app
 
 # Yoki RAM upgrade:
 # DigitalOcean droplet resize: 2GB → 4GB
@@ -198,7 +198,7 @@ sudo systemctl restart xurshid_app
 **Solution:**
 ```bash
 # Idle connections ko'rish
-sudo -u postgres psql -d xurshid_db -c "
+sudo -u postgres psql -d alisher_db -c "
 SELECT pid, usename, application_name, state, state_change
 FROM pg_stat_activity 
 WHERE state = 'idle' 
@@ -206,7 +206,7 @@ AND state_change < now() - interval '10 minutes';
 "
 
 # Ularni o'chirish (ehtiyotkorlik bilan!)
-# sudo -u postgres psql -d xurshid_db -c "
+# sudo -u postgres psql -d alisher_db -c "
 # SELECT pg_terminate_backend(pid) 
 # FROM pg_stat_activity 
 # WHERE state = 'idle' 
@@ -247,13 +247,13 @@ ssh root@164.92.177.172 "/root/server_monitoring.sh"
 ssh root@164.92.177.172 "htop"
 
 # PostgreSQL live activity
-ssh root@164.92.177.172 "watch -n 2 'sudo -u postgres psql -d xurshid_db -c \"SELECT count(*), state FROM pg_stat_activity GROUP BY state;\"'"
+ssh root@164.92.177.172 "watch -n 2 'sudo -u postgres psql -d alisher_db -c \"SELECT count(*), state FROM pg_stat_activity GROUP BY state;\"'"
 
 # Application logs
-ssh root@164.92.177.172 "tail -f /var/www/xurshid/logs/error.log"
+ssh root@164.92.177.172 "tail -f /var/www/alisher/logs/error.log"
 
 # Nginx access log
-ssh root@164.92.177.172 "tail -f /var/www/xurshid/logs/access.log"
+ssh root@164.92.177.172 "tail -f /var/www/alisher/logs/access.log"
 
 # System resources
 ssh root@164.92.177.172 "free -h && df -h && uptime"

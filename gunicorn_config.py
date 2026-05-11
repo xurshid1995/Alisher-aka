@@ -1,4 +1,4 @@
-"""Gunicorn configuration file"""
+﻿"""Gunicorn configuration file"""
 import multiprocessing
 import os
 
@@ -28,7 +28,7 @@ loglevel = 'warning'  # info -> warning (SIGTERM loglarini yashirish uchun)
 access_log_format = '%(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s" "%(a)s"'
 
 # Process naming
-proc_name = 'xurshid_app'
+proc_name = 'alisher_app'
 
 # Server mechanics
 daemon = False

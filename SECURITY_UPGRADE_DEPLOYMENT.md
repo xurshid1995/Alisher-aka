@@ -1,4 +1,4 @@
-# 🎯 QO'SHIMCHA HIMOYALAR - DEPLOYMENT GUIDE
+﻿# 🎯 QO'SHIMCHA HIMOYALAR - DEPLOYMENT GUIDE
 
 ## ✅ Amalga oshirilgan o'zgarishlar:
 
@@ -42,7 +42,7 @@ scp create_api_operations_table.py root@YOUR_SERVER:/var/www/sayt_2025/
 ssh root@YOUR_SERVER
 
 # Loyiha papkasiga o'tish
-cd /var/www/Xurshid
+cd /var/www/alisher
 
 # Virtual environment aktivlashtirish
 source venv/bin/activate
@@ -65,10 +65,10 @@ API OPERATIONS JADVALI YARATISH
 
 ```bash
 # Systemd service'ni qayta ishga tushirish
-sudo systemctl restart Xurshid
+sudo systemctl restart alisher
 
 # Status tekshirish
-sudo systemctl status Xurshid
+sudo systemctl status alisher
 
 # Log'larni kuzatish
 tail -f logs/error.log

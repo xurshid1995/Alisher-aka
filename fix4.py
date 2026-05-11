@@ -1,4 +1,4 @@
-import sys
+﻿import sys
 
 def fix(path):
     with open(path, encoding='utf-8') as f:
@@ -33,5 +33,5 @@ def fix(path):
         f.writelines(result)
     print(f"{{fixed}} line(s) fixed in {path}")
 
-fix('d:/hisobot/Xurshid/templates/sales.html')
-fix('d:/hisobot/Xurshid/templates/sales-history.html')
+fix('d:/hisobot/Alisher aka/templates/sales.html')
+fix('d:/hisobot/Alisher aka/templates/sales-history.html')

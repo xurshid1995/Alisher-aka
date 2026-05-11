@@ -1,4 +1,4 @@
-# ========================================
+﻿# ========================================
 # SERVERGA O'RNATISH KOMANDALAR
 # ========================================
 
@@ -6,7 +6,7 @@
 ssh root@sergeli0606.uz
 
 # 2. Loyiha papkasiga o'tish
-cd /var/www/xurshid
+cd /var/www/alisher
 
 # 3. Yangi kodlarni GitHub dan pull qilish
 git pull origin main
@@ -21,10 +21,10 @@ pip install psutil==5.9.0
 chmod +x check_logs.sh
 
 # 7. Gunicorn service restart
-sudo systemctl restart xurshid
+sudo systemctl restart alisher
 
 # 8. Service holatini tekshirish
-sudo systemctl status xurshid
+sudo systemctl status alisher
 
 # 9. Health check test
 curl http://localhost:5000/health
@@ -35,7 +35,7 @@ curl http://localhost:5000/health
 # ========================================
 # TEZKOR DEPLOY (bitta buyruq bilan)
 # ========================================
-ssh root@sergeli0606.uz "cd /var/www/xurshid && git pull origin main && source venv/bin/activate && sudo systemctl restart xurshid && sleep 3 && sudo systemctl status xurshid --no-pager"
+ssh root@sergeli0606.uz "cd /var/www/alisher && git pull origin main && source venv/bin/activate && sudo systemctl restart alisher && sleep 3 && sudo systemctl status alisher --no-pager"
 
 # ========================================
 # TEKSHIRISH
@@ -53,7 +53,7 @@ ssh root@sergeli0606.uz "cd /var/www/xurshid && git pull origin main && source v
 tail -50 logs/error.log
 
 # Gunicorn loglarni ko'rish:
-sudo journalctl -u xurshid -n 50
+sudo journalctl -u alisher -n 50
 
 # Service restart:
-sudo systemctl restart xurshid
+sudo systemctl restart alisher

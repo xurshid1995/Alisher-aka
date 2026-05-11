@@ -1,4 +1,4 @@
-# TIMEOUT MUAMMOSI YECHIMI
+﻿# TIMEOUT MUAMMOSI YECHIMI
 
 ## 🔍 Muammo
 
@@ -69,7 +69,7 @@ setInterval(() => {
 **PostgreSQL (agar admin huquqi bo'lsa):**
 ```sql
 -- idle_in_transaction timeout'ni ko'paytirish
-ALTER DATABASE xurshid_db SET idle_in_transaction_session_timeout = 1800000; -- 30 minut
+ALTER DATABASE alisher_db SET idle_in_transaction_session_timeout = 1800000; -- 30 minut
 ```
 
 ## 📝 Test

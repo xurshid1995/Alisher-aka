@@ -1,4 +1,4 @@
-# Server Setup - 164.92.177.172 (www.sergeli0606.uz)
+﻿# Server Setup - 164.92.177.172 (www.sergeli0606.uz)
 
 ## 1. Server'ga kirish
 ```bash
@@ -21,23 +21,23 @@ apt install -y python3 python3-pip python3-venv postgresql postgresql-contrib ng
 sudo -u postgres psql
 
 # Database va user yaratish
-CREATE DATABASE xurshid_db;
-CREATE USER xurshid_user WITH PASSWORD 'KUCHLI_PAROL_KIRITING';
-ALTER ROLE xurshid_user SET client_encoding TO 'utf8';
-ALTER ROLE xurshid_user SET default_transaction_isolation TO 'read committed';
-ALTER ROLE xurshid_user SET timezone TO 'UTC';
-GRANT ALL PRIVILEGES ON DATABASE xurshid_db TO xurshid_user;
+CREATE DATABASE alisher_db;
+CREATE USER alisher_user WITH PASSWORD 'KUCHLI_PAROL_KIRITING';
+ALTER ROLE alisher_user SET client_encoding TO 'utf8';
+ALTER ROLE alisher_user SET default_transaction_isolation TO 'read committed';
+ALTER ROLE alisher_user SET timezone TO 'UTC';
+GRANT ALL PRIVILEGES ON DATABASE alisher_db TO alisher_user;
 \q
 ```
 
 ## 5. Loyihani deploy qilish
 ```bash
 # Loyiha papkasini yaratish
-mkdir -p /var/www/xurshid
-cd /var/www/xurshid
+mkdir -p /var/www/alisher
+cd /var/www/alisher
 
 # Git'dan clone qilish
-git clone https://github.com/xurshid1995/xurshid.git .
+git clone https://github.com/xurshid1995/Alisher-aka.git .
 
 # Virtual environment yaratish
 python3 -m venv venv
@@ -57,8 +57,8 @@ nano .env
 # Database
 DB_HOST=localhost
 DB_PORT=5432
-DB_NAME=xurshid_db
-DB_USER=xurshid_user
+DB_NAME=alisher_db
+DB_USER=alisher_user
 DB_PASSWORD=KUCHLI_PAROL
 
 # Flask
@@ -83,7 +83,7 @@ TIMEOUT=300
 
 ## 7. Database migratsiyalarini bajarish
 ```bash
-cd /var/www/xurshid
+cd /var/www/alisher
 source venv/bin/activate
 
 # Jadvallarni yaratish
@@ -92,19 +92,19 @@ python -c "from app import db; db.create_all(); print('✅ Database tables creat
 
 ## 8. Logs papkasini yaratish
 ```bash
-mkdir -p /var/www/xurshid/logs
-chmod 755 /var/www/xurshid/logs
+mkdir -p /var/www/alisher/logs
+chmod 755 /var/www/alisher/logs
 ```
 
 ## 9. Systemd service sozlash
 ```bash
 # Service fayl yaratish
-sudo nano /etc/systemd/system/xurshid.service
+sudo nano /etc/systemd/system/alisher.service
 ```
 
 ```ini
 [Unit]
-Description=Xurshid Gunicorn Application
+Description=Alisher Gunicorn Application
 After=network.target postgresql.service
 Wants=postgresql.service
 
@@ -112,9 +112,9 @@ Wants=postgresql.service
 Type=notify
 User=root
 Group=root
-WorkingDirectory=/var/www/xurshid
-Environment="PATH=/var/www/xurshid/venv/bin"
-ExecStart=/var/www/xurshid/venv/bin/gunicorn -c gunicorn_config.py app:app
+WorkingDirectory=/var/www/alisher
+Environment="PATH=/var/www/alisher/venv/bin"
+ExecStart=/var/www/alisher/venv/bin/gunicorn -c gunicorn_config.py app:app
 ExecReload=/bin/kill -s HUP $MAINPID
 KillMode=mixed
 TimeoutStopSec=5
@@ -125,7 +125,7 @@ RestartSec=10
 # Logging
 StandardOutput=journal
 StandardError=journal
-SyslogIdentifier=xurshid
+SyslogIdentifier=alisher
 
 [Install]
 WantedBy=multi-user.target
@@ -134,18 +134,18 @@ WantedBy=multi-user.target
 ```bash
 # Service'ni yoqish
 sudo systemctl daemon-reload
-sudo systemctl enable xurshid.service
-sudo systemctl start xurshid.service
-sudo systemctl status xurshid.service
+sudo systemctl enable alisher.service
+sudo systemctl start alisher.service
+sudo systemctl status alisher.service
 ```
 
 ## 10. Nginx sozlash
 ```bash
 # Nginx konfiguratsiya fayl yaratish
-sudo cp /var/www/xurshid/nginx_sergeli0606.conf /etc/nginx/sites-available/xurshid
+sudo cp /var/www/alisher/nginx_sergeli0606.conf /etc/nginx/sites-available/alisher
 
 # Symlink yaratish
-sudo ln -s /etc/nginx/sites-available/xurshid /etc/nginx/sites-enabled/
+sudo ln -s /etc/nginx/sites-available/alisher /etc/nginx/sites-enabled/
 
 # Default saytni o'chirish
 sudo rm -f /etc/nginx/sites-enabled/default
@@ -189,26 +189,26 @@ sudo certbot renew --dry-run
 
 ## 14. Loyihani yangilash (deploy)
 ```bash
-cd /var/www/xurshid
+cd /var/www/alisher
 git pull
-sudo systemctl restart xurshid.service
+sudo systemctl restart alisher.service
 ```
 
 ## 15. Tekshirish
 ```bash
 # Service statusini ko'rish
-sudo systemctl status xurshid.service
+sudo systemctl status alisher.service
 
 # Loglarni ko'rish
-sudo journalctl -u xurshid.service -f
+sudo journalctl -u alisher.service -f
 
 # Nginx loglarni ko'rish
 sudo tail -f /var/log/nginx/access.log
 sudo tail -f /var/log/nginx/error.log
 
 # Gunicorn loglarni ko'rish
-tail -f /var/www/xurshid/logs/error.log
-tail -f /var/www/xurshid/logs/access.log
+tail -f /var/www/alisher/logs/error.log
+tail -f /var/www/alisher/logs/access.log
 
 # Brauzerda ochish
 # https://www.sergeli0606.uz
@@ -218,7 +218,7 @@ tail -f /var/www/xurshid/logs/access.log
 
 ### Service ishlamasa:
 ```bash
-sudo journalctl -u xurshid.service -n 50 --no-pager
+sudo journalctl -u alisher.service -n 50 --no-pager
 ```
 
 ### Database ulanish muammosi:
@@ -227,7 +227,7 @@ sudo journalctl -u xurshid.service -n 50 --no-pager
 sudo systemctl status postgresql
 
 # Database mavjudligini tekshirish
-sudo -u postgres psql -l | grep xurshid
+sudo -u postgres psql -l | grep alisher
 ```
 
 ### Port band bo'lsa:
@@ -262,19 +262,19 @@ netstat -tulpn | grep :443
 
 ### Database backup:
 ```bash
-sudo -u postgres pg_dump xurshid_db > backup_$(date +%Y%m%d).sql
+sudo -u postgres pg_dump alisher_db > backup_$(date +%Y%m%d).sql
 ```
 
 ### Database restore:
 ```bash
-sudo -u postgres psql xurshid_db < backup_20260129.sql
+sudo -u postgres psql alisher_db < backup_20260129.sql
 ```
 
 ## Foydali buyruqlar
 
 ```bash
 # Service'ni qayta yuklash
-sudo systemctl restart xurshid.service
+sudo systemctl restart alisher.service
 
 # Nginx'ni qayta yuklash
 sudo systemctl reload nginx
@@ -283,7 +283,7 @@ sudo systemctl reload nginx
 sudo journalctl --vacuum-time=7d
 
 # Git'ni yangilash
-cd /var/www/xurshid && git pull && sudo systemctl restart xurshid.service
+cd /var/www/alisher && git pull && sudo systemctl restart alisher.service
 ```
 
 ## Xavfsizlik

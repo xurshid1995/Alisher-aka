@@ -1,7 +1,7 @@
 ﻿import sys
 files = [
-    ('d:/hisobot/Xurshid/templates/sales.html', 8),
-    ('d:/hisobot/Xurshid/templates/sales-history.html', 4),
+    ('d:/hisobot/Alisher aka/templates/sales.html', 8),
+    ('d:/hisobot/Alisher aka/templates/sales-history.html', 4),
 ]
 for fpath, sp in files:
     indent = ' ' * sp

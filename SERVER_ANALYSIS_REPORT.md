@@ -1,4 +1,4 @@
-# 🎯 SERVER CAPACITY ANALYSIS REPORT
+﻿# 🎯 SERVER CAPACITY ANALYSIS REPORT
 ## Server: 164.92.177.172
 ## Question: 5 ta do'kon + 5 ta sklad boshqara oladimi?
 
@@ -169,7 +169,7 @@ Issue:    2GB RAM uchun optimallashtirilmagan
    ```bash
    scp postgresql_optimization_2gb.sql root@164.92.177.172:/tmp/
    ssh root@164.92.177.172
-   sudo -u postgres psql -d xurshid_db -f /tmp/postgresql_optimization_2gb.sql
+   sudo -u postgres psql -d alisher_db -f /tmp/postgresql_optimization_2gb.sql
    sudo systemctl restart postgresql
    ```
 

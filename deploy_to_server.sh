@@ -1,4 +1,4 @@
-#!/bin/bash
+﻿#!/bin/bash
 # Serverga deploy qilish script'i
 
 echo "🚀 Serverga deploy qilish boshlandi..."
@@ -6,7 +6,7 @@ echo ""
 
 # 1. Loyiha papkasiga o'tish
 echo "📁 Loyiha papkasiga o'tish..."
-cd /var/www/xurshid || exit
+cd /var/www/alisher || exit
 
 # 2. Yangi kodlarni pull qilish
 echo "⬇️ GitHub'dan yangi kodlarni pull qilish..."
@@ -31,12 +31,12 @@ fi
 
 # 6. Gunicorn service restart
 echo "🔄 Gunicorn service restart..."
-sudo systemctl restart xurshid
+sudo systemctl restart alisher
 
 # 7. Service statusini tekshirish
 echo ""
 echo "📊 Service status:"
-sudo systemctl status xurshid --no-pager -n 5
+sudo systemctl status alisher --no-pager -n 5
 
 # 8. Telegram bot statusini tekshirish
 echo ""
