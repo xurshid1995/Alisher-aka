@@ -139,8 +139,13 @@
     .sales-product-table td:nth-child(3) { width: 16%; text-align: left; }
     .sales-product-table td:nth-child(4) { width: 24%; text-align: center; }
     .sales-product-table td:nth-child(5) { width: 8%; text-align: center; }
-    .spt-img { width: 34px; height: 34px; object-fit: cover; border-radius: 4px; display: block; margin: 0 auto; }
+    .spt-img { width: 34px; height: 34px; object-fit: cover; border-radius: 4px; display: block; margin: 0 auto; cursor: zoom-in; }
     .spt-img-placeholder { width: 34px; height: 34px; background: #f1f5f9; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 16px; margin: 0 auto; }
+    /* Lightbox */
+    #spt-lightbox { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.82); z-index: 99999; align-items: center; justify-content: center; cursor: zoom-out; }
+    #spt-lightbox.active { display: flex; }
+    #spt-lightbox img { max-width: 90vw; max-height: 88vh; border-radius: 10px; box-shadow: 0 8px 40px rgba(0,0,0,0.6); object-fit: contain; pointer-events: none; }
+    #spt-lightbox-close { position: fixed; top: 18px; right: 24px; font-size: 32px; color: #fff; cursor: pointer; line-height: 1; user-select: none; z-index: 100000; text-shadow: 0 2px 8px rgba(0,0,0,0.7); }
     
     .cart-table {
         width: 100%;
@@ -2956,7 +2961,7 @@
                 const opacity = quantity <= 0 ? '0.8' : '1';
                 
                 const imgHtml = product.image_url
-                    ? `<img src="${product.image_url}" class="spt-img" alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+                    ? `<img src="${product.image_url}" class="spt-img" alt="" loading="lazy" onclick="openSptLightbox(this.src)" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
                        <div class="spt-img-placeholder" style="display:none;">📦</div>`
                     : `<div class="spt-img-placeholder">📦</div>`;
 
@@ -6915,6 +6920,27 @@
                     <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://t.me/DIAMONDCARAccesories" alt="QR Code">
                     <div class="qr-text">Telegram: @DIAMONDCARAccesories</div>
                 </div>
+            
+            <!-- Lightbox modal -->
+            <div id="spt-lightbox" onclick="closeSptLightbox()">
+                <span id="spt-lightbox-close" onclick="closeSptLightbox()">&times;</span>
+                <img id="spt-lightbox-img" src="" alt="">
+            </div>
+            <script>
+            function openSptLightbox(src) {
+                document.getElementById('spt-lightbox-img').src = src;
+                document.getElementById('spt-lightbox').classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+            function closeSptLightbox() {
+                document.getElementById('spt-lightbox').classList.remove('active');
+                document.getElementById('spt-lightbox-img').src = '';
+                document.body.style.overflow = '';
+            }
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') closeSptLightbox();
+            });
+            </script>
             </body>
             </html>
         `;
