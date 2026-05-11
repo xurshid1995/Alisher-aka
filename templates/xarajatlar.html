@@ -60,9 +60,9 @@
             <button onclick="openAddModal('daily')" class="hr-btn" style="background:#1a6eff; color:#fff; border-color:#1a6eff; font-weight:600; display:flex; align-items:center; gap:5px;">
                 <span style="font-size:16px; line-height:1;">+</span> Kunlik xarajat
             </button>
-            <button onclick="openAddModal('monthly')" class="hr-btn" style="background:#059669; color:#fff; border-color:#059669; font-weight:600; display:flex; align-items:center; gap:5px;">
+            {% if session.role != 'sotuvchi' %}<button onclick="openAddModal('monthly')" class="hr-btn" style="background:#059669; color:#fff; border-color:#059669; font-weight:600; display:flex; align-items:center; gap:5px;">
                 <span style="font-size:16px; line-height:1;">+</span> Oylik xarajat
-            </button>
+            </button>{% endif %}
         </div>
     </div>
 
