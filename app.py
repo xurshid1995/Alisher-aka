@@ -10472,11 +10472,22 @@ def api_add_customer():
         if not data or not data.get('name'):
             return jsonify({'error': 'Mijoz nomi talab qilinadi'}), 400
 
-        # Telefon raqami unikligini tekshirish
+        # Telefon raqami unikligini tekshirish (faqat shu dokon ichida)
         phone = data.get('phone', '').strip()
-        if phone:
+        store_id = data.get('store_id')
+        if phone and store_id:
             existing = Customer.query.filter(
-                Customer.phone == phone
+                Customer.phone == phone,
+                Customer.store_id == store_id
+            ).first()
+            if existing:
+                return jsonify({
+                    'error': f'Bu telefon raqam ({phone}) allaqachon "{existing.name}" mijozida ro\'yxatdan o\'tgan'
+                }), 400
+        elif phone and not store_id:
+            existing = Customer.query.filter(
+                Customer.phone == phone,
+                Customer.store_id == None
             ).first()
             if existing:
                 return jsonify({
@@ -10484,7 +10495,6 @@ def api_add_customer():
                 }), 400
 
         # Store_id ni data'dan olish
-        store_id = data.get('store_id')
         print(
             f"🔍 Customer API - Received store_id: {store_id} (type: {type(store_id)})")
         print(
