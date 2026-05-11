@@ -17004,7 +17004,7 @@ except Exception as e:
 # ============================================
 
 @app.route('/xarajatlar')
-@role_required('admin', 'kassir')
+@role_required('admin', 'kassir', 'sotuvchi')
 def xarajatlar():
     """Xarajatlar sahifasi"""
     stores = [s.to_dict() for s in Store.query.order_by(Store.name).all()]
