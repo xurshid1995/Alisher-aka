@@ -944,51 +944,33 @@
             document.getElementById('canStockCheck').checked = true;
             toggleStockCheckLocations();
             
-            // Stock check joylashuvlarini belgilash - allowed_locations dan olamiz
-            if (currentUser.allowed_locations && Array.isArray(currentUser.allowed_locations)) {
-                console.log('🔄 Setting stock check locations from allowed_locations:', currentUser.allowed_locations);
-                currentUser.allowed_locations.forEach(location => {
+            // Stock check joylashuvlarini belgilash - stock_check_locations dan olamiz (fallback: allowed_locations)
+            const stockCheckLocs = (currentUser.stock_check_locations && currentUser.stock_check_locations.length > 0)
+                ? currentUser.stock_check_locations
+                : (currentUser.allowed_locations || []);
+            console.log('🔄 Setting stock check locations from:', stockCheckLocs);
+            stockCheckLocs.forEach(location => {
                     let locationId, locationType;
                     
-                    // Eski format (int) yoki yangi format ({id, type}) ni qo'llab-quvvatlash
                     if (typeof location === 'object' && location.id && location.type) {
                         locationId = location.id;
                         locationType = location.type;
-                        console.log('🆕 Stock check new format location:', locationId, locationType);
                     } else if (typeof location === 'number') {
                         locationId = location;
-                        console.log('🔢 Stock check old format location ID:', locationId);
                     } else {
-                        console.log('⚠️ Unknown stock check location format:', location);
                         return;
                     }
                     
-                    // YANGI: To'g'ridan-to'g'ri belgilash (300ms kutgandan keyin)
                     if (locationType) {
                         const checkbox = document.querySelector(`#stockCheckLocationsList input[value="${locationId}"][data-type="${locationType}"]`);
-                        if (checkbox) {
-                            checkbox.checked = true;
-                            console.log(`✅ Stock check ${locationType} location checked:`, locationId);
-                        } else {
-                            console.log('❌ Stock check location checkbox not found:', locationId, locationType);
-                            console.log('   Available:', document.querySelectorAll('#stockCheckLocationsList input').length);
-                        }
+                        if (checkbox) checkbox.checked = true;
                     } else {
                         const storeCheckbox = document.querySelector(`#stockCheckLocationsList input[value="${locationId}"][data-type="store"]`);
                         const warehouseCheckbox = document.querySelector(`#stockCheckLocationsList input[value="${locationId}"][data-type="warehouse"]`);
-                        
-                        if (storeCheckbox) {
-                            storeCheckbox.checked = true;
-                            console.log('✅ Stock check store location checked:', locationId);
-                        } else if (warehouseCheckbox) {
-                            warehouseCheckbox.checked = true;
-                            console.log('✅ Stock check warehouse location checked:', locationId);
-                        } else {
-                            console.log('❌ Stock check location checkbox not found:', locationId);
-                        }
+                        if (storeCheckbox) storeCheckbox.checked = true;
+                        else if (warehouseCheckbox) warehouseCheckbox.checked = true;
                     }
                 });
-            }
         }
     }
 

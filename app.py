@@ -1210,6 +1210,8 @@ class User(db.Model):
     allowed_locations = db.Column(db.JSON, default=lambda: [])
     # Transfer qilish uchun ruxsat etilgan joylashuvlar
     transfer_locations = db.Column(db.JSON, default=lambda: [])
+    # Qoldiqni tekshirish uchun ruxsat etilgan joylashuvlar
+    stock_check_locations = db.Column(db.JSON, default=lambda: [])
     is_active = db.Column(db.Boolean, default=True)
     photo = db.Column(db.String(255), nullable=True)
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
@@ -1240,6 +1242,7 @@ class User(db.Model):
             'permissions': self.permissions or {},
             'allowed_locations': self.allowed_locations or [],
             'transfer_locations': self.transfer_locations or [],
+            'stock_check_locations': self.stock_check_locations or [],
             'is_active': self.is_active,
             'photo': f'/static/uploads/users/{self.photo}' if self.photo else None,
             'created_at': self.created_at.isoformat() if self.created_at else None,
@@ -5096,13 +5099,16 @@ def api_check_stock_locations():
             allowed_warehouse_ids = None
             logger.debug("✅ Admin user - showing all stock check locations")
         else:
-            # Oddiy foydalanuvchilar faqat allowed_locations dan ruxsat etilgan joylashuvlarni ko'radi
-            allowed_locations = current_user.allowed_locations or []
-            logger.debug(f"📍 User allowed_locations: {allowed_locations}")
+            # Oddiy foydalanuvchilar faqat stock_check_locations dan ruxsat etilgan joylashuvlarni ko'radi
+            # Agar stock_check_locations bo'sh bo'lsa, allowed_locations dan fallback
+            stock_check_locs = current_user.stock_check_locations or []
+            if not stock_check_locs:
+                stock_check_locs = current_user.allowed_locations or []
+            logger.debug(f"📍 User stock_check_locations: {stock_check_locs}")
 
             # Helper funksiya bilan ID'larni olish (eski va yangi formatlar uchun)
-            allowed_store_ids = extract_location_ids(allowed_locations, 'store')
-            allowed_warehouse_ids = extract_location_ids(allowed_locations, 'warehouse')
+            allowed_store_ids = extract_location_ids(stock_check_locs, 'store')
+            allowed_warehouse_ids = extract_location_ids(stock_check_locs, 'warehouse')
 
             logger.debug(f"🏪 Filtered store IDs: {allowed_store_ids}")
             logger.debug(f"🏭 Filtered warehouse IDs: {allowed_warehouse_ids}")
@@ -10809,15 +10815,9 @@ def api_add_user():
         transfer_locations = data.get('transfer_locations', [])
         stock_check_locations = data.get('stock_check_locations', [])
 
-        # Stock check locations'ni allowed_locations'ga qo'shish
-        if stock_check_locations:
-            for loc in stock_check_locations:
-                if loc not in allowed_locations:
-                    allowed_locations.append(loc)
-
         logger.debug(f" Permissions: {permissions}")
         logger.debug(f" Stock check locations: {stock_check_locations}")
-        logger.debug(f" Allowed locations (after adding stock check): {allowed_locations}")
+        logger.debug(f" Allowed locations: {allowed_locations}")
         logger.debug(f" Transfer locations: {transfer_locations}")
         print(
             f"🔍 Primary store_id: {store_id} (UI uchun, huquqlarga ta'sir qilmaydi)")
@@ -10835,6 +10835,7 @@ def api_add_user():
             permissions=permissions,
             allowed_locations=allowed_locations,
             transfer_locations=transfer_locations,
+            stock_check_locations=stock_check_locations,
             is_active=data.get('is_active', True)
         )
 
@@ -11138,24 +11139,19 @@ def update_user(user_id):
         transfer_locations = data.get('transfer_locations', [])
         stock_check_locations = data.get('stock_check_locations', [])
 
-        # Stock check locations'ni allowed_locations'ga qo'shish
-        if stock_check_locations:
-            for loc in stock_check_locations:
-                if loc not in allowed_locations:
-                    allowed_locations.append(loc)
-
         if permissions:
             logger.debug(f" Updating permissions: {permissions}")
             user.permissions = permissions
 
-        # Allowed locations ni har doim saqlash (permissions bo'lmasa ham)
+        # Har doim alohida saqlash (aralashtirilmaydi)
         user.allowed_locations = allowed_locations
-        logger.debug(f" Allowed locations (including stock check): {allowed_locations}")
-        logger.debug(f" Stock check locations: {stock_check_locations}")
+        logger.debug(f" Allowed locations: {allowed_locations}")
 
-        # Transfer locations ni har doim saqlash
         user.transfer_locations = transfer_locations
         logger.debug(f" Transfer locations: {transfer_locations}")
+
+        user.stock_check_locations = stock_check_locations
+        logger.debug(f" Stock check locations: {stock_check_locations}")
 
         # Asosiy joylashuvni yangilash (store_id faqat)
         store_id = data.get('store_id')
