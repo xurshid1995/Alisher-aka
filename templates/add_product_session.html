@@ -248,8 +248,8 @@ optgroup option { font-weight: normal; color: #1e293b; }
                         </div>
                     </div>
 
-                    <!-- Miqdor, O'lchov birligi va Min qoldiq -->
-                    <div class="ap-row ap-row-3col">
+                    <!-- Miqdor va O'lchov birligi -->
+                    <div class="ap-row ap-row-2col">
                         <div class="ap-form-group">
                             <label class="ap-label" for="quantity">{{ t('ap_quantity_label') }}</label>
                             <input type="number" id="quantity" name="quantity" class="ap-input"
@@ -263,11 +263,6 @@ optgroup option { font-weight: normal; color: #1e293b; }
                                 <option value="dona" selected>{{ t('ap_unit_dona') }}</option>
                                 <option value="litr">{{ t('ap_unit_litr') }}</option>
                             </select>
-                        </div>
-                        <div class="ap-form-group">
-                            <label class="ap-label" for="min_stock">{{ t('ap_min_stock_label') }}</label>
-                            <input type="number" id="min_stock" name="min_stock" class="ap-input"
-                                   placeholder="0" min="0">
                         </div>
                     </div>
 
@@ -353,8 +348,14 @@ optgroup option { font-weight: normal; color: #1e293b; }
                         </div>
                     </div>
 
-                    <!-- Barcode -->
-                    <div class="ap-form-group">
+                    <!-- Minimal qoldiq va Barcode -->
+                    <div class="ap-row ap-row-2col">
+                        <div class="ap-form-group">
+                            <label class="ap-label" for="min_stock">{{ t('ap_min_stock_label') }}</label>
+                            <input type="number" id="min_stock" name="min_stock" class="ap-input"
+                                   placeholder="0" min="0">
+                        </div>
+                        <div class="ap-form-group">
                             <label class="ap-label" for="barcode">{{ t('ap_barcode_label') }}</label>
                             <div id="barcodeErrorContainer" style="margin-bottom:4px;"></div>
                             <div style="display:flex; gap:5px;">
@@ -371,6 +372,7 @@ optgroup option { font-weight: normal; color: #1e293b; }
                                         title="{{ t('ap_print_barcode_title') }}"><img src="https://img.icons8.com/color/48/print.png" alt="Print" style="width:28px;height:28px;"></button>
                             </div>
                         </div>
+                    </div>
 
                     <!-- Narx taqqoslash -->
                     <div id="priceComparison" class="price-comparison">
