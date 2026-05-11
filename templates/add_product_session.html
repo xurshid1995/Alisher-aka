@@ -2676,7 +2676,7 @@ optgroup option { font-weight: normal; color: #1e293b; }
                             <div style="width:14px;height:14px;border-radius:50%;background:${cat.color};flex-shrink:0;"></div>
                             <span style="flex:1;font-size:14px;color:#1e293b;font-weight:500;">${cat.name}</span>
                             <div id="cat-actions-${cat.id}" style="display:flex;gap:6px;align-items:center;">
-                                <button type="button" onclick="openEditCategoryForm(${cat.id},'${cat.name.replace(/'/g,"\\'")}','${cat.color}')"
+                                <button type="button" onclick="catEditConfirm(${cat.id},'${cat.name.replace(/'/g,"\\'")}','${cat.color}')"
                                     style="padding:5px 12px;background:#eff6ff;color:#3b82f6;border:1px solid #bfdbfe;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;">
                                     ✏️ Tahrirlash
                                 </button>
@@ -2688,6 +2688,17 @@ optgroup option { font-weight: normal; color: #1e293b; }
                         </div>`).join('');
                 })
                 .catch(() => {});
+        }
+
+        function catEditConfirm(id, name, color) {
+            const actDiv = document.getElementById('cat-actions-' + id);
+            const safeColor = color;
+            actDiv.innerHTML =
+                '<span style="font-size:12px;color:#3b82f6;font-weight:600;white-space:nowrap;">Tahrirlaysizmi?</span>' +
+                '<button type="button" onclick="openEditCategoryForm(' + id + ',\'' + name.replace(/'/g,"\\'") + '\',\'' + safeColor + '\')" ' +
+                    'style="padding:5px 10px;background:#3b82f6;color:white;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;">Ha ✓</button>' +
+                '<button type="button" onclick="renderCatSettingsList()" ' +
+                    'style="padding:5px 10px;background:#f1f5f9;color:#475569;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;">Yo\'q</button>';
         }
 
         function catDeleteConfirm(id, name, btn) {
