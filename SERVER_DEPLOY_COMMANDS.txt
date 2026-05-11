@@ -42,8 +42,8 @@ ssh root@207.154.225.70 "cd /var/www/alisher && git pull origin main && source v
 # ========================================
 
 # Browser orqali:
-# 1. https://207.154.225.70/health
-# 2. https://207.154.225.70/monitoring/dashboard (login qiling)
+# 1. https://www.allonavto.uz/health
+# 2. https://www.allonavto.uz/monitoring/dashboard (login qiling)
 
 # ========================================
 # MUAMMO BO'LSA

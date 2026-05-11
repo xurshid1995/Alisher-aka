@@ -97,13 +97,13 @@ echo "  Service OK"
 
 # 7. Nginx sozlash
 echo "Nginx sozlanmoqda..."
-cp /var/www/alisher/nginx_sergeli0606.conf /etc/nginx/sites-available/alisher
+cp /var/www/alisher/nginx_allonavto.conf /etc/nginx/sites-available/alisher
 # HTTP only config (SSL keyinchalik)
 cat > /etc/nginx/sites-available/alisher <<NGINXEOF
 server {
     listen 80;
     listen [::]:80;
-    server_name 207.154.225.70 www.207.154.225.70 207.154.225.70;
+    server_name 207.154.225.70 www.allonavto.uz 207.154.225.70;
 
     client_max_body_size 10M;
 
@@ -133,5 +133,5 @@ echo "  Nginx OK"
 echo ""
 echo "======================================"
 echo "  SETUP MUVAFFAQIYATLI TUGADI!"
-echo "  http://207.154.225.70"
+echo "  https://www.allonavto.uz"
 echo "======================================"

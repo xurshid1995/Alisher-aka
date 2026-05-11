@@ -3,7 +3,7 @@
  * Mijoz saytiga qo'shiladi - doim balans va qolgan kunlarni ko'rsatadi
  * 
  * Foydalanish:
- * <script src="http://207.154.225.70/static/js/hosting-widget.js" data-token="MIJOZ_TOKEN"></script>
+ * <script src="https://www.allonavto.uz/static/js/hosting-widget.js" data-token="MIJOZ_TOKEN"></script>
  */
 (function() {
     'use strict';

@@ -1,4 +1,4 @@
-﻿# Server Setup - 207.154.225.70 (www.207.154.225.70)
+﻿# Server Setup - 207.154.225.70 (www.allonavto.uz)
 
 ## 1. Server'ga kirish
 ```bash
@@ -73,7 +73,7 @@ SESSION_COOKIE_SAMESITE=None
 
 # Server
 SERVER_IP=207.154.225.70
-DOMAIN=www.207.154.225.70
+DOMAIN=www.allonavto.uz
 
 # Gunicorn
 WORKERS=4
@@ -142,7 +142,7 @@ sudo systemctl status alisher.service
 ## 10. Nginx sozlash
 ```bash
 # Nginx konfiguratsiya fayl yaratish
-sudo cp /var/www/alisher/nginx_sergeli0606.conf /etc/nginx/sites-available/alisher
+sudo cp /var/www/alisher/nginx_allonavto.conf /etc/nginx/sites-available/alisher
 
 # Symlink yaratish
 sudo ln -s /etc/nginx/sites-available/alisher /etc/nginx/sites-enabled/
@@ -160,7 +160,7 @@ sudo systemctl restart nginx
 ## 11. SSL sertifikatni o'rnatish (Let's Encrypt)
 ```bash
 # Certbot bilan SSL o'rnatish
-sudo certbot --nginx -d 207.154.225.70 -d www.207.154.225.70
+sudo certbot --nginx -d 207.154.225.70 -d www.allonavto.uz
 ```
 
 Savollar:
@@ -211,7 +211,7 @@ tail -f /var/www/alisher/logs/error.log
 tail -f /var/www/alisher/logs/access.log
 
 # Brauzerda ochish
-# https://www.207.154.225.70
+# https://www.allonavto.uz
 ```
 
 ## Troubleshooting
@@ -300,5 +300,5 @@ cd /var/www/alisher && git pull && sudo systemctl restart alisher.service
 ## Support
 
 Server: 207.154.225.70
-Domain: www.207.154.225.70
+Domain: www.allonavto.uz
 Location: DigitalOcean Frankfurt

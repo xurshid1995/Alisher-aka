@@ -666,7 +666,7 @@ async function editClient(id) {
         
         // Widget kodi
         if (c.status_token) {
-            const widgetCode = '<scr' + 'ipt src="http://207.154.225.70/static/js/hosting-widget.js" data-token="' + c.status_token + '"><\/scr' + 'ipt>';
+            const widgetCode = '<scr' + 'ipt src="https://www.allonavto.uz/static/js/hosting-widget.js" data-token="' + c.status_token + '"><\/scr' + 'ipt>';
             document.getElementById('widget-code').value = widgetCode;
             document.getElementById('widget-code-group').style.display = 'block';
         } else {
