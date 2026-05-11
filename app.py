@@ -11075,6 +11075,7 @@ def get_user(user_id):
             'permissions': user.permissions,
             'allowed_locations': user.allowed_locations,
             'transfer_locations': user.transfer_locations,
+            'stock_check_locations': user.stock_check_locations or [],
             'photo': f'/static/uploads/users/{user.photo}' if user.photo else None,
             'created_at': user.created_at.isoformat() if user.created_at else None
         })
